@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            margin-top: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .form-row label, .form-row input {
+            margin-right: 10px;
+        }
+        input[type="number"] {
+            width: 60px; /* Adjust width as needed */
+        }
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        .delete-button {
+            margin-left: 10px;
+            padding: 5px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome, <span id="user-name">{{ user.name }}</span></h1>
+    <p>Email: <span id="user-email">{{ user.email }}</span></p>
+    <p id="available-pto">Available Time Off: <span id="pto-balance">Loading...</span></p> <!-- Display initial PTO -->
+
+    <!-- Display current PTO and subtract in real-time -->
+    <h2 style="margin-top: 30px;">Request Time Off</h2>
+    <form id="time-off-form">
+        <!-- Container for dynamically added rows -->
+        <div id="form-rows-container">
+            <!-- Required initial row -->
+            <div class="form-row" id="first-row">
+                <label for="start_date">Start Date:</label>
+                <input type="date" name="start_date[]" required>
+                <label for="end_date">End Date:</label>
+                <input type="date" name="end_date[]" required>
+                <label for="hours">Hours per day:</label>
+                <input type="number" name="hours[]" min="0" max="24" step="1" required>
+            </div>
+        </div>
+
+        <button type="button" id="add-more-fields" style="margin-top: 10px;">Add More</button>
+        <button type="submit" style="margin-top: 10px;">Request Time Off</button>
+    </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const userName = "{{ user.name }}";
+            const userEmail = "{{ user.email }}";
+
+            document.getElementById('user-name').textContent = userName;
+            document.getElementById('user-email').textContent = userEmail;
+
+            fetchPTO(userEmail);
+
+            // Event listener for adding more fields
+            let fieldCounter = 0;
+            const addMoreButton = document.getElementById('add-more-fields');
+            addMoreButton.addEventListener('click', function() {
+                if (fieldCounter < 10) { // Limit to 10 additional rows
+                    const newField = `
+                        <div class="form-row">
+                            <label for="start_date">Start Date:</label>
+                            <input type="date" name="start_date[]">
+                            <label for="end_date">End Date:</label>
+                            <input type="date" name="end_date[]">
+                            <label for="hours">Hours per day:</label>
+                            <input type="number" name="hours[]" min="0" max="24" step="1">
+                            <button type="button" class="delete-button" onclick="deleteRow(this)">Delete</button>
+                        </div>
+                    `;
+                    document.getElementById('form-rows-container').insertAdjacentHTML('beforeend', newField);
+                    fieldCounter++;
+
+                    if (fieldCounter === 10) {
+                        addMoreButton.style.display = 'none';
+                    }
+                }
+            });
+
+            // Event listener for form submission
+            document.getElementById('time-off-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const formData = new FormData(this);
+
+                // Calculate total hours requested
+                let totalHoursRequested = 0;
+                formData.getAll('hours[]').forEach(hours => {
+                    if (hours !== '') { // Only count filled rows
+                        totalHoursRequested += parseInt(hours);
+                    }
+                });
+
+                // Calculate new available PTO balance (subtract hours requested)
+                const currentPTO = parseFloat(document.getElementById('pto-balance').textContent); // Assuming it's a number
+                const newPTO = currentPTO - totalHoursRequested;
+
+                // Update UI to show new PTO balance (simulate real-time subtract)
+                updateAvailablePTO(newPTO);
+
+                // Simulate fetch request (replace with actual fetch call to server)
+                setTimeout(() => {
+                    alert('Time off requested successfully');
+                    window.location.reload(); // Replace with appropriate action
+                }, 1000); // Simulated delay
+
+                // Clear form fields after submission (optional)
+                document.querySelectorAll('input[type="date"], input[type="number"]').forEach(input => {
+                    input.value = '';
+                });
+                document.getElementById('form-rows-container').innerHTML = ''; // Reset added rows
+                fieldCounter = 0; // Reset field counter
+                addMoreButton.style.display = 'block'; // Show "Add More" button again
+            });
+        });
+
+        function fetchPTO(email) {
+            const apiKey = 'YOUR_AIRTABLE_API_KEY';
+            const baseId = 'YOUR_AIRTABLE_BASE_ID';
+            const tableName = 'YOUR_AIRTABLE_TABLE_NAME';
+
+            fetch(`https://api.airtable.com/v0/${baseId}/${tableName}?filterByFormula=Email="${email}"`, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const ptoBalance = data.records.length ? data.records[0].fields.AvailableTimeOff : 0;
+                document.getElementById('pto-balance').textContent = ptoBalance;
+            })
+            .catch(error => {
+                console.error('Error fetching PTO data:', error);
+                document.getElementById('pto-balance').textContent = 'Error loading PTO';
+            });
+        }
+
+        function updateAvailablePTO(newBalance) {
+            document.getElementById('available-pto').textContent = `Available Time Off: ${newBalance}`;
+        }
+
+        function deleteRow(button) {
+            const row = button.parentNode;
+            if (!row.id || row.id !== 'first-row') {
+                row.parentNode.removeChild(row);
+                fieldCounter--;
+                document.getElementById('add-more-fields').style.display = 'block'; // Ensure "Add More" button is visible if deleted from max limit
+            }
+        }
+    </script>
+</body>
+</html>

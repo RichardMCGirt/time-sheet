@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tracking Software</title>
+    <style>
+        /* Reset default browser styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body styles */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        /* Header (Navigation bar) styles */
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+        }
+
+        header nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        header nav ul li {
+            display: inline;
+            margin-right: 10px;
+        }
+
+        header nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 5px 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        header nav ul li a:hover {
+            background-color: #555;
+        }
+
+        /* Main Content */
+        main {
+            margin-top: 20px;
+        }
+
+        /* Form and Table styles */
+        form {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #333;
+            color: #fff;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        /* Button style */
+        button {
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        /* Section styles */
+        section {
+            margin-bottom: 40px;
+        }
+
+        section h2 {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<header>
+    <nav>
+        <ul>
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#time-entry">Time Entry</a></li>
+            <li><a href="#reports">Reports</a></li>
+            <li><a href="#timeoff">Timeoff</a></li>
+            <li><a href="#logout">Logout</a></li>
+        </ul>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<main>
+    <!-- Dashboard -->
+    <section id="dashboard">
+        <h2>Dashboard</h2>
+        <p>Welcome, <span id="username">User</span>!</p>
+        <!-- Dashboard content goes here -->
+    </section>
+
+    <!-- PTO -->
+    <section id="pto">
+        <h2>PTO</h2>
+        <form id="pto-form">
+            <label for="pto-hours">PTO Hours:</label>
+            <input type="number" id="pto-hours" name="pto_hours" min="0" max="200"><br><br>
+            <button type="button" onclick="savePtoHours()">Save PTO Hours</button>
+        </form>
+    </section>
+    <hr>
+
+    <!-- Time Entry -->
+    <section id="time-entry">
+        <h2>Time Entry</h2>
+        <form id="time-entry-form" action="submit_time.php" method="post" oninput="updateTimeWorked()">
+            <label for="week-ending">Week Ending:</label>
+            <input type="date" id="week-ending" name="week_ending" required onchange="populateWeekDates(); fetchPtoHours();"><br><br>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Start Time</th>
+                        <th>Lunch Start</th>
+                        <th>Lunch End</th>
+                        <th>End Time</th>
+                    </tr>
+                </thead>
+                <tbody id="time-entry-body">
+                    <!-- Rows for time entries -->
+                    <tr>
+                        <td><input type="date" name="date1"></td>
+                        <td><input type="time" name="start_time1"></td>
+                        <td><input type="time" name="lunch_start1"></td>
+                        <td><input type="time" name="lunch_end1"></td>
+                        <td><input type="time" name="end_time1"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="date" name="date2"></td>
+                        <td><input type="time" name="start_time2"></td>
+                        <td><input type="time" name="lunch_start2"></td>
+                        <td><input type="time" name="lunch_end2"></td>
+                        <td><input type="time" name="end_time2"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="date" name="date3"></td>
+                        <td><input type="time" name="start_time3"></td>
+                        <td><input type="time" name="lunch_start3"></td>
+                        <td><input type="time" name="lunch_end3"></td>
+                        <td><input type="time" name="end_time3"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="date" name="date4"></td>
+                        <td><input type="time" name="start_time4"></td>
+                        <td><input type="time" name="lunch_start4"></td>
+                        <td><input type="time" name="lunch_end4"></td>
+                        <td><input type="time" name="end_time4"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="date" name="date5"></td>
+                        <td><input type="time" name="start_time5"></td>
+                        <td><input type="time" name="lunch_start5"></td>
+                        <td><input type="time" name="lunch_end5"></td>
+                        <td><input type="time" name="end_time5"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="date" name="date6"></td>
+                        <td><input type="time" name="start_time6"></td>
+                        <td><input type="time" name="lunch_start6"></td>
+                        <td><input type="time" name="lunch_end6"></td>
+                        <td><input type="time" name="end_time6"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="date" name="date7"></td>
+                        <td><input type="time" name="start_time7"></td>
+                        <td><input type="time" name="lunch_start7"></td>
+                        <td><input type="time" name="lunch_end7"></td>
+                        <td><input type="time" name="end_time7"></td>
+                    </tr>
+                </tbody>
+            </table><br>
+            
+            <button type="submit">Submit</button>
+        </form>
+        <hr>
+        <p>Total Time Worked (excluding PTO): <span id="total-time-worked">0</span> hours</p>
+    </section>
+
+    <!-- Reports -->
+    <section id="reports">
+        <h2>Reports</h2>
+        <!-- Report generation and display -->
+    </section>
+
+    <!-- Settings -->
+    <section id="settings">
+        <h2>Settings</h2>
+        <!-- Settings content -->
+    </section>
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const username = sessionStorage.getItem('username') || 'User';
+        document.getElementById('username').textContent = username;
+    });
+
+    function populateWeekDates() {
+        const weekEnding = document.getElementById('week-ending').value;
+        if (!weekEnding) return;
+
+        const weekEndingDate = new Date(weekEnding);
+        const weekDays = Array.from(document.querySelectorAll('#time-entry-body tr td input[type="date"]'));
+
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(weekEndingDate);
+            date.setDate(date.getDate() - (6 - i));
+            weekDays[i].value = date.toISOString().split('T')[0];
+        }
+    }
+
+    async function fetchPtoHours() {
+        const weekEnding = document.getElementById('week-ending').value;
+        if (!weekEnding) return;
+
+        const apiToken = 'patdDuaFt5dF0uNEF.b7b595e264bdbfe655efbcbf02fbfcbdf562c4b0807fe5464305b4feb48d07f2';
+        const baseId = 'Corporate';
+        const tableId = 'All Active Employees';
+        const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={WeekEnding}="${weekEnding}"`;
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${apiToken}`
+                }
+            });
+            const data = await response.json();
+            if (data.records && data.records.length > 0) {
+                const ptoHours = data.records[0].fields.PTOHours;
+                document.getElementById('pto-hours').value = ptoHours;
+            } else {
+                document.getElementById('pto-hours').value = 0;
+            }
+            updateTimeWorked();
+        } catch (error) {
+            console.error('Error fetching PTO hours:', error);
+            document.getElementById('pto-hours').value = 0;
+        }
+    }
+
+    function updateTimeWorked() {
+        const timeEntries = document.querySelectorAll('#time-entry-body tr');
+        let totalWorkedHours = 0;
+
+        timeEntries.forEach(row => {
+            const startTime = row.querySelector('input[name^="start_time"]').value;
+            const endTime = row.querySelector('input[name^="end_time"]').value;
+
+            if (startTime && endTime) {
+                const start = new Date(`1970-01-01T${startTime}Z`);
+                const end = new Date(`1970-01-01T${endTime}Z`);
+                let workedHours = (end - start) / (1000 * 60 * 60);
+
+                totalWorkedHours += workedHours;
+            }
+        });
+
+        document.getElementById('total-time-worked').textContent = totalWorkedHours.toFixed(2);
+    }
+
+    function savePtoHours() {
+        const ptoHours = document.getElementById('pto-hours').value;
+        // Example: Save PTO hours (replace with your implementation)
+        // This function should handle the saving of PTO hours to your backend or data source
+        console.log('Saving PTO hours:', ptoHours);
+    }
+</script>
+
+</body>
+</html>
