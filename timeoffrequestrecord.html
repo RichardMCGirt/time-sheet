@@ -41,15 +41,21 @@
 
         // Function to fetch and display time off requests
         async function fetchTimeOffRequests() {
+            const userEmail = sessionStorage.getItem('userEmail');
+            if (!userEmail) {
+                console.log('User not authenticated');
+                return;
+            }
+
             try {
-                const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
+                const response = await fetch(`https://api.airtable.com/v0/${baseId}/TimeOffRequests?filterByFormula={user_email}="${userEmail}"`, {
                     headers: {
                         Authorization: `Bearer ${apiKey}`
                     }
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch data from Airtable');
+                    throw new Error('Failed to fetch time off requests');
                 }
 
                 const data = await response.json();
@@ -87,7 +93,7 @@
         // Function to delete a time off request
         async function deleteTimeOffRequest(recordId) {
             try {
-                const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableName}/${recordId}`, {
+                const response = await fetch(`https://api.airtable.com/v0/${baseId}/TimeOffRequests/${recordId}`, {
                     method: 'DELETE',
                     headers: {
                         Authorization: `Bearer ${apiKey}`

@@ -4,23 +4,26 @@ const tableId = 'tbl96cVo2fymB6rrd/';
 
 const apiUrl = `https://api.airtable.com/v0/${baseId}/${tableId}?api_key=${apiKey}`;
 
-// Making a GET request to Airtable API
-fetch(apiUrl)
-  .then(response => response.json())
-  .then(data => {
-    // Assuming data contains records from Airtable
-    if (data.records && data.records.length > 0) {
-      const record = data.records[0]; // Assuming we are fetching the first record
-      const userEmail = record.fields.user_email;
-      const userName = record.fields.name;
+// Function to fetch user data from Airtable
+function fetchUserData() {
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            // Assuming data contains records from Airtable
+            if (data.records && data.records.length > 0) {
+                const record = data.records[0];
+                const userEmail = record.fields.user_email;
+                const userName = record.fields.name;
 
-      // Update the DOM with fetched data
-      document.getElementById('name').textContent = userName;
-      document.getElementById('user_email').textContent = userEmail;
-    }
-  })
-  .catch(error => console.error('Error fetching data:', error)); 
+                // Update the DOM with fetched data
+                document.getElementById('name').textContent = userName;
+                document.getElementById('user_email').textContent = userEmail;
+            }
+        })
+        .catch(error => console.error('Error fetching data:', error));
+}
 
+// Function to submit time-off request
 async function submitTimeOffRequest() {
     const user = JSON.parse(sessionStorage.getItem('user'));
     const startDate = document.getElementById('start-date').value;
@@ -52,10 +55,11 @@ async function submitTimeOffRequest() {
 
     if (response.ok) {
         alert('Time-off request submitted successfully');
+        document.getElementById('time-off-form').reset(); // Reset form after successful submission
     } else {
         alert('Failed to submit time-off request');
     }
 }
 
 // Export the function if needed for usage in other modules
-export { submitTimeOffRequest };
+export { fetchUserData, submitTimeOffRequest };

@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const lunchStart = document.querySelector(`input[name="lunch_start${i}"]`).value;
             const lunchEnd = document.querySelector(`input[name="lunch_end${i}"]`).value;
             const endTime = document.querySelector(`input[name="end_time${i}"]`).value;
-            const hoursWorked = parseFloat(document.querySelector(`input[name="hours_worked_today${i}"]`).value) || 0;
+            const hoursWorked = parseFloat(document.querySelector(`#time-entry-body input[name="hours_worked_today${i}"]`).value) || 0;
 
             timesheetData.records.push({
                 fields: {
