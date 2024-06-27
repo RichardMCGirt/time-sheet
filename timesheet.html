@@ -55,6 +55,31 @@
             margin-top: 20px;
         }
 
+        /* Section styles */
+        section {
+            margin-bottom: 40px;
+        }
+
+        section h2 {
+            margin-bottom: 10px;
+        }
+
+        /* PTO section */
+        #pto-section {
+            background-color: #e0e0e0;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        #pto-section h3 {
+            margin-bottom: 5px;
+        }
+
+        #pto-hours {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
         /* Form and Table styles */
         form {
             margin-bottom: 20px;
@@ -95,31 +120,6 @@
 
         button:hover {
             background-color: #555;
-        }
-
-        /* Section styles */
-        section {
-            margin-bottom: 40px;
-        }
-
-        section h2 {
-            margin-bottom: 10px;
-        }
-
-        /* PTO section */
-        #pto-section {
-            background-color: #e0e0e0;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-
-        #pto-section h3 {
-            margin-bottom: 5px;
-        }
-
-        #pto-hours {
-            font-size: 18px;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -227,7 +227,7 @@
                 </tbody>
             </table><br>
             
-            <p>Total Time Worked (excluding PTO): <span id="total-time-worked">0</span> hours</p>
+            
             <button type="button" onclick="submitTimesheet()">Submit</button>
         </form>
         <hr>
@@ -235,158 +235,6 @@
     </section>
 
 </main>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const apiKey = 'YOUR_AIRTABLE_API_KEY';
-        const baseId = 'YOUR_AIRTABLE_BASE_ID';
-
-        // Function to populate dates when week ending date changes
-        function populateWeekDates() {
-            const weekEndingDate = document.getElementById('week-ending').valueAsDate;
-            const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
-
-            for (let i = 0; i < 7; i++) {
-                const currentDate = new Date(weekEndingDate);
-                currentDate.setDate(weekEndingDate.getDate() - (6 - i)); // Adjust to previous days of the week
-
-                const formattedDate = currentDate.toISOString().split('T')[0]; // Format as yyyy-mm-dd
-                document.querySelector(`input[name="${daysOfWeek[i]}"]`).value = formattedDate;
-            }
-        }
-
-        // Function to fetch remaining PTO hours
-        async function fetchPtoHours() {
-            const weekEnding = document.getElementById('week-ending').value;
-            if (!weekEnding) return;
-
-            const url = `https://api.airtable.com/v0/${baseId}/TimeSheets?filterByFormula={WeekEnding}="${weekEnding}"`;
-
-            try {
-                const response = await fetch(url, {
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`
-                    }
-                });
-                const data = await response.json();
-
-                if (data.records.length > 0) {
-                    const ptoHours = data.records[0].fields.PTOTime || 0;
-                    document.getElementById('pto-hours').textContent = `${ptoHours} hours`;
-                } else {
-                    document.getElementById('pto-hours').textContent = '0 hours';
-                }
-            } catch (error) {
-                console.error('Error fetching PTO hours:', error);
-                document.getElementById('pto-hours').textContent = '0 hours';
-            }
-        }
-
-        // Function to calculate hours worked for a specific day
-        function calculateHoursWorked(dayIndex) {
-            const startTime = document.querySelector(`input[name="start_time${dayIndex}"]`).value;
-            const lunchStart = document.querySelector(`input[name="lunch_start${dayIndex}"]`).value;
-            const lunchEnd = document.querySelector(`input[name="lunch_end${dayIndex}"]`).value;
-            const endTime = document.querySelector(`input[name="end_time${dayIndex}"]`).value;
-
-            // Calculate hours worked logic
-            // Example calculation (replace with your logic)
-            let hoursWorked = 0;
-            if (startTime && endTime) {
-                const start = new Date(`1970-01-01T${startTime}Z`);
-                const end = new Date(`1970-01-01T${endTime}Z`);
-                let workedHours = (end - start) / (1000 * 60 * 60); // Difference in hours
-
-                if (lunchStart && lunchEnd) {
-                    const lunchStartObj = new Date(`1970-01-01T${lunchStart}Z`);
-                    const lunchEndObj = new Date(`1970-01-01T${lunchEnd}Z`);
-                    const lunchHours = (lunchEndObj - lunchStartObj) / (1000 * 60 * 60); // Lunch break hours
-                    workedHours -= lunchHours; // Subtract lunch break hours
-                }
-
-                hoursWorked = workedHours.toFixed(2); // Round to 2 decimal places
-            }
-
-            document.querySelector(`#time-entry-body input[name="hours_worked_today${dayIndex}"]`).value = hoursWorked;
-            calculateTotalTimeWorked();
-        }
-
-        // Function to calculate total time worked
-        function calculateTotalTimeWorked() {
-            let totalWorkedHours = 0;
-            const timeEntries = document.querySelectorAll('#time-entry-body tr');
-
-            timeEntries.forEach(row => {
-                const hoursWorked = parseFloat(row.querySelector('input[name^="hours_worked_today"]').value) || 0;
-                totalWorkedHours += hoursWorked;
-            });
-
-            document.getElementById('total-time-worked').textContent = totalWorkedHours.toFixed(2);
-        }
-
-        // Function to submit timesheet
-        async function submitTimesheet() {
-            const user = JSON.parse(sessionStorage.getItem('user'));
-            const weekEndingDate = document.getElementById('week-ending').value;
-            const timesheetData = {
-                records: []
-            };
-
-            for (let i = 1; i <= 7; i++) {
-                const date = document.querySelector(`input[name="date${i}"]`).value;
-                const startTime = document.querySelector(`input[name="start_time${i}"]`).value;
-                const lunchStart = document.querySelector(`input[name="lunch_start${i}"]`).value;
-                const lunchEnd = document.querySelector(`input[name="lunch_end${i}"]`).value;
-                const endTime = document.querySelector(`input[name="end_time${i}"]`).value;
-                const hoursWorked = parseFloat(document.querySelector(`input[name="hours_worked_today${i}"]`).value) || 0;
-
-                timesheetData.records.push({
-                    fields: {
-                        user_email: user.email,
-                        date,
-                        start_time: startTime,
-                        lunch_start: lunchStart,
-                        lunch_end: lunchEnd,
-                        end_time: endTime,
-                        hours_worked_today: hoursWorked,
-                        WeekEnding: weekEndingDate
-                    }
-                });
-            }
-
-            const url = `https://api.airtable.com/v0/${baseId}/TimeSheets`;
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(timesheetData)
-                });
-
-                if (response.ok) {
-                    alert('Timesheet submitted successfully');
-                    document.getElementById('time-entry-form').reset(); // Reset form after successful submission
-                    document.getElementById('total-time-worked').textContent = '0.00'; // Reset total time worked
-                    populateWeekDates(); // Refresh dates after submission
-                    fetchPtoHours(); // Refresh PTO hours after submission
-                } else {
-                    console.error('Failed to submit timesheet');
-                    alert('Failed to submit timesheet');
-                }
-            } catch (error) {
-                console.error('Error submitting timesheet:', error);
-                alert('Failed to submit timesheet');
-            }
-        }
-
-        // Initial population of dates and PTO hours when the page loads
-        populateWeekDates();
-        fetchPtoHours();
-    });
-</script>
 
 </body>
 </html>

@@ -1,69 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Off Request Form</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
         }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+        }
+
         nav ul {
             list-style-type: none;
             padding: 0;
-            text-align: center;
+            margin: 0;
+            display: flex;
+            justify-content: center;
         }
+
         nav ul li {
-            display: inline;
-            margin-right: 10px;
+            margin: 0 10px;
         }
+
         nav ul li a {
             text-decoration: none;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 4px;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
         }
+
         nav ul li a:hover {
-            background-color: #0056b3;
+            background-color: #555;
         }
-        h1 {
+
+        h2, p {
             text-align: center;
-            margin-bottom: 20px;
-        }
-        form {
-            margin-top: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .form-row label, .form-row input, .form-row button {
-            margin-right: 10px;
-        }
-        input[type="number"] {
-            width: 60px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .delete-button {
-            background-color: #dc3545;
-        }
-        .delete-button:hover {
-            background-color: #c82333;
         }
     </style>
 </head>
@@ -71,130 +52,96 @@
     <header>
         <nav>
             <ul>
-                <li><a href="timesheet.html">Dashboard</a></li>
+                <li><a href="timeoffrequestrecord.html">Timeoffrequestrecord</a></li>
                 <li><a href="timesheet.html#time-entry">Time Entry</a></li>
-                <li><a href="timesheet.html#reports">TimeSheet</a></li>
-                <li><a href="timeoff.html">Timeoff</a></li>
+                <li><a href="timesheet.html#reports">Reports</a></li>
+                <li><a href="timeoff.html">Time Off</a></li>
                 <li><a href="login.html">Logout</a></li>
             </ul>
         </nav>
     </header>
-    <h1>Welcome, <span id="user-name">{{ user.name }}</span></h1>
-    <p>Email: <span id="user-email">{{ user.email }}</span></p>
-    <p id="available-pto">Available Time Off: <span id="pto-balance">Loading...</span></p>
 
-    <h2>Request Time Off</h2>
-    <form id="time-off-form">
-        <div id="form-rows-container">
-            <div class="form-row" id="first-row">
-                <label for="start-date">Start Date:</label>
-                <input type="date" id="start-date" name="start_date[]" required>
-                <label for="end-date">End Date:</label>
-                <input type="date" id="end-date" name="end_date[]" required>
-                <label for="hours">Hours per day:</label>
-                <input type="number" id="hours-per-day" name="hours[]" min="0" max="24" step="1" required>
-            </div>
-        </div>
-        <button type="button" id="add-more-fields">Add More</button>
-        <button type="submit">Request Time Off</button>
+    <div id="user-info">
+        <h2>Welcome, <span id="user-name">User</span>!</h2>
+        <p>Email: <span id="user-email">user@example.com</span></p>
+    </div>
+    <p>Remaining PTO: <span id="pto-hours">0 hours</span></p>
+
+    <form id="timeoff-form">
+        <label for="start-date">Start Date:</label>
+        <input type="date" id="start-date" name="start-date" required><br><br>
+        
+        <label for="end-date">End Date:</label>
+        <input type="date" id="end-date" name="end-date" required><br><br>
+        
+        <label for="hours-per-day">Hours per Day:</label>
+        <input type="number" id="hours-per-day" name="hours-per-day" min="0" step="0.5"><br><br>
+        
+        <label for="reason">Reason:</label><br>
+        <textarea id="reason" name="reason" rows="4" cols="50" required></textarea><br><br>
+        
+        <button type="submit">Submit</button>
     </form>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const userName = "{{ user.name }}";
-            const userEmail = "{{ user.email }}";
+        const apiKey = 'YOUR_AIRTABLE_API_KEY';
+        const baseId = 'YOUR_AIRTABLE_BASE_ID';
+        const tableName = 'TimeOffRequests';
 
-            document.getElementById('user-name').textContent = userName;
-            document.getElementById('user-email').textContent = userEmail;
+        const form = document.getElementById('timeoff-form');
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+        const hoursPerDayInput = document.getElementById('hours-per-day');
+        const reasonInput = document.getElementById('reason');
 
-            fetchPTO(userEmail);
-
-            let fieldCounter = 0;
-            const addMoreButton = document.getElementById('add-more-fields');
-            addMoreButton.addEventListener('click', function() {
-                if (fieldCounter < 10) {
-                    const newField = `
-                        <div class="form-row">
-                            <label for="start-date">Start Date:</label>
-                            <input type="date" name="start_date[]">
-                            <label for="end-date">End Date:</label>
-                            <input type="date" name="end_date[]">
-                            <label for="hours">Hours per day:</label>
-                            <input type="number" name="hours[]" min="0" max="24" step="1">
-                            <button type="button" class="delete-button" onclick="deleteRow(this)">Delete</button>
-                        </div>
-                    `;
-                    document.getElementById('form-rows-container').insertAdjacentHTML('beforeend', newField);
-                    fieldCounter++;
-                    if (fieldCounter === 10) {
-                        addMoreButton.style.display = 'none';
-                    }
-                }
-            });
-
-            document.getElementById('time-off-form').addEventListener('submit', function(event) {
-                event.preventDefault();
-                const formData = new FormData(this);
-
-                let totalHoursRequested = 0;
-                formData.getAll('hours[]').forEach(hours => {
-                    if (hours !== '') {
-                        totalHoursRequested += parseInt(hours);
-                    }
+        // Function to submit time off request
+        async function submitTimeOffRequest() {
+            try {
+                const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fields: {
+                            'Start Date': startDateInput.value,
+                            'End Date': endDateInput.value,
+                            'Hours per Day': parseFloat(hoursPerDayInput.value),
+                            'Reason': reasonInput.value
+                        }
+                    })
                 });
 
-                const currentPTO = parseFloat(document.getElementById('pto-balance').textContent);
-                const newPTO = currentPTO - totalHoursRequested;
-
-                updateAvailablePTO(newPTO);
-
-                setTimeout(() => {
-                    alert('Time off requested successfully');
-                    window.location.reload();
-                }, 1000);
-
-                document.querySelectorAll('input[type="date"], input[type="number"]').forEach(input => {
-                    input.value = '';
-                });
-                document.getElementById('form-rows-container').innerHTML = '';
-                fieldCounter = 0;
-                addMoreButton.style.display = 'block';
-            });
-        });
-
-        function fetchPTO(email) {
-            const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
-            const baseId = 'appMq9W12jZyCJeXe'; // Extracted base ID
-            const tableName = 'tblRqUgMsd2QSd5ka'; // Extracted table ID
-
-            fetch(`https://api.airtable.com/v0/${baseId}/${tableName}?filterByFormula=Email="${email}"`, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
+                if (!response.ok) {
+                    throw new Error('Failed to submit time off request');
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                const ptoBalance = data.records.length ? data.records[0].fields['Available Time Off'] : 0;
-                document.getElementById('pto-balance').textContent = ptoBalance;
-            })
-            .catch(error => {
-                console.error('Error fetching PTO data:', error);
-                document.getElementById('pto-balance').textContent = 'Error loading PTO';
-            });
-        }
 
-        function updateAvailablePTO(newBalance) {
-            document.getElementById('pto-balance').textContent = newBalance;
-        }
-
-        function deleteRow(button) {
-            const row = button.parentNode;
-            if (!row.id || row.id !== 'first-row') {
-                row.parentNode.removeChild(row);
-                fieldCounter--;
-                document.getElementById('add-more-fields').style.display = 'block';
+                alert('Time off request submitted successfully');
+                form.reset(); // Clear form inputs after successful submission
+            } catch (error) {
+                console.error('Error submitting time off request:', error);
+                alert('Failed to submit time off request');
             }
         }
+
+        // Prevent default form submission and handle submission via JavaScript
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            submitTimeOffRequest();
+        });
+
+        // Example: Replace with actual user data retrieval logic
+        const userInfo = {
+            name: 'User',
+            email: 'user@example.com',
+            ptoHours: '0 hours' // Replace with actual PTO hours
+        };
+
+        // Update user info on the page
+        document.getElementById('user-name').textContent = userInfo.name;
+        document.getElementById('user-email').textContent = userInfo.email;
+        document.getElementById('pto-hours').textContent = userInfo.ptoHours;
     </script>
 </body>
 </html>

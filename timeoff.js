@@ -1,13 +1,32 @@
-// Import baseId and apiKey from a central configuration file (e.g., config.js)
-import { baseId, apiKey } from './config.js';
+const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
+const baseId = 'appMq9W12jZyCJeXe';
+const tableId = 'tbl96cVo2fymB6rrd/';
+
+const apiUrl = `https://api.airtable.com/v0/${baseId}/${tableId}?api_key=${apiKey}`;
+
+// Making a GET request to Airtable API
+fetch(apiUrl)
+  .then(response => response.json())
+  .then(data => {
+    // Assuming data contains records from Airtable
+    if (data.records && data.records.length > 0) {
+      const record = data.records[0]; // Assuming we are fetching the first record
+      const userEmail = record.fields.user_email;
+      const userName = record.fields.name;
+
+      // Update the DOM with fetched data
+      document.getElementById('name').textContent = userName;
+      document.getElementById('user_email').textContent = userEmail;
+    }
+  })
+  .catch(error => console.error('Error fetching data:', error)); 
 
 async function submitTimeOffRequest() {
     const user = JSON.parse(sessionStorage.getItem('user'));
     const startDate = document.getElementById('start-date').value;
     const endDate = document.getElementById('end-date').value;
-    const hoursPerDay = document.getElementById('hours-per-day').value; // Assuming you have an input for hours per day
+    const hoursPerDay = document.getElementById('hours-per-day').value;
     const reason = document.getElementById('reason').value;
-    const ptoTime = parseFloat(document.getElementById('pto-time').textContent); // Assuming PTO time is displayed somewhere
 
     const timeOffRequestData = {
         records: [{
@@ -17,7 +36,6 @@ async function submitTimeOffRequest() {
                 end_date: endDate,
                 hours_per_day: hoursPerDay,
                 reason,
-                'PTO Time': ptoTime, // Adjust field name to match Airtable
                 status: 'Pending'
             }
         }]
