@@ -25,7 +25,7 @@ async function login() {
 
         if (user) {
             sessionStorage.setItem('user', JSON.stringify(user.fields));
-            window.location.href = '/timesheet.html';
+            window.location.href = 'timesheet.html';
         } else {
             alert('Invalid email or password');
         }
