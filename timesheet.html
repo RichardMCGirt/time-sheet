@@ -109,7 +109,9 @@
             </table><br>
             
             <label for="pto-time">PTO time used (hours):</label>
-            <input type="number" id="pto-time" name="pto_time" value="0" min="0" max="40" step="1">
+<input type="number" id="pto-time" name="pto_time" value="0" min="0" max="40" step="1" style="width: 100px;">
+
+            <p id="pto-validation-message" style="color: red; display: none;">PTO hours cannot exceed 40.</p>
             <p id="total-time-with-pto">Total Time: <span id="total-time-with-pto-value">0.00</span> hours</p>
             <p>Total Time Worked: <span id="total-time-worked">0.00</span> hours</p>
             <button type="button" onclick="submitTimesheet()">Submit</button>

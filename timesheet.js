@@ -1,25 +1,45 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const baseId = 'appMq9W12jZyCJeXe'; 
-    const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde'; 
-    const tableId = 'tbl2b7fgvkU4GL4jI'; // Extracted table ID
+document.addEventListener("DOMContentLoaded", function () {
+    const baseId = 'appMq9W12jZyCJeXe';
+    const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
+    const tableId = 'tbl2b7fgvkU4GL4jI';
 
-    // Function to populate dates when week ending date changes
+    const ptoHoursElement = document.getElementById('pto-hours');
+    const weekEndingInput = document.getElementById('week-ending');
+    const timeEntryForm = document.getElementById('time-entry-form');
+    const ptoTimeInput = document.getElementById('pto-time');
+    const totalTimeWorkedSpan = document.getElementById('total-time-worked');
+    const ptoValidationMessage = document.getElementById('pto-validation-message');
+    const totalTimeWithPtoSpan = document.getElementById('total-time-with-pto-value');
+    const timesheetTableBody = document.getElementById('timesheet-table-body');
+
+    // Initialize the form
+    weekEndingInput.addEventListener('change', handleWeekEndingChange);
+    timeEntryForm.addEventListener('change', handleFormChange);
+    timeEntryForm.addEventListener('input', handlePtoInput);
+
+    // Function to handle week ending date change
+    async function handleWeekEndingChange() {
+        populateWeekDates();
+        await fetchPtoHours();
+    }
+
+    // Function to populate week dates
     function populateWeekDates() {
-        const weekEndingDate = new Date(document.getElementById('week-ending').value);
+        const weekEndingDate = new Date(weekEndingInput.value);
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
 
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < daysOfWeek.length; i++) {
             const currentDate = new Date(weekEndingDate);
-            currentDate.setDate(weekEndingDate.getDate() - (6 - i)); // Adjust to previous days of the week
+            currentDate.setDate(weekEndingDate.getDate() - (6 - i));
 
-            const formattedDate = currentDate.toISOString().split('T')[0]; // Format as yyyy-mm-dd
-            document.querySelector(`input[name="${daysOfWeek[i]}"]`).value = formattedDate;
+            const formattedDate = currentDate.toISOString().split('T')[0];
+            timeEntryForm.elements[daysOfWeek[i]].value = formattedDate;
         }
     }
 
     // Function to fetch remaining PTO hours
     async function fetchPtoHours() {
-        const weekEnding = document.getElementById('week-ending').value;
+        const weekEnding = weekEndingInput.value;
         if (!weekEnding) return;
 
         const url = `https://api.airtable.com/v0/${baseId}/TimeSheets?filterByFormula={WeekEnding}="${weekEnding}"`;
@@ -34,50 +54,44 @@ document.addEventListener("DOMContentLoaded", function() {
 
             if (data.records.length > 0) {
                 const ptoHours = data.records[0].fields.PTOTime || 0;
-                document.getElementById('pto-hours').textContent = `${ptoHours} hours`;
+                ptoHoursElement.textContent = `${ptoHours} hours`;
             } else {
-                document.getElementById('pto-hours').textContent = '0 hours';
+                ptoHoursElement.textContent = '0 hours';
             }
         } catch (error) {
             console.error('Error fetching PTO hours:', error);
-            document.getElementById('pto-hours').textContent = '0 hours';
+            ptoHoursElement.textContent = '0 hours';
         }
     }
 
-    // Function to update dates and times based on Week Ending Date
-    function updateDatesAndTimes() {
-        const weekEndingDate = document.getElementById('week-ending').value;
-
-        if (weekEndingDate) {
-            const weekEnding = new Date(weekEndingDate);
-            const daysOfWeek = ['date', 'start_time', 'lunch_start', 'lunch_end', 'end_time'];
-
-            for (let i = 1; i <= 7; i++) {
-                const currentDate = new Date(weekEnding);
-                currentDate.setDate(weekEnding.getDate() - (7 - i)); // Adjust to previous days of the week
-
-                const formattedDate = currentDate.toISOString().split('T')[0]; // Format as yyyy-mm-dd
-                document.querySelector(`input[name="date${i}"]`).value = formattedDate;
+    // Function to handle form input change
+    function handleFormChange(event) {
+        const target = event.target;
+        if (target.tagName === 'INPUT') {
+            const name = target.name;
+            if (name.startsWith('date') || name.startsWith('start_time') || name.startsWith('lunch_start') || name.startsWith('lunch_end') || name.startsWith('end_time')) {
+                const dayIndex = name.replace(/[^\d]/g, '');
+                calculateHoursWorked(dayIndex);
+                calculateTotalTimeWorked();
+                updateTimesheetTable();
             }
         }
     }
 
-    // Event listener for Week Ending Date change
-    document.getElementById('week-ending').addEventListener('change', () => {
-        populateWeekDates();
-        fetchPtoHours();
-        updateDatesAndTimes();
-    });
+    // Function to handle PTO input change
+    function handlePtoInput() {
+        calculateTotalTimeWorked();
+    }
 
     // Function to calculate hours worked for a specific day
     function calculateHoursWorked(dayIndex) {
-        const startTime = document.querySelector(`input[name="start_time${dayIndex}"]`).value;
-        const lunchStart = document.querySelector(`input[name="lunch_start${dayIndex}"]`).value;
-        const lunchEnd = document.querySelector(`input[name="lunch_end${dayIndex}"]`).value;
-        const endTime = document.querySelector(`input[name="end_time${dayIndex}"]`).value;
+        const startTime = timeEntryForm.elements[`start_time${dayIndex}`].value;
+        const endTime = timeEntryForm.elements[`end_time${dayIndex}`].value;
+        const lunchStart = timeEntryForm.elements[`lunch_start${dayIndex}`].value;
+        const lunchEnd = timeEntryForm.elements[`lunch_end${dayIndex}`].value;
 
-        // Calculate hours worked logic
         let hoursWorked = 0;
+
         if (startTime && endTime) {
             const start = new Date(`1970-01-01T${startTime}Z`);
             const end = new Date(`1970-01-01T${endTime}Z`);
@@ -93,37 +107,71 @@ document.addEventListener("DOMContentLoaded", function() {
             hoursWorked = workedHours.toFixed(2); // Round to 2 decimal places
         }
 
-        document.querySelector(`#time-entry-body input[name="hours_worked_today${dayIndex}"]`).value = hoursWorked;
-        calculateTotalTimeWorked();
+        timeEntryForm.elements[`hours_worked_today${dayIndex}`].value = hoursWorked;
     }
 
     // Function to calculate total time worked
     function calculateTotalTimeWorked() {
         let totalWorkedHours = 0;
-        const timeEntries = document.querySelectorAll('#time-entry-body tr');
+        const timeEntries = timeEntryForm.querySelectorAll('tbody tr');
 
         timeEntries.forEach(row => {
             const hoursWorked = parseFloat(row.querySelector('input[name^="hours_worked_today"]').value) || 0;
             totalWorkedHours += hoursWorked;
         });
 
-        document.getElementById('total-time-worked').textContent = totalWorkedHours.toFixed(2);
+        totalTimeWorkedSpan.textContent = totalWorkedHours.toFixed(2);
+        calculateTotalTimeWithPto(totalWorkedHours);
     }
 
+    // Function to calculate total time worked with PTO
+    function calculateTotalTimeWithPto(totalWorkedHours) {
+        const ptoHours = parseFloat(ptoTimeInput.value) || 0;
+        const totalTimeWithPto = totalWorkedHours + ptoHours;
+        totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+    }
+
+    // Function to update timesheet table with calculated hours
+    function updateTimesheetTable() {
+        const rows = timesheetTableBody.querySelectorAll('tr');
+
+        rows.forEach((row, index) => {
+            const dayIndex = index + 1;
+            const hoursWorked = timeEntryForm.elements[`hours_worked_today${dayIndex}`].value;
+            row.querySelector('.hours-worked').textContent = hoursWorked || '0';
+        });
+    }
+
+    // Function to validate PTO input
+    ptoTimeInput.addEventListener('input', function () {
+        const ptoValue = parseFloat(ptoTimeInput.value);
+        if (ptoValue > 40) {
+            ptoValidationMessage.style.display = 'block';
+            ptoTimeInput.value = 40;
+        } else {
+            ptoValidationMessage.style.display = 'none';
+        }
+
+        calculateTotalTimeWorked();
+    });
+
     // Function to submit timesheet
+    timeEntryForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        await submitTimesheet();
+    });
+
     async function submitTimesheet() {
-        const weekEndingDate = document.getElementById('week-ending').value;
-        const timesheetData = {
-            records: []
-        };
+        const weekEndingDate = weekEndingInput.value;
+        const timesheetData = { records: [] };
 
         for (let i = 1; i <= 7; i++) {
-            const date = document.querySelector(`input[name="date${i}"]`).value;
-            const startTime = document.querySelector(`input[name="start_time${i}"]`).value;
-            const lunchStart = document.querySelector(`input[name="lunch_start${i}"]`).value;
-            const lunchEnd = document.querySelector(`input[name="lunch_end${i}"]`).value;
-            const endTime = document.querySelector(`input[name="end_time${i}"]`).value;
-            const hoursWorked = parseFloat(document.querySelector(`#time-entry-body input[name="hours_worked_today${i}"]`).value) || 0;
+            const date = timeEntryForm.elements[`date${i}`].value;
+            const startTime = timeEntryForm.elements[`start_time${i}`].value;
+            const lunchStart = timeEntryForm.elements[`lunch_start${i}`].value;
+            const lunchEnd = timeEntryForm.elements[`lunch_end${i}`].value;
+            const endTime = timeEntryForm.elements[`end_time${i}`].value;
+            const hoursWorked = parseFloat(timeEntryForm.elements[`hours_worked_today${i}`].value) || 0;
 
             timesheetData.records.push({
                 fields: {
@@ -150,40 +198,34 @@ document.addEventListener("DOMContentLoaded", function() {
                 },
                 body: JSON.stringify(timesheetData)
             });
-            const data = await response.json();
-            console.log('Timesheet submitted successfully:', data);
 
-            // Optional: Show success message or redirect to another page
+            if (!response.ok) {
+                throw new Error('Failed to submit timesheet');
+            }
+
+            const responseData = await response.json();
+            console.log('Timesheet submitted successfully:', responseData);
             alert('Timesheet submitted successfully!');
         } catch (error) {
             console.error('Error submitting timesheet:', error);
-            // Optional: Show error message
             alert('Error submitting timesheet. Please try again later.');
         }
     }
-});
 
-// Get references to DOM elements
-const ptoTimeInput = document.getElementById('pto-time');
-const totalTimeWorkedSpan = document.getElementById('total-time-worked');
+    // Function to handle week ending date change
+    weekEndingInput.addEventListener('change', handleWeekEndingChange);
 
-// Function to calculate and update total time worked
-function calculateTotalTimeWorked() {
-    // Calculate total time worked excluding PTO
-    let totalHoursWorked = 0;
+    // Function to handle initial setup
+    handleWeekEndingChange();
 
-    // Loop through all time entry rows
-    for (let i = 1; i <= 7; i++) { // Assuming up to 7 days based on your form structure
-        const hoursWorkedTodaySpan = document.getElementById(`hours-worked-today${i}`);
-        const hoursWorkedToday = parseFloat(hoursWorkedTodaySpan.textContent);
-        totalHoursWorked += hoursWorkedToday;
+    function handleWeekEndingChange() {
+        const selectedDate = new Date(weekEndingInput.value);
+        const dayOfWeek = selectedDate.getDay(); // 0 (Sunday) to 6 (Saturday), 3 is Wednesday
+
+        // Check if selected date is not Wednesday, disable the input
+        if (dayOfWeek !== 2) {
+            alert('Please select a Wednesday for Week Ending.');
+            weekEndingInput.value = ''; // Reset the value
+        }
     }
-
-    // Update total time worked in the UI
-    totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2); // Round to 2 decimal places
-}
-
-// Event listener for PTO time input changes
-ptoTimeInput.addEventListener('input', function() {
-    calculateTotalTimeWorked();
 });
