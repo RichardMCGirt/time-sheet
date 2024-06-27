@@ -12,15 +12,26 @@ document.addEventListener("DOMContentLoaded", function () {
     const totalTimeWithPtoSpan = document.getElementById('total-time-with-pto-value');
     const timesheetTableBody = document.getElementById('timesheet-table-body');
 
-    // Initialize the form
+    // Event listeners
     weekEndingInput.addEventListener('change', handleWeekEndingChange);
     timeEntryForm.addEventListener('change', handleFormChange);
     timeEntryForm.addEventListener('input', handlePtoInput);
+    ptoTimeInput.addEventListener('input', handlePtoInput);
+    timeEntryForm.addEventListener('submit', handleSubmit);
 
     // Function to handle week ending date change
-    async function handleWeekEndingChange() {
-        populateWeekDates();
-        await fetchPtoHours();
+    function handleWeekEndingChange() {
+        const selectedDate = new Date(weekEndingInput.value);
+        const dayOfWeek = selectedDate.getDay(); // 0 (Sunday) to 6 (Saturday), 3 is Wednesday
+
+        // Check if selected date is not Wednesday, disable the input
+        if (dayOfWeek !== 2) {
+            alert('Please select a Wednesday for Week Ending.');
+            weekEndingInput.value = ''; // Reset the value
+        } else {
+            populateWeekDates();
+            fetchPtoHours();
+        }
     }
 
     // Function to populate week dates
@@ -142,25 +153,13 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Function to validate PTO input
-    ptoTimeInput.addEventListener('input', function () {
-        const ptoValue = parseFloat(ptoTimeInput.value);
-        if (ptoValue > 40) {
-            ptoValidationMessage.style.display = 'block';
-            ptoTimeInput.value = 40;
-        } else {
-            ptoValidationMessage.style.display = 'none';
-        }
-
-        calculateTotalTimeWorked();
-    });
-
-    // Function to submit timesheet
-    timeEntryForm.addEventListener('submit', async function (event) {
+    // Function to handle form submission
+    async function handleSubmit(event) {
         event.preventDefault();
         await submitTimesheet();
-    });
+    }
 
+    // Function to submit timesheet data
     async function submitTimesheet() {
         const weekEndingDate = weekEndingInput.value;
         const timesheetData = { records: [] };
@@ -209,23 +208,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error('Error submitting timesheet:', error);
             alert('Error submitting timesheet. Please try again later.');
-        }
-    }
-
-    // Function to handle week ending date change
-    weekEndingInput.addEventListener('change', handleWeekEndingChange);
-
-    // Function to handle initial setup
-    handleWeekEndingChange();
-
-    function handleWeekEndingChange() {
-        const selectedDate = new Date(weekEndingInput.value);
-        const dayOfWeek = selectedDate.getDay(); // 0 (Sunday) to 6 (Saturday), 3 is Wednesday
-
-        // Check if selected date is not Wednesday, disable the input
-        if (dayOfWeek !== 2) {
-            alert('Please select a Wednesday for Week Ending.');
-            weekEndingInput.value = ''; // Reset the value
         }
     }
 });
