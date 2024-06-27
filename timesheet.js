@@ -58,25 +58,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 const formattedDate = currentDate.toISOString().split('T')[0]; // Format as yyyy-mm-dd
                 document.querySelector(`input[name="date${i}"]`).value = formattedDate;
-
-                // Automatically populate AM and PM based on Start Time and End Time
-                document.querySelector(`input[name="start_time${i}"]`).addEventListener('input', () => {
-                    const startTimeValue = document.querySelector(`input[name="start_time${i}"]`).value;
-                    if (startTimeValue) {
-                        const startTimeHour = parseInt(startTimeValue.split(':')[0], 10);
-                        const ampm = (startTimeHour >= 12) ? 'PM' : 'AM';
-                        document.querySelector(`input[name="am_pm${i}"]`).value = ampm;
-                    }
-                });
-
-                document.querySelector(`input[name="end_time${i}"]`).addEventListener('input', () => {
-                    const endTimeValue = document.querySelector(`input[name="end_time${i}"]`).value;
-                    if (endTimeValue) {
-                        const endTimeHour = parseInt(endTimeValue.split(':')[0], 10);
-                        const ampm = (endTimeHour >= 12) ? 'PM' : 'AM';
-                        document.querySelector(`input[name="am_pm${i}"]`).value = ampm;
-                    }
-                });
             }
         }
     }
@@ -131,7 +112,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Function to submit timesheet
     async function submitTimesheet() {
-        const user = JSON.parse(sessionStorage.getItem('user'));
         const weekEndingDate = document.getElementById('week-ending').value;
         const timesheetData = {
             records: []
@@ -147,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             timesheetData.records.push({
                 fields: {
-                    user_email: user.email,
+                    user_email: 'user@example.com', // Replace with actual user email or retrieve from session
                     date,
                     start_time: startTime,
                     lunch_start: lunchStart,
@@ -165,30 +145,45 @@ document.addEventListener("DOMContentLoaded", function() {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${apiKey}`,
+                    'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(timesheetData)
             });
+            const data = await response.json();
+            console.log('Timesheet submitted successfully:', data);
 
-            if (response.ok) {
-                alert('Timesheet submitted successfully');
-                document.getElementById('time-entry-form').reset(); // Reset form after successful submission
-                document.getElementById('total-time-worked').textContent = '0.00'; // Reset total time worked
-                populateWeekDates(); // Refresh dates after submission
-                fetchPtoHours(); // Refresh PTO hours after submission
-            } else {
-                console.error('Failed to submit timesheet');
-                alert('Failed to submit timesheet');
-            }
+            // Optional: Show success message or redirect to another page
+            alert('Timesheet submitted successfully!');
         } catch (error) {
             console.error('Error submitting timesheet:', error);
-            alert('Failed to submit timesheet');
+            // Optional: Show error message
+            alert('Error submitting timesheet. Please try again later.');
         }
     }
+});
 
-    // Initial population of dates and PTO hours when the page loads
-    populateWeekDates();
-    fetchPtoHours();
-    updateDatesAndTimes();
+// Get references to DOM elements
+const ptoTimeInput = document.getElementById('pto-time');
+const totalTimeWorkedSpan = document.getElementById('total-time-worked');
+
+// Function to calculate and update total time worked
+function calculateTotalTimeWorked() {
+    // Calculate total time worked excluding PTO
+    let totalHoursWorked = 0;
+
+    // Loop through all time entry rows
+    for (let i = 1; i <= 7; i++) { // Assuming up to 7 days based on your form structure
+        const hoursWorkedTodaySpan = document.getElementById(`hours-worked-today${i}`);
+        const hoursWorkedToday = parseFloat(hoursWorkedTodaySpan.textContent);
+        totalHoursWorked += hoursWorkedToday;
+    }
+
+    // Update total time worked in the UI
+    totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2); // Round to 2 decimal places
+}
+
+// Event listener for PTO time input changes
+ptoTimeInput.addEventListener('input', function() {
+    calculateTotalTimeWorked();
 });

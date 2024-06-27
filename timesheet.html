@@ -1,17 +1,12 @@
-<!-- index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Tracking Software</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="style.css"> <!-- Link to external CSS file -->
 </head>
 <body>
-<!-- Rest of your HTML content remains unchanged -->
-
-
 <!-- Header -->
 <header>
     <nav>
@@ -55,72 +50,76 @@
                     <!-- Rows for time entries -->
                     <tr>
                         <td><input type="date" name="date1" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="start_time1" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_start1" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_end1" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="end_time1" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time1" value="00:00" step="1800" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start1" value="00:00" step="1800" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end1" value="00:00" step="1800" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time1" value="00:00" step="1800" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
                         <td><span id="hours-worked-today1">0</span></td>
                     </tr>
                     <tr>
                         <td><input type="date" name="date2" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="start_time2" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_start2" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_end2" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="end_time2" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time2" value="00:00" step="1800" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start2" value="00:00" step="1800" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end2" value="00:00" step="1800" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time2" value="00:00" step="1800" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
                         <td><span id="hours-worked-today2">0</span></td>
                     </tr>
                     <tr>
                         <td><input type="date" name="date3" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="start_time3" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_start3" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_end3" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="end_time3" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time3" value="00:00" step="1800" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start3" value="00:00" step="1800" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end3" value="00:00" step="1800" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time3" value="00:00" step="1800" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
                         <td><span id="hours-worked-today3">0</span></td>
                     </tr>
                     <tr>
                         <td><input type="date" name="date4" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="start_time4" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_start4" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_end4" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="end_time4" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time4" value="00:00" step="1800" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start4" value="00:00" step="1800" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end4" value="00:00" step="1800" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time4" value="00:00" step="1800" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
                         <td><span id="hours-worked-today4">0</span></td>
                     </tr>
                     <tr>
                         <td><input type="date" name="date5" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="start_time5" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_start5" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_end5" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="end_time5" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time5" value="00:00" step="1800" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start5" value="00:00" step="1800" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end5" value="00:00" step="1800" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time5" value="00:00" step="1800" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
                         <td><span id="hours-worked-today5">0</span></td>
                     </tr>
                     <tr>
                         <td><input type="date" name="date6" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="start_time6" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_start6" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_end6" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="end_time6" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time6" value="00:00" step="1800" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start6" value="00:00" step="1800" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end6" value="00:00" step="1800" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time6" value="00:00" step="1800" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
                         <td><span id="hours-worked-today6">0</span></td>
                     </tr>
                     <tr>
                         <td><input type="date" name="date7" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="start_time7" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_start7" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="lunch_end7" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
-                        <td><input type="time" name="end_time7" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time7" value="00:00" step="1800" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start7" value="00:00" step="1800" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end7" value="00:00" step="1800" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time7" value="00:00" step="1800" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
                         <td><span id="hours-worked-today7">0</span></td>
                     </tr>
                     <!-- Repeat rows for other days -->
                 </tbody>
             </table><br>
             
-            
+            <label for="pto-time">PTO time used (hours):</label>
+            <input type="number" id="pto-time" name="pto_time" value="0" min="0" step="1">
+            <p>Total Time Worked: <span id="total-time-worked">0.00</span> hours</p>
             <button type="button" onclick="submitTimesheet()">Submit</button>
         </form>
         <hr>
-        <p>Total Time Worked (excluding PTO): <span id="total-time-worked">0.00</span> hours</p>
+    
     </section>
 
 </main>
 
+<!-- Script to fetch PTO hours and initialize time entries -->
+<script src="timesheet.js"></script> <!-- Link to external JavaScript file -->
 </body>
 </html>
