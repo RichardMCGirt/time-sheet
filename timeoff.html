@@ -1,16 +1,5 @@
 <!DOCTYPE html>
 <html>
-    <header>
-        <nav>
-            <ul>
-                <li><a href="timesheet.html">Dashboard</a></li>
-                <li><a href="timesheet.html#time-entry">Time Entry</a></li>
-                <li><a href="timesheet.html#reports">Reports</a></li>
-                <li><a href="timeoff.html">Timeoff</a></li>
-                <li><a href="login.html">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
 <head>
     <title>Dashboard</title>
     <style>
@@ -18,11 +7,31 @@
             font-family: Arial, sans-serif;
             padding: 20px;
         }
-        h1 {
+        nav ul {
+            list-style-type: none;
+            padding: 0;
             text-align: center;
         }
+        nav ul li {
+            display: inline;
+            margin-right: 10px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+        }
+        nav ul li a:hover {
+            background-color: #0056b3;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
         form {
-            margin-top: 10px;
+            margin-top: 20px;
         }
         label {
             display: block;
@@ -33,56 +42,61 @@
             align-items: center;
             margin-bottom: 10px;
         }
-        .form-row label, .form-row input {
+        .form-row label, .form-row input, .form-row button {
             margin-right: 10px;
         }
         input[type="number"] {
-            width: 60px; /* Adjust width as needed */
+            width: 60px;
         }
         button {
-            padding: 10px;
+            padding: 10px 20px;
             background-color: #007bff;
             color: white;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
-            margin-top: 10px;
         }
-        .hidden {
-            display: none;
+        button:hover {
+            background-color: #0056b3;
         }
         .delete-button {
-            margin-left: 10px;
-            padding: 5px;
             background-color: #dc3545;
-            color: white;
-            border: none;
-            cursor: pointer;
+        }
+        .delete-button:hover {
+            background-color: #c82333;
         }
     </style>
 </head>
 <body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="timesheet.html">Dashboard</a></li>
+                <li><a href="timesheet.html#time-entry">Time Entry</a></li>
+                <li><a href="timesheet.html#reports">TimeSheet</a></li>
+                <li><a href="timeoff.html">Timeoff</a></li>
+                <li><a href="login.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
     <h1>Welcome, <span id="user-name">{{ user.name }}</span></h1>
     <p>Email: <span id="user-email">{{ user.email }}</span></p>
-    <p id="available-pto">Available Time Off: <span id="pto-balance">Loading...</span></p> <!-- Display initial PTO -->
+    <p id="available-pto">Available Time Off: <span id="pto-balance">Loading...</span></p>
 
-    <!-- Display current PTO and subtract in real-time -->
-    <h2 style="margin-top: 30px;">Request Time Off</h2>
+    <h2>Request Time Off</h2>
     <form id="time-off-form">
-        <!-- Container for dynamically added rows -->
         <div id="form-rows-container">
-            <!-- Required initial row -->
             <div class="form-row" id="first-row">
-                <label for="start_date">Start Date:</label>
-                <input type="date" name="start_date[]" required>
-                <label for="end_date">End Date:</label>
-                <input type="date" name="end_date[]" required>
+                <label for="start-date">Start Date:</label>
+                <input type="date" id="start-date" name="start_date[]" required>
+                <label for="end-date">End Date:</label>
+                <input type="date" id="end-date" name="end_date[]" required>
                 <label for="hours">Hours per day:</label>
-                <input type="number" name="hours[]" min="0" max="24" step="1" required>
+                <input type="number" id="hours-per-day" name="hours[]" min="0" max="24" step="1" required>
             </div>
         </div>
-
-        <button type="button" id="add-more-fields" style="margin-top: 10px;">Add More</button>
-        <button type="submit" style="margin-top: 10px;">Request Time Off</button>
+        <button type="button" id="add-more-fields">Add More</button>
+        <button type="submit">Request Time Off</button>
     </form>
 
     <script>
@@ -95,16 +109,15 @@
 
             fetchPTO(userEmail);
 
-            // Event listener for adding more fields
             let fieldCounter = 0;
             const addMoreButton = document.getElementById('add-more-fields');
             addMoreButton.addEventListener('click', function() {
-                if (fieldCounter < 10) { // Limit to 10 additional rows
+                if (fieldCounter < 10) {
                     const newField = `
                         <div class="form-row">
-                            <label for="start_date">Start Date:</label>
+                            <label for="start-date">Start Date:</label>
                             <input type="date" name="start_date[]">
-                            <label for="end_date">End Date:</label>
+                            <label for="end-date">End Date:</label>
                             <input type="date" name="end_date[]">
                             <label for="hours">Hours per day:</label>
                             <input type="number" name="hours[]" min="0" max="24" step="1">
@@ -113,53 +126,46 @@
                     `;
                     document.getElementById('form-rows-container').insertAdjacentHTML('beforeend', newField);
                     fieldCounter++;
-
                     if (fieldCounter === 10) {
                         addMoreButton.style.display = 'none';
                     }
                 }
             });
 
-            // Event listener for form submission
             document.getElementById('time-off-form').addEventListener('submit', function(event) {
                 event.preventDefault();
                 const formData = new FormData(this);
 
-                // Calculate total hours requested
                 let totalHoursRequested = 0;
                 formData.getAll('hours[]').forEach(hours => {
-                    if (hours !== '') { // Only count filled rows
+                    if (hours !== '') {
                         totalHoursRequested += parseInt(hours);
                     }
                 });
 
-                // Calculate new available PTO balance (subtract hours requested)
-                const currentPTO = parseFloat(document.getElementById('pto-balance').textContent); // Assuming it's a number
+                const currentPTO = parseFloat(document.getElementById('pto-balance').textContent);
                 const newPTO = currentPTO - totalHoursRequested;
 
-                // Update UI to show new PTO balance (simulate real-time subtract)
                 updateAvailablePTO(newPTO);
 
-                // Simulate fetch request (replace with actual fetch call to server)
                 setTimeout(() => {
                     alert('Time off requested successfully');
-                    window.location.reload(); // Replace with appropriate action
-                }, 1000); // Simulated delay
+                    window.location.reload();
+                }, 1000);
 
-                // Clear form fields after submission (optional)
                 document.querySelectorAll('input[type="date"], input[type="number"]').forEach(input => {
                     input.value = '';
                 });
-                document.getElementById('form-rows-container').innerHTML = ''; // Reset added rows
-                fieldCounter = 0; // Reset field counter
-                addMoreButton.style.display = 'block'; // Show "Add More" button again
+                document.getElementById('form-rows-container').innerHTML = '';
+                fieldCounter = 0;
+                addMoreButton.style.display = 'block';
             });
         });
 
         function fetchPTO(email) {
-            const apiKey = 'YOUR_AIRTABLE_API_KEY';
-            const baseId = 'YOUR_AIRTABLE_BASE_ID';
-            const tableName = 'YOUR_AIRTABLE_TABLE_NAME';
+            const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
+            const baseId = 'appMq9W12jZyCJeXe'; // Extracted base ID
+            const tableName = 'tblRqUgMsd2QSd5ka'; // Extracted table ID
 
             fetch(`https://api.airtable.com/v0/${baseId}/${tableName}?filterByFormula=Email="${email}"`, {
                 headers: {
@@ -168,7 +174,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                const ptoBalance = data.records.length ? data.records[0].fields.AvailableTimeOff : 0;
+                const ptoBalance = data.records.length ? data.records[0].fields['Available Time Off'] : 0;
                 document.getElementById('pto-balance').textContent = ptoBalance;
             })
             .catch(error => {
@@ -178,7 +184,7 @@
         }
 
         function updateAvailablePTO(newBalance) {
-            document.getElementById('available-pto').textContent = `Available Time Off: ${newBalance}`;
+            document.getElementById('pto-balance').textContent = newBalance;
         }
 
         function deleteRow(button) {
@@ -186,7 +192,7 @@
             if (!row.id || row.id !== 'first-row') {
                 row.parentNode.removeChild(row);
                 fieldCounter--;
-                document.getElementById('add-more-fields').style.display = 'block'; // Ensure "Add More" button is visible if deleted from max limit
+                document.getElementById('add-more-fields').style.display = 'block';
             }
         }
     </script>

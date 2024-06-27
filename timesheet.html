@@ -1,16 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-    <header>
-        <nav>
-            <ul>
-                <li><a href="timesheet.html">Dashboard</a></li>
-                <li><a href="timesheet.html#time-entry">Time Entry</a></li>
-                <li><a href="timesheet.html#reports">Reports</a></li>
-                <li><a href="timeoff.html">Timeoff</a></li>
-                <li><a href="login.html">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -116,35 +105,52 @@
         section h2 {
             margin-bottom: 10px;
         }
+
+        /* PTO section */
+        #pto-section {
+            background-color: #e0e0e0;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        #pto-section h3 {
+            margin-bottom: 5px;
+        }
+
+        #pto-hours {
+            font-size: 18px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
+<!-- Header -->
+<header>
+    <nav>
+        <ul>
+            <li><a href="timesheet.html">Dashboard</a></li>
+            <li><a href="timesheet.html#time-entry">Time Entry</a></li>
+            <li><a href="timesheet.html#reports">Reports</a></li>
+            <li><a href="timeoff.html">Time Off</a></li>
+            <li><a href="login.html">Logout</a></li>
+        </ul>
+    </nav>
+</header>
 
 <!-- Main Content -->
 <main>
-    <!-- Dashboard -->
-    <section id="dashboard">
-        <h2>Dashboard</h2>
-        <p>Welcome, <span id="username">User</span>!</p>
-        <!-- Dashboard content goes here -->
-    </section>
 
-    <!-- PTO -->
-    <section id="pto">
-        <h2>PTO</h2>
-        <form id="pto-form">
-            <label for="pto-hours">PTO Hours:</label>
-            <input type="number" id="pto-hours" name="pto_hours" min="0" max="200"><br><br>
-            <button type="button" onclick="savePtoHours()">Save PTO Hours</button>
-        </form>
+    <!-- PTO Section -->
+    <section id="pto-section">
+        <h3>Remaining PTO Hours:</h3>
+        <div id="pto-hours">Loading...</div>
     </section>
-    <hr>
 
     <!-- Time Entry -->
     <section id="time-entry">
         <h2>Time Entry</h2>
-        <form id="time-entry-form" action="submit_time.php" method="post" oninput="updateTimeWorked()">
+        <form id="time-entry-form">
             <label for="week-ending">Week Ending:</label>
             <input type="date" id="week-ending" name="week_ending" required onchange="populateWeekDates(); fetchPtoHours();"><br><br>
 
@@ -156,156 +162,230 @@
                         <th>Lunch Start</th>
                         <th>Lunch End</th>
                         <th>End Time</th>
+                        <th>Hours Worked</th>
                     </tr>
                 </thead>
                 <tbody id="time-entry-body">
                     <!-- Rows for time entries -->
                     <tr>
-                        <td><input type="date" name="date1"></td>
-                        <td><input type="time" name="start_time1"></td>
-                        <td><input type="time" name="lunch_start1"></td>
-                        <td><input type="time" name="lunch_end1"></td>
-                        <td><input type="time" name="end_time1"></td>
+                        <td><input type="date" name="date1" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time1" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start1" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end1" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time1" onchange="calculateHoursWorked(1); calculateTotalTimeWorked()"></td>
+                        <td><span id="hours-worked-today1">0</span></td>
                     </tr>
                     <tr>
-                        <td><input type="date" name="date2"></td>
-                        <td><input type="time" name="start_time2"></td>
-                        <td><input type="time" name="lunch_start2"></td>
-                        <td><input type="time" name="lunch_end2"></td>
-                        <td><input type="time" name="end_time2"></td>
+                        <td><input type="date" name="date2" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time2" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start2" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end2" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time2" onchange="calculateHoursWorked(2); calculateTotalTimeWorked()"></td>
+                        <td><span id="hours-worked-today2">0</span></td>
                     </tr>
                     <tr>
-                        <td><input type="date" name="date3"></td>
-                        <td><input type="time" name="start_time3"></td>
-                        <td><input type="time" name="lunch_start3"></td>
-                        <td><input type="time" name="lunch_end3"></td>
-                        <td><input type="time" name="end_time3"></td>
+                        <td><input type="date" name="date3" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time3" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start3" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end3" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time3" onchange="calculateHoursWorked(3); calculateTotalTimeWorked()"></td>
+                        <td><span id="hours-worked-today3">0</span></td>
                     </tr>
                     <tr>
-                        <td><input type="date" name="date4"></td>
-                        <td><input type="time" name="start_time4"></td>
-                        <td><input type="time" name="lunch_start4"></td>
-                        <td><input type="time" name="lunch_end4"></td>
-                        <td><input type="time" name="end_time4"></td>
+                        <td><input type="date" name="date4" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time4" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start4" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end4" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time4" onchange="calculateHoursWorked(4); calculateTotalTimeWorked()"></td>
+                        <td><span id="hours-worked-today4">0</span></td>
                     </tr>
                     <tr>
-                        <td><input type="date" name="date5"></td>
-                        <td><input type="time" name="start_time5"></td>
-                        <td><input type="time" name="lunch_start5"></td>
-                        <td><input type="time" name="lunch_end5"></td>
-                        <td><input type="time" name="end_time5"></td>
+                        <td><input type="date" name="date5" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time5" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start5" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end5" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time5" onchange="calculateHoursWorked(5); calculateTotalTimeWorked()"></td>
+                        <td><span id="hours-worked-today5">0</span></td>
                     </tr>
                     <tr>
-                        <td><input type="date" name="date6"></td>
-                        <td><input type="time" name="start_time6"></td>
-                        <td><input type="time" name="lunch_start6"></td>
-                        <td><input type="time" name="lunch_end6"></td>
-                        <td><input type="time" name="end_time6"></td>
+                        <td><input type="date" name="date6" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time6" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start6" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end6" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time6" onchange="calculateHoursWorked(6); calculateTotalTimeWorked()"></td>
+                        <td><span id="hours-worked-today6">0</span></td>
                     </tr>
                     <tr>
-                        <td><input type="date" name="date7"></td>
-                        <td><input type="time" name="start_time7"></td>
-                        <td><input type="time" name="lunch_start7"></td>
-                        <td><input type="time" name="lunch_end7"></td>
-                        <td><input type="time" name="end_time7"></td>
+                        <td><input type="date" name="date7" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="start_time7" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_start7" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="lunch_end7" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
+                        <td><input type="time" name="end_time7" onchange="calculateHoursWorked(7); calculateTotalTimeWorked()"></td>
+                        <td><span id="hours-worked-today7">0</span></td>
                     </tr>
+                    <!-- Repeat rows for other days -->
                 </tbody>
             </table><br>
             
-            <button type="submit">Submit</button>
+            <p>Total Time Worked (excluding PTO): <span id="total-time-worked">0</span> hours</p>
+            <button type="button" onclick="submitTimesheet()">Submit</button>
         </form>
         <hr>
-        <p>Total Time Worked (excluding PTO): <span id="total-time-worked">0</span> hours</p>
+        <p>Total Time Worked (excluding PTO): <span id="total-time-worked">0.00</span> hours</p>
     </section>
 
-    <!-- Reports -->
-    <section id="reports">
-        <h2>Reports</h2>
-        <!-- Report generation and display -->
-    </section>
-
-    <!-- Settings -->
-    <section id="settings">
-        <h2>Settings</h2>
-        <!-- Settings content -->
-    </section>
 </main>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const username = sessionStorage.getItem('username') || 'User';
-        document.getElementById('username').textContent = username;
-    });
+        const apiKey = 'YOUR_AIRTABLE_API_KEY';
+        const baseId = 'YOUR_AIRTABLE_BASE_ID';
 
-    function populateWeekDates() {
-        const weekEnding = document.getElementById('week-ending').value;
-        if (!weekEnding) return;
+        // Function to populate dates when week ending date changes
+        function populateWeekDates() {
+            const weekEndingDate = document.getElementById('week-ending').valueAsDate;
+            const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
 
-        const weekEndingDate = new Date(weekEnding);
-        const weekDays = Array.from(document.querySelectorAll('#time-entry-body tr td input[type="date"]'));
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(weekEndingDate);
+                currentDate.setDate(weekEndingDate.getDate() - (6 - i)); // Adjust to previous days of the week
 
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(weekEndingDate);
-            date.setDate(date.getDate() - (6 - i));
-            weekDays[i].value = date.toISOString().split('T')[0];
-        }
-    }
-
-    async function fetchPtoHours() {
-        const weekEnding = document.getElementById('week-ending').value;
-        if (!weekEnding) return;
-
-        const apiToken = 'patdDuaFt5dF0uNEF.b7b595e264bdbfe655efbcbf02fbfcbdf562c4b0807fe5464305b4feb48d07f2';
-        const baseId = 'Corporate';
-        const tableId = 'All Active Employees';
-        const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={WeekEnding}="${weekEnding}"`;
-
-        try {
-            const response = await fetch(url, {
-                headers: {
-                    Authorization: `Bearer ${apiToken}`
-                }
-            });
-            const data = await response.json();
-            if (data.records && data.records.length > 0) {
-                const ptoHours = data.records[0].fields.PTOHours;
-                document.getElementById('pto-hours').value = ptoHours;
-            } else {
-                document.getElementById('pto-hours').value = 0;
+                const formattedDate = currentDate.toISOString().split('T')[0]; // Format as yyyy-mm-dd
+                document.querySelector(`input[name="${daysOfWeek[i]}"]`).value = formattedDate;
             }
-            updateTimeWorked();
-        } catch (error) {
-            console.error('Error fetching PTO hours:', error);
-            document.getElementById('pto-hours').value = 0;
         }
-    }
 
-    function updateTimeWorked() {
-        const timeEntries = document.querySelectorAll('#time-entry-body tr');
-        let totalWorkedHours = 0;
+        // Function to fetch remaining PTO hours
+        async function fetchPtoHours() {
+            const weekEnding = document.getElementById('week-ending').value;
+            if (!weekEnding) return;
 
-        timeEntries.forEach(row => {
-            const startTime = row.querySelector('input[name^="start_time"]').value;
-            const endTime = row.querySelector('input[name^="end_time"]').value;
+            const url = `https://api.airtable.com/v0/${baseId}/TimeSheets?filterByFormula={WeekEnding}="${weekEnding}"`;
 
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`
+                    }
+                });
+                const data = await response.json();
+
+                if (data.records.length > 0) {
+                    const ptoHours = data.records[0].fields.PTOTime || 0;
+                    document.getElementById('pto-hours').textContent = `${ptoHours} hours`;
+                } else {
+                    document.getElementById('pto-hours').textContent = '0 hours';
+                }
+            } catch (error) {
+                console.error('Error fetching PTO hours:', error);
+                document.getElementById('pto-hours').textContent = '0 hours';
+            }
+        }
+
+        // Function to calculate hours worked for a specific day
+        function calculateHoursWorked(dayIndex) {
+            const startTime = document.querySelector(`input[name="start_time${dayIndex}"]`).value;
+            const lunchStart = document.querySelector(`input[name="lunch_start${dayIndex}"]`).value;
+            const lunchEnd = document.querySelector(`input[name="lunch_end${dayIndex}"]`).value;
+            const endTime = document.querySelector(`input[name="end_time${dayIndex}"]`).value;
+
+            // Calculate hours worked logic
+            // Example calculation (replace with your logic)
+            let hoursWorked = 0;
             if (startTime && endTime) {
                 const start = new Date(`1970-01-01T${startTime}Z`);
                 const end = new Date(`1970-01-01T${endTime}Z`);
-                let workedHours = (end - start) / (1000 * 60 * 60);
+                let workedHours = (end - start) / (1000 * 60 * 60); // Difference in hours
 
-                totalWorkedHours += workedHours;
+                if (lunchStart && lunchEnd) {
+                    const lunchStartObj = new Date(`1970-01-01T${lunchStart}Z`);
+                    const lunchEndObj = new Date(`1970-01-01T${lunchEnd}Z`);
+                    const lunchHours = (lunchEndObj - lunchStartObj) / (1000 * 60 * 60); // Lunch break hours
+                    workedHours -= lunchHours; // Subtract lunch break hours
+                }
+
+                hoursWorked = workedHours.toFixed(2); // Round to 2 decimal places
             }
-        });
 
-        document.getElementById('total-time-worked').textContent = totalWorkedHours.toFixed(2);
-    }
+            document.querySelector(`#time-entry-body input[name="hours_worked_today${dayIndex}"]`).value = hoursWorked;
+            calculateTotalTimeWorked();
+        }
 
-    function savePtoHours() {
-        const ptoHours = document.getElementById('pto-hours').value;
-        // Example: Save PTO hours (replace with your implementation)
-        // This function should handle the saving of PTO hours to your backend or data source
-        console.log('Saving PTO hours:', ptoHours);
-    }
+        // Function to calculate total time worked
+        function calculateTotalTimeWorked() {
+            let totalWorkedHours = 0;
+            const timeEntries = document.querySelectorAll('#time-entry-body tr');
+
+            timeEntries.forEach(row => {
+                const hoursWorked = parseFloat(row.querySelector('input[name^="hours_worked_today"]').value) || 0;
+                totalWorkedHours += hoursWorked;
+            });
+
+            document.getElementById('total-time-worked').textContent = totalWorkedHours.toFixed(2);
+        }
+
+        // Function to submit timesheet
+        async function submitTimesheet() {
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            const weekEndingDate = document.getElementById('week-ending').value;
+            const timesheetData = {
+                records: []
+            };
+
+            for (let i = 1; i <= 7; i++) {
+                const date = document.querySelector(`input[name="date${i}"]`).value;
+                const startTime = document.querySelector(`input[name="start_time${i}"]`).value;
+                const lunchStart = document.querySelector(`input[name="lunch_start${i}"]`).value;
+                const lunchEnd = document.querySelector(`input[name="lunch_end${i}"]`).value;
+                const endTime = document.querySelector(`input[name="end_time${i}"]`).value;
+                const hoursWorked = parseFloat(document.querySelector(`input[name="hours_worked_today${i}"]`).value) || 0;
+
+                timesheetData.records.push({
+                    fields: {
+                        user_email: user.email,
+                        date,
+                        start_time: startTime,
+                        lunch_start: lunchStart,
+                        lunch_end: lunchEnd,
+                        end_time: endTime,
+                        hours_worked_today: hoursWorked,
+                        WeekEnding: weekEndingDate
+                    }
+                });
+            }
+
+            const url = `https://api.airtable.com/v0/${baseId}/TimeSheets`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(timesheetData)
+                });
+
+                if (response.ok) {
+                    alert('Timesheet submitted successfully');
+                    document.getElementById('time-entry-form').reset(); // Reset form after successful submission
+                    document.getElementById('total-time-worked').textContent = '0.00'; // Reset total time worked
+                    populateWeekDates(); // Refresh dates after submission
+                    fetchPtoHours(); // Refresh PTO hours after submission
+                } else {
+                    console.error('Failed to submit timesheet');
+                    alert('Failed to submit timesheet');
+                }
+            } catch (error) {
+                console.error('Error submitting timesheet:', error);
+                alert('Failed to submit timesheet');
+            }
+        }
+
+        // Initial population of dates and PTO hours when the page loads
+        populateWeekDates();
+        fetchPtoHours();
+    });
 </script>
 
 </body>
