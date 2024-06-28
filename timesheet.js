@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const baseId = 'appMq9W12jZyCJeXe';
+    const tableId = 'tbl2b7fgvkU4GL4jI';
     const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
     const ptoHoursElement = document.getElementById('pto-hours');
     const weekEndingInput = document.getElementById('week-ending');
@@ -43,33 +44,32 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-   // Fetch remaining PTO hours from API
-async function fetchPtoHours() {
-    const weekEnding = weekEndingInput.value;
-    if (!weekEnding) return;
+    // Fetch remaining PTO hours from API
+    async function fetchPtoHours() {
+        const weekEnding = weekEndingInput.value;
+        if (!weekEnding) return;
 
-    const url = `https://api.airtable.com/v0/${baseId}/TimeSheets?filterByFormula={WeekEnding}="${weekEnding}"`;
+        const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={WeekEnding}="${weekEnding}"`;
 
-    try {
-        const response = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${apiKey}`
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch PTO hours');
             }
-        });
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch PTO hours');
+            const data = await response.json();
+            const ptoHours = data.records.length > 0 ? data.records[0].fields['PTO Time'] || 0 : 0; // Adjusted to access 'PTO Time' field
+            ptoHoursElement.textContent = `${ptoHours} hours`;
+        } catch (error) {
+            console.error('Error fetching PTO hours:', error);
+            ptoHoursElement.textContent = '0 hours';
         }
-
-        const data = await response.json();
-        const ptoHours = data.records.length > 0 ? data.records[0].fields['PTO Time'] || 0 : 0; // Adjusted to access 'PTO Time' field
-        ptoHoursElement.textContent = `${ptoHours} hours`;
-    } catch (error) {
-        console.error('Error fetching PTO hours:', error);
-        ptoHoursElement.textContent = '0 hours';
     }
-}
-
 
     // Calculate hours worked for a specific day
     function calculateHoursWorked(dayIndex) {
@@ -101,17 +101,16 @@ async function fetchPtoHours() {
     // Calculate total time worked and update UI
     function calculateTotalTimeWorked() {
         let totalWorkedHours = 0;
-    
+
         for (let i = 1; i <= 7; i++) {
             const hoursWorked = parseFloat(calculateHoursWorked(i)) || 0;
             document.getElementById(`hours-worked-today${i}`).textContent = hoursWorked.toFixed(2);
             totalWorkedHours += hoursWorked;
         }
-    
+
         document.getElementById('total-time-worked').textContent = totalWorkedHours.toFixed(2);
         calculateTotalTimeWithPto(totalWorkedHours);
     }
-    
 
     // Calculate total time with PTO and update UI
     function calculateTotalTimeWithPto(totalWorkedHours) {
@@ -127,96 +126,93 @@ async function fetchPtoHours() {
     }
 
     // Function to add a new row to the table
-function addRow() {
-    const tbody = document.getElementById('time-entry-body');
-    const rowCount = tbody.rows.length + 1; // Calculate the next index for new row
+    function addRow() {
+        const tbody = document.getElementById('time-entry-body');
+        const rowCount = tbody.rows.length + 1; // Calculate the next index for new row
 
-    if (rowCount <= 7) { // Limit to adding up to 7 rows
-        const newRow = `
-            <tr>
-                <td><input type="date" name="date${rowCount}" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                <td><input type="time" name="start_time${rowCount}" value="07:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                <td><input type="time" name="lunch_start${rowCount}" value="12:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                <td><input type="time" name="lunch_end${rowCount}" value="13:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                <td><input type="time" name="end_time${rowCount}" value="16:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                <td><span id="hours-worked-today${rowCount}">0</span></td>
-            </tr>
-        `;
-        tbody.insertAdjacentHTML('beforeend', newRow);
-    } else {
-        alert('Maximum limit of rows reached (7 rows).');
+        if (rowCount <= 7) { // Limit to adding up to 7 rows
+            const newRow = `
+                <tr>
+                    <td><input type="date" name="date${rowCount}" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                    <td><input type="time" name="start_time${rowCount}" value="07:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                    <td><input type="time" name="lunch_start${rowCount}" value="12:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                    <td><input type="time" name="lunch_end${rowCount}" value="13:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                    <td><input type="time" name="end_time${rowCount}" value="16:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                    <td><span id="hours-worked-today${rowCount}">0</span></td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', newRow);
+        } else {
+            alert('Maximum limit of rows reached (7 rows).');
+        }
     }
-}
 
-// Function to delete the last two rows from the table
-function deleteRow() {
-    const tbody = document.getElementById('time-entry-body');
-    const rowCount = tbody.rows.length;
+    // Function to delete the last two rows from the table
+    function deleteRow() {
+        const tbody = document.getElementById('time-entry-body');
+        const rowCount = tbody.rows.length;
 
-    if (rowCount >= 3) { // Ensure there are at least 2 rows to delete
-        tbody.deleteRow(rowCount - 1); // Delete last row
-        tbody.deleteRow(rowCount - 2); // Delete second last row
-    } else {
-        alert('Minimum limit of rows reached (2 rows).');
+        if (rowCount >= 3) { // Ensure there are at least 2 rows to delete
+            tbody.deleteRow(rowCount - 1); // Delete last row
+            tbody.deleteRow(rowCount - 2); // Delete second last row
+        } else {
+            alert('Minimum limit of rows reached (2 rows).');
+        }
     }
-}
 
-async function submitTimesheet() {
-    const weekEndingDate = weekEndingInput.value;
-    const timesheetData = { records: [] };
+    // Submit timesheet data to Airtable
+    async function submitTimesheet() {
+        const formData = new FormData(timeEntryForm);
+        const records = [];
 
-    for (let i = 1; i <= 7; i++) {
-        const date = timeEntryForm.elements[`date${i}`].value;
-        const startTime = timeEntryForm.elements[`start_time${i}`].value;
-        const lunchStart = timeEntryForm.elements[`lunch_start${i}`].value;
-        const lunchEnd = timeEntryForm.elements[`lunch_end${i}`].value;
-        const endTime = timeEntryForm.elements[`end_time${i}`].value;
-        const hoursWorked = parseFloat(timeEntryForm.elements[`hours_worked_today${i}`].value) || 0;
-        const ptoTime = parseFloat(timeEntryForm.elements[`PTO Time${i}`].value) || 0;
+        // Loop through each row (assuming up to 7 rows based on your HTML)
+        for (let i = 1; i <= 7; i++) {
+            const date = formData.get(`date${i}`);
+            const startTime = formData.get(`start_time${i}`);
+            const lunchStart = formData.get(`lunch_start${i}`);
+            const lunchEnd = formData.get(`lunch_end${i}`);
+            const endTime = formData.get(`end_time${i}`);
+            const hoursWorked = document.getElementById(`hours-worked-today${i}`).textContent; // Get hours worked from span
 
-        if (date && startTime && endTime) {
+            // Create record object for Airtable
             const record = {
-                fields: {
-                    WeekEnding: weekEndingDate,
-                    Date: date,
-                    StartTime: startTime,
-                    LunchStart: lunchStart,
-                    LunchEnd: lunchEnd,
-                    EndTime: endTime,
-                    HoursWorked: hoursWorked,
-                    PTOTime: ptoTime
-                }
+                "Week Ending": formData.get('week_ending'), // Assuming week_ending is an input field in the form
+                "Date": date,
+                "Start Time": startTime,
+                "Lunch Start": lunchStart,
+                "Lunch End": lunchEnd,
+                "End Time": endTime,
+                "Hours Worked": hoursWorked,
+                "PTO Time": formData.get('pto_time') // Assuming pto_time is an input field in the form
             };
-            timesheetData.records.push(record);
-        }
-    }
 
-    const url = `https://api.airtable.com/v0/${baseId}/TimeSheets`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(timesheetData)
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to submit timesheet data');
+            records.push(record);
         }
 
-        alert('Timesheet submitted successfully!');
-        timeEntryForm.reset(); // Reset the form after submission
-        // Additional logic to update any UI elements or redirect can be added here
-    } catch (error) {
-        console.error('Error submitting timesheet data:', error);
-        alert('Failed to submit timesheet data');
-    }
-}
+        try {
+            const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ records })
+            });
 
-   
+            if (!response.ok) {
+                throw new Error('Failed to submit timesheet data');
+            }
+
+            const data = await response.json();
+            console.log('Timesheet submitted successfully:', data);
+
+            // Clear form and update UI
+            clearForm();
+        } catch (error) {
+            console.error('Error submitting timesheet data:', error);
+            alert('Failed to submit timesheet data. Please try again.');
+        }
+    }
 
     // Clear the form after submission
     function clearForm() {
@@ -225,6 +221,11 @@ async function submitTimesheet() {
         totalTimeWithPtoSpan.textContent = '0.00';
         ptoTimeInput.value = '0';
         ptoValidationMessage.style.display = 'none';
+
+        // Clear hours worked spans
+        for (let i = 1; i <= 7; i++) {
+            document.getElementById(`hours-worked-today${i}`).textContent = '0';
+        }
     }
 
     // Initialize on page load
