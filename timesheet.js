@@ -43,32 +43,33 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Fetch remaining PTO hours from API
-    async function fetchPtoHours() {
-        const weekEnding = weekEndingInput.value;
-        if (!weekEnding) return;
+   // Fetch remaining PTO hours from API
+async function fetchPtoHours() {
+    const weekEnding = weekEndingInput.value;
+    if (!weekEnding) return;
 
-        const url = `https://api.airtable.com/v0/${baseId}/TimeSheets?filterByFormula={WeekEnding}="${weekEnding}"`;
+    const url = `https://api.airtable.com/v0/${baseId}/TimeSheets?filterByFormula={WeekEnding}="${weekEnding}"`;
 
-        try {
-            const response = await fetch(url, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch PTO hours');
+    try {
+        const response = await fetch(url, {
+            headers: {
+                Authorization: `Bearer ${apiKey}`
             }
+        });
 
-            const data = await response.json();
-            const ptoHours = data.records.length > 0 ? data.records[0].fields.PTOTime || 0 : 0;
-            ptoHoursElement.textContent = `${ptoHours} hours`;
-        } catch (error) {
-            console.error('Error fetching PTO hours:', error);
-            ptoHoursElement.textContent = '0 hours';
+        if (!response.ok) {
+            throw new Error('Failed to fetch PTO hours');
         }
+
+        const data = await response.json();
+        const ptoHours = data.records.length > 0 ? data.records[0].fields['PTO Time'] || 0 : 0; // Adjusted to access 'PTO Time' field
+        ptoHoursElement.textContent = `${ptoHours} hours`;
+    } catch (error) {
+        console.error('Error fetching PTO hours:', error);
+        ptoHoursElement.textContent = '0 hours';
     }
+}
+
 
     // Calculate hours worked for a specific day
     function calculateHoursWorked(dayIndex) {
@@ -160,57 +161,62 @@ function deleteRow() {
     }
 }
 
+async function submitTimesheet() {
+    const weekEndingDate = weekEndingInput.value;
+    const timesheetData = { records: [] };
 
-    // Submit timesheet data to server
-    async function submitTimesheet() {
-        const weekEndingDate = weekEndingInput.value;
-        const timesheetData = { records: [] };
+    for (let i = 1; i <= 7; i++) {
+        const date = timeEntryForm.elements[`date${i}`].value;
+        const startTime = timeEntryForm.elements[`start_time${i}`].value;
+        const lunchStart = timeEntryForm.elements[`lunch_start${i}`].value;
+        const lunchEnd = timeEntryForm.elements[`lunch_end${i}`].value;
+        const endTime = timeEntryForm.elements[`end_time${i}`].value;
+        const hoursWorked = parseFloat(timeEntryForm.elements[`hours_worked_today${i}`].value) || 0;
+        const ptoTime = parseFloat(timeEntryForm.elements[`PTO Time${i}`].value) || 0;
 
-        for (let i = 1; i <= 7; i++) {
-            const date = timeEntryForm.elements[`date${i}`].value;
-            const startTime = timeEntryForm.elements[`start_time${i}`].value;
-            const lunchStart = timeEntryForm.elements[`lunch_start${i}`].value;
-            const lunchEnd = timeEntryForm.elements[`lunch_end${i}`].value;
-            const endTime = timeEntryForm.elements[`end_time${i}`].value;
-            const hoursWorked = calculateHoursWorked(i);
-
-            timesheetData.records.push({
+        if (date && startTime && endTime) {
+            const record = {
                 fields: {
-                    Date: date,
                     WeekEnding: weekEndingDate,
+                    Date: date,
                     StartTime: startTime,
                     LunchStart: lunchStart,
                     LunchEnd: lunchEnd,
                     EndTime: endTime,
-                    HoursWorked: hoursWorked
+                    HoursWorked: hoursWorked,
+                    PTOTime: ptoTime
                 }
-            });
-        }
-
-        const url = `https://api.airtable.com/v0/${baseId}/TimeSheets`;
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(timesheetData)
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to submit timesheet');
-            }
-
-            alert('Timesheet submitted successfully!');
-            clearForm();
-            fetchPtoHours(); // Refresh PTO hours after submission
-        } catch (error) {
-            console.error('Error submitting timesheet:', error);
-            alert('Failed to submit timesheet. Please try again later.');
+            };
+            timesheetData.records.push(record);
         }
     }
+
+    const url = `https://api.airtable.com/v0/${baseId}/TimeSheets`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(timesheetData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to submit timesheet data');
+        }
+
+        alert('Timesheet submitted successfully!');
+        timeEntryForm.reset(); // Reset the form after submission
+        // Additional logic to update any UI elements or redirect can be added here
+    } catch (error) {
+        console.error('Error submitting timesheet data:', error);
+        alert('Failed to submit timesheet data');
+    }
+}
+
+   
 
     // Clear the form after submission
     function clearForm() {
