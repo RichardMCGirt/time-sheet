@@ -7,6 +7,11 @@
     box-sizing: border-box;
 }
 
+.input-width-25 {
+    width: 25%;
+}
+
+
 /* Body styles */
 body {
     font-family: Arial, sans-serif;
