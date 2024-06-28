@@ -1,30 +1,26 @@
 document.addEventListener("DOMContentLoaded", function () {
     const baseId = 'appMq9W12jZyCJeXe';
     const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
-    const tableId = 'tbl2b7fgvkU4GL4jI';
-
     const ptoHoursElement = document.getElementById('pto-hours');
     const weekEndingInput = document.getElementById('week-ending');
     const timeEntryForm = document.getElementById('time-entry-form');
     const ptoTimeInput = document.getElementById('pto-time');
     const totalTimeWorkedSpan = document.getElementById('total-time-worked');
-    const ptoValidationMessage = document.getElementById('pto-validation-message');
     const totalTimeWithPtoSpan = document.getElementById('total-time-with-pto-value');
-    const timesheetTableBody = document.getElementById('timesheet-table-body');
+    const ptoValidationMessage = document.getElementById('pto-validation-message');
+    const timeEntryBody = document.getElementById('time-entry-body');
 
     // Event listeners
     weekEndingInput.addEventListener('change', handleWeekEndingChange);
-    timeEntryForm.addEventListener('change', handleFormChange);
-    timeEntryForm.addEventListener('input', handlePtoInput);
-    ptoTimeInput.addEventListener('input', handlePtoInput);
+    timeEntryForm.addEventListener('input', calculateTotalTimeWorked);
+    ptoTimeInput.addEventListener('input', calculateTotalTimeWorked);
     timeEntryForm.addEventListener('submit', handleSubmit);
 
-    // Function to handle week ending date change
+    // Handle week ending date change
     function handleWeekEndingChange() {
         const selectedDate = new Date(weekEndingInput.value);
-        const dayOfWeek = selectedDate.getDay(); // 0 (Sunday) to 6 (Saturday), 3 is Wednesday
+        const dayOfWeek = selectedDate.getDay(); // 0 (Sunday) to 6 (Saturday), 2 is Wednesday
 
-        // Check if selected date is not Wednesday, disable the input
         if (dayOfWeek !== 2) {
             alert('Please select a Wednesday for Week Ending.');
             weekEndingInput.value = ''; // Reset the value
@@ -34,21 +30,20 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Function to populate week dates
+    // Populate week dates based on selected week ending date
     function populateWeekDates() {
         const weekEndingDate = new Date(weekEndingInput.value);
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
 
-        for (let i = 0; i < daysOfWeek.length; i++) {
+        daysOfWeek.forEach((day, index) => {
             const currentDate = new Date(weekEndingDate);
-            currentDate.setDate(weekEndingDate.getDate() - (6 - i));
-
+            currentDate.setDate(weekEndingDate.getDate() - (6 - index));
             const formattedDate = currentDate.toISOString().split('T')[0];
-            timeEntryForm.elements[daysOfWeek[i]].value = formattedDate;
-        }
+            timeEntryForm.elements[day].value = formattedDate;
+        });
     }
 
-    // Function to fetch remaining PTO hours
+    // Fetch remaining PTO hours from API
     async function fetchPtoHours() {
         const weekEnding = weekEndingInput.value;
         if (!weekEnding) return;
@@ -61,40 +56,21 @@ document.addEventListener("DOMContentLoaded", function () {
                     Authorization: `Bearer ${apiKey}`
                 }
             });
-            const data = await response.json();
 
-            if (data.records.length > 0) {
-                const ptoHours = data.records[0].fields.PTOTime || 0;
-                ptoHoursElement.textContent = `${ptoHours} hours`;
-            } else {
-                ptoHoursElement.textContent = '0 hours';
+            if (!response.ok) {
+                throw new Error('Failed to fetch PTO hours');
             }
+
+            const data = await response.json();
+            const ptoHours = data.records.length > 0 ? data.records[0].fields.PTOTime || 0 : 0;
+            ptoHoursElement.textContent = `${ptoHours} hours`;
         } catch (error) {
             console.error('Error fetching PTO hours:', error);
             ptoHoursElement.textContent = '0 hours';
         }
     }
 
-    // Function to handle form input change
-    function handleFormChange(event) {
-        const target = event.target;
-        if (target.tagName === 'INPUT') {
-            const name = target.name;
-            if (name.startsWith('date') || name.startsWith('start_time') || name.startsWith('lunch_start') || name.startsWith('lunch_end') || name.startsWith('end_time')) {
-                const dayIndex = name.replace(/[^\d]/g, '');
-                calculateHoursWorked(dayIndex);
-                calculateTotalTimeWorked();
-                updateTimesheetTable();
-            }
-        }
-    }
-
-    // Function to handle PTO input change
-    function handlePtoInput() {
-        calculateTotalTimeWorked();
-    }
-
-    // Function to calculate hours worked for a specific day
+    // Calculate hours worked for a specific day
     function calculateHoursWorked(dayIndex) {
         const startTime = timeEntryForm.elements[`start_time${dayIndex}`].value;
         const endTime = timeEntryForm.elements[`end_time${dayIndex}`].value;
@@ -118,48 +94,38 @@ document.addEventListener("DOMContentLoaded", function () {
             hoursWorked = workedHours.toFixed(2); // Round to 2 decimal places
         }
 
-        timeEntryForm.elements[`hours_worked_today${dayIndex}`].value = hoursWorked;
+        return hoursWorked;
     }
 
-    // Function to calculate total time worked
+    // Calculate total time worked and update UI
     function calculateTotalTimeWorked() {
         let totalWorkedHours = 0;
-        const timeEntries = timeEntryForm.querySelectorAll('tbody tr');
-
-        timeEntries.forEach(row => {
-            const hoursWorked = parseFloat(row.querySelector('input[name^="hours_worked_today"]').value) || 0;
+    
+        for (let i = 1; i <= 7; i++) {
+            const hoursWorked = parseFloat(calculateHoursWorked(i)) || 0;
+            document.getElementById(`hours-worked-today${i}`).textContent = hoursWorked.toFixed(2);
             totalWorkedHours += hoursWorked;
-        });
-
-        totalTimeWorkedSpan.textContent = totalWorkedHours.toFixed(2);
+        }
+    
+        document.getElementById('total-time-worked').textContent = totalWorkedHours.toFixed(2);
         calculateTotalTimeWithPto(totalWorkedHours);
     }
+    
 
-    // Function to calculate total time worked with PTO
+    // Calculate total time with PTO and update UI
     function calculateTotalTimeWithPto(totalWorkedHours) {
         const ptoHours = parseFloat(ptoTimeInput.value) || 0;
         const totalTimeWithPto = totalWorkedHours + ptoHours;
         totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
     }
 
-    // Function to update timesheet table with calculated hours
-    function updateTimesheetTable() {
-        const rows = timesheetTableBody.querySelectorAll('tr');
-
-        rows.forEach((row, index) => {
-            const dayIndex = index + 1;
-            const hoursWorked = timeEntryForm.elements[`hours_worked_today${dayIndex}`].value;
-            row.querySelector('.hours-worked').textContent = hoursWorked || '0';
-        });
-    }
-
-    // Function to handle form submission
+    // Handle form submission
     async function handleSubmit(event) {
         event.preventDefault();
         await submitTimesheet();
     }
 
-    // Function to submit timesheet data
+    // Submit timesheet data to server
     async function submitTimesheet() {
         const weekEndingDate = weekEndingInput.value;
         const timesheetData = { records: [] };
@@ -170,18 +136,17 @@ document.addEventListener("DOMContentLoaded", function () {
             const lunchStart = timeEntryForm.elements[`lunch_start${i}`].value;
             const lunchEnd = timeEntryForm.elements[`lunch_end${i}`].value;
             const endTime = timeEntryForm.elements[`end_time${i}`].value;
-            const hoursWorked = parseFloat(timeEntryForm.elements[`hours_worked_today${i}`].value) || 0;
+            const hoursWorked = calculateHoursWorked(i);
 
             timesheetData.records.push({
                 fields: {
-                    user_email: 'user@example.com', // Replace with actual user email or retrieve from session
-                    date,
-                    start_time: startTime,
-                    lunch_start: lunchStart,
-                    lunch_end: lunchEnd,
-                    end_time: endTime,
-                    hours_worked_today: hoursWorked,
-                    WeekEnding: weekEndingDate
+                    Date: date,
+                    WeekEnding: weekEndingDate,
+                    StartTime: startTime,
+                    LunchStart: lunchStart,
+                    LunchEnd: lunchEnd,
+                    EndTime: endTime,
+                    HoursWorked: hoursWorked
                 }
             });
         }
@@ -202,12 +167,33 @@ document.addEventListener("DOMContentLoaded", function () {
                 throw new Error('Failed to submit timesheet');
             }
 
-            const responseData = await response.json();
-            console.log('Timesheet submitted successfully:', responseData);
             alert('Timesheet submitted successfully!');
+            clearForm();
+            fetchPtoHours(); // Refresh PTO hours after submission
         } catch (error) {
             console.error('Error submitting timesheet:', error);
-            alert('Error submitting timesheet. Please try again later.');
+            alert('Failed to submit timesheet. Please try again later.');
         }
     }
+
+    // Clear the form after submission
+    function clearForm() {
+        timeEntryForm.reset();
+        totalTimeWorkedSpan.textContent = '0.00';
+        totalTimeWithPtoSpan.textContent = '0.00';
+        ptoTimeInput.value = '0';
+        ptoValidationMessage.style.display = 'none';
+    }
+
+    // Initialize on page load
+    async function initialize() {
+        try {
+            await fetchPtoHours();
+        } catch (error) {
+            console.error('Error initializing:', error);
+            alert('Failed to initialize. Please refresh the page.');
+        }
+    }
+
+    initialize();
 });

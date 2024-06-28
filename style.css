@@ -1,166 +1,89 @@
-/* styles.css */
-
-/* Reset default browser styles */
+/* style.css */
 * {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
-.input-width-25 {
-    width: 25%;
-}
-
-
-/* Body styles */
-body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    background-color: #f4f4f4;
-    padding: 20px;
-}
-
-/* Header (Navigation bar) styles */
 header {
     background-color: #333;
-    color: #fff;
-    padding: 10px 0;
-    text-align: center;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-header nav ul {
+nav ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
-    text-align: center;
 }
 
-header nav ul li {
+nav ul li {
     display: inline;
     margin-right: 10px;
 }
 
-header nav ul li a {
-    color: #fff;
+nav ul li a {
+    color: white;
     text-decoration: none;
-    padding: 5px 10px;
-    transition: background-color 0.3s ease;
 }
 
-header nav ul li a:hover {
-    background-color: #555;
+.user-info {
+    display: flex;
+    align-items: center;
 }
 
-/* Main Content */
-main {
-    margin-top: 20px;
+.main {
     padding: 20px;
-}
-
-/* PTO Section */
-#pto-section {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-#pto-section h3 {
-    margin-bottom: 5px;
-}
-
-#pto-hours {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-/* Time Entry Section */
-#time-entry {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-#time-entry h2 {
-    margin-top: 0;
 }
 
 #time-entry-form {
-    display: flex;
-    flex-direction: column;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
-#time-entry-form label {
-    margin: 10px 0 5px;
-}
-
-#time-entry-form input[type="date"],
-#time-entry-form input[type="time"] {
+input[type="date"],
+input[type="time"],
+input[type="number"] {
+    width: 150px;
     padding: 5px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
+    margin-bottom: 10px;
 }
 
-#time-entry-form table {
+table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
 }
 
-#time-entry-form table th,
-#time-entry-form table td {
-    padding: 10px;
-    text-align: left;
+table th, table td {
     border: 1px solid #ddd;
-}
-
-#time-entry-form table th {
-    background-color: #333;
-    color: #fff;
-}
-
-#time-entry-form table tbody tr {
-    color: black;
-    background-color: white;
-}
-
-#time-entry-form table tbody tr:hover {
-    background-color: black;
-    color: white;
-}
-
-#page-title {
+    padding: 8px;
     text-align: center;
-    font-weight: bold;
-    padding: 20px;
 }
 
-#time-entry-form button {
-    margin-top: 20px;
-    padding: 10px;
+table th {
+    background-color: #f2f2f2;
+}
+
+button {
     background-color: #4CAF50;
     color: white;
+    padding: 10px 20px;
     border: none;
-    border-radius: 3px;
     cursor: pointer;
 }
 
-#time-entry-form button:hover {
-    background-color: #45a049;
+button:hover {
+    opacity: 0.8;
 }
 
-/* Total time worked */
-#total-time-worked {
-    font-weight: bold;
-    font-size: 18px;
-}
-
-#pto-time {
-    width: 200%; /* Adjust width as needed */
-    height: 300%;
+#pto-validation-message {
+    margin-top: 5px;
 }
