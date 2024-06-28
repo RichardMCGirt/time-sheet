@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Populate week dates based on selected week ending date
     function populateWeekDates() {
         const weekEndingDate = new Date(weekEndingInput.value);
-        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
+        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5'];
 
         daysOfWeek.forEach((day, index) => {
             const currentDate = new Date(weekEndingDate);
@@ -119,45 +119,49 @@ document.addEventListener("DOMContentLoaded", function () {
         totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
     }
 
-    // Handle form submission
-    async function handleSubmit(event) {
-        event.preventDefault();
-        await submitTimesheet();
-    }
-
-    // Function to add a new row to the table
     function addRow() {
         const tbody = document.getElementById('time-entry-body');
         const rowCount = tbody.rows.length + 1; // Calculate the next index for new row
-
+    
         if (rowCount <= 7) { // Limit to adding up to 7 rows
-            const newRow = `
-                <tr>
-                    <td><input type="date" name="date${rowCount}" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                    <td><input type="time" name="start_time${rowCount}" value="07:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                    <td><input type="time" name="lunch_start${rowCount}" value="12:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                    <td><input type="time" name="lunch_end${rowCount}" value="13:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                    <td><input type="time" name="end_time${rowCount}" value="16:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                    <td><span id="hours-worked-today${rowCount}">0</span></td>
-                </tr>
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="date" name="date${rowCount}" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                <td><input type="time" name="start_time${rowCount}" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                <td><input type="time" name="lunch_start${rowCount}" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                <td><input type="time" name="lunch_end${rowCount}" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                <td><input type="time" name="end_time${rowCount}" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                <td><span id="hours-worked-today${rowCount}">0</span></td>
+                <td><button type="button" class="delete-button" onclick="deleteRow(this)">Delete</button></td>
             `;
-            tbody.insertAdjacentHTML('beforeend', newRow);
+            tbody.appendChild(newRow);
         } else {
             alert('Maximum limit of rows reached (7 rows).');
         }
     }
+    
+    
+    function deleteRow(button) {
+        const row = button.parentNode.parentNode;
+        const tbody = row.parentNode;
+        tbody.removeChild(row);
+    
+        calculateTotalTimeWorked();
+    }
+    
+    // Example function to calculate hours worked and total time worked
+function calculateHoursWorked(rowNumber) {
+    // Logic to calculate hours worked for a specific row
+}
 
-    // Function to delete the last two rows from the table
-    function deleteRow() {
-        const tbody = document.getElementById('time-entry-body');
-        const rowCount = tbody.rows.length;
+function calculateTotalTimeWorked() {
+    // Logic to calculate total time worked across all rows
+}
 
-        if (rowCount >= 3) { // Ensure there are at least 2 rows to delete
-            tbody.deleteRow(rowCount - 1); // Delete last row
-            tbody.deleteRow(rowCount - 2); // Delete second last row
-        } else {
-            alert('Minimum limit of rows reached (2 rows).');
-        }
+    // Handle form submission
+    async function handleSubmit(event) {
+        event.preventDefault();
+        await submitTimesheet();
     }
 
     // Submit timesheet data to Airtable
@@ -183,7 +187,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 "Lunch End": lunchEnd,
                 "End Time": endTime,
                 "Hours Worked": hoursWorked,
-                "PTO Time": formData.get('pto_time') // Assuming pto_time is an input field in the form
+                "PTO Time Used": ptoTimeInput.value // New field for PTO Time Used
             };
 
             records.push(record);
