@@ -125,6 +125,42 @@ document.addEventListener("DOMContentLoaded", function () {
         await submitTimesheet();
     }
 
+    // Function to add a new row to the table
+function addRow() {
+    const tbody = document.getElementById('time-entry-body');
+    const rowCount = tbody.rows.length + 1; // Calculate the next index for new row
+
+    if (rowCount <= 7) { // Limit to adding up to 7 rows
+        const newRow = `
+            <tr>
+                <td><input type="date" name="date${rowCount}" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                <td><input type="time" name="start_time${rowCount}" value="07:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                <td><input type="time" name="lunch_start${rowCount}" value="12:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                <td><input type="time" name="lunch_end${rowCount}" value="13:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                <td><input type="time" name="end_time${rowCount}" value="16:00" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
+                <td><span id="hours-worked-today${rowCount}">0</span></td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', newRow);
+    } else {
+        alert('Maximum limit of rows reached (7 rows).');
+    }
+}
+
+// Function to delete the last two rows from the table
+function deleteRow() {
+    const tbody = document.getElementById('time-entry-body');
+    const rowCount = tbody.rows.length;
+
+    if (rowCount >= 3) { // Ensure there are at least 2 rows to delete
+        tbody.deleteRow(rowCount - 1); // Delete last row
+        tbody.deleteRow(rowCount - 2); // Delete second last row
+    } else {
+        alert('Minimum limit of rows reached (2 rows).');
+    }
+}
+
+
     // Submit timesheet data to server
     async function submitTimesheet() {
         const weekEndingDate = weekEndingInput.value;
