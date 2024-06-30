@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const selectedDate = new Date(weekEndingInput.value);
         const dayOfWeek = selectedDate.getDay(); // 0 (Sunday) to 6 (Saturday), 2 is Wednesday
 
-        if (dayOfWeek !== 3) { // Wednesday
+        if (dayOfWeek !== 2) { // Wednesday
             alert('Please select a Wednesday for Week Ending.');
             weekEndingInput.value = ''; // Reset the value
         } else {
