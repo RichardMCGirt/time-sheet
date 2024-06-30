@@ -15,14 +15,13 @@ document.addEventListener("DOMContentLoaded", function () {
     weekEndingInput.addEventListener('change', handleWeekEndingChange);
     timeEntryForm.addEventListener('input', calculateTotalTimeWorked);
     ptoTimeInput.addEventListener('input', calculateTotalTimeWorked);
-    timeEntryForm.addEventListener('submit', handleSubmit);
 
     // Handle week ending date change
     function handleWeekEndingChange() {
         const selectedDate = new Date(weekEndingInput.value);
         const dayOfWeek = selectedDate.getDay(); // 0 (Sunday) to 6 (Saturday), 2 is Wednesday
 
-        if (dayOfWeek !== 2) {
+        if (dayOfWeek !== 3) { // Wednesday
             alert('Please select a Wednesday for Week Ending.');
             weekEndingInput.value = ''; // Reset the value
         } else {
@@ -34,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Populate week dates based on selected week ending date
     function populateWeekDates() {
         const weekEndingDate = new Date(weekEndingInput.value);
-        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5'];
+        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
 
         daysOfWeek.forEach((day, index) => {
             const currentDate = new Date(weekEndingDate);
@@ -63,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const data = await response.json();
-            const ptoHours = data.records.length > 0 ? data.records[0].fields['PTO Time'] || 0 : 0; // Adjusted to access 'PTO Time' field
+            const ptoHours = data.records.length > 0 ? data.records[0].fields['PTO Time'] || 0 : 0;
             ptoHoursElement.textContent = `${ptoHours} hours`;
         } catch (error) {
             console.error('Error fetching PTO hours:', error);
@@ -71,12 +70,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Calculate hours worked for a specific day
-    function calculateHoursWorked(dayIndex) {
-        const startTime = timeEntryForm.elements[`start_time${dayIndex}`].value;
-        const endTime = timeEntryForm.elements[`end_time${dayIndex}`].value;
-        const lunchStart = timeEntryForm.elements[`lunch_start${dayIndex}`].value;
-        const lunchEnd = timeEntryForm.elements[`lunch_end${dayIndex}`].value;
+    // Calculate hours worked for a specific row
+    function calculateHoursWorked(row) {
+        const startTime = timeEntryForm.elements[`start_time${row}`].value;
+        const endTime = timeEntryForm.elements[`end_time${row}`].value;
+        const lunchStart = timeEntryForm.elements[`lunch_start${row}`].value;
+        const lunchEnd = timeEntryForm.elements[`lunch_end${row}`].value;
 
         let hoursWorked = 0;
 
@@ -119,10 +118,11 @@ document.addEventListener("DOMContentLoaded", function () {
         totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
     }
 
+    // Add a new row for time entry
     function addRow() {
         const tbody = document.getElementById('time-entry-body');
         const rowCount = tbody.rows.length + 1; // Calculate the next index for new row
-    
+        
         if (rowCount <= 7) { // Limit to adding up to 7 rows
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
@@ -131,37 +131,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td><input type="time" name="lunch_start${rowCount}" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
                 <td><input type="time" name="lunch_end${rowCount}" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
                 <td><input type="time" name="end_time${rowCount}" step="1800" onchange="calculateHoursWorked(${rowCount}); calculateTotalTimeWorked()"></td>
-                <td><span id="hours-worked-today${rowCount}">0</span></td>
-                <td><button type="button" class="delete-button" onclick="deleteRow(this)">Delete</button></td>
+                <td id="hours-worked-today${rowCount}">0.00</td>
+                <td><button type="button" onclick="deleteRow(this)">Delete</button></td>
             `;
             tbody.appendChild(newRow);
-        } else {
-            alert('Maximum limit of rows reached (7 rows).');
         }
     }
-    
-    
+
+    // Delete a row from time entry
     function deleteRow(button) {
-        const row = button.parentNode.parentNode;
-        const tbody = row.parentNode;
-        tbody.removeChild(row);
-    
+        const row = button.closest('tr');
+        row.remove();
         calculateTotalTimeWorked();
-    }
-    
-    // Example function to calculate hours worked and total time worked
-function calculateHoursWorked(rowNumber) {
-    // Logic to calculate hours worked for a specific row
-}
-
-function calculateTotalTimeWorked() {
-    // Logic to calculate total time worked across all rows
-}
-
-    // Handle form submission
-    async function handleSubmit(event) {
-        event.preventDefault();
-        await submitTimesheet();
     }
 
     // Submit timesheet data to Airtable
@@ -169,78 +150,51 @@ function calculateTotalTimeWorked() {
         const formData = new FormData(timeEntryForm);
         const records = [];
 
-        // Loop through each row (assuming up to 7 rows based on your HTML)
         for (let i = 1; i <= 7; i++) {
             const date = formData.get(`date${i}`);
             const startTime = formData.get(`start_time${i}`);
             const lunchStart = formData.get(`lunch_start${i}`);
             const lunchEnd = formData.get(`lunch_end${i}`);
             const endTime = formData.get(`end_time${i}`);
-            const hoursWorked = document.getElementById(`hours-worked-today${i}`).textContent; // Get hours worked from span
+            const hoursWorked = calculateHoursWorked(i);
 
-            // Create record object for Airtable
-            const record = {
-                "Week Ending": formData.get('week_ending'), // Assuming week_ending is an input field in the form
-                "Date": date,
-                "Start Time": startTime,
-                "Lunch Start": lunchStart,
-                "Lunch End": lunchEnd,
-                "End Time": endTime,
-                "Hours Worked": hoursWorked,
-                "PTO Time Used": ptoTimeInput.value // New field for PTO Time Used
-            };
-
-            records.push(record);
+            if (date && startTime && endTime) {
+                records.push({
+                    fields: {
+                        Date: date,
+                        StartTime: startTime,
+                        LunchStart: lunchStart,
+                        LunchEnd: lunchEnd,
+                        EndTime: endTime,
+                        HoursWorked: parseFloat(hoursWorked)
+                    }
+                });
+            }
         }
 
+        const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
+
         try {
-            const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}`, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${apiKey}`,
+                    'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ records })
             });
 
             if (!response.ok) {
-                throw new Error('Failed to submit timesheet data');
+                throw new Error('Failed to submit timesheet');
             }
 
-            const data = await response.json();
-            console.log('Timesheet submitted successfully:', data);
-
-            // Clear form and update UI
-            clearForm();
+            alert('Timesheet submitted successfully!');
+            timeEntryForm.reset(); // Reset the form after successful submission
+            timeEntryBody.innerHTML = ''; // Clear all rows from the table
+            fetchPtoHours(); // Update remaining PTO hours
         } catch (error) {
-            console.error('Error submitting timesheet data:', error);
-            alert('Failed to submit timesheet data. Please try again.');
+            console.error('Error submitting timesheet:', error);
+            alert('Failed to submit timesheet. Please try again later.');
         }
     }
-
-    // Clear the form after submission
-    function clearForm() {
-        timeEntryForm.reset();
-        totalTimeWorkedSpan.textContent = '0.00';
-        totalTimeWithPtoSpan.textContent = '0.00';
-        ptoTimeInput.value = '0';
-        ptoValidationMessage.style.display = 'none';
-
-        // Clear hours worked spans
-        for (let i = 1; i <= 7; i++) {
-            document.getElementById(`hours-worked-today${i}`).textContent = '0';
-        }
-    }
-
-    // Initialize on page load
-    async function initialize() {
-        try {
-            await fetchPtoHours();
-        } catch (error) {
-            console.error('Error initializing:', error);
-            alert('Failed to initialize. Please refresh the page.');
-        }
-    }
-
-    initialize();
 });
