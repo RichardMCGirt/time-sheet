@@ -16,20 +16,34 @@ document.addEventListener("DOMContentLoaded", function () {
     timeEntryForm.addEventListener('input', calculateTotalTimeWorked);
     ptoTimeInput.addEventListener('input', calculateTotalTimeWorked);
 
-    // Handle week ending date change
     function handleWeekEndingChange() {
         const selectedDate = new Date(weekEndingInput.value);
-        const dayOfWeek = selectedDate.getDay(); // 0 (Sunday) to 6 (Saturday), 2 is Wednesday
-
-        if (dayOfWeek !== 1) { // Wednesday
-            alert('Please select a Wednesday for Week Ending.');
-            weekEndingInput.value = ''; // Reset the value
-        } else {
-            populateWeekDates();
-            fetchPtoHours();
+        let dayOfWeek = selectedDate.getDay(); // 0 (Sunday) to 6 (Saturday)
+    
+        // Adjust the date to the nearest Wednesday
+        while (dayOfWeek !== 3) { // 3 corresponds to Wednesday
+            if (dayOfWeek < 3) {
+                selectedDate.setDate(selectedDate.getDate() + (3 - dayOfWeek)); // Move forward to Wednesday
+            } else {
+                selectedDate.setDate(selectedDate.getDate() + (7 - dayOfWeek + 3)); // Move forward to next Wednesday
+            }
+            dayOfWeek = selectedDate.getDay(); // Update day of week after adjustment
         }
+    
+        weekEndingInput.value = selectedDate.toISOString().split('T')[0]; // Update input value
+    
+        // Ensure date7 is set to the next Wednesday after the selected week ending date
+        const date7 = new Date(selectedDate);
+        date7.setDate(selectedDate.getDate() + 6); // Move forward to date7 (Wednesday of the next week)
+    
+        // Update date7 input in the form
+        timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
+    
+        populateWeekDates(); // Update other week dates in the form
+        fetchPtoHours(); // Fetch PTO hours for the selected week ending date
     }
-
+    
+    
     // Populate week dates based on selected week ending date
     function populateWeekDates() {
         const weekEndingDate = new Date(weekEndingInput.value);
@@ -64,9 +78,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
             const ptoHours = data.records.length > 0 ? data.records[0].fields['PTO Time'] || 0 : 0;
             ptoHoursElement.textContent = `${ptoHours} hours`;
+
+            // Update remaining PTO hours input field
+            ptoTimeInput.value = ptoHours;
         } catch (error) {
             console.error('Error fetching PTO hours:', error);
             ptoHoursElement.textContent = '0 hours';
+            ptoTimeInput.value = 0;
         }
     }
 
@@ -91,7 +109,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 workedHours -= lunchHours; // Subtract lunch break hours
             }
 
-            hoursWorked = workedHours.toFixed(2); // Round to 2 decimal places
+            // Ensure worked hours are not negative
+            hoursWorked = Math.max(workedHours, 0).toFixed(2); // Round to 2 decimal places
         }
 
         return hoursWorked;
@@ -145,6 +164,43 @@ document.addEventListener("DOMContentLoaded", function () {
         calculateTotalTimeWorked();
     }
 
+    // Submit remaining PTO hours to Airtable
+    async function submitRemainingPtoHours() {
+        const remainingPtoHours = parseFloat(ptoTimeInput.value) - parseFloat(totalTimeWithPtoSpan.textContent);
+        
+        const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    records: [
+                        {
+                            id: data.records[0].id,
+                            fields: {
+                                'PTO Time': remainingPtoHours
+                            }
+                        }
+                    ]
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update PTO hours');
+            }
+
+            console.log('PTO hours updated successfully:', remainingPtoHours);
+            alert('Remaining PTO hours submitted successfully!');
+        } catch (error) {
+            console.error('Error updating PTO hours:', error);
+            alert('Failed to update remaining PTO hours');
+        }
+    }
+
     // Submit timesheet data to Airtable
     async function submitTimesheet() {
         const formData = new FormData(timeEntryForm);
@@ -158,6 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const endTime = formData.get(`end_time${i}`);
             const hoursWorked = calculateHoursWorked(i);
 
+            // Only include records where work is logged (startTime and endTime are present)
             if (date && startTime && endTime) {
                 records.push({
                     fields: {
@@ -192,9 +249,19 @@ document.addEventListener("DOMContentLoaded", function () {
             timeEntryForm.reset(); // Reset the form after successful submission
             timeEntryBody.innerHTML = ''; // Clear all rows from the table
             fetchPtoHours(); // Update remaining PTO hours
+
+            // Submit remaining PTO hours after timesheet submission
+            submitRemainingPtoHours();
         } catch (error) {
             console.error('Error submitting timesheet:', error);
             alert('Failed to submit timesheet. Please try again later.');
         }
     }
+
+    // Initial setup
+    function init() {
+        handleWeekEndingChange(); // Fetch PTO hours for initial week ending date
+    }
+
+    init(); // Initialize the application
 });
