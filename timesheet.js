@@ -320,55 +320,55 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    // Submit form data
-    window.submitTimesheet = async function() {
-        const formData = new FormData(timeEntryForm);
+// Submit form data
+window.submitTimesheet = async function() {
+    const formData = new FormData(timeEntryForm);
 
-        const entries = Array.from(formData.entries());
-        const timeEntries = [];
-        let weekEndingDate = null;
+    const entries = Array.from(formData.entries());
+    const timeEntries = [];
+    let weekEndingDate = null;
 
-        entries.forEach(entry => {
-            const [key, value] = entry;
-            if (key.startsWith('date')) {
-                if (!weekEndingDate) {
-                    weekEndingDate = new Date(value);
-                }
-                timeEntries.push({ [key]: value });
-            } else {
-                timeEntries[timeEntries.length - 1][key] = value;
+    entries.forEach(entry => {
+        const [key, value] = entry;
+        if (key.startsWith('date')) {
+            if (!weekEndingDate) {
+                weekEndingDate = new Date(value);
             }
-        });
-
-        const ptoTime = parseFloat(ptoTimeInput.value) || 0;
-
-        const totalHoursWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
-
-        if (ptoTime > totalHoursWithPto) {
-            alert('PTO hours cannot exceed total hours worked with PTO');
-            return;
+            timeEntries.push({ [key]: value });
+        } else {
+            timeEntries[timeEntries.length - 1][key] = value;
         }
+    });
 
-        try {
-            // Call function to update PTO hours in Airtable
-            await updatePtoHours(ptoHoursElement.textContent, ptoTime);
+    const ptoTime = parseFloat(ptoTimeInput.value) || 0;
 
-            // You can handle form submission here, e.g., sending data to server or Airtable
-            console.log('Form data submitted:', timeEntries);
-            alert('Form data submitted successfully!');
-        } catch (error) {
-            console.error('Error submitting form data:', error);
-            alert('Failed to submit form data.');
-        }
-    };
+    const totalHoursWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
 
-    // Initialize the form on page load
-    async function initializeForm() {
-        const today = new Date();
-        adjustToWednesday(today);
-        weekEndingInput.value = today.toISOString().split('T')[0];
-        handleWeekEndingChange(); // Trigger initial population based on today's date
+    if (ptoTime > totalHoursWithPto) {
+        alert('PTO hours cannot exceed total hours worked with PTO');
+        return;
     }
 
-    initializeForm();
+    try {
+        // Call function to update PTO hours in Airtable
+        await updatePtoHours(ptoHoursElement.textContent, ptoTime);
+
+        // You can handle form submission here, e.g., sending data to server or Airtable
+        console.log('Form data submitted:', timeEntries);
+        alert('Form data submitted successfully!');
+    } catch (error) {
+        console.error('Error submitting form data:', error);
+        alert('Failed to submit form data.');
+    }
+};
+
+// Initialize the form on page load
+async function initializeForm() {
+    const today = new Date();
+    adjustToWednesday(today);
+    weekEndingInput.value = today.toISOString().split('T')[0];
+    handleWeekEndingChange(); // Trigger initial population based on today's date
+}
+
+initializeForm();
 });
