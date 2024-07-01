@@ -180,14 +180,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const endTime = formData.get(`end_time${i}`);
             const hoursWorked = calculateHoursWorked(i);
 
-            if (date && startTime && endTime) {
+            if (date && (startTime || endTime)) {
                 records.push({
                     fields: {
                         Date: date,
-                        StartTime: startTime,
-                        LunchStart: lunchStart,
-                        LunchEnd: lunchEnd,
-                        EndTime: endTime,
+                        StartTime: startTime || '',
+                        LunchStart: lunchStart || '',
+                        LunchEnd: lunchEnd || '',
+                        EndTime: endTime || '',
                         HoursWorked: parseFloat(hoursWorked)
                     }
                 });
