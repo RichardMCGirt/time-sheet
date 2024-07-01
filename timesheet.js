@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", async function() {
     const baseId = 'appMq9W12jZyCJeXe';
-    const tableId = 'tbl2b7fgvkU4GL4jI';
-    const apiKey = 'keyUzRhqaaZiztzqy';
-    let userEmail = ''; // Set this to the logged-in user's email
+    const tableId = 'tblhTl5q7sEFDv66Z';
+    const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
+    let userEmail = localStorage.getItem('userEmail') || ''; // Fetch userEmail from localStorage
 
     // DOM elements
     const ptoHoursElement = document.getElementById('pto-hours');
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     await fetchUserEmailFromAirtable();
 
     async function fetchUserEmailFromAirtable() {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({email}='${userEmail}')`;
 
         try {
             const response = await fetch(endpoint, {
@@ -47,9 +47,10 @@ document.addEventListener("DOMContentLoaded", async function() {
             const data = await response.json();
             if (data.records.length > 0) {
                 const userRecord = data.records[0].fields;
-                userEmail = userRecord['Email']; // Update userEmail with fetched email
+                userEmail = userRecord['email']; // Update userEmail with fetched email
                 updateLogoutLink(userEmail);
                 document.getElementById('pto-hours').textContent = userRecord['PTO Available'];
+                ptoTimeInput.value = userRecord['PTO Hours'] || 0; // Fetch and set PTO Hours
             } else {
                 throw new Error('No user record found');
             }
@@ -175,7 +176,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Function to fetch remaining PTO hours from Airtable
     async function fetchPtoHours(weekEndingDate) {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({email}='${userEmail}')`;
         
         try {
             const response = await fetch(endpoint, {
@@ -191,7 +192,9 @@ document.addEventListener("DOMContentLoaded", async function() {
             const data = await response.json();
             if (data.records.length > 0) {
                 const remainingPTO = data.records[0].fields['PTO Available'];
+                const ptoHours = data.records[0].fields['PTO Hours'] || 0;
                 document.getElementById('pto-hours').textContent = remainingPTO;
+                ptoTimeInput.value = ptoHours; // Set PTO Hours in the form
             } else {
                 throw new Error('No PTO record found for user');
             }
@@ -201,8 +204,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    // Function to update remaining PTO hours in Airtable
-    async function updatePtoHours(remainingPTO) {
+    // Function to update remaining PTO hours and PTO Hours in Airtable
+    async function updatePtoHours(remainingPTO, ptoHours) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}`;
 
         try {
@@ -224,7 +227,8 @@ document.addEventListener("DOMContentLoaded", async function() {
                 },
                 body: JSON.stringify({
                     fields: {
-                        'PTO Available': remainingPTO
+                        'PTO Available': remainingPTO,
+                        'PTO Hours': ptoHours
                     }
                 })
             });
@@ -345,12 +349,17 @@ document.addEventListener("DOMContentLoaded", async function() {
             return;
         }
 
-        // Call function to update PTO hours in Airtable
-        await updatePtoHours(remainingPTO);
+        try {
+            // Call function to update PTO hours in Airtable
+            await updatePtoHours(ptoHoursElement.textContent, ptoTime);
 
-        // You can handle form submission here, e.g., sending data to server or Airtable
-        console.log('Form data submitted:', timeEntries);
-        alert('Form data submitted successfully!');
+            // You can handle form submission here, e.g., sending data to server or Airtable
+            console.log('Form data submitted:', timeEntries);
+            alert('Form data submitted successfully!');
+        } catch (error) {
+            console.error('Error submitting form data:', error);
+            alert('Failed to submit form data.');
+        }
     };
 
     // Initialize the form on page load
