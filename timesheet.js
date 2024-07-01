@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", async function() {
     const baseId = 'appMq9W12jZyCJeXe';
-    const tableId = 'tblhTl5q7sEFDv66Z';
-    const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
+    const tableId = 'tbl2b7fgvkU4GL4jI';
+    const apiKey = 'keyUzRhqaaZiztzqy';
     let userEmail = localStorage.getItem('userEmail') || ''; // Fetch userEmail from localStorage
 
     // DOM elements
@@ -49,8 +49,14 @@ document.addEventListener("DOMContentLoaded", async function() {
                 const userRecord = data.records[0].fields;
                 userEmail = userRecord['email']; // Update userEmail with fetched email
                 updateLogoutLink(userEmail);
-                document.getElementById('pto-hours').textContent = userRecord['PTO Available'];
-                ptoTimeInput.value = userRecord['PTO Hours'] || 0; // Fetch and set PTO Hours
+
+                if (userRecord['PTO Hours'] == 0) {
+                    ptoHoursElement.textContent = 'User has no PTO hours';
+                    ptoTimeInput.value = 0; // Set PTO Hours in the form to 0
+                } else {
+                    ptoHoursElement.textContent = userRecord['PTO Available'];
+                    ptoTimeInput.value = userRecord['PTO Hours'] || 0; // Fetch and set PTO Hours
+                }
             } else {
                 throw new Error('No user record found');
             }
@@ -89,7 +95,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     function adjustToWednesday(date) {
         let dayOfWeek = date.getDay();
-        const offset = dayOfWeek < 2 ? 2 - dayOfWeek : 10 - dayOfWeek;
+        const offset = dayOfWeek < 3 ? 3 - dayOfWeek : 10 - dayOfWeek;
         date.setDate(date.getDate() + offset);
     }
 
@@ -205,11 +211,11 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     // Function to update remaining PTO hours and PTO Hours in Airtable
-    async function updatePtoHours(remainingPTO, ptoHours) {
+    async function updatePtoHours(remainingPTO, ptoHoursUsed, timeEntriesJson) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}`;
 
         try {
-            const records = await fetch(endpoint, {
+            const recordsResponse = await fetch(endpoint, {
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${apiKey}`,
@@ -217,7 +223,9 @@ document.addEventListener("DOMContentLoaded", async function() {
                 }
             });
 
+            const records = await recordsResponse.json();
             const recordId = records.records[0].id;
+            const newRemainingPTO = Math.max(0, remainingPTO - ptoHoursUsed);
 
             const response = await fetch(`${endpoint}/${recordId}`, {
                 method: 'PATCH',
@@ -227,8 +235,9 @@ document.addEventListener("DOMContentLoaded", async function() {
                 },
                 body: JSON.stringify({
                     fields: {
-                        'PTO Available': remainingPTO,
-                        'PTO Hours': ptoHours
+                        'PTO Available': newRemainingPTO,
+                        'PTO Hours': newRemainingPTO > 0 ? newRemainingPTO : 0,
+                        'Time Entries': timeEntriesJson // Store time entries JSON string in 'Time Entries' field
                     }
                 })
             });
@@ -240,6 +249,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             console.log('PTO hours updated successfully');
         } catch (error) {
             console.error('Error updating PTO hours:', error);
+            throw error; // Re-throw the error to be caught in the submitTimesheet function
         }
     }
 
@@ -315,60 +325,76 @@ document.addEventListener("DOMContentLoaded", async function() {
         if (ptoUsed > remainingPTO) {
             ptoValidationMessage.textContent = 'PTO hours exceed available balance';
             ptoValidationMessage.style.color = 'red';
+        } else if (totalHoursWithPto > 40) {
+            ptoValidationMessage.textContent = 'Total hours including PTO cannot exceed 40 hours';
+            ptoValidationMessage.style.color = 'red';
         } else {
             ptoValidationMessage.textContent = '';
         }
     }
 
-// Submit form data
-window.submitTimesheet = async function() {
-    const formData = new FormData(timeEntryForm);
+    // Submit form data
+    window.submitTimesheet = async function() {
+        const formData = new FormData(timeEntryForm);
 
-    const entries = Array.from(formData.entries());
-    const timeEntries = [];
-    let weekEndingDate = null;
+        const entries = Array.from(formData.entries());
+        const timeEntries = [];
+        let weekEndingDate = null;
 
-    entries.forEach(entry => {
-        const [key, value] = entry;
-        if (key.startsWith('date')) {
-            if (!weekEndingDate) {
-                weekEndingDate = new Date(value);
+        entries.forEach(entry => {
+            const [key, value] = entry;
+            if (key.startsWith('date')) {
+                if (!weekEndingDate) {
+                    weekEndingDate = new Date(value);
+                }
+                timeEntries.push({ [key]: value });
+            } else {
+                if (timeEntries.length > 0) {
+                    timeEntries[timeEntries.length - 1][key] = value;
+                }
             }
-            timeEntries.push({ [key]: value });
+        });
+
+        const ptoTime = parseFloat(ptoTimeInput.value) || 0;
+
+        if (ptoTime > 0) {
+            const totalHoursWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
+
+            if (ptoTime > totalHoursWithPto) {
+                alert('PTO hours cannot exceed total hours worked with PTO');
+                return;
+            }
+
+            if (totalHoursWithPto > 40) {
+                alert('Total hours including PTO cannot exceed 40 hours');
+                return;
+            }
+
+            try {
+                // Convert timeEntries to JSON string
+                const timeEntriesJson = JSON.stringify(timeEntries);
+
+                // Call function to update PTO hours in Airtable
+                await updatePtoHours(parseFloat(ptoHoursElement.textContent), ptoTime, timeEntriesJson);
+
+                console.log('Form data submitted:', timeEntriesJson);
+                alert('Form data submitted successfully!');
+            } catch (error) {
+                console.error('Error submitting form data:', error);
+                alert('Failed to submit form data.');
+            }
         } else {
-            timeEntries[timeEntries.length - 1][key] = value;
+            alert('No PTO time used, nothing to update.');
         }
-    });
+    };
 
-    const ptoTime = parseFloat(ptoTimeInput.value) || 0;
-
-    const totalHoursWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
-
-    if (ptoTime > totalHoursWithPto) {
-        alert('PTO hours cannot exceed total hours worked with PTO');
-        return;
+    // Initialize the form on page load
+    async function initializeForm() {
+        const today = new Date();
+        adjustToWednesday(today);
+        weekEndingInput.value = today.toISOString().split('T')[0];
+        handleWeekEndingChange(); // Trigger initial population based on today's date
     }
 
-    try {
-        // Call function to update PTO hours in Airtable
-        await updatePtoHours(ptoHoursElement.textContent, ptoTime);
-
-        // You can handle form submission here, e.g., sending data to server or Airtable
-        console.log('Form data submitted:', timeEntries);
-        alert('Form data submitted successfully!');
-    } catch (error) {
-        console.error('Error submitting form data:', error);
-        alert('Failed to submit form data.');
-    }
-};
-
-// Initialize the form on page load
-async function initializeForm() {
-    const today = new Date();
-    adjustToWednesday(today);
-    weekEndingInput.value = today.toISOString().split('T')[0];
-    handleWeekEndingChange(); // Trigger initial population based on today's date
-}
-
-initializeForm();
+    initializeForm();
 });
