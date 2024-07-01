@@ -1,166 +1,118 @@
-/* Reset styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Hover effect for table cells */
-table td:hover {
-    background-color: grey;
-    color: #fff;
-}
-
-/* Basic body styling */
 body {
     font-family: Arial, sans-serif;
-    line-height: 1.6;
-    background-color: #f0f0f0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    min-height: 100vh;
 }
 
-/* Header styling */
-header {
-    width: 100%;
-    background-color: #333;
-    color: white;
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+nav .nav-list {
+    list-style: none;
+    padding: 0;
 }
 
-.nav-list {
-    list-style: none; /* Removes bullet points */
-    padding: 0; /* Remove default padding */
-    text-align: right; /* Aligns the list items to the right */
-    margin-right: 20px; /* Adjust margin as needed to align with the table */
+nav .nav-list li {
+    display: inline;
+    margin-right: 15px;
 }
 
-header .user-info {
-    display: flex;
-    align-items: center;
-}
-
-header .user-info ul {
-    list-style-type: none;
-    margin-left: 20px;
-}
-
-/* Main content styling */
-main {
-    width: 100%;
-    max-width: 800px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-section {
-    width: 100%;
-    background-color: #fff;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-#pto-section {
-    text-align: center; /* Center align "Remaining PTO Hours" section */
-}
-
-#time-entry {
-    text-align: left; /* Align "Time Entry" section content to the left */
+.user-info {
+    float: right;
 }
 
 #time-entry-form {
-    width: 100%;
-    max-width: 100%; /* Adjusted to fit within parent container */
+    max-width: 800px;
+    margin: auto;
 }
 
-/* Table styling */
-.table-container {
-    display: flex;
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    height: 100vh; /* Adjust as needed; this example uses viewport height */
+
+
+.input-width-25 {
+    width: 25%;
 }
 
-#time-entry-table {
-    width: 100%; /* Ensure the table spans full width of its container */
-    max-width: 100%; /* Adjusted to fit within parent container */
-    border-collapse: collapse; /* Merge cell borders */
-}
-
-#time-entry-body {
-    text-align: center; /* Center align text content within table body */
+.input-width-10 {
+    width: 10%;
 }
 
 table {
-    width: 100%; /* Ensure table spans full width */
-    border-collapse: collapse; /* Merge cell borders */
-    margin-top: 20px; /* Space between sections */
+    width: 100%;
+    border-collapse: collapse;
 }
 
-/* Adjust table cell styles */
-table tr {
-    padding: 5px; /* Increased padding for better spacing */
-    text-align: center; /* Align text within cells */
-    min-width: 100px; /* Set a minimum width for cells */
-    max-width: 800px; /* Set a maximum width for cells */
-    white-space: normal; /* Prevent wrapping text */
-    text-overflow: ellipsis; /* Show ellipsis for overflowed content */
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
 }
 
 table th {
-    background-color: #f0f0f0; /* Header background color */
-}
-
-table td input[type="date"],
-table td input[type="time"],
-table td input[type="number"] {
-    width: 100%; /* Adjust input width to fill the table cell */
-    padding: 12px; /* Adjust padding for inputs */
-    box-sizing: border-box; /* Include padding and border in total width */
-    font-size: 14px; /* Adjust font size as needed */
-    line-height: 1.5; /* Adjust line height for better readability */
-}
-
-label {
-    display: block;
-    margin-bottom: 5px;
-}
-
-button {
-    padding: 10px 20px;
-    background-color: #333;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    margin-top: 10px; /* Space between button and inputs */
-}
-
-button:hover {
-    background-color: blue;
+    background-color: #f2f2f2;
 }
 
 #pto-validation-message {
     margin-top: 5px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    main {
-        padding: 10px;
-    }
+#total-time-worked, #total-time-with-pto-value {
+    font-weight: bold;
+}
 
-    #time-entry-form {
-        max-width: 100%;
-    }
+/* Reset and general styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    padding: 20px;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+nav ul {
+    list-style-type: none;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 10px;
+}
+
+.user-info {
+    font-weight: bold;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+table th, table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.disabled-row {
+    background-color: #f2f2f2; /* Light gray background color for disabled row */
+}
+
+.disabled-input {
+    color: #ccc; /* Light color for disabled text */
 }

@@ -2,7 +2,6 @@ const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d184987
 const baseId = 'appMq9W12jZyCJeXe'; // Extracted base ID
 const tableId = 'tblRqUgMsd2QSd5ka'; // Extracted table ID
 
-
 document.getElementById('loginButton').addEventListener('click', login);
 
 async function login() {
@@ -24,7 +23,13 @@ async function login() {
         const user = data.records.find(record => record.fields.email === email && record.fields.password === password);
 
         if (user) {
+            // Store user details in sessionStorage
             sessionStorage.setItem('user', JSON.stringify(user.fields));
+
+            // Store email in localStorage
+            localStorage.setItem('userEmail', email);
+
+            // Redirect to timesheet.html or any other appropriate page
             window.location.href = 'timesheet.html';
         } else {
             alert('Invalid email or password');
