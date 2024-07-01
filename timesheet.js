@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     const baseId = 'appMq9W12jZyCJeXe';
     const tableId = 'tbl2b7fgvkU4GL4jI';
-    const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
+    const apiKey = 'keyUzRhqaaZiztzqy';
+
     const ptoHoursElement = document.getElementById('pto-hours');
     const weekEndingInput = document.getElementById('week-ending');
     const timeEntryForm = document.getElementById('time-entry-form');
@@ -47,7 +48,28 @@ document.addEventListener("DOMContentLoaded", function () {
         daysOfWeek.forEach((day, index) => {
             const currentDate = new Date(weekEndingDate);
             currentDate.setDate(weekEndingDate.getDate() - (6 - index));
-            timeEntryForm.elements[day].value = currentDate.toISOString().split('T')[0];
+            const inputField = timeEntryForm.elements[day];
+            inputField.value = currentDate.toISOString().split('T')[0];
+            inputField.disabled = !isEnabled(currentDate); // Disable based on isEnabled function
+
+            const checkboxId = `did-not-work-${index + 1}`;
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = checkboxId;
+            checkbox.name = checkboxId;
+            checkbox.addEventListener('change', () => {
+                inputField.disabled = checkbox.checked;
+                calculateTotalTimeWorked();
+            });
+
+            const label = document.createElement('label');
+            label.setAttribute('for', checkboxId);
+            label.textContent = 'Did not work today';
+
+            const checkboxContainer = document.createElement('div');
+            checkboxContainer.appendChild(checkbox);
+            checkboxContainer.appendChild(label);
+            inputField.parentNode.appendChild(checkboxContainer);
         });
     }
 
@@ -97,9 +119,15 @@ document.addEventListener("DOMContentLoaded", function () {
         let totalWorkedHours = 0;
 
         for (let i = 1; i <= 7; i++) {
-            const hoursWorked = parseFloat(calculateHoursWorked(i)) || 0;
-            document.getElementById(`hours-worked-today${i}`).textContent = hoursWorked.toFixed(2);
-            totalWorkedHours += hoursWorked;
+            const inputField = timeEntryForm.elements[`date${i}`];
+            const checkbox = inputField.parentNode.querySelector(`#did-not-work-${i}`);
+            if (!checkbox.checked) {
+                const hoursWorked = parseFloat(calculateHoursWorked(i)) || 0;
+                document.getElementById(`hours-worked-today${i}`).textContent = hoursWorked.toFixed(2);
+                totalWorkedHours += hoursWorked;
+            } else {
+                document.getElementById(`hours-worked-today${i}`).textContent = '0.00';
+            }
         }
 
         totalTimeWorkedSpan.textContent = totalWorkedHours.toFixed(2);
@@ -128,6 +156,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td><button type="button" onclick="deleteRow(this)">Delete</button></td>
             `;
             tbody.appendChild(newRow);
+
+            const currentDate = new Date(weekEndingInput.value);
+            const inputField = newRow.querySelector(`[name="date${rowCount}"]`);
+            inputField.disabled = !isEnabled(currentDate); // Disable based on isEnabled function
+
+            const checkboxId = `did-not-work-${rowCount}`;
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = checkboxId;
+            checkbox.name = checkboxId;
+            checkbox.addEventListener('change', () => {
+                inputField.disabled = checkbox.checked;
+                calculateTotalTimeWorked();
+            });
+
+            const label = document.createElement('label');
+            label.setAttribute('for', checkboxId);
+            label.textContent = 'Did not work today';
+
+            const checkboxContainer = document.createElement('div');
+            checkboxContainer.appendChild(checkbox);
+            checkboxContainer.appendChild(label);
+            newRow.querySelector('td:last-child').appendChild(checkboxContainer);
         }
     }
 
@@ -180,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const endTime = formData.get(`end_time${i}`);
             const hoursWorked = calculateHoursWorked(i);
 
-            if (date && (startTime || endTime)) {
+            if (date && (startTime || endTime) && !formData.get(`did-not-work-${i}`)) {
                 records.push({
                     fields: {
                         Date: date,
@@ -208,6 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!response.ok) throw new Error('Failed to submit timesheet');
 
+            console.log('Timesheet submitted successfully');
             alert('Timesheet submitted successfully!');
             timeEntryForm.reset();
             timeEntryBody.innerHTML = '';
@@ -216,8 +268,13 @@ document.addEventListener("DOMContentLoaded", function () {
             submitRemainingPtoHours();
         } catch (error) {
             console.error('Error submitting timesheet:', error);
-            alert('Failed to submit timesheet. Please try again later.');
+            alert('Failed to submit timesheet');
         }
+    }
+
+    function isEnabled(date) {
+        const dayOfWeek = date.getDay();
+        return dayOfWeek !== 0 && dayOfWeek !== 6; // Enable for Monday to Friday
     }
 
     function init() {

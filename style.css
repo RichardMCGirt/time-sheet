@@ -11,7 +11,6 @@ table td:hover {
     color: #fff;
 }
 
-
 /* Basic body styling */
 body {
     font-family: Arial, sans-serif;
@@ -23,7 +22,6 @@ body {
     justify-content: flex-start;
     min-height: 100vh;
 }
-
 
 /* Header styling */
 header {
@@ -76,15 +74,13 @@ section {
     text-align: center; /* Center align "Remaining PTO Hours" section */
 }
 
-
-
 #time-entry {
     text-align: left; /* Align "Time Entry" section content to the left */
 }
 
 #time-entry-form {
     width: 100%;
-    max-width: 600px;
+    max-width: 100%; /* Adjusted to fit within parent container */
 }
 
 /* Table styling */
@@ -97,14 +93,13 @@ section {
 
 #time-entry-table {
     width: 100%; /* Ensure the table spans full width of its container */
-    max-width: 600px; /* Example maximum width; adjust as needed */
+    max-width: 100%; /* Adjusted to fit within parent container */
     border-collapse: collapse; /* Merge cell borders */
 }
 
 #time-entry-body {
     text-align: center; /* Center align text content within table body */
 }
-
 
 table {
     width: 100%; /* Ensure table spans full width */
@@ -122,7 +117,6 @@ table tr {
     text-overflow: ellipsis; /* Show ellipsis for overflowed content */
 }
 
-
 table th {
     background-color: #f0f0f0; /* Header background color */
 }
@@ -130,13 +124,12 @@ table th {
 table td input[type="date"],
 table td input[type="time"],
 table td input[type="number"] {
-    width: calc(100% - 2px); /* Adjust input width */
+    width: 100%; /* Adjust input width to fill the table cell */
     padding: 12px; /* Adjust padding for inputs */
     box-sizing: border-box; /* Include padding and border in total width */
     font-size: 14px; /* Adjust font size as needed */
     line-height: 1.5; /* Adjust line height for better readability */
 }
-
 
 label {
     display: block;
