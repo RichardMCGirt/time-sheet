@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     function adjustToWednesday(date) {
         let dayOfWeek = date.getDay();
-        const offset = dayOfWeek < 3 ? 3 - dayOfWeek : 10 - dayOfWeek;
+        const offset = dayOfWeek < 2 ? 2 - dayOfWeek : 10 - dayOfWeek;
         date.setDate(date.getDate() + offset);
     }
 
