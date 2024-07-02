@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", async function() {
+document.addEventListener("DOMContentLoaded", function() {
     const baseId = 'appMq9W12jZyCJeXe';
     const tableId = 'tblhTl5q7sEFDv66Z';
     const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     const weekEndingInput = document.getElementById('week-ending');
     const timeEntryForm = document.getElementById('time-entry-form');
     const totalTimeWorkedSpan = document.getElementById('total-time-worked');
+    const totalTimeWithPtoSpan = document.getElementById('total-time-with-pto-value');
+    const ptoTimeInput = document.getElementById('pto-time');
     const userEmailElement = document.getElementById('user-email');
     const logoutButton = document.getElementById('logout-button');
 
@@ -21,8 +23,12 @@ document.addEventListener("DOMContentLoaded", async function() {
     weekEndingInput.addEventListener('change', handleWeekEndingChange);
     timeEntryForm.addEventListener('input', () => {
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(calculateTotalTimeWorked, 300);
+        debounceTimer = setTimeout(() => {
+            calculateTotalTimeWorked();
+            calculateTotalTimeWithPto();
+        }, 300);
     });
+    ptoTimeInput.addEventListener('input', calculateTotalTimeWithPto);
     logoutButton.addEventListener('click', handleLogout);
 
     // Function to handle logout
@@ -64,7 +70,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     // Function to handle week ending change
-    async function handleWeekEndingChange() {
+    function handleWeekEndingChange() {
         const selectedDate = new Date(weekEndingInput.value);
         adjustToWeekEnding(selectedDate);
         weekEndingInput.value = selectedDate.toISOString().split('T')[0];
@@ -136,6 +142,16 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         // Display total hours worked
         totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
+        totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
+
+    }
+
+    // Function to calculate total time with PTO
+    function calculateTotalTimeWithPto() {
+        const totalHoursWorked = parseFloat(totalTimeWorkedSpan.textContent) || 0;
+        const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
+        const totalHoursWithPto = totalHoursWorked + ptoTimeUsed;
+        totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
     }
 
     // Function to round a number to the nearest 15-minute interval
@@ -174,51 +190,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         return hoursWorked;
     }
 
-    // Function to toggle work inputs based on 'Did not work' checkbox
-    window.toggleWorkInputs = function(index, didNotWork) {
-        const startTimeInput = timeEntryForm.elements[`start_time${index + 1}`];
-        const lunchStartInput = timeEntryForm.elements[`lunch_start${index + 1}`];
-        const lunchEndInput = timeEntryForm.elements[`lunch_end${index + 1}`];
-        const endTimeInput = timeEntryForm.elements[`end_time${index + 1}`];
-        const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
-
-        // Store original values if 'Did not work' is checked for the first time
-        if (didNotWork && !startTimeInput.dataset.originalValue) {
-            startTimeInput.dataset.originalValue = startTimeInput.value;
-            lunchStartInput.dataset.originalValue = lunchStartInput.value;
-            lunchEndInput.dataset.originalValue = lunchEndInput.value;
-            endTimeInput.dataset.originalValue = endTimeInput.value;
-        }
-
-        startTimeInput.disabled = didNotWork;
-        lunchStartInput.disabled = didNotWork;
-        lunchEndInput.disabled = didNotWork;
-        endTimeInput.disabled = didNotWork;
-
-        if (didNotWork) {
-            startTimeInput.value = '00:00';
-            lunchStartInput.value = '00:00';
-            lunchEndInput.value = '00:00';
-            endTimeInput.value = '00:00';
-            hoursWorkedSpan.textContent = '0.00';
-        } else {
-            // Restore original values when 'Did not work' is unchecked
-            startTimeInput.value = startTimeInput.dataset.originalValue || '';
-            lunchStartInput.value = lunchStartInput.dataset.originalValue || '';
-            lunchEndInput.value = lunchEndInput.dataset.originalValue || '';
-            endTimeInput.value = endTimeInput.dataset.originalValue || '';
-
-            // Clear stored original values
-            delete startTimeInput.dataset.originalValue;
-            delete lunchStartInput.dataset.originalValue;
-            delete lunchEndInput.dataset.originalValue;
-            delete endTimeInput.dataset.originalValue;
-
-            // Recalculate total time worked after restoring values
-            calculateTotalTimeWorked();
-        }
-    }
-
     // Initializations
     if (userEmail) {
         fetchPtoHours(); // Fetch initial PTO hours
@@ -227,9 +198,26 @@ document.addEventListener("DOMContentLoaded", async function() {
         window.location.href = 'index.html'; // Redirect to login page if no user email found
     }
 });
+function validatePtoHours(totalHoursWithPto) {
+    // Implement validation logic for PTO hours
+    const remainingPTO = parseFloat(ptoHoursElement.textContent);
+    const ptoUsed = totalHoursWithPto - parseFloat(totalTimeWorkedSpan.textContent);
 
+    if (ptoUsed > remainingPTO) {
+        ptoValidationMessage.textContent = 'PTO hours exceed available balance';
+        ptoValidationMessage.style.color = 'red';
+    } else if (totalHoursWithPto > 40) {
+        ptoValidationMessage.textContent = 'Total hours including PTO cannot exceed 40 hours';
+        ptoValidationMessage.style.color = 'red';
+    } else {
+        ptoValidationMessage.textContent = '';
+    }
+}
+
+// Submit form data
 window.submitTimesheet = async function() {
-    const formData = new FormData(document.getElementById('time-entry-form'));
+    const formData = new FormData(timeEntryForm);
+
     const entries = Array.from(formData.entries());
     const timeEntries = [];
     let weekEndingDate = null;
@@ -248,15 +236,36 @@ window.submitTimesheet = async function() {
         }
     });
 
-    try {
-        // Convert timeEntries to JSON string
-        const timeEntriesJson = JSON.stringify(timeEntries);
+    const ptoTime = parseFloat(ptoTimeInput.value) || 0;
 
-        console.log('Form data submitted:', timeEntriesJson);
-        alert('Form data submitted successfully!');
-    } catch (error) {
-        console.error('Error submitting form data:', error);
-        alert('Failed to submit form data.');
+    if (ptoTime > 0) {
+        const totalHoursWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
+
+        if (ptoTime > totalHoursWithPto) {
+            alert('PTO hours cannot exceed total hours worked with PTO');
+            return;
+        }
+
+        if (totalHoursWithPto > 40) {
+            alert('Total hours including PTO cannot exceed 40 hours');
+            return;
+        }
+
+        try {
+            // Convert timeEntries to JSON string
+            const timeEntriesJson = JSON.stringify(timeEntries);
+
+            // Call function to update PTO hours in Airtable
+            await updatePtoHours(parseFloat(ptoHoursElement.textContent), ptoTime, timeEntriesJson);
+
+            console.log('Form data submitted:', timeEntriesJson);
+            alert('Form data submitted successfully!');
+        } catch (error) {
+            console.error('Error submitting form data:', error);
+            alert('Failed to submit form data.');
+        }
+    } else {
+        alert('No PTO time used, nothing to update.');
     }
 };
 
@@ -267,4 +276,6 @@ async function initializeForm() {
     weekEndingInput.value = today.toISOString().split('T')[0];
     handleWeekEndingChange(); // Trigger initial population based on today's date
 }
+
 initializeForm();
+};
