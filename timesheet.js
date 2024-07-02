@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", async function() {
     const baseId = 'appMq9W12jZyCJeXe';
-    const tableId = 'tbl2b7fgvkU4GL4jI';
-    const apiKey = 'keyUzRhqaaZiztzqy';
-    let userEmail = localStorage.getItem('userEmail') || ''; // Fetch userEmail from localStorage
+    const tableId = 'tblhTl5q7sEFDv66Z';
+    const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
+    const userEmail = localStorage.getItem('userEmail') || ''; // Fetch userEmail from localStorage
 
     // DOM elements
     const ptoHoursElement = document.getElementById('pto-hours');
@@ -13,8 +13,13 @@ document.addEventListener("DOMContentLoaded", async function() {
     const totalTimeWithPtoSpan = document.getElementById('total-time-with-pto-value');
     const ptoValidationMessage = document.getElementById('pto-validation-message');
     const timeEntryBody = document.getElementById('time-entry-body');
+    const userEmailElement = document.getElementById('user-email');
+    const logoutButton = document.getElementById('logout-button');
 
     let debounceTimer;
+
+    // Display user email next to logout button
+    userEmailElement.textContent = `(${userEmail})`;
 
     // Event listeners
     weekEndingInput.addEventListener('change', handleWeekEndingChange);
@@ -22,16 +27,22 @@ document.addEventListener("DOMContentLoaded", async function() {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(calculateTotalTimeWorked, 300);
     });
-    ptoTimeInput.addEventListener('input', () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(calculateTotalTimeWorked, 300);
-    });
+    ptoTimeInput.addEventListener('input', validatePtoTimeInput);
+    ptoTimeInput.addEventListener('change', validatePtoTimeInput);
+    logoutButton.addEventListener('click', handleLogout);
 
-    // Fetch user's email from Airtable and update logout link
-    await fetchUserEmailFromAirtable();
+    // Function to handle logout
+    function handleLogout(event) {
+        event.preventDefault();
+        localStorage.removeItem('userEmail');
+        sessionStorage.removeItem('user');
+        window.location.href = 'index.html'; // Redirect to login page
+    }
 
-    async function fetchUserEmailFromAirtable() {
+    // Function to fetch remaining PTO hours from Airtable
+    async function fetchPtoHours() {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({email}='${userEmail}')`;
+        console.log(`Fetching PTO hours from: ${endpoint}`); // Log the endpoint
 
         try {
             const response = await fetch(endpoint, {
@@ -41,48 +52,29 @@ document.addEventListener("DOMContentLoaded", async function() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to fetch user data from Airtable');
+                throw new Error(`Failed to fetch data: ${response.statusText}`);
             }
 
             const data = await response.json();
-            if (data.records.length > 0) {
-                const userRecord = data.records[0].fields;
-                userEmail = userRecord['email']; // Update userEmail with fetched email
-                updateLogoutLink(userEmail);
+            console.log('Data fetched from Airtable:', data); // Log the fetched data
 
-                if (userRecord['PTO Hours'] == 0) {
-                    ptoHoursElement.textContent = 'User has no PTO hours';
-                    ptoTimeInput.value = 0; // Set PTO Hours in the form to 0
-                } else {
-                    ptoHoursElement.textContent = userRecord['PTO Available'];
-                    ptoTimeInput.value = userRecord['PTO Hours'] || 0; // Fetch and set PTO Hours
-                }
+            if (data.records.length > 0) {
+                const remainingPTO = data.records[0].fields['PTO Available'];
+                const ptoHours = data.records[0].fields['PTO Hours'] || 0;
+                document.getElementById('pto-hours').textContent = remainingPTO;
+                ptoTimeInput.value = ptoHours; // Set PTO Hours in the form
             } else {
-                throw new Error('No user record found');
+                throw new Error('No PTO record found for user');
             }
         } catch (error) {
-            console.error('Error fetching user email:', error);
-            userEmail = 'user@example.com'; // Fallback email
-            updateLogoutLink(userEmail);
-            ptoHoursElement.textContent = 'Error fetching PTO';
+            console.error('Error fetching remaining PTO:', error);
+            document.getElementById('pto-hours').textContent = 'Error fetching PTO';
         }
-    }
-
-    function updateLogoutLink(email) {
-        const logoutLink = document.getElementById('logout-link');
-        logoutLink.textContent = `Logout ${email}`;
-        logoutLink.href = "#";
-        logoutLink.addEventListener('click', (event) => {
-            event.preventDefault();
-            localStorage.removeItem('userEmail');
-            sessionStorage.removeItem('user');
-            window.location.href = 'index.html'; // Redirect to the login page
-        });
     }
 
     async function handleWeekEndingChange() {
         const selectedDate = new Date(weekEndingInput.value);
-        adjustToWednesday(selectedDate);
+        adjustToWeekEnding(selectedDate);
         weekEndingInput.value = selectedDate.toISOString().split('T')[0];
 
         const date7 = new Date(selectedDate);
@@ -90,13 +82,17 @@ document.addEventListener("DOMContentLoaded", async function() {
         timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
 
         populateWeekDates(selectedDate);
-        await fetchPtoHours(selectedDate);
     }
 
-    function adjustToWednesday(date) {
+    function adjustToWeekEnding(date) {
         let dayOfWeek = date.getDay();
-        const offset = dayOfWeek < 3 ? 3 - dayOfWeek : 10 - dayOfWeek;
-        date.setDate(date.getDate() + offset);
+        if (dayOfWeek >= 0 && dayOfWeek <= 2) { // Sunday to Wednesday
+            const offset = 2 - dayOfWeek;
+            date.setDate(date.getDate() + offset);
+        } else { // Thursday to Saturday
+            const offset = dayOfWeek - 3;
+            date.setDate(date.getDate() - offset);
+        }
     }
 
     function populateWeekDates(weekEndingDate) {
@@ -107,23 +103,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             const inputField = timeEntryForm.elements[day];
             inputField.value = currentDate.toISOString().split('T')[0];
             inputField.disabled = !isEnabled(currentDate); // Disable based on isEnabled function
-
-            // Add 'Did not work' checkbox if not already present
-            const checkboxId = `did-not-work-${index + 1}`;
-            let checkbox = document.getElementById(checkboxId);
-            if (!checkbox) {
-                checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = checkboxId;
-                checkbox.name = `did_not_work${index + 1}`;
-                checkbox.addEventListener('change', (event) => {
-                    toggleWorkInputs(index, event.target.checked);
-                });
-
-                const cell = document.createElement('td');
-                cell.appendChild(checkbox);
-                inputField.parentElement.parentElement.appendChild(cell);
-            }
+            inputField.setAttribute('readonly', true); // Make input readonly
         });
     }
 
@@ -180,76 +160,18 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    // Function to fetch remaining PTO hours from Airtable
-    async function fetchPtoHours(weekEndingDate) {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({email}='${userEmail}')`;
+    // Function to validate PTO time input
+    function validatePtoTimeInput() {
+        const ptoTime = parseFloat(ptoTimeInput.value);
         
-        try {
-            const response = await fetch(endpoint, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch data');
-            }
-
-            const data = await response.json();
-            if (data.records.length > 0) {
-                const remainingPTO = data.records[0].fields['PTO Available'];
-                const ptoHours = data.records[0].fields['PTO Hours'] || 0;
-                document.getElementById('pto-hours').textContent = remainingPTO;
-                ptoTimeInput.value = ptoHours; // Set PTO Hours in the form
-            } else {
-                throw new Error('No PTO record found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching remaining PTO:', error);
-            document.getElementById('pto-hours').textContent = 'Error fetching PTO';
-        }
-    }
-
-    // Function to update remaining PTO hours and PTO Hours in Airtable
-    async function updatePtoHours(remainingPTO, ptoHoursUsed, timeEntriesJson) {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}`;
-
-        try {
-            const recordsResponse = await fetch(endpoint, {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const records = await recordsResponse.json();
-            const recordId = records.records[0].id;
-            const newRemainingPTO = Math.max(0, remainingPTO - ptoHoursUsed);
-
-            const response = await fetch(`${endpoint}/${recordId}`, {
-                method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    fields: {
-                        'PTO Available': newRemainingPTO,
-                        'PTO Hours': newRemainingPTO > 0 ? newRemainingPTO : 0,
-                        'Time Entries': timeEntriesJson // Store time entries JSON string in 'Time Entries' field
-                    }
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update PTO hours');
-            }
-
-            console.log('PTO hours updated successfully');
-        } catch (error) {
-            console.error('Error updating PTO hours:', error);
-            throw error; // Re-throw the error to be caught in the submitTimesheet function
+        if (isNaN(ptoTime) || ptoTime < 0 || !Number.isInteger(ptoTime)) {
+            ptoValidationMessage.textContent = 'PTO hours used must be a non-negative whole number';
+            ptoValidationMessage.style.color = 'red';
+            ptoTimeInput.setCustomValidity('Invalid');
+        } else {
+            ptoValidationMessage.textContent = '';
+            ptoTimeInput.setCustomValidity('');
+            calculateTotalTimeWorked();
         }
     }
 
@@ -318,15 +240,14 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     function validatePtoHours(totalHoursWithPto) {
-        // Implement validation logic for PTO hours
         const remainingPTO = parseFloat(ptoHoursElement.textContent);
-        const ptoUsed = totalHoursWithPto - parseFloat(totalTimeWorkedSpan.textContent);
+        const ptoUsed = parseFloat(ptoTimeInput.value) || 0;
 
         if (ptoUsed > remainingPTO) {
             ptoValidationMessage.textContent = 'PTO hours exceed available balance';
             ptoValidationMessage.style.color = 'red';
-        } else if (totalHoursWithPto > 40) {
-            ptoValidationMessage.textContent = 'Total hours including PTO cannot exceed 40 hours';
+        } else if (totalHoursWithPto > 40 && ptoUsed > 0) {
+            ptoValidationMessage.textContent = 'Total hours including PTO cannot exceed 40 hours if PTO is used';
             ptoValidationMessage.style.color = 'red';
         } else {
             ptoValidationMessage.textContent = '';
@@ -365,8 +286,8 @@ document.addEventListener("DOMContentLoaded", async function() {
                 return;
             }
 
-            if (totalHoursWithPto > 40) {
-                alert('Total hours including PTO cannot exceed 40 hours');
+            if (totalHoursWithPto > 40 && ptoTime > 0) {
+                alert('Total hours including PTO cannot exceed 40 hours if PTO is used');
                 return;
             }
 
@@ -391,7 +312,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     // Initialize the form on page load
     async function initializeForm() {
         const today = new Date();
-        adjustToWednesday(today);
+        await fetchPtoHours(); // Fetch PTO hours on page load
+        adjustToWeekEnding(today);
         weekEndingInput.value = today.toISOString().split('T')[0];
         handleWeekEndingChange(); // Trigger initial population based on today's date
     }

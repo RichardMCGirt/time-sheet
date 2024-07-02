@@ -18,6 +18,12 @@ nav .nav-list li {
     float: right;
 }
 
+.center-text {
+    text-align: center;
+    display: block;
+    margin: 0 auto;
+}
+
 #time-entry-form {
     max-width: 800px;
     margin: auto;
@@ -62,7 +68,6 @@ table th {
     font-weight: bold;
 }
 
-/* Reset and general styles */
 * {
     margin: 0;
     padding: 0;
