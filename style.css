@@ -29,6 +29,11 @@ nav .nav-list li {
     margin: auto;
 }
 
+input[type="date"] {
+    color: black; /* Text color */
+    /* Additional styles */
+}
+
 .input-width-25 {
     width: 25%;
 }
