@@ -174,6 +174,51 @@ document.addEventListener("DOMContentLoaded", async function() {
         return hoursWorked;
     }
 
+    // Function to toggle work inputs based on 'Did not work' checkbox
+    window.toggleWorkInputs = function(index, didNotWork) {
+        const startTimeInput = timeEntryForm.elements[`start_time${index + 1}`];
+        const lunchStartInput = timeEntryForm.elements[`lunch_start${index + 1}`];
+        const lunchEndInput = timeEntryForm.elements[`lunch_end${index + 1}`];
+        const endTimeInput = timeEntryForm.elements[`end_time${index + 1}`];
+        const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
+
+        // Store original values if 'Did not work' is checked for the first time
+        if (didNotWork && !startTimeInput.dataset.originalValue) {
+            startTimeInput.dataset.originalValue = startTimeInput.value;
+            lunchStartInput.dataset.originalValue = lunchStartInput.value;
+            lunchEndInput.dataset.originalValue = lunchEndInput.value;
+            endTimeInput.dataset.originalValue = endTimeInput.value;
+        }
+
+        startTimeInput.disabled = didNotWork;
+        lunchStartInput.disabled = didNotWork;
+        lunchEndInput.disabled = didNotWork;
+        endTimeInput.disabled = didNotWork;
+
+        if (didNotWork) {
+            startTimeInput.value = '00:00';
+            lunchStartInput.value = '00:00';
+            lunchEndInput.value = '00:00';
+            endTimeInput.value = '00:00';
+            hoursWorkedSpan.textContent = '0.00';
+        } else {
+            // Restore original values when 'Did not work' is unchecked
+            startTimeInput.value = startTimeInput.dataset.originalValue || '';
+            lunchStartInput.value = lunchStartInput.dataset.originalValue || '';
+            lunchEndInput.value = lunchEndInput.dataset.originalValue || '';
+            endTimeInput.value = endTimeInput.dataset.originalValue || '';
+
+            // Clear stored original values
+            delete startTimeInput.dataset.originalValue;
+            delete lunchStartInput.dataset.originalValue;
+            delete lunchEndInput.dataset.originalValue;
+            delete endTimeInput.dataset.originalValue;
+
+            // Recalculate total time worked after restoring values
+            calculateTotalTimeWorked();
+        }
+    }
+
     // Initializations
     if (userEmail) {
         fetchPtoHours(); // Fetch initial PTO hours
@@ -214,3 +259,12 @@ window.submitTimesheet = async function() {
         alert('Failed to submit form data.');
     }
 };
+
+// Initialize the form on page load
+async function initializeForm() {
+    const today = new Date();
+    adjustToWednesday(today);
+    weekEndingInput.value = today.toISOString().split('T')[0];
+    handleWeekEndingChange(); // Trigger initial population based on today's date
+}
+initializeForm();
