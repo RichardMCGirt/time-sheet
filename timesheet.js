@@ -8,14 +8,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     const ptoHoursElement = document.getElementById('pto-hours');
     const weekEndingInput = document.getElementById('week-ending');
     const timeEntryForm = document.getElementById('time-entry-form');
-    const ptoTimeInput = document.getElementById('pto-time');
     const totalTimeWorkedSpan = document.getElementById('total-time-worked');
-    const totalTimeWithPtoSpan = document.getElementById('total-time-with-pto-value');
-    const ptoValidationMessage = document.getElementById('pto-validation-message');
     const userEmailElement = document.getElementById('user-email');
     const logoutButton = document.getElementById('logout-button');
-    const remainingPtoHoursSpan = document.getElementById('pto-hours');
-    const remainingPtoCalculationDiv = document.getElementById('remaining-pto-calculation');
 
     let debounceTimer;
 
@@ -28,8 +23,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(calculateTotalTimeWorked, 300);
     });
-    ptoTimeInput.addEventListener('input', validatePtoTimeInput);
-    ptoTimeInput.addEventListener('change', validatePtoTimeInput);
     logoutButton.addEventListener('click', handleLogout);
 
     // Function to handle logout
@@ -59,25 +52,14 @@ document.addEventListener("DOMContentLoaded", async function() {
             console.log('Data fetched from Airtable:', data);
 
             if (data.records.length > 0) {
-                const remainingPTO = data.records[0].fields['PTO Available'] || 0;
                 const ptoHours = data.records[0].fields['PTO Hours'] || 0;
-                ptoHoursElement.textContent = remainingPTO.toFixed(2);
-
-                // Update PTO time used and remaining PTO hours
-                const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
-                remainingPtoHoursSpan.textContent = (remainingPTO - ptoTimeUsed).toFixed(2);
-                remainingPtoCalculationDiv.textContent = (remainingPTO - ptoHours).toFixed(2);
-
-                // Update total time with PTO
-                calculateTotalTimeWorked();
+                ptoHoursElement.textContent = ptoHours.toFixed(2);
             } else {
                 throw new Error('No PTO record found for user');
             }
         } catch (error) {
             console.error('Error fetching remaining PTO:', error);
             ptoHoursElement.textContent = 'Error fetching PTO';
-            remainingPtoHoursSpan.textContent = 'Error fetching PTO';
-            remainingPtoCalculationDiv.textContent = 'Error fetching PTO';
         }
     }
 
@@ -124,23 +106,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         return date.getDay() !== 0 && date.getDay() !== 6; // Enable all weekdays
     }
 
-    // Function to validate PTO time input
-    function validatePtoTimeInput() {
-        const ptoTime = parseFloat(ptoTimeInput.value);
-
-        if (isNaN(ptoTime) || ptoTime < 0 || ptoTime > 40 || !Number.isInteger(ptoTime)) {
-            ptoValidationMessage.textContent = 'PTO hours used must be a positive whole number not greater than 40.';
-            ptoValidationMessage.style.color = 'red';
-            ptoTimeInput.classList.add('invalid');
-        } else {
-            ptoValidationMessage.textContent = '';
-            ptoTimeInput.classList.remove('invalid');
-        }
-
-        // Update total time with PTO
-        calculateTotalTimeWorked();
-    }
-
     // Function to calculate total time worked and update display
     function calculateTotalTimeWorked() {
         let totalHoursWorked = 0;
@@ -171,10 +136,6 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         // Display total hours worked
         totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
-
-        // Update remaining PTO calculation
-        const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
-        remainingPtoHoursSpan.textContent = (parseFloat(ptoHoursElement.textContent) - ptoTimeUsed).toFixed(2);
     }
 
     // Function to round a number to the nearest 15-minute interval
@@ -221,3 +182,35 @@ document.addEventListener("DOMContentLoaded", async function() {
         window.location.href = 'index.html'; // Redirect to login page if no user email found
     }
 });
+
+window.submitTimesheet = async function() {
+    const formData = new FormData(document.getElementById('time-entry-form'));
+    const entries = Array.from(formData.entries());
+    const timeEntries = [];
+    let weekEndingDate = null;
+
+    entries.forEach(entry => {
+        const [key, value] = entry;
+        if (key.startsWith('date')) {
+            if (!weekEndingDate) {
+                weekEndingDate = new Date(value);
+            }
+            timeEntries.push({ [key]: value });
+        } else {
+            if (timeEntries.length > 0) {
+                timeEntries[timeEntries.length - 1][key] = value;
+            }
+        }
+    });
+
+    try {
+        // Convert timeEntries to JSON string
+        const timeEntriesJson = JSON.stringify(timeEntries);
+
+        console.log('Form data submitted:', timeEntriesJson);
+        alert('Form data submitted successfully!');
+    } catch (error) {
+        console.error('Error submitting form data:', error);
+        alert('Failed to submit form data.');
+    }
+};
