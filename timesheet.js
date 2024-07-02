@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     const logoutButton = document.getElementById('logout-button');
 
     const ptoTimeUsedElement = document.getElementById('pto-time'); // Update to use the span element
+    const remainingPtoCalculationDiv = document.getElementById('remaining-pto-calculation'); // New div for calculation
+    const remainingPtoHoursSpan = document.getElementById('remaining-pto-hours'); // New span for remaining PTO hours
 
     let debounceTimer;
 
@@ -65,6 +67,13 @@ document.addEventListener("DOMContentLoaded", async function() {
                 const ptoHours = data.records[0].fields['PTO Hours'] || 0;
                 ptoHoursElement.textContent = remainingPTO;
                 ptoTimeUsedElement.textContent = ptoHours.toFixed(2); // Update the span with PTO Hours
+
+                // Update remaining PTO hours span
+                remainingPtoHoursSpan.textContent = remainingPTO;
+
+                // Calculate and update remaining PTO calculation
+                const remainingPtoCalculation = remainingPTO - ptoHours;
+                remainingPtoCalculationDiv.textContent = remainingPtoCalculation.toFixed(2);
             } else {
                 throw new Error('No PTO record found for user');
             }
@@ -72,6 +81,10 @@ document.addEventListener("DOMContentLoaded", async function() {
             console.error('Error fetching remaining PTO:', error);
             ptoHoursElement.textContent = 'Error fetching PTO';
             ptoTimeUsedElement.textContent = 'Error fetching PTO'; // Handle error case for PTO time used span
+
+            // Update remaining PTO calculation in case of error
+            remainingPtoHoursSpan.textContent = 'Error fetching PTO';
+            remainingPtoCalculationDiv.textContent = 'Error fetching PTO';
         }
     }
 
@@ -181,9 +194,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     function calculateTotalTimeWorked() {
         let totalHoursWorked = 0;
         let totalHoursWithPto = 0;
-
+    
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
-
+    
         daysOfWeek.forEach((day, index) => {
             const dateInput = timeEntryForm.elements[day];
             const startTimeInput = timeEntryForm.elements[`start_time${index + 1}`];
@@ -191,55 +204,64 @@ document.addEventListener("DOMContentLoaded", async function() {
             const lunchEndInput = timeEntryForm.elements[`lunch_end${index + 1}`];
             const endTimeInput = timeEntryForm.elements[`end_time${index + 1}`];
             const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
-
+    
             const startDate = new Date(dateInput.value);
             const startTime = parseTime(startTimeInput.value);
             const lunchStart = parseTime(lunchStartInput.value);
             const lunchEnd = parseTime(lunchEndInput.value);
             const endTime = parseTime(endTimeInput.value);
-
+    
             let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime);
             hoursWorked = hoursWorked.toFixed(2); // Round to 2 decimal places
             totalHoursWorked += parseFloat(hoursWorked);
             hoursWorkedSpan.textContent = hoursWorked;
-
+    
             // Calculate total hours worked with PTO
             let hoursWithPto = hoursWorked - parseFloat(ptoTimeInput.textContent); // Use textContent for span
             hoursWithPto = Math.max(hoursWithPto, 0); // Ensure it's not negative
             totalHoursWithPto += parseFloat(hoursWithPto.toFixed(2));
         });
-
+    
+        // Round total hours worked to the nearest 15-minute interval
+        totalHoursWorked = roundToNearestQuarterHour(totalHoursWorked);
+    
         // Display total hours worked
         totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
         totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
     }
-
+    
+    // Function to round a number to the nearest 15-minute interval
+    function roundToNearestQuarterHour(hours) {
+        const quarter = 0.25;
+        return Math.round(hours / quarter) * quarter;
+    }
+    
     // Helper function to parse time string to decimal hours
     function parseTime(timeString) {
         const [hours, minutes] = timeString.split(':').map(Number);
         return hours + minutes / 60;
     }
-
+    
     // Helper function to calculate hours worked in a day
     function calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime) {
         const startDateTime = new Date(startDate);
         startDateTime.setHours(Math.floor(startTime), (startTime % 1) * 60, 0, 0);
-
+    
         const lunchStartDateTime = new Date(startDate);
         lunchStartDateTime.setHours(Math.floor(lunchStart), (lunchStart % 1) * 60, 0, 0);
-
+    
         const lunchEndDateTime = new Date(startDate);
         lunchEndDateTime.setHours(Math.floor(lunchEnd), (lunchEnd % 1) * 60, 0, 0);
-
+    
         const endDateTime = new Date(startDate);
         endDateTime.setHours(Math.floor(endTime), (endTime % 1) * 60, 0, 0);
-
+    
         let hoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60); // Convert milliseconds to hours
         const lunchBreak = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60); // Convert milliseconds to hours
-
+    
         // Deduct lunch break time from total hours worked
         hoursWorked -= lunchBreak;
-
+    
         return hoursWorked;
     }
 
