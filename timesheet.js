@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     const userEmailElement = document.getElementById('user-email');
     const logoutButton = document.getElementById('logout-button');
 
+    const ptoTimeUsedElement = document.getElementById('pto-time'); // Update to use the span element
+
     let debounceTimer;
 
     // Display user email next to logout button
@@ -61,14 +63,15 @@ document.addEventListener("DOMContentLoaded", async function() {
             if (data.records.length > 0) {
                 const remainingPTO = data.records[0].fields['PTO Available'];
                 const ptoHours = data.records[0].fields['PTO Hours'] || 0;
-                document.getElementById('pto-hours').textContent = remainingPTO;
-                ptoTimeInput.value = ptoHours; // Set PTO Hours in the form
+                ptoHoursElement.textContent = remainingPTO;
+                ptoTimeUsedElement.textContent = ptoHours.toFixed(2); // Update the span with PTO Hours
             } else {
                 throw new Error('No PTO record found for user');
             }
         } catch (error) {
             console.error('Error fetching remaining PTO:', error);
-            document.getElementById('pto-hours').textContent = 'Error fetching PTO';
+            ptoHoursElement.textContent = 'Error fetching PTO';
+            ptoTimeUsedElement.textContent = 'Error fetching PTO'; // Handle error case for PTO time used span
         }
     }
 
@@ -162,15 +165,15 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Function to validate PTO time input
     function validatePtoTimeInput() {
-        const ptoTime = parseFloat(ptoTimeInput.value);
-        
-        if (isNaN(ptoTime) || ptoTime < 0 || !Number.isInteger(ptoTime)) {
-            ptoValidationMessage.textContent = 'PTO hours used must be a non-negative whole number';
+        const ptoTime = parseFloat(ptoTimeInput.textContent); // Use textContent for span
+
+        if (isNaN(ptoTime) || ptoTime < 0 || ptoTime > 40 || !Number.isInteger(ptoTime)) {
+            ptoValidationMessage.textContent = 'PTO hours used must be a positive whole number not greater than 40';
             ptoValidationMessage.style.color = 'red';
-            ptoTimeInput.setCustomValidity('Invalid');
+            ptoTimeInput.textContent = '0'; // Reset to default value if invalid
         } else {
             ptoValidationMessage.textContent = '';
-            ptoTimeInput.setCustomValidity('');
+            ptoTimeInput.textContent = ptoTime.toFixed(0); // Round to whole number
             calculateTotalTimeWorked();
         }
     }
@@ -200,123 +203,51 @@ document.addEventListener("DOMContentLoaded", async function() {
             totalHoursWorked += parseFloat(hoursWorked);
             hoursWorkedSpan.textContent = hoursWorked;
 
-            // Calculate total hours with PTO
-            const ptoTime = parseFloat(ptoTimeInput.value) || 0;
-            totalHoursWithPto = totalHoursWorked + ptoTime;
+            // Calculate total hours worked with PTO
+            let hoursWithPto = hoursWorked - parseFloat(ptoTimeInput.textContent); // Use textContent for span
+            hoursWithPto = Math.max(hoursWithPto, 0); // Ensure it's not negative
+            totalHoursWithPto += parseFloat(hoursWithPto.toFixed(2));
         });
 
-        // Update total time worked spans
+        // Display total hours worked
         totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
         totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
-
-        // Validate PTO hours
-        validatePtoHours(totalHoursWithPto);
     }
 
+    // Helper function to parse time string to decimal hours
     function parseTime(timeString) {
-        const [hours, minutes] = timeString.split(':').map(num => parseInt(num, 10));
-        return { hours, minutes };
+        const [hours, minutes] = timeString.split(':').map(Number);
+        return hours + minutes / 60;
     }
 
+    // Helper function to calculate hours worked in a day
     function calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime) {
-        // Calculate total hours worked for a given day
         const startDateTime = new Date(startDate);
-        startDateTime.setHours(startTime.hours, startTime.minutes);
+        startDateTime.setHours(Math.floor(startTime), (startTime % 1) * 60, 0, 0);
 
         const lunchStartDateTime = new Date(startDate);
-        lunchStartDateTime.setHours(lunchStart.hours, lunchStart.minutes);
+        lunchStartDateTime.setHours(Math.floor(lunchStart), (lunchStart % 1) * 60, 0, 0);
 
         const lunchEndDateTime = new Date(startDate);
-        lunchEndDateTime.setHours(lunchEnd.hours, lunchEnd.minutes);
+        lunchEndDateTime.setHours(Math.floor(lunchEnd), (lunchEnd % 1) * 60, 0, 0);
 
         const endDateTime = new Date(startDate);
-        endDateTime.setHours(endTime.hours, endTime.minutes);
+        endDateTime.setHours(Math.floor(endTime), (endTime % 1) * 60, 0, 0);
 
-        const totalHoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60);
+        let hoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60); // Convert milliseconds to hours
+        const lunchBreak = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60); // Convert milliseconds to hours
 
-        // Subtract lunch break
-        const lunchBreakHours = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
-        return totalHoursWorked - lunchBreakHours;
+        // Deduct lunch break time from total hours worked
+        hoursWorked -= lunchBreak;
+
+        return hoursWorked;
     }
 
-    function validatePtoHours(totalHoursWithPto) {
-        const remainingPTO = parseFloat(ptoHoursElement.textContent);
-        const ptoUsed = parseFloat(ptoTimeInput.value) || 0;
-
-        if (ptoUsed > remainingPTO) {
-            ptoValidationMessage.textContent = 'PTO hours exceed available balance';
-            ptoValidationMessage.style.color = 'red';
-        } else if (totalHoursWithPto > 40 && ptoUsed > 0) {
-            ptoValidationMessage.textContent = 'Total hours including PTO cannot exceed 40 hours if PTO is used';
-            ptoValidationMessage.style.color = 'red';
-        } else {
-            ptoValidationMessage.textContent = '';
-        }
-    }
-
-    // Submit form data
-    window.submitTimesheet = async function() {
-        const formData = new FormData(timeEntryForm);
-
-        const entries = Array.from(formData.entries());
-        const timeEntries = [];
-        let weekEndingDate = null;
-
-        entries.forEach(entry => {
-            const [key, value] = entry;
-            if (key.startsWith('date')) {
-                if (!weekEndingDate) {
-                    weekEndingDate = new Date(value);
-                }
-                timeEntries.push({ [key]: value });
-            } else {
-                if (timeEntries.length > 0) {
-                    timeEntries[timeEntries.length - 1][key] = value;
-                }
-            }
-        });
-
-        const ptoTime = parseFloat(ptoTimeInput.value) || 0;
-
-        if (ptoTime > 0) {
-            const totalHoursWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
-
-            if (ptoTime > totalHoursWithPto) {
-                alert('PTO hours cannot exceed total hours worked with PTO');
-                return;
-            }
-
-            if (totalHoursWithPto > 40 && ptoTime > 0) {
-                alert('Total hours including PTO cannot exceed 40 hours if PTO is used');
-                return;
-            }
-
-            try {
-                // Convert timeEntries to JSON string
-                const timeEntriesJson = JSON.stringify(timeEntries);
-
-                // Call function to update PTO hours in Airtable
-                await updatePtoHours(parseFloat(ptoHoursElement.textContent), ptoTime, timeEntriesJson);
-
-                console.log('Form data submitted:', timeEntriesJson);
-                alert('Form data submitted successfully!');
-            } catch (error) {
-                console.error('Error submitting form data:', error);
-                alert('Failed to submit form data.');
-            }
-        } else {
-            alert('No PTO time used, nothing to update.');
-        }
-    };
-
-    // Initialize the form on page load
-    async function initializeForm() {
-        const today = new Date();
-        await fetchPtoHours(); // Fetch PTO hours on page load
-        adjustToWeekEnding(today);
-        weekEndingInput.value = today.toISOString().split('T')[0];
-        handleWeekEndingChange(); // Trigger initial population based on today's date
-    }
-
-    initializeForm();
+    // Initial setup
+    fetchPtoHours();
+    const currentWeekEnding = new Date();
+    adjustToWeekEnding(currentWeekEnding);
+    weekEndingInput.value = currentWeekEnding.toISOString().split('T')[0];
+    populateWeekDates(currentWeekEnding);
+    calculateTotalTimeWorked();
 });

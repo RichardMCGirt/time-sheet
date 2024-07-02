@@ -23,10 +23,10 @@
             <h1 class="center-text">Time Entry</h1>
             <br>
             <h3>Remaining PTO Hours:</h3>
-            <div id="pto-hours">Loading...</div>
+            <div id="pto-hours"></div>
             <br>
-            <label for="pto-time"></label>
-            <input type="number" id="pto-time" name="pto_time" step="1" min="0" disabled><br><br>
+            
+<span id="pto-time" name="pto_time"></span><br><br>
             
         </section>
 <br>
@@ -118,7 +118,7 @@
                 </table><br>
                 
                 <label for="pto-time">PTO time used (hours):</label>
-                <input type="number" id="pto-time" name="pto_time" step="1" min="0"><br><br>
+<input type="number" id="pto-time" name="pto_time" min="0" max="40" step="1" value="0"><br><br>
 
                 <label for="total-time-worked">Total time worked:</label>
                 <span id="total-time-worked">0</span><br><br>
@@ -127,6 +127,11 @@
                 <span id="total-time-with-pto-value">0</span><br><br>
 
                 <span id="pto-validation-message" style="color: red;"></span><br><br>
+
+                    <label>Remaining PTO Hours:</label>
+                    <span id="remaining-pto-hours"></span> <!-- New span for remaining PTO hours -->
+                <br>
+                <br>
 
                 <button type="button" onclick="submitTimesheet()">Submit</button>
             </form>
