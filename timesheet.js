@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 const ptoHours = parseFloat(userRecord['PTO Hours']) || 0;
                 availablePTOHours = parseFloat(userRecord['PTO Available']) || 0;
                 ptoHoursElement.textContent = ptoHours.toFixed(2);
-            
+                remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2);
                 copyPtoHours();
             } else {
                 throw new Error('No PTO record found for user');
