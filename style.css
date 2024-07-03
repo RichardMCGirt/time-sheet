@@ -18,6 +18,30 @@ nav .nav-list li {
     float: right;
 }
 
+input[type="date"] {
+    background-color: #f0f0f0; /* example background color */
+    color: #000000; /* example text color */
+    border: 1px solid #cccccc; /* example border */
+}
+
+input[type="date"].disabled-date {
+    pointer-events: none;
+    opacity: 1; /* Ensure the text does not appear greyed out */
+    color: #000000; /* Maintain text color */
+}
+
+Copy code
+input[type="date"] {
+    background-color: #f0f0f0 !important; /* example background color */
+    color: #000000 !important;            /* example text color */
+    border: 1px solid #cccccc !important; /* example border */
+    pointer-events: none !important;      /* make it non-interactive */
+}
+
+input[type="date"].override-style {
+    pointer-events: auto !important; /* make it interactive */
+}
+
 .center-text {
     text-align: center;
     display: block;
