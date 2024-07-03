@@ -29,13 +29,15 @@ document.addEventListener("DOMContentLoaded", async function() {
     } else {
         window.location.href = 'index.html'; // Redirect to login page if no user email found
     }
-  // Function to hide the PTO hours display
-  function hidePtoHoursDisplay() {
-    ptoHoursDisplay.style.display = 'none';
-}
 
-// Add event listener to PTO time input field
-ptoTimeInput.addEventListener('input', hidePtoHoursDisplay);
+    // Function to hide the PTO hours display
+    function hidePtoHoursDisplay() {
+        ptoHoursDisplay.style.display = 'none';
+    }
+
+    // Add event listener to PTO time input field
+    ptoTimeInput.addEventListener('input', hidePtoHoursDisplay);
+
     // Fetch and display PTO hours
     await fetchPtoHours();
 
@@ -51,42 +53,43 @@ ptoTimeInput.addEventListener('input', hidePtoHoursDisplay);
     async function fetchPtoHours() {
         console.log('Fetching PTO hours...');
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-    
+
         try {
             const response = await fetch(endpoint, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
                 }
             });
-    
+
             if (!response.ok) {
                 throw new Error(`Failed to fetch data: ${response.statusText}`);
             }
-    
+
             const data = await response.json();
             console.log('Data fetched from Airtable:', data);
-    
+
             if (data.records.length > 0) {
                 const userRecord = data.records[0].fields;
+                console.log('User record fields:', userRecord);
+
                 const ptoHours = parseFloat(userRecord['PTO Hours']) || 0;
-                availablePTOHours = parseFloat(userRecord['PTO Available']) || 0;
+                availablePTOHours = ptoHours; // Only using PTO Hours field
+
+                // Display PTO hours in HTML
                 ptoHoursElement.textContent = ptoHours.toFixed(2);
-                remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2);
-                copyPtoHours();
+                remainingPtoHoursElement.textContent = ptoHours.toFixed(2);
+                ptoHoursDisplay.textContent = `Available PTO Hours: ${ptoHours.toFixed(2)}`;
+
+                console.log('PTO Hours:', ptoHours);
             } else {
                 throw new Error('No PTO record found for user');
             }
         } catch (error) {
             console.error('Error fetching remaining PTO:', error);
             ptoHoursElement.textContent = 'Error fetching PTO';
+            remainingPtoHoursElement.textContent = 'Error';
+            ptoHoursDisplay.textContent = 'Error';
         }
-    }
-
-    function copyPtoHours() {
-        // Update the PTO hours display without decimal places
-        console.log('Copying PTO hours...');
-        ptoHoursDisplay.textContent = `Available PTO Hours: ${Math.floor(availablePTOHours)}`;
-        
     }
 
     function handlePtoTimeChange() {
@@ -102,7 +105,7 @@ ptoTimeInput.addEventListener('input', hidePtoHoursDisplay);
         }
 
         remainingPtoHoursElement.textContent = remainingPtoHours.toFixed(2);
-        updatePtoHoursDisplay(80 - ptoTimeUsed);
+        updatePtoHoursDisplay(availablePTOHours - ptoTimeUsed);
         calculateTotalTimeWorked();
     }
 
@@ -304,7 +307,7 @@ ptoTimeInput.addEventListener('input', hidePtoHoursDisplay);
         console.log('Submitting timesheet...');
         const ptoHoursDisplay = document.getElementById('pto-hours-display');
         const ptoHoursValue = parseFloat(ptoHoursDisplay.textContent.replace('Available PTO Hours: ', ''));
-        
+
         if (ptoHoursValue === 0) {
             alert('No need to post, no PTO hours used.');
             return;
