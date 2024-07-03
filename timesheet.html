@@ -19,18 +19,13 @@
             </div>
         </header>
         
-        <section id="pto-section">
-            <h1 class="center-text">Time Entry</h1>
-            <br>
-            <h3>Remaining PTO Hours:</h3>
-            <div id="pto-hours"></div>
-            <br>
-            
-<span id="pto-time" name="pto_time"></span><br><br>
-            
-        </section>
-<br>
-<br>
+        <div id="pto-info">
+            <h2>PTO Hours Available: <span id="pto-hours">Loading...</span></h2>
+        </div>
+        
+<!-- Add the new div for displaying PTO hours -->
+<div id="pto-hours-display"></div>
+        <br>
         <section id="time-entry">
             <form id="time-entry-form">
                 <label for="week-ending">Week Ending (Wednesday):</label>
@@ -118,7 +113,7 @@
                 </table><br>
                 
                 <label for="pto-time">PTO time used (hours):</label>
-<input type="number" id="pto-time" name="pto_time" min="0" max="40" step="1" value="0"><br><br>
+                <input type="number" id="pto-time" name="pto_time" min="0" max="40" step="1" value="0"><br><br>
 
                 <label for="total-time-worked">Total time worked:</label>
                 <span id="total-time-worked">0</span><br><br>
@@ -128,12 +123,8 @@
 
                 <span id="pto-validation-message" style="color: red;"></span><br><br>
 
-                    <label>Remaining PTO Hours:</label>
-                    <span id="remaining-pto-hours"></span> 
-                    <div id="remaining-pto-calculation">Calculating...</div>
-
-                <br>
-                <br>
+                <label for="remaining-pto-hours">Remaining PTO Hours:</label>
+                <span id="remaining-pto-hours">0</span><br><br>
 
                 <button type="button" onclick="submitTimesheet()">Submit</button>
             </form>
