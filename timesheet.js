@@ -60,10 +60,10 @@ document.addEventListener("DOMContentLoaded", async function() {
     
             if (data.records.length > 0) {
                 const userRecord = data.records[0].fields;
-                const ptoHours = userRecord['PTO Hours'] || 0;
-                availablePTOHours = userRecord['PTO Available'] || 0;
+                const ptoHours = parseFloat(userRecord['PTO Hours']) || 0;
+                availablePTOHours = parseFloat(userRecord['PTO Available']) || 0;
                 ptoHoursElement.textContent = ptoHours.toFixed(2);
-                remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2);
+            
                 copyPtoHours();
             } else {
                 throw new Error('No PTO record found for user');
@@ -74,8 +74,9 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+
     function copyPtoHours() {
-        ptoHoursDisplay.textContent = ptoHoursElement.textContent;
+        ptoHoursDisplay.textContent = `Available PTO Hours: ${availablePTOHours.toFixed(2)}`;
     }
 
     function handlePtoTimeChange() {
@@ -263,7 +264,7 @@ TimeInput.dataset.originalValue;
         const ptoUsed = totalHoursWithPto - parseFloat(totalTimeWorkedSpan.textContent);
 
         if (ptoUsed > availablePTOHours) {
-            ptoValidationMessage.textContent = 'PTO hours exceed available balance';
+            ptoValidationMessage.textContent = '';
             ptoValidationMessage.style.color = 'red';
         } else if (totalHoursWithPto > 40 && parseFloat(ptoTimeInput.value) > 0) {
             ptoValidationMessage.textContent = 'Total hours including PTO cannot exceed 40 hours';
