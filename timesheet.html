@@ -18,13 +18,11 @@
                 <span id="user-name"></span>
             </div>
         </header>
-
-        <div id="pto-info" >
+        <div id="pto-hours-display"></div>
+        
+        <div id="pto-info" style="display: none;">
             <h2>PTO Hours Available: <span id="pto-hours">Loading...</span></h2>
         </div>
-        <h2 id="pto-hours-display">Available PTO Hours: 0</h2>
-
-      
         
 <!-- Add the new div for displaying PTO hours -->
 <div id="pto-hours-display"></div>
@@ -126,12 +124,10 @@
 
                 <span id="pto-validation-message" style="color: red;"></span><br><br>
 
-                <label for="remaining-pto-hours" style="display: none;">Remaining PTO Hours:</label>
-                <span id="remaining-pto-hours" style="display: none;">0</span><br><br>
-                
+                <label for="remaining-pto-hours">Remaining PTO Hours:</label>
+<span id="remaining-pto-hours">0</span><br><br>
 
-                <button id="submit-button">Submit</button>
-
+                <button type="button" onclick="submitTimesheet()">Submit</button>
             </form>
         </section>
     </main>
