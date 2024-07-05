@@ -29,6 +29,11 @@ async function login() {
             // Store email in localStorage
             localStorage.setItem('userEmail', email);
 
+            // Start playing background music on loop
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            backgroundMusic.play();
+            sessionStorage.setItem('isMusicPlaying', 'true');
+
             // Redirect to timesheet.html or any other appropriate page
             window.location.href = 'timesheet.html';
         } else {
