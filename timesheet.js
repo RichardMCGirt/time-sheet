@@ -235,9 +235,9 @@ document.addEventListener("DOMContentLoaded", async function() {
             const endTime = parseTime(endTimeInput.value);
 
             let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime);
-            hoursWorked = hoursWorked.toFixed(2); // Round to 2 decimal places
-            totalHoursWorked += parseFloat(hoursWorked);
-            hoursWorkedSpan.textContent = hoursWorked;
+            hoursWorked = roundToClosestQuarterHour(hoursWorked); // Round to closest 15 minutes
+            totalHoursWorked += hoursWorked;
+            hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
 
             // Calculate total hours with PTO
             const ptoTime = parseFloat(ptoTimeInput.value) || 0;
@@ -276,6 +276,11 @@ document.addEventListener("DOMContentLoaded", async function() {
         // Subtract lunch break
         const lunchBreakHours = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
         return totalHoursWorked - lunchBreakHours;
+    }
+
+    function roundToClosestQuarterHour(hours) {
+        const quarterHours = Math.round(hours * 4) / 4;
+        return quarterHours;
     }
 
     function validatePtoHours(totalHoursWithPto) {
