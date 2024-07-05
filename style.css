@@ -1,137 +1,134 @@
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    padding: 20px;
-}
-
-nav .nav-list {
-    list-style: none;
-    padding: 0;
-}
-
-nav .nav-list li {
-    display: inline;
-    margin-right: 15px;
-}
-
-.user-info {
-    float: right;
-}
-
-input[type="date"] {
-    background-color: #f0f0f0; /* example background color */
-    color: #000000; /* example text color */
-    border: 1px solid #cccccc; /* example border */
-}
-
-input[type="date"].disabled-date {
-    pointer-events: none;
-    opacity: 1; /* Ensure the text does not appear greyed out */
-    color: #000000; /* Maintain text color */
-}
-
-Copy code
-input[type="date"] {
-    background-color: #f0f0f0 !important; /* example background color */
-    color: #000000 !important;            /* example text color */
-    border: 1px solid #cccccc !important; /* example border */
-    pointer-events: none !important;      /* make it non-interactive */
-}
-
-input[type="date"].override-style {
-    pointer-events: auto !important; /* make it interactive */
-}
-
-.center-text {
-    text-align: center;
-    display: block;
-    margin: 0 auto;
-}
-
-#time-entry-form {
-    max-width: 800px;
-    margin: auto;
-}
-
-input[type="date"] {
-    color: black; /* Text color */
-    /* Additional styles */
-}
-
-.input-width-25 {
-    width: 25%;
-}
-
-.input-width-10 {
-    width: 10%;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-table th, table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
-}
-
-table th {
-    background-color: #f2f2f2;
-}
-
-.disabled-row {
-    background-color: #f2f2f2; /* Light gray background color for disabled row */
-}
-
-.disabled-input {
-    color: #ccc; /* Light color for disabled text */
-}
-
-#pto-validation-message {
-    margin-top: 5px;
-}
-
-#total-time-worked, #total-time-with-pto-value {
-    font-weight: bold;
-}
-
-* {
+    background-color: #1a1a1a;
+    color: #fff;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-}
-
-main {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 header {
+    width: 100%;
+    background-color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+.header-left {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
 }
 
-nav ul {
-    list-style-type: none;
-}
-
-nav ul li {
-    display: inline;
+.logo {
+    max-width: 15%;
+    height: auto;
     margin-right: 10px;
 }
 
 .user-info {
-    font-weight: bold;
+    display: flex;
+    align-items: center;
 }
 
-.disabled-input {
-    background-color: #f2f2f2; /* Ensure consistent color for disabled inputs */
+.user-info span {
+    margin-right: 15px;
+}
+
+.user-info a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.user-info a:hover {
+    background-color: #fff;
+    color: #333;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    height: calc(100vh - 60px); /* Adjust for header height */
+    overflow-y: auto;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+}
+
+form label {
+    margin: 5px 0;
+}
+
+form input[type="date"],
+form input[type="number"],
+form input[type="text"] {
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background-color: #333;
+    color: #fff;
+    width: 100%;
+    max-width: 300px;
+}
+
+form button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Table Styles */
+#time-entry-table {
+    width: 100%;
+    max-width: 800px;
+    border-collapse: collapse;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+#time-entry-table th, #time-entry-table td {
+    border: 1px solid #444;
+    padding: 5px;
+    text-align: center;
+}
+
+#time-entry-table th {
+    background-color: #333;
+}
+
+#time-entry-table input[type="time"],
+#time-entry-table input[type="date"] {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background-color: #333;
+    color: #fff;
+}
+
+#time-entry-table input[type="checkbox"] {
+    width: auto;
 }

@@ -7,129 +7,116 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <main>
-        <header>
-            <nav>
-                <ul class="nav-list">
-                    <li id="logout-link"><a href="#" id="logout-button">Logout</a> <span id="user-email"></span></li>
-                </ul>
-            </nav>
+    <header>
+        <div class="header-left">
+            <img src="images/vanir-logo.png" alt="Vanir Installed Sales Logo" class="logo">
             <div class="user-info">
-                <span id="user-name"></span>
+                <span id="user-email">user@example.com</span>
+                <a href="#" id="logout-button">Logout</a>
             </div>
-        </header>
-        <div id="pto-hours-display"></div>
-        
-        <div id="pto-info" style="display: none;">
-            <h2>PTO Hours Available: <span id="pto-hours">Loading...</span></h2>
         </div>
-        
-<!-- Add the new div for displaying PTO hours -->
-<div id="pto-hours-display"></div>
-        <br>
-        <section id="time-entry">
-            <form id="time-entry-form">
-                <label for="week-ending">Week Ending (Wednesday):</label>
-                <input type="date" id="week-ending" name="week_ending" required class="input-width-25"><br><br>
+    </header>
+    <main>
+        <form id="time-entry-form">
+            <label for="week-ending">Week Ending (Wednesday):</label>
+            <input type="date" id="week-ending" name="week_ending" required class="input-width-25">
 
-                <table id="time-entry-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Start Time</th>
-                            <th>Lunch Start</th>
-                            <th>Lunch End</th>
-                            <th>End Time</th>
-                            <th>Hours Worked</th>
-                            <th>Did not work</th>
-                        </tr>
-                    </thead>
-                    <tbody id="time-entry-body">
-                        <!-- Rows for time entries -->
-                        <tr data-day="1">
-                            <td><input type="date" name="date1" readonly></td>
-                            <td><input type="time" name="start_time1" value="07:00" step="1800"></td>
-                            <td><input type="time" name="lunch_start1" value="12:00" step="1800"></td>
-                            <td><input type="time" name="lunch_end1" value="13:00" step="1800"></td>
-                            <td><input type="time" name="end_time1" value="16:00" step="1800"></td>
-                            <td><span id="hours-worked-today1">0</span></td>
-                            <td><input type="checkbox" id="did-not-work-1" name="did_not_work1" onchange="toggleWorkInputs(0, this.checked)"> </td>
-                        </tr>
-                        <!-- Repeat similar rows for date2 to date7 -->
-                        <tr data-day="2">
-                            <td><input type="date" name="date2" readonly></td>
-                            <td><input type="time" name="start_time2" value="07:00" step="1800"></td>
-                            <td><input type="time" name="lunch_start2" value="12:00" step="1800"></td>
-                            <td><input type="time" name="lunch_end2" value="13:00" step="1800"></td>
-                            <td><input type="time" name="end_time2" value="16:00" step="1800"></td>
-                            <td><span id="hours-worked-today2">0</span></td>
-                            <td><input type="checkbox" id="did-not-work-2" name="did_not_work2" onchange="toggleWorkInputs(1, this.checked)"> </td>
-                        </tr>
-                        <tr data-day="3">
-                            <td><input type="date" name="date3" readonly></td>
-                            <td><input type="time" name="start_time3" value="07:00" step="1800"></td>
-                            <td><input type="time" name="lunch_start3" value="12:00" step="1800"></td>
-                            <td><input type="time" name="lunch_end3" value="13:00" step="1800"></td>
-                            <td><input type="time" name="end_time3" value="16:00" step="1800"></td>
-                            <td><span id="hours-worked-today3">0</span></td>
-                            <td><input type="checkbox" id="did-not-work-3" name="did_not_work3" onchange="toggleWorkInputs(2, this.checked)"> </td>
-                        </tr>
-                        <tr data-day="4">
-                            <td><input type="date" name="date4" readonly></td>
-                            <td><input type="time" name="start_time4" value="07:00" step="1800"></td>
-                            <td><input type="time" name="lunch_start4" value="12:00" step="1800"></td>
-                            <td><input type="time" name="lunch_end4" value="13:00" step="1800"></td>
-                            <td><input type="time" name="end_time4" value="16:00" step="1800"></td>
-                            <td><span id="hours-worked-today4">0</span></td>
-                            <td><input type="checkbox" id="did-not-work-4" name="did_not_work4" onchange="toggleWorkInputs(3, this.checked)"> </td>
-                        </tr>
-                        <tr data-day="5">
-                            <td><input type="date" name="date5" readonly></td>
-                            <td><input type="time" name="start_time5" value="07:00" step="1800"></td>
-                            <td><input type="time" name="lunch_start5" value="12:00" step="1800"></td>
-                            <td><input type="time" name="lunch_end5" value="13:00" step="1800"></td>
-                            <td><input type="time" name="end_time5" value="16:00" step="1800"></td>
-                            <td><span id="hours-worked-today5">0</span></td>
-                            <td><input type="checkbox" id="did-not-work-5" name="did_not_work5" onchange="toggleWorkInputs(4, this.checked)"> </td>
-                        </tr>
-                        <tr data-day="6">
-                            <td><input type="date" name="date6" readonly></td>
-                            <td><input type="time" name="start_time6" value="07:00" step="1800"></td>
-                            <td><input type="time" name="lunch_start6" value="12:00" step="1800"></td>
-                            <td><input type="time" name="lunch_end6" value="13:00" step="1800"></td>
-                            <td><input type="time" name="end_time6" value="16:00" step="1800"></td>
-                            <td><span id="hours-worked-today6">0</span></td>
-                            <td><input type="checkbox" id="did-not-work-6" name="did_not_work6" onchange="toggleWorkInputs(5, this.checked)"> </td>
-                        </tr>
-                        <tr data-day="7">
-                            <td><input type="date" name="date7" readonly></td>
-                            <td><input type="time" name="start_time7" value="07:00" step="1800"></td>
-                            <td><input type="time" name="lunch_start7" value="12:00" step="1800"></td>
-                            <td><input type="time" name="lunch_end7" value="13:00" step="1800"></td>
-                            <td><input type="time" name="end_time7" value="16:00" step="1800"></td>
-                            <td><span id="hours-worked-today7">0</span></td>
-                            <td><input type="checkbox" id="did-not-work-7" name="did_not_work7" onchange="toggleWorkInputs(6, this.checked)"> </td>
-                        </tr>
-                    </tbody>
-                </table><br>
-                
-                <label for="pto-time">PTO time used (hours):</label>
-                <input type="number" id="pto-time" name="pto_time" min="0" max="40" step="1" value="0"><br><br>
+            <table id="time-entry-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Start Time</th>
+                        <th>Lunch Start</th>
+                        <th>Lunch End</th>
+                        <th>End Time</th>
+                        <th>Hours Worked</th>
+                        <th>Did not work</th>
+                    </tr>
+                </thead>
+                <tbody id="time-entry-body">
+                    <tr data-day="1">
+                        <td><input type="date" name="date1" readonly></td>
+                        <td><input type="time" name="start_time1" value="07:00" step="1800"></td>
+                        <td><input type="time" name="lunch_start1" value="12:00" step="1800"></td>
+                        <td><input type="time" name="lunch_end1" value="13:00" step="1800"></td>
+                        <td><input type="time" name="end_time1" value="16:00" step="1800"></td>
+                        <td><span id="hours-worked-today1">0</span></td>
+                        <td><input type="checkbox" id="did-not-work-1" name="did_not_work1" onchange="toggleWorkInputs(0, this.checked)"></td>
+                    </tr>
+                    <!-- Repeat similar rows for date2 to date7 -->
+                    <tr data-day="2">
+                        <td><input type="date" name="date2" readonly></td>
+                        <td><input type="time" name="start_time2" value="07:00" step="1800"></td>
+                        <td><input type="time" name="lunch_start2" value="12:00" step="1800"></td>
+                        <td><input type="time" name="lunch_end2" value="13:00" step="1800"></td>
+                        <td><input type="time" name="end_time2" value="16:00" step="1800"></td>
+                        <td><span id="hours-worked-today2">0</span></td>
+                        <td><input type="checkbox" id="did-not-work-2" name="did_not_work2" onchange="toggleWorkInputs(1, this.checked)"></td>
+                    </tr>
+                    <tr data-day="3">
+                        <td><input type="date" name="date3" readonly></td>
+                        <td><input type="time" name="start_time3" value="07:00" step="1800"></td>
+                        <td><input type="time" name="lunch_start3" value="12:00" step="1800"></td>
+                        <td><input type="time" name="lunch_end3" value="13:00" step="1800"></td>
+                        <td><input type="time" name="end_time3" value="16:00" step="1800"></td>
+                        <td><span id="hours-worked-today3">0</span></td>
+                        <td><input type="checkbox" id="did-not-work-3" name="did_not_work3" onchange="toggleWorkInputs(2, this.checked)"></td>
+                    </tr>
+                    <tr data-day="4">
+                        <td><input type="date" name="date4" readonly></td>
+                        <td><input type="time" name="start_time4" value="07:00" step="1800"></td>
+                        <td><input type="time" name="lunch_start4" value="12:00" step="1800"></td>
+                        <td><input type="time" name="lunch_end4" value="13:00" step="1800"></td>
+                        <td><input type="time" name="end_time4" value="16:00" step="1800"></td>
+                        <td><span id="hours-worked-today4">0</span></td>
+                        <td><input type="checkbox" id="did-not-work-4" name="did_not_work4" onchange="toggleWorkInputs(3, this.checked)"></td>
+                    </tr>
+                    <tr data-day="5">
+                        <td><input type="date" name="date5" readonly></td>
+                        <td><input type="time" name="start_time5" value="07:00" step="1800"></td>
+                        <td><input type="time" name="lunch_start5" value="12:00" step="1800"></td>
+                        <td><input type="time" name="lunch_end5" value="13:00" step="1800"></td>
+                        <td><input type="time" name="end_time5" value="16:00" step="1800"></td>
+                        <td><span id="hours-worked-today5">0</span></td>
+                        <td><input type="checkbox" id="did-not-work-5" name="did_not_work5" onchange="toggleWorkInputs(4, this.checked)"></td>
+                    </tr>
+                    <tr data-day="6">
+                        <td><input type="date" name="date6" readonly></td>
+                        <td><input type="time" name="start_time6" value="07:00" step="1800"></td>
+                        <td><input type="time" name="lunch_start6" value="12:00" step="1800"></td>
+                        <td><input type="time" name="lunch_end6" value="13:00" step="1800"></td>
+                        <td><input type="time" name="end_time6" value="16:00" step="1800"></td>
+                        <td><span id="hours-worked-today6">0</span></td>
+                        <td><input type="checkbox" id="did-not-work-6" name="did_not_work6" onchange="toggleWorkInputs(5, this.checked)"></td>
+                    </tr>
+                    <tr data-day="7">
+                        <td><input type="date" name="date7" readonly></td>
+                        <td><input type="time" name="start_time7" value="07:00" step="1800"></td>
+                        <td><input type="time" name="lunch_start7" value="12:00" step="1800"></td>
+                        <td><input type="time" name="lunch_end7" value="13:00" step="1800"></td>
+                        <td><input type="time" name="end_time7" value="16:00" step="1800"></td>
+                        <td><span id="hours-worked-today7">0</span></td>
+                        <td><input type="checkbox" id="did-not-work-7" name="did_not_work7" onchange="toggleWorkInputs(6, this.checked)"></td>
+                    </tr>
+                </tbody>
+            </table>
 
-                <label for="total-time-worked">Total time worked:</label>
-                <span id="total-time-worked">0</span><br><br>
+            <label for="pto-time">PTO time used (hours):</label>
+            <input type="number" id="pto-time" name="pto_time" min="0" max="40" step="1" value="0">
 
-                <label for="total-time-with-pto">Total time with PTO:</label>
-                <span id="total-time-with-pto-value">0</span><br><br>
-
-                <span id="pto-validation-message" style="color: red;"></span><br><br>
-
-                <label for="remaining-pto-hours">Remaining PTO Hours:</label>
-<span id="remaining-pto-hours">0</span><br><br>
-
-                <button type="button" onclick="submitTimesheet()">Submit</button>
-            </form>
-        </section>
+            <label for="total-time-worked">Total time worked:</label>
+            <span id="total-time-worked">0</span>
+            
+            <label for="total-time-with-pto">Total time with PTO:</label>
+            <span id="total-time-with-pto-value">0</span>
+            
+            <span id="pto-validation-message" style="color: red;"></span>
+            
+            <label for="remaining-pto-hours">Remaining PTO Hours:</label>
+            <span id="remaining-pto-hours">0</span>
+            
+            <button type="button" onclick="submitTimesheet()">Submit</button>
+        </form>
     </main>
 
     <script src="timesheet.js"></script>
