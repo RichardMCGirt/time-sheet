@@ -8,6 +8,11 @@ async function login() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
+    if (!email || !password) {
+        alert('Please fill in both email and password fields.');
+        return;
+    }
+
     try {
         const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={email}='${email}'`, {
             headers: {
@@ -23,18 +28,13 @@ async function login() {
         const user = data.records.find(record => record.fields.email === email && record.fields.password === password);
 
         if (user) {
-            // Store user details in sessionStorage
             sessionStorage.setItem('user', JSON.stringify(user.fields));
-
-            // Store email in localStorage
             localStorage.setItem('userEmail', email);
 
-            // Start playing background music on loop
             const backgroundMusic = document.getElementById('backgroundMusic');
             backgroundMusic.play();
             sessionStorage.setItem('isMusicPlaying', 'true');
 
-            // Redirect to timesheet.html or any other appropriate page
             window.location.href = 'timesheet.html';
         } else {
             alert('Invalid email or password');
