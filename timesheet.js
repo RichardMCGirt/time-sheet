@@ -328,6 +328,18 @@ document.addEventListener("DOMContentLoaded", async function() {
         const usedPtoHoursValue = parseFloat(ptoTimeInput.value) || 0; // Get the used PTO hours value
         const newPtoHoursValue = availablePTOHours - usedPtoHoursValue; // Calculate new PTO hours
 
+        // New validation check
+        if (usedPtoHoursValue === 0) {
+            alert('Nothing to change, PTO hours used is zero.');
+            return;
+        }
+
+        // Check if Total time with PTO is greater than 40 and PTO time is greater than 0
+        if (parseFloat(totalTimeWithPtoSpan.textContent) > 40 && usedPtoHoursValue > 0) {
+            alert('PTO cannot be used as overtime.');
+            return;
+        }
+
         console.log('Used PTO hours value:', usedPtoHoursValue);
         console.log('New PTO hours value:', newPtoHoursValue);
 

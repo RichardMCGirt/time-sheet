@@ -27,7 +27,7 @@ header {
 }
 
 .logo {
-    max-width: 100px;
+    max-width: 200px;
     height: auto;
     margin-right: 10px;
 }
@@ -61,10 +61,14 @@ header {
 
 main {
     padding: 20px;
-    margin-top: 20px; /* Add margin to ensure main is below the header */
+    margin-top: 20px; 
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+td { 
+    text-align: center;
 }
 
 form {
@@ -72,7 +76,7 @@ form {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
     background-color: #333;
     padding: 20px;
     border-radius: 8px;
@@ -94,17 +98,21 @@ form input[type="time"] {
     margin-bottom: 15px;
     border: 1px solid #444;
     border-radius: 5px;
-    background-color: #1a1a1a; /* Dark background color */
-    color: #fff; /* White text color */
-    width: 100%;
+    background-color: whitesmoke; /* Dark background color */
+    color: black; /* White text color */
+    width: 55%;
+}
+
+#week-ending { 
+    text-align: center;
 }
 
 form button {
     padding: 10px 20px;
-    background-color: darkgrey;
+    background-color: white;
     border: none;
     border-radius: 5px;
-    color: #fff;
+    color: black;
     cursor: crosshair;
     margin-top: 10px;
     transition: background-color 0.5s ease;
@@ -137,28 +145,34 @@ form button:hover {
 
 #time-entry-form {
     padding-bottom: 10;
+    text-align: center; /* Center the text */
 }
 
 #time-entry-table th, #time-entry-table td {
     border: 1px solid #444;
     padding: 10px;
     text-align: center;
+    
 }
 
 #time-entry-table th {
     background-color: darkgrey;
     color: #fff;
     font-weight: bold;
+    max-width: 600px;
+
 }
 
 #time-entry-table input[type="time"],
 #time-entry-table input[type="date"] {
-    width: 90%;
+    width: 88%;
     padding: 5px;
     border: 1px solid #444;
     border-radius: 5px;
     background-color: #1a1a1a; /* Dark background color */
     color: #fff; /* White text color */
+    text-align: center; /* Center the text */
+    ;
 }
 
 #time-entry-table input[type="checkbox"] {
@@ -174,28 +188,17 @@ form button:hover {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    max-width: 800px;
 }
 
-.summary {
-    margin-left: 20px;
-}
+
 
 .summary label {
     font-weight: bold;
 }
 
-.summary span {
-    color: darkgrey;
-    font-weight: bold;
-    
-}
 
 
-#pto-hours-display {
-    margin: 20px 0;
-    font-weight: bold;
-    color: dark grey;
-}
 
 #remaining-pto-hours{
     display: inline-block;
@@ -205,13 +208,16 @@ form button:hover {
 #summary-form {
     display: flex;
     flex-direction: column;
+    text-align: right;
     max-width: 600px; /* Adjust as necessary */
+    margin-top: 20px; /* Move the input field down by 12 pixels */
+    margin-left: 100px; /* Adjust the left margin */
 }
 
 .form-row {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+ 
 }
 
 label {
@@ -220,7 +226,7 @@ label {
 }
 
 input[type="number"].small-input {
-    width: 40px; /* Adjust the width for two digits */
+    width: 35px; /* Adjust the width for two digits */
     text-align: right;
     margin-top: 20px; /* Move the input field down by 12 pixels */
     margin-left: 10px; /* Adjust the left margin */
@@ -233,14 +239,12 @@ input[type="number"].small-input {
 }
 
 span {
-    flex: 1;
-    text-align: right;
+    margin-top: 4px; /* Move the input field down by 12 pixels */
+    margin-left: 8px; /* Adjust the left margin */
+    text-align: justify;
 }
 
-.input-width-15 {
-    display: inline-block;
-    padding: 5px; /* Optional: adjust padding as needed */
-}
+
 
 #submit-button {
     margin-top: 20px;

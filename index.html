@@ -12,6 +12,9 @@
        
     </header>
     <br>
+    <br>
+    <br>
+    <br>
     <main>
         <form>
             <label for="email">Email:</label>
@@ -21,20 +24,14 @@
             <button type="button" id="loginButton">Login</button>
         </form>
         <button id="playPauseButton">Play</button>
+        <section id="joke-section">
+            <h2>Today's Joke</h2>
+            <p id="joke-text"></p> <!-- Element to display the joke -->
+        </section>
     </main>
-<hr>
-<main>
-    <section id="comic-section">
-        <h2>Today's Comic</h2>
-        <div id="comic-container">
-            <img id="comic-image" src="" alt="Comic of the day" style="max-width: 100%;">
-            <p id="comic-title"></p>
-        </div>
-    </section>
     
     <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
     <script src="login.js"></script>
-    <script scr="comic.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/airtable/bundles/airtable.browser.js"></script>
     <script src="musicControl.js"></script>
 </body>
