@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // DOM elements
     const ptoHoursElement = document.getElementById('pto-hours');
+    const personalHoursElement = document.getElementById('remaining-Personal-hours');
     const weekEndingInput = document.getElementById('week-ending');
     const timeEntryForm = document.getElementById('time-entry-form');
     const ptoTimeInput = document.getElementById('pto-time');
@@ -21,6 +22,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const ptoHoursDisplay = document.getElementById('pto-hours-display');
 
     let availablePTOHours = 0;
+    let Personaltime = 0;
     let debounceTimer;
 
     // Set initial value to empty string
@@ -45,6 +47,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Fetch and display PTO hours
     await fetchPtoHours();
+    await fetchPersonalTime();
 
     // Add event listener to show calendar when week-ending input is clicked
     weekEndingInput.addEventListener('focus', () => weekEndingInput.showPicker());
@@ -105,6 +108,43 @@ document.addEventListener("DOMContentLoaded", async function() {
             ptoHoursElement.textContent = 'Error fetching PTO';
             remainingPtoHoursElement.textContent = 'Error';
             ptoHoursDisplay.textContent = 'Error';
+        }
+    }
+
+    async function fetchPersonalTime() {
+        console.log('Fetching Personal hours...');
+        
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+        console.log('Endpoint:', endpoint);
+
+        try {
+            const response = await fetch(endpoint, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('Fetched data:', data);
+
+            if (data.records.length > 0) {
+                const userRecord = data.records[0].fields;
+
+                const personalTime = parseFloat(userRecord['Personaltime']) || 0;
+                Personaltime = personalTime;
+
+                personalHoursElement.textContent = personalTime.toFixed(2);
+                console.log('Personal hours:', personalTime);
+            } else {
+                throw new Error('No personal time record found for user');
+            }
+        } catch (error) {
+            console.error('Error fetching personal hours:', error);
+            personalHoursElement.textContent = 'Error fetching personal hours';
         }
     }
 
@@ -328,18 +368,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         const usedPtoHoursValue = parseFloat(ptoTimeInput.value) || 0; // Get the used PTO hours value
         const newPtoHoursValue = availablePTOHours - usedPtoHoursValue; // Calculate new PTO hours
 
-        // New validation check
-        if (usedPtoHoursValue === 0) {
-            alert('Nothing to change, PTO hours used is zero.');
-            return;
-        }
-
-        // Check if Total time with PTO is greater than 40 and PTO time is greater than 0
-        if (parseFloat(totalTimeWithPtoSpan.textContent) > 40 && usedPtoHoursValue > 0) {
-            alert('PTO cannot be used as overtime.');
-            return;
-        }
-
         console.log('Used PTO hours value:', usedPtoHoursValue);
         console.log('New PTO hours value:', newPtoHoursValue);
 
@@ -409,6 +437,20 @@ document.addEventListener("DOMContentLoaded", async function() {
     
     document.getElementById('submit-button').addEventListener('click', (event) => {
         event.preventDefault(); // Prevent form submission
+
+        const totalTimeWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
+        const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
+
+        if (ptoTimeUsed === 0) {
+            alert('Nothing to change');
+            return;
+        }
+
+        if (totalTimeWithPto > 40 && ptoTimeUsed > 0) {
+            alert('PTO cannot be used as overtime.');
+            return;
+        }
+
         updatePtoHours();
     });
 
