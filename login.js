@@ -2,6 +2,10 @@ const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d184987
 const baseId = 'appMq9W12jZyCJeXe'; // Extracted base ID
 const tableId = 'tblRqUgMsd2QSd5ka'; // Extracted table ID
 
+//Dom elements 
+const comicImage = document.getElementById('comic-image');
+const comicTitle = document.getElementById('comic-title');
+
 document.getElementById('loginButton').addEventListener('click', login);
 
 async function login() {
@@ -43,3 +47,4 @@ async function login() {
         alert('Login failed: ' + error.message);
     }
 }
+
