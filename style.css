@@ -1,10 +1,13 @@
 /* General Styles */
 body {
     font-family: Arial, sans-serif;
-    background-color: #1a1a1a; /* Dark background color */
+    background-color: white; /* Dark background color */
     color: #fff; /* White text color */
     margin: 0;
     padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 header {
@@ -56,12 +59,12 @@ header {
 
 
 main {
+    padding: 20px;
+    margin-top: 20px; /* Add margin to ensure main is below the header */
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
-    max-width: 1200px
-    }
+}
 
 form {
     display: flex;
@@ -103,7 +106,7 @@ form button {
     color: #fff;
     cursor: crosshair;
     margin-top: 10px;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.5s ease;
 }
 
 form button:hover {
@@ -119,7 +122,20 @@ form button:hover {
     background-color: #333;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: -4px -8px 16px rgba(222, 220, 220, 0.2), /* Top left shadow */
+    0 8px 8px rgba(226, 223, 223, 0.2), /* Bottom shadow */
+    4px 0 8px rgba(1, 1, 1, 0.2); /* Right shadow */
+    padding-bottom: 5px;
+
+}
+
+.input-width-15 {
+    display: inline-block;
+    padding: 5px; /* Optional: adjust padding as needed */
+    }
+
+#time-entry-form {
+    padding-bottom: 10;
 }
 
 #time-entry-table th, #time-entry-table td {
@@ -170,6 +186,7 @@ form button:hover {
 .summary span {
     color: darkgrey;
     font-weight: bold;
+    
 }
 
 
@@ -177,6 +194,51 @@ form button:hover {
     margin: 20px 0;
     font-weight: bold;
     color: dark grey;
+}
+
+#remaining-pto-hours{
+    display: inline-block;
+    padding: 5px; /* Optional: adjust padding as needed */
+}
+
+#summary-form {
+    display: flex;
+    flex-direction: column;
+    max-width: 600px; /* Adjust as necessary */
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+label {
+    flex: 1;
+    min-width: 150px; /* Adjust as necessary */
+}
+
+input[type="number"].small-input {
+    width: 40px; /* Adjust the width for two digits */
+    text-align: right;
+    margin-top: 20px; /* Move the input field down by 12 pixels */
+    margin-left: 10px; /* Adjust the left margin */
+    background-color: #1a1a1a; /* Background color to blend */
+    color: #ffffff; /* Text color for readability */
+    border: none; /* Remove default border */
+    border-bottom: 1px solid #ffffff; /* Custom bottom border */
+    padding: 2px; /* Add padding for spacing */
+    outline: none; /* Remove outline on focus */
+}
+
+span {
+    flex: 1;
+    text-align: right;
+}
+
+.input-width-15 {
+    display: inline-block;
+    padding: 5px; /* Optional: adjust padding as needed */
 }
 
 #submit-button {
@@ -188,9 +250,8 @@ form button:hover {
     color: #fff;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    font-weight: bold;
-   
-            justify-content: center;
+    display: flex;
+    align-items: center;
 }
 
 #submit-button:hover {
@@ -207,8 +268,9 @@ form button:hover {
     cursor: pointer;
     transition: background-color 0.3s ease;
     font-weight: bold;
-  
-    justify-content: center;
+    display: flex;
+    align-items: center;  
+
 }
 
 #playPauseButton:hover {
