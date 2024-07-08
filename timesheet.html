@@ -14,6 +14,8 @@
             </div>
             <div id="pto-info" style="display: none;">
                 <h1>PTO Hours Available: <span id="pto-hours">Loading...</span></h1>
+                <label for="personal-time">Personal time used (hours):</label>
+                <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input">
             </div>
             <div id="pto-hours-display"></div>
             <div class="header-right">
@@ -119,8 +121,8 @@
                 <section id="summary">
                     <form id="summary-form">
                         <div class="form-row">
-                            <label for="remaining-Personal-hours">Remaining Personal Hours:</label>
-                            <span id="remaining-Personal-hours" class="input-width-15">0</span>
+                            <label for="personal-time">Personal time used (hours):</label>
+                            <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input">
                         </div>
                         <div class="form-row">
                             <label for="pto-time">PTO time used (hours):</label>
