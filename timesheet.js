@@ -375,13 +375,24 @@ document.addEventListener("DOMContentLoaded", async function() {
 
                 console.log('PTO hours updated successfully');
                 alert('PTO hours updated successfully!');
+                clearForm();
             } else {
                 throw new Error('No record found for user');
             }
         } catch (error) {
             console.error('Error updating PTO hours:', error);
             alert('Failed to update PTO hours. Error: ' + error.message);
+            clearForm();
         }
+    }
+
+    function clearForm() {
+        console.log('Clearing form...');
+        timeEntryForm.reset();
+        ptoTimeInput.value = 0;
+        totalTimeWorkedSpan.textContent = '0.00';
+        totalTimeWithPtoSpan.textContent = '0.00';
+        remainingPtoHoursElement.textContent = '0.00';
     }
     
     document.getElementById('submit-button').addEventListener('click', (event) => {
