@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         } catch (error) {
             console.error('Error fetching personal hours:', error);
-            personalHoursInput.value = 'Error fetching personal hours';
+           
             personalTimeDisplay.textContent = 'Error fetching personal time'; // Update new div with error
         }
     }

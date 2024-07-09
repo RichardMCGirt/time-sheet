@@ -137,6 +137,7 @@ form input[type="date"],
 form input[type="number"],
 form input[type="text"],
 form input[type="time"] {
+    align-items: center;
     /* General Styles */
 body {
     font-family: Arial, sans-serif;
@@ -493,11 +494,13 @@ form button:hover {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    max-width: 800px;
+    max-width: 1000px;
+    align-items: center;
 }
 
 .summary label {
     font-weight: bold;
+    align-items: center;
 }
 
 #remaining-pto-hours {
@@ -512,6 +515,9 @@ form button:hover {
     max-width: 600px; /* Adjust as necessary */
     margin-top: 20px; /* Move the input field down by 20 pixels */
     margin-left: 100px; /* Adjust the left margin */
+    color: white;
+    align-items: center;
+    
 }
 
 .form-row {
