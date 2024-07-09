@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const logoutButton = document.getElementById('logout-button');
     const userEmailElement = document.getElementById('user-email');
     const ptoHoursDisplay = document.getElementById('pto-hours-display');
+    const personalTimeDisplay = document.getElementById('personal-time-display'); // New div
 
     let availablePTOHours = 0;
     let availablePersonalHours = 0;
@@ -28,6 +29,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Set initial value to empty string
     ptoHoursDisplay.textContent = 'Loading...';
+    personalTimeDisplay.textContent = 'Loading...'; // Initial value for the new div
 
     // Display user email next to logout button
     if (userEmail) {
@@ -116,32 +118,36 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     async function fetchPersonalTime() {
         console.log('Fetching Personal hours...');
-        
+    
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
         console.log('Endpoint:', endpoint);
-
+    
         try {
             const response = await fetch(endpoint, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
                 }
             });
-
+    
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+    
             if (!response.ok) {
                 throw new Error(`Failed to fetch data: ${response.statusText}`);
             }
-
+    
             const data = await response.json();
             console.log('Fetched data:', data);
-
+    
             if (data.records.length > 0) {
                 const userRecord = data.records[0].fields;
-
+    
                 const personalHours = parseFloat(userRecord['Personaltime']) || 0;
                 availablePersonalHours = personalHours;
-
-                personalHoursInput.value = personalHours.toFixed(2);
-                remainingPersonalHoursElement.textContent = personalHours.toFixed(2);
+    
+               
+                
+                personalTimeDisplay.textContent = `Personal Time: ${personalHours.toFixed(2)}`; // Update new div
                 console.log('Personal hours:', personalHours);
             } else {
                 throw new Error('No personal time record found for user');
@@ -149,6 +155,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         } catch (error) {
             console.error('Error fetching personal hours:', error);
             personalHoursInput.value = 'Error fetching personal hours';
+            personalTimeDisplay.textContent = 'Error fetching personal time'; // Update new div with error
         }
     }
 
@@ -327,13 +334,12 @@ document.addEventListener("DOMContentLoaded", async function() {
             } else {
                 hoursWorkedSpan.textContent = '0.00';
             }
-
-            const ptoTime = parseFloat(ptoTimeInput.value) || 0;
-            totalHoursWithPto = totalHoursWorked + ptoTime;
-
-            const personalTime = parseFloat(personalHoursInput.value) || 0;
-            totalHoursWithPto += personalTime;
         });
+
+        const ptoTime = parseFloat(ptoTimeInput.value) || 0;
+        const personalTime = parseFloat(personalHoursInput.value) || 0;
+        
+        totalHoursWithPto = totalHoursWorked + ptoTime + personalTime;
 
         totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
         totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
