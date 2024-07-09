@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", async function() {
     console.log('DOM fully loaded and parsed');
-    
+
     const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
     const baseId = 'appMq9W12jZyCJeXe';
     const tableId = 'tblhTl5q7sEFDv66Z';
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const totalTimeWithPtoSpan = document.getElementById('total-time-with-pto-value');
     const ptoValidationMessage = document.getElementById('pto-validation-message');
     const remainingPtoHoursElement = document.getElementById('remaining-pto-hours');
-    const remainingPersonalHoursElement = document.getElementById('remaining-Personal-hours');
+    const remainingPersonalHoursElement = document.getElementById('remaining-personal-hours');
     const logoutButton = document.getElementById('logout-button');
     const userEmailElement = document.getElementById('user-email');
     const ptoHoursDisplay = document.getElementById('pto-hours-display');
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Display user email next to logout button
     if (userEmail) {
-        userEmailElement.textContent = `(${userEmail})`;
+        userEmailElement.textContent = userEmail;
         console.log('User email set in the UI');
     } else {
         console.log('No user email found, redirecting to index.html');
@@ -320,8 +320,13 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime);
             hoursWorked = roundToClosestQuarterHour(hoursWorked);
-            totalHoursWorked += hoursWorked;
-            hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
+            
+            if (!isNaN(hoursWorked)) {
+                totalHoursWorked += hoursWorked;
+                hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
+            } else {
+                hoursWorkedSpan.textContent = '0.00';
+            }
 
             const ptoTime = parseFloat(ptoTimeInput.value) || 0;
             totalHoursWithPto = totalHoursWorked + ptoTime;
@@ -339,27 +344,38 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     function parseTime(timeString) {
+        if (!timeString) {
+            return null;
+        }
         const [hours, minutes] = timeString.split(':').map(num => parseInt(num, 10));
         return { hours, minutes };
     }
 
     function calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime) {
+        if (!startTime || !endTime) {
+            return NaN; // Return NaN if start time or end time is missing
+        }
+
         const startDateTime = new Date(startDate);
         startDateTime.setHours(startTime.hours, startTime.minutes);
-
-        const lunchStartDateTime = new Date(startDate);
-        lunchStartDateTime.setHours(lunchStart.hours, lunchStart.minutes);
-
-        const lunchEndDateTime = new Date(startDate);
-        lunchEndDateTime.setHours(lunchEnd.hours, lunchEnd.minutes);
 
         const endDateTime = new Date(startDate);
         endDateTime.setHours(endTime.hours, endTime.minutes);
 
-        const totalHoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60);
+        let totalHoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60);
 
-        const lunchBreakHours = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
-        return totalHoursWorked - lunchBreakHours;
+        if (lunchStart && lunchEnd) {
+            const lunchStartDateTime = new Date(startDate);
+            lunchStartDateTime.setHours(lunchStart.hours, lunchStart.minutes);
+
+            const lunchEndDateTime = new Date(startDate);
+            lunchEndDateTime.setHours(lunchEnd.hours, lunchEnd.minutes);
+
+            const lunchBreakHours = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
+            totalHoursWorked -= lunchBreakHours;
+        }
+
+        return Math.max(0, totalHoursWorked); // Ensure hours worked is not negative
     }
 
     function roundToClosestQuarterHour(hours) {
@@ -538,6 +554,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         const totalTimeWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
         const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
+        const personalTimeUsed = parseFloat(personalHoursInput.value) || 0;
 
         if (ptoTimeUsed === 0 && personalTimeUsed === 0) {
             alert('Nothing to change');

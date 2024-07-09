@@ -1,8 +1,8 @@
 /* General Styles */
 body {
     font-family: Arial, sans-serif;
-    background-color: white; /* Dark background color */
-    color: #fff; /* White text color */
+    background-color: white; /* Light background color */
+    
     margin: 0;
     padding: 0;
     display: flex;
@@ -57,17 +57,109 @@ header {
     background-color: #218838;
 }
 
-
-
 main {
     padding: 20px;
-    margin-top: 20px; 
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-td { 
+td {
+    text-align: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    background-color: #333;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+form input[type="email"],
+form input[type="password"],
+form input[type="date"],
+form input[type="number"],
+form input[type="text"],
+form input[type="time"] {
+    /* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: white; /* Light background color */
+    color: #000; /* Dark text color */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+header {
+    width: 100%;
+    background-color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    max-width: 200px;
+    height: auto;
+    margin-right: 10px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-info span {
+    margin-right: 15px;
+    font-weight: bold;
+}
+
+.user-info a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #28a745;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.user-info a:hover {
+    background-color: #218838;
+}
+
+main {
+    padding: 20px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+td {
     text-align: center;
 }
 
@@ -98,12 +190,12 @@ form input[type="time"] {
     margin-bottom: 15px;
     border: 1px solid #444;
     border-radius: 5px;
-    background-color: whitesmoke; /* Dark background color */
-    color: black; /* White text color */
+    background-color: whitesmoke; /* Light background color */
+    color: black; /* Dark text color */
     width: 55%;
 }
 
-#week-ending { 
+#week-ending {
     text-align: center;
 }
 
@@ -130,59 +222,52 @@ form button:hover {
     margin-top: 20px;
     background-color: #333;
     border-radius: 8px;
-    overflow: hidden;
     box-shadow: -4px -8px 16px rgba(222, 220, 220, 0.2), /* Top left shadow */
-    0 8px 8px rgba(226, 223, 223, 0.2), /* Bottom shadow */
-    4px 0 8px rgba(1, 1, 1, 0.2); /* Right shadow */
+                0 8px 8px rgba(226, 223, 223, 0.2), /* Bottom shadow */
+                4px 0 8px rgba(1, 1, 1, 0.2); /* Right shadow */
     padding-bottom: 5px;
-
 }
 
-.input-width-15 {
-    display: inline-block;
-    padding: 5px; /* Optional: adjust padding as needed */
-    }
-
 #time-entry-form {
-    padding-bottom: 10;
+    padding-bottom: 10px;
     text-align: center; /* Center the text */
 }
 
 #time-entry-table th, #time-entry-table td {
+    padding: 5px;
     border: 1px solid #444;
-    padding: 10px;
-    text-align: center;
-    
+    text-align: left;
+    background-color: #1a1a1a; /* Dark background color */
+    color: #fff; /* White text color */
 }
 
 #time-entry-table th {
-    background-color: darkgrey;
-    color: #fff;
-    font-weight: bold;
-    max-width: 600px;
-
+    white-space: nowrap; /* Prevents header text from wrapping */
 }
 
 #time-entry-table input[type="time"],
 #time-entry-table input[type="date"] {
-    width: 88%;
+    width: 100%; /* Ensures input fields take full width of their container */
+    min-width: 150px; /* Sets a minimum width for the input fields */
     padding: 5px;
     border: 1px solid #444;
     border-radius: 5px;
     background-color: #1a1a1a; /* Dark background color */
     color: #fff; /* White text color */
-    text-align: center; /* Center the text */
-    ;
+    box-sizing: border-box; /* Includes padding and border in element's total width */
+    overflow: hidden; /* Ensure text is not hidden */
 }
 
 #time-entry-table input[type="checkbox"] {
-    width: auto;
+    transform: scale(1.5); /* Makes checkboxes larger and more visible */
 }
 
+/* Container Styles */
 .container {
     display: flex;
     justify-content: space-between;
 }
+
 /* Additional Styles for Table and Summary */
 .table-summary-container {
     display: flex;
@@ -191,16 +276,11 @@ form button:hover {
     max-width: 800px;
 }
 
-
-
 .summary label {
     font-weight: bold;
 }
 
-
-
-
-#remaining-pto-hours{
+#remaining-pto-hours {
     display: inline-block;
     padding: 5px; /* Optional: adjust padding as needed */
 }
@@ -210,14 +290,13 @@ form button:hover {
     flex-direction: column;
     text-align: right;
     max-width: 600px; /* Adjust as necessary */
-    margin-top: 20px; /* Move the input field down by 12 pixels */
+    margin-top: 20px; /* Move the input field down by 20 pixels */
     margin-left: 100px; /* Adjust the left margin */
 }
 
 .form-row {
     display: flex;
     align-items: center;
- 
 }
 
 label {
@@ -228,7 +307,7 @@ label {
 input[type="number"].small-input {
     width: 35px; /* Adjust the width for two digits */
     text-align: right;
-    margin-top: 20px; /* Move the input field down by 12 pixels */
+    margin-top: 20px; /* Move the input field down by 20 pixels */
     margin-left: 10px; /* Adjust the left margin */
     background-color: #1a1a1a; /* Background color to blend */
     color: #ffffff; /* Text color for readability */
@@ -239,13 +318,12 @@ input[type="number"].small-input {
 }
 
 span {
-    margin-top: 4px; /* Move the input field down by 12 pixels */
+    margin-top: 4px; /* Move the input field down by 4 pixels */
     margin-left: 8px; /* Adjust the left margin */
     text-align: justify;
 }
 
-
-
+/* Button Styles */
 #submit-button {
     margin-top: 20px;
     padding: 10px 20px;
@@ -274,8 +352,179 @@ span {
     transition: background-color 0.3s ease;
     font-weight: bold;
     display: flex;
-    align-items: center;  
+    align-items: center;
+}
 
+#playPauseButton:hover {
+    background-color: #c82333;
+}
+
+    margin-bottom: 15px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background-color: whitesmoke; /* Light background color */
+    color: black; /* Dark text color */
+    width: 55%;
+}
+
+#week-ending {
+    text-align: center;
+}
+
+form button {
+    padding: 10px 20px;
+    background-color: white;
+    border: none;
+    border-radius: 5px;
+    color: black;
+    cursor: crosshair;
+    margin-top: 10px;
+    transition: background-color 0.5s ease;
+}
+
+form button:hover {
+    background-color: darkgrey;
+}
+
+/* Table Styles */
+#time-entry-table {
+    width: 100%;
+    max-width: 800px;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #333;
+    border-radius: 8px;
+    box-shadow: -4px -8px 16px rgba(222, 220, 220, 0.2), /* Top left shadow */
+                0 8px 8px rgba(226, 223, 223, 0.2), /* Bottom shadow */
+                4px 0 8px rgba(1, 1, 1, 0.2); /* Right shadow */
+    padding-bottom: 5px;
+}
+
+#time-entry-form {
+    padding-bottom: 10px;
+    text-align: center; /* Center the text */
+}
+
+#time-entry-table th, #time-entry-table td {
+    padding: 5px;
+    border: 1px solid #444;
+    text-align: left;
+    background-color: #1a1a1a; /* Dark background color */
+    color: #fff; /* White text color */
+}
+
+#time-entry-table th {
+    white-space: nowrap; /* Prevents header text from wrapping */
+}
+
+#time-entry-table input[type="time"],
+#time-entry-table input[type="date"] {
+    width: 100%; /* Ensures input fields take full width of their container */
+    min-width: 150px; /* Sets a minimum width for the input fields */
+    padding: 5px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background-color: #1a1a1a; /* Dark background color */
+    color: #fff; /* White text color */
+    box-sizing: border-box; /* Includes padding and border in element's total width */
+    overflow: hidden; /* Ensure text is not hidden */
+}
+
+#time-entry-table input[type="checkbox"] {
+    transform: scale(1.5); /* Makes checkboxes larger and more visible */
+}
+
+/* Container Styles */
+.container {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Additional Styles for Table and Summary */
+.table-summary-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    max-width: 800px;
+}
+
+.summary label {
+    font-weight: bold;
+}
+
+#remaining-pto-hours {
+    display: inline-block;
+    padding: 5px; /* Optional: adjust padding as needed */
+}
+
+#summary-form {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    max-width: 600px; /* Adjust as necessary */
+    margin-top: 20px; /* Move the input field down by 20 pixels */
+    margin-left: 100px; /* Adjust the left margin */
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+}
+
+label {
+    flex: 1;
+    min-width: 150px; /* Adjust as necessary */
+}
+
+input[type="number"].small-input {
+    width: 35px; /* Adjust the width for two digits */
+    text-align: right;
+    margin-top: 20px; /* Move the input field down by 20 pixels */
+    margin-left: 10px; /* Adjust the left margin */
+    background-color: #1a1a1a; /* Background color to blend */
+    color: #ffffff; /* Text color for readability */
+    border: none; /* Remove default border */
+    border-bottom: 1px solid #ffffff; /* Custom bottom border */
+    padding: 2px; /* Add padding for spacing */
+    outline: none; /* Remove outline on focus */
+}
+
+span {
+    margin-top: 4px; /* Move the input field down by 4 pixels */
+    margin-left: 8px; /* Adjust the left margin */
+    text-align: justify;
+}
+
+/* Button Styles */
+#submit-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #dc3545;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+#submit-button:hover {
+    background-color: red;
+}
+
+#playPauseButton {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: grey;
+    border: white;
+    border-radius: 50px;
+    color: black;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
 }
 
 #playPauseButton:hover {
