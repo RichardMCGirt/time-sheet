@@ -1,587 +1,185 @@
-/* Index.html CSS */
-   #loginForm {
-            background-color: #333;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 500px;
-            height: 250px;
-        }
-        #loginForm label {
-            display: block;
-            margin-bottom: 8px;
-            color: white;
-            text-align: center;
-        }
-        #loginForm input {
-            width: 90%;
-            padding: 8px;
-            margin-bottom: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-          
-        }
-        #loginForm button {
-            width: 30%;
-            padding: 10px;
-            background-color: #2980b9;
-            border: none;
-            border-radius: 4px;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        #loginForm button:hover {
-            background-color: #3498db;
-        }
-
-/* General Styles */
 body {
     font-family: Arial, sans-serif;
-    background-color: white; /* Light background color */
-    
+    background-color: #2c3e50;
+    color: #ecf0f1;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-header {
-    width: 100%;
-    background-color: #333;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    color: #ffffff;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    padding-left: 10px;
-}
-
-.logo {
-    max-width: 200px;
-    height: auto;
-    margin-right: 10px;
-}
-
-#logout-button:hover {
-    background-color: darkgrey;
-    color: white;
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-}
-
-.user-info span {
-    margin-right: 15px;
-    font-weight: bold;
-}
-
-.user-info a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-    background-color: grey;
-    cursor: pointer;
-    transition: background-color 0.5s ease;
-}
-
-.user-info a:hover {
-    background-color: white;
-}
-
-main {
-    padding: 20px;
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-td {
     text-align: center;
 }
 
-form {
-    
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 1050px;
-    background-color: #333;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-form label {
-    margin: 10px 0 5px;
-    font-weight: bold;
-}
-
-form input[type="email"],
-form input[type="password"],
-form input[type="date"],
-form input[type="number"],
-form input[type="text"],
-form input[type="time"] {
-    align-items: center;
-    /* General Styles */
-body {
-    font-family: Arial, sans-serif;
-    background-color: white; /* Light background color */
-    color: #000; /* Dark text color */
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
 header {
-    width: 100%;
-    background-color: #333;
+    background-color: #34495e;
+    padding: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-bottom: 2px solid #ecf0f1;
 }
 
-.header-left {
+.header-left .logo {
+    height: 50px;
+}
+
+.header-right {
     display: flex;
     align-items: center;
-}
-
-.logo {
-    max-width: 200px;
-    height: auto;
-    margin-right: 10px;
 }
 
 .user-info {
+    margin-left: 20px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
-.user-info span {
-    margin-right: 15px;
+.logout-button {
+    font-size: 20px;
     font-weight: bold;
-}
-
-.user-info a {
-    color: #fff;
+    border-radius: 10px;
+    padding: 5px 10px;
+    background-color: #e74c3c;
+    color: #ecf0f1;
     text-decoration: none;
+    display: inline-block;
+}
+
+.logout-button:hover {
+    background-color: #c0392b;
+}
+
+.form-group {
+    display: flex;
+    justify-content: center; /* Center the content horizontally */
+    align-items: center; /* Center the content vertically */
+    gap: 10px; /* Space between the label and input */
+}
+
+.time-entry {
+    display: inline-block;
+    text-align: left;
+    margin-top: 20px;
+}
+
+.time-entry-form {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #34495e;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.form-label {
+    color: #ecf0f1;
     font-weight: bold;
-    padding: 10px 20px;
+}
+
+.input-date {
+    height: 35px;
+    font-weight: bold;
     border-radius: 5px;
-    background-color: #28a745;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    border: none;
+    padding: 5px;
 }
 
-.user-info a:hover {
-    background-color: #218838;
-}
-
-main {
-    padding: 20px;
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-td {
-    text-align: center;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.time-entry-table {
     width: 100%;
-    max-width: 1050px;
-    background-color: #333;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    color: #fff;
+    margin: 20px 0;
+    border-collapse: collapse;
 }
 
-form label {
-    margin: 10px 0 5px;
-    font-weight: bold;
-}
-
-form input[type="email"],
-form input[type="password"],
-form input[type="date"],
-form input[type="number"],
-form input[type="text"],
-form input[type="time"] {
+.time-entry-table th, .time-entry-table td {
+    text-align: center;
     padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #444;
-    border-radius: 5px;
-    background-color: whitesmoke; /* Light background color */
-    color: black; /* Dark text color */
-    width: 55%;
+    border: 1px solid #ecf0f1;
 }
 
-#week-ending {
-    text-align: center;
-    color: #fff;
+.time-entry-table th {
+    background-color: #1abc9c;
+    color: #ecf0f1;
 }
 
-form button {
-    padding: 10px 20px;
-    background-color: white;
-    border: none;
-    border-radius: 5px;
-    color: #333;
-    cursor: crosshair;
-    margin-top: 10px;
-    transition: background-color 0.5s ease;
+.time-entry-table td {
+    background-color: #34495e;
 }
 
-form button:hover {
-    background-color: darkgrey;
-}
-
-/* Table Styles */
-#time-entry-table {
-    width: 100%;
-    max-width: 800px;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: #333;
-    border-radius: 8px;
-    box-shadow: -4px -8px 16px rgba(222, 220, 220, 0.2), /* Top left shadow */
-                0 8px 8px rgba(226, 223, 223, 0.2), /* Bottom shadow */
-                4px 0 8px rgba(1, 1, 1, 0.2); /* Right shadow */
-    padding-bottom: 5px;
-}
-
-#time-entry-form {
-    padding-bottom: 10px;
-    text-align: center; /* Center the text */
-}
-
-#time-entry-table th, #time-entry-table td {
-    padding: 5px;
-    border: 1px solid #444;
-    text-align: left;
-    background-color: #333; /* Dark background color */
-    color: #fff; /* White text color */
-}
-
-#time-entry-table th {
-    white-space: nowrap; /* Prevents header text from wrapping */
-}
-
-#time-entry-table input[type="time"],
-#time-entry-table input[type="date"] {
-    width: 10%; /* Ensures input fields take full width of their container */
-    padding: 5px;
-    border: 10px solid wheat;
-    background-color: #333; /* Dark background color */
-    color: #fff; /* White text color */
-    }
-
-#time-entry-table input[type="checkbox"] {
-    transform: scale(2.5); /* Makes checkboxes larger and more visible */
-}
-
-/* Container Styles */
-.container {
-    display: flex;
-    justify-content: space-between;
-}
-
-/* Additional Styles for Table and Summary */
-.table-summary-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    max-width: 800px;
-    color: #ffffff;
-}
-
-.summary label {
-    font-weight: bold;
-}
-
-#remaining-pto-hours {
+.checkbox-container {
     display: inline-block;
-    padding: 5px; /* Optional: adjust padding as needed */
+    cursor: pointer;
 }
 
-#summary-form {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    text-align: right;
-    max-width: 1050px; /* Adjust as necessary */
-    margin-top: 20px; /* Move the input field down by 20 pixels */
-    margin-left: 100px; /* Adjust the left margin */
+.checkbox-container img {
+    width: 20px;
+    height: 20px;
+}
+
+.summary-section {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.summary-form {
+    width: 90%;
+    max-width: 1050px;
+    margin: 0 auto;
+    background-color: #34495e;
+    padding: 20px;
+    border-radius: 10px;
 }
 
 .form-row {
-    display: flex;
-    align-items: center;
-    text-align: right;
+    margin: 10px 0;
 }
 
-label {
-    flex: 1;
-    min-width: 150px; /* Adjust as necessary */
-}
-
-input[type="number"].small-input {
-    width: 35px; /* Adjust the width for two digits */
-    text-align: right;
-    margin-top: 20px; /* Move the input field down by 20 pixels */
-    margin-left: 10px; /* Adjust the left margin */
-    background-color: #1a1a1a; /* Background color to blend */
-    color: #ffffff; /* Text color for readability */
-    border: none; /* Remove default border */
-    border-bottom: 1px solid #ffffff; /* Custom bottom border */
-    padding: 2px; /* Add padding for spacing */
-    outline: none; /* Remove outline on focus */
-}
-
-span {
-    margin-top: 4px; /* Move the input field down by 4 pixels */
-    margin-left: 8px; /* Adjust the left margin */
-    text-align: justify;
-}
-
-/* Button Styles */
-#submit-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #dc3545;
-    border: none;
-    border-radius: 5px;
-    color: #fff;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    display: flex;
-    align-items: center;
-}
-
-#submit-button:hover {
-    background-color: red;
-}
-
-#playPauseButton {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: grey;
-    border: white;
-    border-radius: 50px;
-    color: black;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-}
-
-#playPauseButton:hover {
-    background-color: black;
-    color: white;
-}
-
-    margin-bottom: 15px;
-    border: 1px solid #444;
-    border-radius: 5px;
-    background-color: whitesmoke; /* Light background color */
-    color: black; /* Dark text color */
-    width: 55%;
-}
-
-#week-ending {
-    text-align: center;
-}
-
-form button {
-    padding: 10px 20px;
-    background-color: white;
-    border: none;
-    border-radius: 5px;
-    color: black;
-    cursor: crosshair;
-    margin-top: 10px;
-    transition: background-color 0.5s ease;
-}
-
-form button:hover {
-    background-color: darkgrey;
-}
-
-/* Table Styles */
-#time-entry-table {
-    width: 100%;
-    max-width: 100000px;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: #333;
-    border-radius: 8px;
-    box-shadow: -4px -8px 16px rgba(222, 220, 220, 0.2), /* Top left shadow */
-                0 8px 8px rgba(226, 223, 223, 0.2), /* Bottom shadow */
-                4px 0 8px rgba(1, 1, 1, 0.2); /* Right shadow */
-    padding-bottom: 5px;
-}
-
-#time-entry-form {
-    padding-bottom: 10px;
-    text-align: center; /* Center the text */
-}
-
-#time-entry-table th, #time-entry-table td {
+.small-input {
+    width: 50px;
     padding: 5px;
-    border: 1px solid #444;
-    text-align: left;
-    background-color: #333; /* Dark background color */
-    color: #fff; /* White text color */
-}
-
-#time-entry-table th {
-    white-space: nowrap; /* Prevents header text from wrapping */
-    color: #fff;
-}
-
-#time-entry-table input[type="time"],
-#time-entry-table input[type="date"] {
-    width: 100%; /* Ensures input fields take full width of their container */
-    min-width: 150px; /* Sets a minimum width for the input fields */
-    padding: 5px;
-    border: 1px solid #444;
     border-radius: 5px;
-    background-color: rgb(37, 30, 30); /* Dark background color */
-    color: #fff; /* White text color */
-    box-sizing: border-box; /* Includes padding and border in element's total width */
-    overflow: hidden; /* Ensure text is not hidden */
+    border: none;
+    background-color: #34495e;
+    color: #1abc9c;
+    font-size: 20px;
+    font: bold;    
 }
 
-#time-entry-table input[type="checkbox"] {
-    transform: scale(1.5); /* Makes checkboxes larger and more visible */
-}
-
-/* Container Styles */
-.container {
-    display: flex;
-    justify-content: space-between;
-}
-
-/* Additional Styles for Table and Summary */
-.table-summary-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    max-width: 1000px;
-    align-items: center;
-}
-
-.summary label {
+.form-value {
+    color: #1abc9c;
     font-weight: bold;
-    align-items: center;
+    font-size: 20px;
+    font: bold;
 }
 
-#remaining-pto-hours {
-    display: inline-block;
-    padding: 5px; /* Optional: adjust padding as needed */
+.validation-message {
+    color: red;
 }
 
-#summary-form {
-    display: flex;
-    flex-direction: column;
-    text-align: right;
-    max-width: 600px; /* Adjust as necessary */
-    margin-top: 20px; /* Move the input field down by 20 pixels */
-    margin-left: 100px; /* Adjust the left margin */
-    color: white;
-    align-items: center;
-    
-}
-
-.form-row {
-    display: flex;
-    align-items: center;
-}
-
-label {
-    flex: 1;
-    min-width: 150px; /* Adjust as necessary */
-}
-
-input[type="number"].small-input {
-    width: 35px; /* Adjust the width for two digits */
-    text-align: right;
-    margin-top: 20px; /* Move the input field down by 20 pixels */
-    margin-left: 10px; /* Adjust the left margin */
-    background-color: #1a1a1a; /* Background color to blend */
-    color: #ffffff; /* Text color for readability */
-    border: none; /* Remove default border */
-    border-bottom: 1px solid #ffffff; /* Custom bottom border */
-    padding: 2px; /* Add padding for spacing */
-    outline: none; /* Remove outline on focus */
-}
-
-span {
-    margin-top: 4px; /* Move the input field down by 4 pixels */
-    margin-left: 8px; /* Adjust the left margin */
-    text-align: justify;
-}
-
-/* Button Styles */
-#submit-button {
-    margin-top: 20px;
+.submit-button {
     padding: 10px 20px;
-    background-color: #dc3545;
     border: none;
     border-radius: 5px;
-    color: #fff;
+    background-color: #1abc9c;
+    color: #ecf0f1;
+    font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    display: flex;
-    align-items: center;
 }
 
-#submit-button:hover {
-    background-color: red;
+.submit-button:hover {
+    background-color: #16a085;
 }
 
-#playPauseButton {
+.play-pause-button {
     margin-top: 20px;
     padding: 10px 20px;
-    background-color: grey;
-    border: white;
-    border-radius: 50px;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    border: none;
+    border-radius: 5px;
+    background-color: #1abc9c;
+    color: #ecf0f1;
+    font-size: 16px;
     font-weight: bold;
-    display: flex;
-    align-items: center;
+    cursor: pointer;
 }
 
-#playPauseButton:hover {
-    background-color: #c82333;
-    color: black;
+.play-pause-button:hover {
+    background-color: #16a085;
 }

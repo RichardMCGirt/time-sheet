@@ -9,9 +9,7 @@
         <div class="header-left">
             <img src="vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
         </div>
-       
     </header>
-  
     <main>
         <form id="loginForm">
             <label for="email">Email:</label>
@@ -20,14 +18,13 @@
             <input type="password" id="password" name="password" required>
             <button type="button" id="loginButton">Login</button>
         </form>
-        </main>
         <button id="playPauseButton">Play</button>
         <section id="joke-section">
             <h2>Today's Joke</h2>
-            <p id="joke-text" style="color: black;"></p> <!-- Element to display the joke with inline text color black -->
-    
-    
-    <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
+            <p id="joke-text"></p>
+        </section>
+        <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
+    </main>
     <script src="login.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/airtable/bundles/airtable.browser.js"></script>
     <script src="musicControl.js"></script>

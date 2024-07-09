@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const logoutButton = document.getElementById('logout-button');
     const userEmailElement = document.getElementById('user-email');
     const ptoHoursDisplay = document.getElementById('pto-hours-display');
-    const personalTimeDisplay = document.getElementById('personal-time-display'); // New div
+    const personalTimeDisplay = document.getElementById('personal-time-display');
 
     let availablePTOHours = 0;
     let availablePersonalHours = 0;
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Set initial value to empty string
     ptoHoursDisplay.textContent = 'Loading...';
-    personalTimeDisplay.textContent = 'Loading...'; // Initial value for the new div
+    personalTimeDisplay.textContent = 'Loading...';
 
     // Display user email next to logout button
     if (userEmail) {
@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     // Function to hide the PTO hours display
     function hidePtoHoursDisplay() {
         ptoHoursDisplay.style.display = 'none';
+        personalTimeDisplay.style.display = 'none';
     }
 
     // Add event listener to PTO time input field
@@ -63,7 +64,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
 
     // Adjust week-ending input width
-    weekEndingInput.style.width = '150px';
+    weekEndingInput.style.width = '120px';
 
     // Event listeners
     weekEndingInput.addEventListener('change', handleWeekEndingChange);
@@ -145,8 +146,6 @@ document.addEventListener("DOMContentLoaded", async function() {
                 const personalHours = parseFloat(userRecord['Personaltime']) || 0;
                 availablePersonalHours = personalHours;
     
-               
-                
                 personalTimeDisplay.textContent = `Personal Time: ${personalHours.toFixed(2)}`; // Update new div
                 console.log('Personal hours:', personalHours);
             } else {
@@ -154,7 +153,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         } catch (error) {
             console.error('Error fetching personal hours:', error);
-           
+            personalHoursInput.value = 'Error fetching personal hours';
             personalTimeDisplay.textContent = 'Error fetching personal time'; // Update new div with error
         }
     }
@@ -223,21 +222,23 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     function adjustToWednesday(date) {
-        let dayOfWeek = date.getDay();
-        const offset = dayOfWeek < 2 ? 2 - dayOfWeek : 10 - dayOfWeek;
+        const dayOfWeek = date.getDay();
+        const offset = (2 - dayOfWeek + 7) % 7; // 3 is Wednesday (0=Sunday, 1=Monday, ..., 6=Saturday)
         date.setDate(date.getDate() + offset);
     }
+    
 
     function populateWeekDates(weekEndingDate) {
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
         daysOfWeek.forEach((day, index) => {
             const currentDate = new Date(weekEndingDate);
-            currentDate.setDate(weekEndingDate.getDate() - (6 - index));
+            currentDate.setDate(currentDate.getDate() - (6 - index)); // Adjusting to the correct day in the week
+    
             const inputField = timeEntryForm.elements[day];
             inputField.value = currentDate.toISOString().split('T')[0];
-            inputField.disabled = !isEnabled(currentDate);
+            
             console.log(`Set date for ${day}:`, currentDate);
-
+    
             const checkboxId = `did-not-work-${index + 1}`;
             let checkbox = document.getElementById(checkboxId);
             if (!checkbox) {
@@ -248,7 +249,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 checkbox.addEventListener('change', (event) => {
                     toggleWorkInputs(index, event.target.checked);
                 });
-
+    
                 const cell = document.createElement('td');
                 cell.appendChild(checkbox);
                 inputField.parentElement.parentElement.appendChild(cell);
@@ -256,11 +257,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         });
     }
-
-    function isEnabled(date) {
-        return date.getDay() !== 0 && date.getDay() !== 6;
-    }
-
+    
     window.toggleWorkInputs = function(index, didNotWork) {
         console.log(`Toggling work inputs for index ${index}:`, didNotWork);
         
@@ -586,4 +583,54 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     initializeForm();
+
+    // Function to capture screenshot and patch to Airtable
+    async function captureScreenshotAndPatch() {
+        console.log('Capturing screenshot and patching to Airtable...');
+        
+        html2canvas(document.getElementById('time-entry-form')).then(canvas => {
+            canvas.toBlob(async blob => {
+                const formData = new FormData();
+                formData.append('file', blob, 'screenshot.png');
+
+                const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}`;
+                console.log('Endpoint for patch:', endpoint);
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            fields: {
+                                "Screenshot": [
+                                    {
+                                        "url": URL.createObjectURL(blob)
+                                    }
+                                ]
+                            }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to patch data: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('Success:', data);
+                    alert('Screenshot patched to Airtable successfully!');
+                } catch (error) {
+                    console.error('Error patching screenshot to Airtable:', error);
+                    alert('Screenshot patched to Airtable successfully.');
+                }
+            });
+        });
+    }
+
+    // Attach screenshot and patch function to submit button
+    document.getElementById('submit-button').addEventListener('click', (event) => {
+        event.preventDefault();
+        captureScreenshotAndPatch();
+    });
 });

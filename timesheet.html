@@ -13,35 +13,27 @@
                 <img src="vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
             </div>
             <div id="pto-info" style="display: none;">
-                <h1>: <span id="pto-hours">Loading...</span></h1>
-                
+                <h1>PTO Hours Available: <span id="pto-hours">Loading...</span></h1>
+                <label for="personal-time">Personal time used (hours):</label>
+                <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input">
             </div>
             <div id="pto-hours-display"></div>
             <div class="header-right">
                 <div id="personal-time-display"></div>
                 <div class="user-info">
                     <span id="user-email">user@example.com</span>
-                    <a href="#" id="logout-button" style="font-size: 20px; font-weight: bold; border-radius: 10px; padding: 5px 10px; background-color: grey; text-decoration: none; display: inline-block;">Logout</a>
-
-
+                    <a href="#" id="logout-button" class="logout-button">Logout</a>
                 </div>
             </div>
         </header>
-        <br>  
-        
-<!-- Add the new div for displaying PTO hours -->
-
-        <section id="time-entry" style="display: inline-block; text-align: left;">
-            <form id="time-entry-form" style="width: 1050px; margin: 0 auto;">
-             
-                <label for="week-ending" style="color: white;">Week Ending (Wednesday): </label>
-                <input type="date" id="week-ending" name="week_ending" required class="input-width-15" style="height: 35px; font-weight: bold;">
+        <section id="time-entry" class="time-entry">
+            <form id="time-entry-form" class="time-entry-form">
+                <div class="form-group">
+                    <label for="week-ending" class="form-label">Week Ending (Wednesday):</label>
+                    <input type="date" id="week-ending" name="week_ending" required class="input-date">
+                </div>
                 
-
-                <br>
-                <br>
-                
-                <table id="time-entry-table" style="width: 850px; margin: 0 auto;">
+                <table id="time-entry-table" class="time-entry-table">
                     <thead>
                         <tr>
                             <th style="text-align: center;">Date</th>
@@ -49,9 +41,10 @@
                             <th style="text-align: center;">Lunch Start</th>
                             <th style="text-align: center;">Lunch End</th>
                             <th style="text-align: center;">End Time</th>
+                            <th class="additional-time" style="text-align: center;">Additional Time In</th>
+                            <th class="additional-time" style="text-align: center;">Additional Time Out</th>
                             <th style="text-align: center;">Hours Worked</th>
                             <th style="text-align: center;">Did not work</th>
-                            
                         </tr>
                     </thead>
                     <tbody id="time-entry-body">
@@ -61,6 +54,8 @@
                             <td style="text-align: center;"><input type="time" name="start_time1" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="lunch_start1" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="lunch_end1" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In1" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out1" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="end_time1" step="1800"></td>
                             <td style="text-align: center;"><span id="hours-worked-today1">0</span></td>
                             <td style="text-align: center;"><input type="checkbox" id="did-not-work-1" name="did_not_work1" onchange="toggleWorkInputs(0, this.checked)"></td>
@@ -71,6 +66,8 @@
                             <td style="text-align: center;"><input type="time" name="lunch_start2" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="lunch_end2" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="end_time2" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In2" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out2" step="1800"></td>
                             <td style="text-align: center;"><span id="hours-worked-today2">0</span></td>
                             <td style="text-align: center;"><input type="checkbox" id="did-not-work-2" name="did_not_work2" onchange="toggleWorkInputs(1, this.checked)"></td>
                         </tr>
@@ -80,6 +77,8 @@
                             <td style="text-align: center;"><input type="time" name="lunch_start3" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="lunch_end3" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="end_time3" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In3" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out3" step="1800"></td>
                             <td style="text-align: center;"><span id="hours-worked-today3">0</span></td>
                             <td style="text-align: center;"><input type="checkbox" id="did-not-work-3" name="did_not_work3" onchange="toggleWorkInputs(2, this.checked)"></td>
                         </tr>
@@ -89,6 +88,8 @@
                             <td style="text-align: center;"><input type="time" name="lunch_start4" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="lunch_end4" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="end_time4" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In4" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out4" step="1800"></td>
                             <td style="text-align: center;"><span id="hours-worked-today4">0</span></td>
                             <td style="text-align: center;"><input type="checkbox" id="did-not-work-4" name="did_not_work4" onchange="toggleWorkInputs(3, this.checked)"></td>
                         </tr>
@@ -98,6 +99,8 @@
                             <td style="text-align: center;"><input type="time" name="lunch_start5" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="lunch_end5" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="end_time5" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In5" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out5" step="1800"></td>
                             <td style="text-align: center;"><span id="hours-worked-today5">0</span></td>
                             <td style="text-align: center;"><input type="checkbox" id="did-not-work-5" name="did_not_work5" onchange="toggleWorkInputs(4, this.checked)"></td>
                         </tr>
@@ -107,6 +110,8 @@
                             <td style="text-align: center;"><input type="time" name="lunch_start6" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="lunch_end6" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="end_time6" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In6" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out6" step="1800"></td>
                             <td style="text-align: center;"><span id="hours-worked-today6">0</span></td>
                             <td style="text-align: center;"><input type="checkbox" id="did-not-work-6" name="did_not_work6" onchange="toggleWorkInputs(5, this.checked)"></td>
                         </tr>
@@ -116,48 +121,52 @@
                             <td style="text-align: center;"><input type="time" name="lunch_start7" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="lunch_end7" step="1800"></td>
                             <td style="text-align: center;"><input type="time" name="end_time7" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In7" step="1800"></td>
+                            <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out7" step="1800"></td>
                             <td style="text-align: center;"><span id="hours-worked-today7">0</span></td>
                             <td style="text-align: center;"><input type="checkbox" id="did-not-work-7" name="did_not_work7" onchange="toggleWorkInputs(6, this.checked)"></td>
                         </tr>
-                        
                     </tbody>
                 </table>
             </form>
-            <br>
-            <section id="summary">
-                <form id="summary-form">
+            <section id="summary" class="summary-section">
+                <form id="summary-form" class="summary-form">
                     <div class="form-row">
-                        <label for="personal-time">Personal time used (hours):</label>
+                        <label for="personal-time" class="form-label">Personal time used (hours):</label>
                         <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input">
                     </div>
                     <div class="form-row">
-                        <label for="pto-time">PTO time used (hours):</label>
+                        <label for="pto-time" class="form-label">PTO time used (hours):</label>
                         <input type="number" id="pto-time" name="pto_time" min="0" max="40" step="1" value="0" class="small-input">
                     </div>
                     <div class="form-row">
-                        <label for="total-time-worked">Total time worked:</label>
-                        <span id="total-time-worked">32.00</span>
+                        <label for="Holiday-hours" class="form-label">Holiday hours:</label>
+                        <input type="number" id="Holiday-hours" name="Holiday_hours" min="0" max="40" step="1" value="0" class="small-input">
                     </div>
                     <div class="form-row">
-                        <label for="total-time-with-pto">Total time with PTO:</label>
-                        <span id="total-time-with-pto-value">33.00</span>
+                        <label for="total-time-worked" class="form-label">Total time worked:</label>
+                        <span id="total-time-worked" class="form-value">32.00</span>
                     </div>
                     <div class="form-row">
-                        <label for="remaining-pto-hours">Remaining PTO Hours:</label>
-                        <span id="remaining-pto-hours" class="input-width-15">0</span>
+                        <label for="total-time-with-pto" class="form-label">Total time with PTO:</label>
+                        <span id="total-time-with-pto-value" class="form-value">33.00</span>
                     </div>
-                    <span id="pto-validation-message" style="color: red;"></span><br>
-                    <button id="submit-button" onclick="submitTimesheet()">Submit</button>
-                </form>
-            </section>
-            
+                    <div class="form-row">
+                        <label for="remaining-pto-hours" class="form-label">Remaining PTO Hours:</label>
+                        <span id="remaining-pto-hours" class="form-value">0</span>
+                    </div>
+                    <span id="pto-validation-message" class="validation-message"></span><br>
+                    <button id="submit-button" class="submit-button" onclick="submitTimesheet()">Submit</button>
                 </form>
             </section>
         </section>
-        <button id="playPauseButton">Play</button>
+        <br>
+        <button id="playPauseButton" class="play-pause-button">Play</button>
     </main>
     <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
     <script src="timesheet.js"></script>
     <script src="musicControl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 </body>
 </html>
