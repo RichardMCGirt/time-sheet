@@ -19,6 +19,7 @@ header {
     align-items: center;
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #ffffff;
 }
 
 .header-left {
@@ -197,6 +198,7 @@ form input[type="time"] {
 
 #week-ending {
     text-align: center;
+    color: #fff;
 }
 
 form button {
@@ -274,6 +276,7 @@ form button:hover {
     justify-content: space-between;
     align-items: flex-start;
     max-width: 800px;
+    color: #ffffff;
 }
 
 .summary label {
