@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const userEmailElement = document.getElementById('user-email');
     const ptoHoursDisplay = document.getElementById('pto-hours-display');
     const personalTimeDisplay = document.getElementById('personal-time-display');
+    const resetButton = document.getElementById('reset-button');
 
     let availablePTOHours = 0;
     let availablePersonalHours = 0;
@@ -75,6 +76,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     ptoTimeInput.addEventListener('input', handlePtoTimeChange);
     personalHoursInput.addEventListener('input', handlePersonalTimeChange);
     logoutButton.addEventListener('click', handleLogout);
+    resetButton.addEventListener('click', resetForm);
 
     async function fetchPtoHours() {
         console.log('Fetching PTO hours...');
@@ -130,9 +132,6 @@ document.addEventListener("DOMContentLoaded", async function() {
                 }
             });
     
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
-    
             if (!response.ok) {
                 throw new Error(`Failed to fetch data: ${response.statusText}`);
             }
@@ -146,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 const personalHours = parseFloat(userRecord['Personaltime']) || 0;
                 availablePersonalHours = personalHours;
     
-                personalTimeDisplay.textContent = `Personal Time: ${personalHours.toFixed(2)}`; // Update new div
+                personalTimeDisplay.textContent = `Personal Time: ${personalHours.toFixed(2)}`;
                 console.log('Personal hours:', personalHours);
             } else {
                 throw new Error('No personal time record found for user');
@@ -154,7 +153,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         } catch (error) {
             console.error('Error fetching personal hours:', error);
             personalHoursInput.value = 'Error fetching personal hours';
-            personalTimeDisplay.textContent = 'Error fetching personal time'; // Update new div with error
+            personalTimeDisplay.textContent = 'Error fetching personal time';
         }
     }
 
@@ -223,11 +222,10 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     function adjustToWednesday(date) {
         const dayOfWeek = date.getDay();
-        const offset = (2 - dayOfWeek + 7) % 7; // 3 is Wednesday (0=Sunday, 1=Monday, ..., 6=Saturday)
+        const offset = (3 - dayOfWeek + 7) % 7; // 3 is Wednesday (0=Sunday, 1=Monday, ..., 6=Saturday)
         date.setDate(date.getDate() + offset);
     }
     
-
     function populateWeekDates(weekEndingDate) {
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
         daysOfWeek.forEach((day, index) => {
@@ -265,6 +263,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         const lunchStartInput = timeEntryForm.elements[`lunch_start${index + 1}`];
         const lunchEndInput = timeEntryForm.elements[`lunch_end${index + 1}`];
         const endTimeInput = timeEntryForm.elements[`end_time${index + 1}`];
+        const additionalTimeInInput = timeEntryForm.elements[`Additional_Time_In${index + 1}`];
+        const additionalTimeOutInput = timeEntryForm.elements[`Additional_Time_Out${index + 1}`];
         const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
 
         if (didNotWork && !startTimeInput.dataset.originalValue) {
@@ -272,29 +272,39 @@ document.addEventListener("DOMContentLoaded", async function() {
             lunchStartInput.dataset.originalValue = lunchStartInput.value;
             lunchEndInput.dataset.originalValue = lunchEndInput.value;
             endTimeInput.dataset.originalValue = endTimeInput.value;
+            additionalTimeInInput.dataset.originalValue = additionalTimeInInput.value;
+            additionalTimeOutInput.dataset.originalValue = additionalTimeOutInput.value;
         }
 
         startTimeInput.disabled = didNotWork;
         lunchStartInput.disabled = didNotWork;
         lunchEndInput.disabled = didNotWork;
         endTimeInput.disabled = didNotWork;
+        additionalTimeInInput.disabled = didNotWork;
+        additionalTimeOutInput.disabled = didNotWork;
 
         if (didNotWork) {
-            startTimeInput.value = '00:00';
-            lunchStartInput.value = '00:00';
-            lunchEndInput.value = '00:00';
-            endTimeInput.value = '00:00';
+            startTimeInput.value = '';
+            lunchStartInput.value = '';
+            lunchEndInput.value = '';
+            endTimeInput.value = '';
+            additionalTimeInInput.value = '';
+            additionalTimeOutInput.value = '';
             hoursWorkedSpan.textContent = '0.00';
         } else {
             startTimeInput.value = startTimeInput.dataset.originalValue || '';
             lunchStartInput.value = lunchStartInput.dataset.originalValue || '';
             lunchEndInput.value = lunchEndInput.dataset.originalValue || '';
             endTimeInput.value = endTimeInput.dataset.originalValue || '';
+            additionalTimeInInput.value = additionalTimeInInput.dataset.originalValue || '';
+            additionalTimeOutInput.value = additionalTimeOutInput.dataset.originalValue || '';
 
             delete startTimeInput.dataset.originalValue;
             delete lunchStartInput.dataset.originalValue;
             delete lunchEndInput.dataset.originalValue;
             delete endTimeInput.dataset.originalValue;
+            delete additionalTimeInInput.dataset.originalValue;
+            delete additionalTimeOutInput.dataset.originalValue;
 
             calculateTotalTimeWorked();
         }
@@ -314,6 +324,8 @@ document.addEventListener("DOMContentLoaded", async function() {
             const lunchStartInput = timeEntryForm.elements[`lunch_start${index + 1}`];
             const lunchEndInput = timeEntryForm.elements[`lunch_end${index + 1}`];
             const endTimeInput = timeEntryForm.elements[`end_time${index + 1}`];
+            const additionalTimeInInput = timeEntryForm.elements[`Additional_Time_In${index + 1}`];
+            const additionalTimeOutInput = timeEntryForm.elements[`Additional_Time_Out${index + 1}`];
             const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
 
             const startDate = new Date(dateInput.value);
@@ -321,8 +333,10 @@ document.addEventListener("DOMContentLoaded", async function() {
             const lunchStart = parseTime(lunchStartInput.value);
             const lunchEnd = parseTime(lunchEndInput.value);
             const endTime = parseTime(endTimeInput.value);
+            const additionalTimeIn = parseTime(additionalTimeInInput.value);
+            const additionalTimeOut = parseTime(additionalTimeOutInput.value);
 
-            let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime);
+            let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut);
             hoursWorked = roundToClosestQuarterHour(hoursWorked);
             
             if (!isNaN(hoursWorked)) {
@@ -354,7 +368,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         return { hours, minutes };
     }
 
-    function calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime) {
+    function calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut) {
         if (!startTime || !endTime) {
             return NaN; // Return NaN if start time or end time is missing
         }
@@ -376,6 +390,17 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             const lunchBreakHours = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
             totalHoursWorked -= lunchBreakHours;
+        }
+
+        if (additionalTimeIn && additionalTimeOut) {
+            const additionalTimeInDateTime = new Date(startDate);
+            additionalTimeInDateTime.setHours(additionalTimeIn.hours, additionalTimeIn.minutes);
+
+            const additionalTimeOutDateTime = new Date(startDate);
+            additionalTimeOutDateTime.setHours(additionalTimeOut.hours, additionalTimeOut.minutes);
+
+            const additionalTimeWorked = (additionalTimeOutDateTime - additionalTimeInDateTime) / (1000 * 60 * 60);
+            totalHoursWorked += additionalTimeWorked;
         }
 
         return Math.max(0, totalHoursWorked); // Ensure hours worked is not negative
@@ -414,9 +439,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     async function updatePtoHours() {
         console.log('Updating PTO hours...');
         
-        // Get the remaining PTO hours value
-        const usedPtoHoursValue = parseFloat(ptoTimeInput.value) || 0; // Get the used PTO hours value
-        const newPtoHoursValue = availablePTOHours - usedPtoHoursValue; // Calculate new PTO hours
+        const usedPtoHoursValue = parseFloat(ptoTimeInput.value) || 0;
+        const newPtoHoursValue = availablePTOHours - usedPtoHoursValue;
 
         console.log('Used PTO hours value:', usedPtoHoursValue);
         console.log('New PTO hours value:', newPtoHoursValue);
@@ -450,12 +474,11 @@ document.addEventListener("DOMContentLoaded", async function() {
                     },
                     body: JSON.stringify({
                         fields: {
-                            'PTO Hours': newPtoHoursValue // Update PTO Hours field
+                            'PTO Hours': newPtoHoursValue
                         }
                     })
                 });
 
-                console.log('Update response status:', updateResponse.status);
                 const updateResponseData = await updateResponse.json();
                 console.log('Update response data:', updateResponseData);
 
@@ -479,9 +502,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     async function updatePersonalHours() {
         console.log('Updating Personal hours...');
         
-        // Get the remaining Personal hours value
-        const usedPersonalHoursValue = parseFloat(personalHoursInput.value) || 0; // Get the used Personal hours value
-        const newPersonalHoursValue = availablePersonalHours - usedPersonalHoursValue; // Calculate new Personal hours
+        const usedPersonalHoursValue = parseFloat(personalHoursInput.value) || 0;
+        const newPersonalHoursValue = availablePersonalHours - usedPersonalHoursValue;
 
         console.log('Used Personal hours value:', usedPersonalHoursValue);
         console.log('New Personal hours value:', newPersonalHoursValue);
@@ -515,12 +537,11 @@ document.addEventListener("DOMContentLoaded", async function() {
                     },
                     body: JSON.stringify({
                         fields: {
-                            'Personaltime': newPersonalHoursValue // Update Personal hours field
+                            'Personaltime': newPersonalHoursValue
                         }
                     })
                 });
 
-                console.log('Update response status:', updateResponse.status);
                 const updateResponseData = await updateResponse.json();
                 console.log('Update response data:', updateResponseData);
 
@@ -551,7 +572,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         remainingPtoHoursElement.textContent = '0.00';
         remainingPersonalHoursElement.textContent = '0.00';
     }
-    
+
+    function resetForm(event) {
+        event.preventDefault();
+        console.log('Resetting form...');
+        clearForm();
+    }
+
     document.getElementById('submit-button').addEventListener('click', (event) => {
         event.preventDefault(); // Prevent form submission
 

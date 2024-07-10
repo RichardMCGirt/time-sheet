@@ -1,0 +1,150 @@
+/* index.css */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+header {
+    width: 100%;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-left {
+    display: flex;
+    justify-content: center;
+}
+
+.logo {
+    width: 150px; /* Increased logo size */
+    height: auto;
+}
+
+main {
+    width: 100%;
+    max-width: 400px;
+    margin: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.logo-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.login-form {
+    width: 100%;
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: bold;
+}
+
+.input-text {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    color: #333;
+    box-sizing: border-box;
+}
+
+.input-text::placeholder {
+    color: #999;
+}
+
+.input-text:focus {
+    outline: none;
+    border-color: #5a0db5;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: linear-gradient(to right, #5a0db5, #2575fc); /* Matched gradient color */
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.submit-button:hover {
+    background: linear-gradient(to right, #4e0da5, #2064d8); /* Matched hover color */
+}
+
+.signup-link {
+    margin-top: 20px;
+    color: #777;
+    font-size: 14px;
+}
+
+.signup-link a {
+    color: #5a0db5; /* Matched link color */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+.play-pause-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #1abc9c;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.play-pause-button:hover {
+    background-color: #16a085;
+}
+
+#joke-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#joke-section h2 {
+    color: #333;
+}
+
+#joke-section p {
+    color: #333;
+    font-size: 16px;
+}

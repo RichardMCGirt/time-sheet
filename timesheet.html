@@ -68,7 +68,7 @@
                             <td style="text-align: center;"><input type="time" name="end_time2" step="1800"></td>
                             <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In2" step="1800"></td>
                             <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out2" step="1800"></td>
-                            <td style="text-align: center;"><span id="hours-worked-today2">0</span></td>
+                            <td style="text-align: center;"><span id="hours-worked-today2">0"></span></td>
                             <td style="text-align: center;"><input type="checkbox" id="did-not-work-2" name="did_not_work2" onchange="toggleWorkInputs(1, this.checked)"></td>
                         </tr>
                         <tr data-day="3">
@@ -128,6 +128,7 @@
                         </tr>
                     </tbody>
                 </table>
+                <button id="reset-button" class="submit-button">Reset</button>
             </form>
             <section id="summary" class="summary-section">
                 <form id="summary-form" class="summary-form">
@@ -145,18 +146,18 @@
                     </div>
                     <div class="form-row">
                         <label for="total-time-worked" class="form-label">Total time worked:</label>
-                        <span id="total-time-worked" class="form-value">32.00</span>
+                        <span id="total-time-worked" class="form-value">0.00</span>
                     </div>
                     <div class="form-row">
                         <label for="total-time-with-pto" class="form-label">Total time with PTO:</label>
-                        <span id="total-time-with-pto-value" class="form-value">33.00</span>
+                        <span id="total-time-with-pto-value" class="form-value">0.00</span>
                     </div>
                     <div class="form-row">
                         <label for="remaining-pto-hours" class="form-label">Remaining PTO Hours:</label>
-                        <span id="remaining-pto-hours" class="form-value">0</span>
+                        <span id="remaining-pto-hours" class="form-value">0.00</span>
                     </div>
                     <span id="pto-validation-message" class="validation-message"></span><br>
-                    <button id="submit-button" class="submit-button" onclick="submitTimesheet()">Submit</button>
+                    <button id="submit-button" class="submit-button">Submit</button>
                 </form>
             </section>
         </section>
