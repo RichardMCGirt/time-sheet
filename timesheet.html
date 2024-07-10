@@ -18,8 +18,9 @@
                 <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input">
             </div>
             <div id="pto-hours-display"></div>
+            <div id="personal-time-display"></div>
             <div class="header-right">
-                <div id="personal-time-display"></div>
+           
                 <div class="user-info">
                     <span id="user-email">user@example.com</span>
                     <a href="#" id="logout-button" class="logout-button">Logout</a>
@@ -68,7 +69,7 @@
                             <td style="text-align: center;"><input type="time" name="end_time2" step="1800"></td>
                             <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In2" step="1800"></td>
                             <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out2" step="1800"></td>
-                            <td style="text-align: center;"><span id="hours-worked-today2">0"></span></td>
+                            <td style="text-align: center;"><span id="hours-worked-today2">0</span></td>
                             <td style="text-align: center;"><input type="checkbox" id="did-not-work-2" name="did_not_work2" onchange="toggleWorkInputs(1, this.checked)"></td>
                         </tr>
                         <tr data-day="3">
@@ -151,6 +152,10 @@
                     <div class="form-row">
                         <label for="total-time-with-pto" class="form-label">Total time with PTO:</label>
                         <span id="total-time-with-pto-value" class="form-value">0.00</span>
+                    </div>
+                    <div class="form-row">
+                        <label for="remaining-personal-hours" class="form-label">Remaining Personal Hours:</label>
+                        <span id="personal-time" class="form-value">0.00</span>
                     </div>
                     <div class="form-row">
                         <label for="remaining-pto-hours" class="form-label">Remaining PTO Hours:</label>

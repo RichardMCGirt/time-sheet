@@ -51,7 +51,7 @@ h1 {
 
 .login-form {
     width: 100%;
-    text-align: left;
+    text-align: center;
 }
 
 .form-group {
@@ -67,7 +67,7 @@ h1 {
 }
 
 .input-text {
-    width: 100%;
+    width: 75%;
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -86,7 +86,7 @@ h1 {
 }
 
 .submit-button {
-    width: 100%;
+    width: 35%;
     padding: 10px;
     border: none;
     border-radius: 5px;
@@ -97,23 +97,15 @@ h1 {
     cursor: pointer;
     transition: background-color 0.3s ease;
     margin-top: 10px;
+    margin: 0 auto; /* Center the button */
+    
 }
 
 .submit-button:hover {
     background: linear-gradient(to right, #4e0da5, #2064d8); /* Matched hover color */
 }
 
-.signup-link {
-    margin-top: 20px;
-    color: #777;
-    font-size: 14px;
-}
 
-.signup-link a {
-    color: #5a0db5; /* Matched link color */
-    text-decoration: none;
-    font-weight: bold;
-}
 
 .signup-link a:hover {
     text-decoration: underline;
@@ -126,7 +118,7 @@ h1 {
     border-radius: 5px;
     background-color: #1abc9c;
     color: #fff;
-    font-size: 16px;
+    font-size: 13px;
     font-weight: bold;
     cursor: pointer;
 }

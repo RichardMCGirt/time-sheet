@@ -43,8 +43,8 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Function to hide the PTO hours display
     function hidePtoHoursDisplay() {
-        ptoHoursDisplay.style.display = 'none';
-        personalTimeDisplay.style.display = 'none';
+        //ptoHoursDisplay.style.display = 'none';
+        //personalTimeDisplay.style.display = 'none';
     }
 
     // Add event listener to PTO time input field
@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const timeInputs = document.querySelectorAll('input[type="time"]');
     timeInputs.forEach(input => {
         input.addEventListener('focus', () => input.showPicker());
+        input.addEventListener('keydown', handleArrowKeys); // Add this line
     });
 
     // Adjust week-ending input width
@@ -660,4 +661,26 @@ document.addEventListener("DOMContentLoaded", async function() {
         event.preventDefault();
         captureScreenshotAndPatch();
     });
+
+    // Handle arrow key navigation
+    function handleArrowKeys(event) {
+        const key = event.key;
+        const currentInput = event.target;
+        const inputs = Array.from(document.querySelectorAll('input[type="time"]'));
+
+        let index = inputs.indexOf(currentInput);
+
+        if (key === 'ArrowRight') {
+            index = (index + 1) % inputs.length;
+        } else if (key === 'ArrowLeft') {
+            index = (index - 1 + inputs.length) % inputs.length;
+        } else if (key === 'ArrowDown') {
+            index = (index + 7) % inputs.length; // Assuming 7 time fields per row
+        } else if (key === 'ArrowUp') {
+            index = (index - 7 + inputs.length) % inputs.length; // Assuming 7 time fields per row
+        }
+
+        inputs[index].focus();
+    }
 });
+
