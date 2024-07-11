@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     // DOM elements
     const ptoHoursElement = document.getElementById('pto-hours');
     const personalHoursInput = document.getElementById('personal-time');
+    const holidayHoursInput = document.getElementById('Holiday-hours');
     const weekEndingInput = document.getElementById('week-ending');
     const timeEntryForm = document.getElementById('time-entry-form');
     const ptoTimeInput = document.getElementById('pto-time');
@@ -50,9 +51,11 @@ document.addEventListener("DOMContentLoaded", async function() {
     // Add event listener to PTO time input field
     ptoTimeInput.addEventListener('input', hidePtoHoursDisplay);
     personalHoursInput.addEventListener('input', hidePtoHoursDisplay);
+    holidayHoursInput.addEventListener('input', hidePtoHoursDisplay);
 
     // Add event listener to update personal time display
     personalHoursInput.addEventListener('input', handlePersonalTimeChange);
+    holidayHoursInput.addEventListener('input', handleHolidayHoursChange);
 
     // Fetch and display PTO hours and Personal hours
     await fetchPtoHours();
@@ -79,6 +82,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
     ptoTimeInput.addEventListener('input', handlePtoTimeChange);
     personalHoursInput.addEventListener('input', handlePersonalTimeChange);
+    holidayHoursInput.addEventListener('input', handleHolidayHoursChange);
     logoutButton.addEventListener('click', handleLogout);
     resetButton.addEventListener('click', resetForm);
 
@@ -204,6 +208,11 @@ document.addEventListener("DOMContentLoaded", async function() {
         calculateTotalTimeWorked();
     }
 
+    function handleHolidayHoursChange() {
+        console.log('Handling Holiday hours change...');
+        calculateTotalTimeWorked();
+    }
+
     function updatePtoHoursDisplay(remainingHours) {
         ptoHoursDisplay.textContent = `PTO Hours: ${remainingHours.toFixed(2)}`;
     }
@@ -211,7 +220,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     function updatePersonalTimeDisplay(personalTimeUsed, remainingPersonalHours) {
         personalTimeDisplay.textContent = `Personal Time: ${remainingPersonalHours.toFixed(2)}`;
         remainingPersonalHoursElement.textContent = remainingPersonalHours.toFixed(2);
-        totalTimeWithPtoSpan.textContent = (parseFloat(totalTimeWorkedSpan.textContent) + personalTimeUsed + (parseFloat(ptoTimeInput.value) || 0)).toFixed(2);
+        totalTimeWithPtoSpan.textContent = (parseFloat(totalTimeWorkedSpan.textContent) + personalTimeUsed + (parseFloat(ptoTimeInput.value) || 0) + (parseFloat(holidayHoursInput.value) || 0)).toFixed(2);
     }
 
     async function handleWeekEndingChange() {
@@ -231,7 +240,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     function adjustToWednesday(date) {
         const dayOfWeek = date.getDay();
-        const offset = (3 - dayOfWeek + 7) % 7; // 3 is Wednesday (0=Sunday, 1=Monday, ..., 6=Saturday)
+        const offset = (2 - dayOfWeek + 7) % 7; // 3 is Wednesday (0=Sunday, 1=Monday, ..., 6=Saturday)
         date.setDate(date.getDate() + offset);
     }
     
@@ -358,8 +367,9 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         const ptoTime = parseFloat(ptoTimeInput.value) || 0;
         const personalTime = parseFloat(personalHoursInput.value) || 0;
+        const holidayHours = parseFloat(holidayHoursInput.value) || 0;
         
-        totalHoursWithPto = totalHoursWorked + ptoTime + personalTime;
+        totalHoursWithPto = totalHoursWorked + ptoTime + personalTime + holidayHours;
 
         totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
         totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
@@ -593,6 +603,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         timeEntryForm.reset();
         ptoTimeInput.value = 0;
         personalHoursInput.value = 0;
+        holidayHoursInput.value = 0;
         totalTimeWorkedSpan.textContent = '0.00';
         totalTimeWithPtoSpan.textContent = '0.00';
         remainingPtoHoursElement.textContent = '0.00';
@@ -611,14 +622,15 @@ document.addEventListener("DOMContentLoaded", async function() {
         const totalTimeWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
         const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
         const personalTimeUsed = parseFloat(personalHoursInput.value) || 0;
+        const holidayHoursUsed = parseFloat(holidayHoursInput.value) || 0;
 
-        if (ptoTimeUsed === 0 && personalTimeUsed === 0) {
+        if (ptoTimeUsed === 0 && personalTimeUsed === 0 && holidayHoursUsed === 0) {
             alert('Nothing to change');
             return;
         }
 
-        if (totalTimeWithPto > 40 && (ptoTimeUsed > 0 || personalTimeUsed > 0)) {
-            alert('Total hours including PTO or Personal time cannot exceed 40 hours.');
+        if (totalTimeWithPto > 40 && (ptoTimeUsed > 0 || personalTimeUsed > 0 || holidayHoursUsed > 0)) {
+            alert('Total hours including PTO, Personal time, or Holiday time cannot exceed 40 hours.');
             return;
         }
 
@@ -700,9 +712,9 @@ document.addEventListener("DOMContentLoaded", async function() {
         } else if (key === 'ArrowLeft') {
             index = (index - 1 + inputs.length) % inputs.length;
         } else if (key === 'ArrowDown') {
-            index = (index + 7) % inputs.length; // Assuming 7 time fields per row
+            index = (index + 6) % inputs.length; // Assuming 7 time fields per row
         } else if (key === 'ArrowUp') {
-            index = (index - 7 + inputs.length) % inputs.length; // Assuming 7 time fields per row
+            index = (index - 6 + inputs.length) % inputs.length; // Assuming 7 time fields per row
         }
 
         inputs[index].focus();
