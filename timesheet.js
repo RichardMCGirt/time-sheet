@@ -1,8 +1,6 @@
 const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
 const baseId = 'appMq9W12jZyCJeXe';
 const tableId = 'tblhTl5q7sEFDv66Z';
-const cloudName = 'dhju1fzne'; // Replace with your Cloudinary cloud name
-const unsignedUploadPreset = 'Timeoff'; // Replace with your unsigned upload preset
 
 async function getRecordIdByEmail(email) {
     const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={Email}='${email}'`;
@@ -173,6 +171,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     timeInputs.forEach(input => {
         input.addEventListener('focus', () => input.showPicker());
         input.addEventListener('keydown', handleArrowKeys); // Add this line
+        populateTimeDropdown(input); // Add this line to set up 15-minute intervals
     });
 
     // Adjust week-ending input width
@@ -512,8 +511,13 @@ document.addEventListener("DOMContentLoaded", async function() {
             const lunchEndDateTime = new Date(startDate);
             lunchEndDateTime.setHours(lunchEnd.hours, lunchEnd.minutes);
 
-            const lunchBreakHours = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
-            totalHoursWorked -= lunchBreakHours;
+            if (lunchEndDateTime < lunchStartDateTime) {
+                alert('Lunch End time cannot be earlier than Lunch Start time');
+                totalHoursWorked -= 0; // Invalid lunch break duration
+            } else {
+                const lunchBreakHours = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
+                totalHoursWorked -= lunchBreakHours;
+            }
         }
 
         if (additionalTimeIn && additionalTimeOut) {
@@ -753,68 +757,35 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     initializeForm();
 
-    // Function to capture screenshot and patch to Airtable
-    async function captureScreenshotAndPatch() {
-        console.log('Capturing screenshot and patching to Airtable...');
-        
-        html2canvas(document.getElementById('time-entry-form')).then(canvas => {
-            canvas.toBlob(async blob => {
-                const fileUrl = URL.createObjectURL(blob);
-                console.log('File URL:', fileUrl);
+    function populateTimeDropdown(input) {
+        const select = document.createElement('select');
+        const times = [];
+        for (let hour = 0; hour < 24; hour++) {
+            for (let minute = 0; minute < 60; minute += 15) {
+                const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+                times.push(time);
+            }
+        }
 
-                const formData = new FormData();
-                formData.append('file', blob, 'screenshot.png');
+        times.forEach(time => {
+            const option = document.createElement('option');
+            option.value = time;
+            option.textContent = time;
+            select.appendChild(option);
+        });
 
-                const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}`;
-                console.log('Endpoint for patch:', endpoint);
-
-                try {
-                    const response = await fetch(endpoint, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            records: [{
-                                id: 'recYourRecordId', // Replace with the actual record ID you want to update
-                                fields: {
-                                    "Screenshot": [
-                                        {
-                                            "url": fileUrl
-                                        }
-                                    ]
-                                }
-                            }]
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Failed to patch data: ${response.statusText}`);
-                    }
-
-                    const data = await response.json();
-                    console.log('Success:', data);
-                    alert('Screenshot patched to Airtable successfully!');
-                } catch (error) {
-                    console.error('Error patching screenshot to Airtable:', error);
-                    alert('Error patching screenshot to Airtable.');
-                }
-            });
+        input.replaceWith(select);
+        select.addEventListener('change', () => {
+            input.value = select.value;
+            input.dispatchEvent(new Event('change'));
         });
     }
-
-    // Attach screenshot and patch function to submit button
-    document.getElementById('submit-button').addEventListener('click', (event) => {
-        event.preventDefault();
-        captureScreenshotAndPatch();
-    });
 
     // Handle arrow key navigation
     function handleArrowKeys(event) {
         const key = event.key;
         const currentInput = event.target;
-        const inputs = Array.from(document.querySelectorAll('input[type="time"]'));
+        const inputs = Array.from(document.querySelectorAll('input[type="time"], select'));
 
         let index = inputs.indexOf(currentInput);
 
