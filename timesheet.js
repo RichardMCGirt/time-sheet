@@ -53,9 +53,15 @@ document.addEventListener("DOMContentLoaded", async function() {
     const ptoHoursDisplay = document.getElementById('pto-hours-display');
     const personalTimeDisplay = document.getElementById('personal-time-display');
     const resetButton = document.getElementById('reset-button');
+    const didNotWorkCheckbox = document.getElementById('did-not-work-checkbox');
 
     let availablePTOHours = 0;
     let availablePersonalHours = 0;
+    let savedStartTimes = [];
+    let savedEndTimes = [];
+    let savedPtoTime = 0;
+    let savedPersonalTime = 0;
+    let savedHolidayTime = 0;
     let debounceTimer;
 
     // Set initial value to empty string
@@ -75,6 +81,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     ptoTimeInput.addEventListener('input', handlePtoTimeChange);
     personalHoursInput.addEventListener('input', handlePersonalTimeChange);
     holidayHoursInput.addEventListener('input', handleHolidayHoursChange);
+    didNotWorkCheckbox.addEventListener('change', handleDidNotWorkChange);
 
     // Fetch and display PTO hours and Personal hours
     await fetchPtoHours();
@@ -218,7 +225,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
 
         remainingPersonalHoursElement.textContent = remainingPersonalHours.toFixed(2);
-        updatePersonalHoursDisplay(remainingPersonalHours);
         updatePersonalTimeDisplay(personalTimeUsed, remainingPersonalHours);
         calculateTotalTimeWorked();
     }
@@ -276,6 +282,41 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         totalTimeWorkedSpan.textContent = totalTimeWorkedHours.toFixed(2);
         totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+    }
+
+    function handleDidNotWorkChange(event) {
+        if (event.target.checked) {
+            console.log('Did not work checked');
+
+            // Save current values
+            savedStartTimes = Array.from(document.querySelectorAll('input[name^="start-time-"]')).map(input => input.value);
+            savedEndTimes = Array.from(document.querySelectorAll('input[name^="end-time-"]')).map(input => input.value);
+            savedPtoTime = parseFloat(ptoTimeInput.value) || 0;
+            savedPersonalTime = parseFloat(personalHoursInput.value) || 0;
+            savedHolidayTime = parseFloat(holidayHoursInput.value) || 0;
+
+            // Clear all values
+            document.querySelectorAll('input[name^="start-time-"]').forEach(input => input.value = '');
+            document.querySelectorAll('input[name^="end-time-"]').forEach(input => input.value = '');
+            ptoTimeInput.value = '';
+            personalHoursInput.value = '';
+            holidayHoursInput.value = '';
+            totalTimeWorkedSpan.textContent = '0.00';
+            totalTimeWithPtoSpan.textContent = '0.00';
+
+            calculateTotalTimeWorked();
+        } else {
+            console.log('Did not work unchecked');
+
+            // Restore saved values
+            document.querySelectorAll('input[name^="start-time-"]').forEach((input, index) => input.value = savedStartTimes[index]);
+            document.querySelectorAll('input[name^="end-time-"]').forEach((input, index) => input.value = savedEndTimes[index]);
+            ptoTimeInput.value = savedPtoTime;
+            personalHoursInput.value = savedPersonalTime;
+            holidayHoursInput.value = savedHolidayTime;
+
+            calculateTotalTimeWorked();
+        }
     }
 
     async function updatePtoHours(newPtoHours) {
