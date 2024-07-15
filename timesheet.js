@@ -30,79 +30,6 @@ async function getRecordIdByEmail(email) {
     }
 }
 
-async function uploadImageToCloudinary(blob) {
-    const formData = new FormData();
-    formData.append('file', blob);
-    formData.append('upload_preset', unsignedUploadPreset);
-
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: 'POST',
-        body: formData
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-        console.log('Uploaded image URL:', data.secure_url);
-        return data.secure_url;
-    } else {
-        throw new Error('Failed to upload image to Cloudinary: ' + data.error.message);
-    }
-}
-
-async function captureScreenshotAndPatch(userEmail) {
-    console.log('Capturing screenshot and patching to Airtable...');
-    
-    try {
-        const recordId = await getRecordIdByEmail(userEmail);
-        if (!recordId) {
-            alert('No record found for the provided email.');
-            return;
-        }
-
-        html2canvas(document.getElementById('time-entry-form')).then(canvas => {
-            canvas.toBlob(async blob => {
-                try {
-                    const fileUrl = await uploadImageToCloudinary(blob);
-                    console.log('File URL:', fileUrl);
-
-                    const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-                    console.log('Endpoint for patch:', endpoint);
-
-                    const response = await fetch(endpoint, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            fields: {
-                                "Screenshot": [
-                                    {
-                                        "url": fileUrl
-                                    }
-                                ]
-                            }
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Failed to patch data: ${response.statusText}`);
-                    }
-
-                    const data = await response.json();
-                    console.log('Success:', data);
-                    alert('Screenshot patched to Airtable successfully!');
-                } catch (error) {
-                    console.error('Error uploading image or patching to Airtable:', error);
-                    alert('Error uploading image or patching to Airtable.');
-                }
-            });
-        });
-    } catch (error) {
-        console.error('Error during screenshot capture and patch:', error);
-    }
-}
-
 document.addEventListener("DOMContentLoaded", async function() {
     console.log('DOM fully loaded and parsed');
 
@@ -144,18 +71,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         window.location.href = 'index.html';
     }
 
-    // Function to hide the PTO hours display
-    function hidePtoHoursDisplay() {
-        //ptoHoursDisplay.style.display = 'none';
-        //personalTimeDisplay.style.display = 'none';
-    }
-
-    // Add event listener to PTO time input field
-    ptoTimeInput.addEventListener('input', hidePtoHoursDisplay);
-    personalHoursInput.addEventListener('input', hidePtoHoursDisplay);
-    holidayHoursInput.addEventListener('input', hidePtoHoursDisplay);
-
-    // Add event listener to update personal time display
+    // Add event listeners to update personal time display and PTO hours display
+    ptoTimeInput.addEventListener('input', handlePtoTimeChange);
     personalHoursInput.addEventListener('input', handlePersonalTimeChange);
     holidayHoursInput.addEventListener('input', handleHolidayHoursChange);
 
@@ -170,8 +87,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     const timeInputs = document.querySelectorAll('input[type="time"]');
     timeInputs.forEach(input => {
         input.addEventListener('focus', () => input.showPicker());
-        input.addEventListener('keydown', handleArrowKeys); // Add this line
-        populateTimeDropdown(input); // Add this line to set up 15-minute intervals
     });
 
     // Adjust week-ending input width
@@ -183,9 +98,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(calculateTotalTimeWorked, 300);
     });
-    ptoTimeInput.addEventListener('input', handlePtoTimeChange);
-    personalHoursInput.addEventListener('input', handlePersonalTimeChange);
-    holidayHoursInput.addEventListener('input', handleHolidayHoursChange);
     logoutButton.addEventListener('click', handleLogout);
     resetButton.addEventListener('click', resetForm);
 
@@ -316,489 +228,115 @@ document.addEventListener("DOMContentLoaded", async function() {
         calculateTotalTimeWorked();
     }
 
-    function updatePtoHoursDisplay(remainingHours) {
-        ptoHoursDisplay.textContent = `PTO Hours: ${remainingHours.toFixed(2)}`;
+    function updatePtoHoursDisplay(remainingPtoHours) {
+        ptoHoursDisplay.textContent = `Remaining PTO Hours: ${remainingPtoHours.toFixed(2)}`;
+    }
+
+    function updatePersonalHoursDisplay(remainingPersonalHours) {
+        personalTimeDisplay.textContent = `Remaining Personal Hours: ${remainingPersonalHours.toFixed(2)}`;
     }
 
     function updatePersonalTimeDisplay(personalTimeUsed, remainingPersonalHours) {
-        personalTimeDisplay.textContent = `Personal Time: ${remainingPersonalHours.toFixed(2)}`;
-        remainingPersonalHoursElement.textContent = remainingPersonalHours.toFixed(2);
-        totalTimeWithPtoSpan.textContent = (parseFloat(totalTimeWorkedSpan.textContent) + personalTimeUsed + (parseFloat(ptoTimeInput.value) || 0) + (parseFloat(holidayHoursInput.value) || 0)).toFixed(2);
+        personalTimeDisplay.textContent = `Personal Time Used: ${personalTimeUsed.toFixed(2)}, Remaining: ${remainingPersonalHours.toFixed(2)}`;
     }
 
-    async function handleWeekEndingChange() {
-        console.log('Handling week-ending date change...');
-        
-        const selectedDate = new Date(weekEndingInput.value);
-        adjustToWednesday(selectedDate);
-        weekEndingInput.value = selectedDate.toISOString().split('T')[0];
-        console.log('Adjusted week-ending date:', selectedDate);
-
-        const date7 = new Date(selectedDate);
-        date7.setDate(selectedDate.getDate() + 6);
-        timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
-
-        populateWeekDates(selectedDate);
-    }
-
-    function adjustToWednesday(date) {
-        const dayOfWeek = date.getDay();
-        const offset = (2 - dayOfWeek + 7) % 7; // 3 is Wednesday (0=Sunday, 1=Monday, ..., 6=Saturday)
-        date.setDate(date.getDate() + offset);
-    }
-    
-    function populateWeekDates(weekEndingDate) {
-        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
-        daysOfWeek.forEach((day, index) => {
-            const currentDate = new Date(weekEndingDate);
-            currentDate.setDate(currentDate.getDate() - (6 - index)); // Adjusting to the correct day in the week
-    
-            const inputField = timeEntryForm.elements[day];
-            inputField.value = currentDate.toISOString().split('T')[0];
-            
-            console.log(`Set date for ${day}:`, currentDate);
-    
-            const checkboxId = `did-not-work-${index + 1}`;
-            let checkbox = document.getElementById(checkboxId);
-            if (!checkbox) {
-                checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = checkboxId;
-                checkbox.name = `did_not_work${index + 1}`;
-                checkbox.addEventListener('change', (event) => {
-                    toggleWorkInputs(index, event.target.checked);
-                });
-    
-                const cell = document.createElement('td');
-                cell.appendChild(checkbox);
-                inputField.parentElement.parentElement.appendChild(cell);
-                console.log('Added checkbox for', day);
-            }
-        });
-    }
-    
-    window.toggleWorkInputs = function(index, didNotWork) {
-        console.log(`Toggling work inputs for index ${index}:`, didNotWork);
-        
-        const startTimeInput = timeEntryForm.elements[`start_time${index + 1}`];
-        const lunchStartInput = timeEntryForm.elements[`lunch_start${index + 1}`];
-        const lunchEndInput = timeEntryForm.elements[`lunch_end${index + 1}`];
-        const endTimeInput = timeEntryForm.elements[`end_time${index + 1}`];
-        const additionalTimeInInput = timeEntryForm.elements[`Additional_Time_In${index + 1}`];
-        const additionalTimeOutInput = timeEntryForm.elements[`Additional_Time_Out${index + 1}`];
-        const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
-
-        if (didNotWork && !startTimeInput.dataset.originalValue) {
-            startTimeInput.dataset.originalValue = startTimeInput.value;
-            lunchStartInput.dataset.originalValue = lunchStartInput.value;
-            lunchEndInput.dataset.originalValue = lunchEndInput.value;
-            endTimeInput.dataset.originalValue = endTimeInput.value;
-            additionalTimeInInput.dataset.originalValue = additionalTimeInInput.value;
-            additionalTimeOutInput.dataset.originalValue = additionalTimeOutInput.value;
-        }
-
-        startTimeInput.disabled = didNotWork;
-        lunchStartInput.disabled = didNotWork;
-        lunchEndInput.disabled = didNotWork;
-        endTimeInput.disabled = didNotWork;
-        additionalTimeInInput.disabled = didNotWork;
-        additionalTimeOutInput.disabled = didNotWork;
-
-        if (didNotWork) {
-            startTimeInput.value = '';
-            lunchStartInput.value = '';
-            lunchEndInput.value = '';
-            endTimeInput.value = '';
-            additionalTimeInInput.value = '';
-            additionalTimeOutInput.value = '';
-            hoursWorkedSpan.textContent = '0.00';
-        } else {
-            startTimeInput.value = startTimeInput.dataset.originalValue || '';
-            lunchStartInput.value = lunchStartInput.dataset.originalValue || '';
-            lunchEndInput.value = lunchEndInput.dataset.originalValue || '';
-            endTimeInput.value = endTimeInput.dataset.originalValue || '';
-            additionalTimeInInput.value = additionalTimeInInput.dataset.originalValue || '';
-            additionalTimeOutInput.value = additionalTimeOutInput.dataset.originalValue || '';
-
-            delete startTimeInput.dataset.originalValue;
-            delete lunchStartInput.dataset.originalValue;
-            delete lunchEndInput.dataset.originalValue;
-            delete endTimeInput.dataset.originalValue;
-            delete additionalTimeInInput.dataset.originalValue;
-            delete additionalTimeOutInput.dataset.originalValue;
-
-            calculateTotalTimeWorked();
-        }
+    function handleWeekEndingChange() {
+        console.log('Handling Week ending change...');
+        console.log('Week ending date:', weekEndingInput.value);
     }
 
     function calculateTotalTimeWorked() {
         console.log('Calculating total time worked...');
-        
-        let totalHoursWorked = 0;
-        let totalHoursWithPto = 0;
 
-        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
+        const startTimes = document.querySelectorAll('input[name^="start-time-"]');
+        const endTimes = document.querySelectorAll('input[name^="end-time-"]');
+        const personalTimeUsed = parseFloat(personalHoursInput.value) || 0;
+        const holidayTimeUsed = parseFloat(holidayHoursInput.value) || 0;
 
-        daysOfWeek.forEach((day, index) => {
-            const dateInput = timeEntryForm.elements[day];
-            const startTimeInput = timeEntryForm.elements[`start_time${index + 1}`];
-            const lunchStartInput = timeEntryForm.elements[`lunch_start${index + 1}`];
-            const lunchEndInput = timeEntryForm.elements[`lunch_end${index + 1}`];
-            const endTimeInput = timeEntryForm.elements[`end_time${index + 1}`];
-            const additionalTimeInInput = timeEntryForm.elements[`Additional_Time_In${index + 1}`];
-            const additionalTimeOutInput = timeEntryForm.elements[`Additional_Time_Out${index + 1}`];
-            const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
+        let totalMinutes = 0;
+        startTimes.forEach((startTimeInput, index) => {
+            const endTimeInput = endTimes[index];
+            const startTime = startTimeInput.value;
+            const endTime = endTimeInput.value;
 
-            const startDate = new Date(dateInput.value);
-            const startTime = parseTime(startTimeInput.value);
-            const lunchStart = parseTime(lunchStartInput.value);
-            const lunchEnd = parseTime(lunchEndInput.value);
-            const endTime = parseTime(endTimeInput.value);
-            const additionalTimeIn = parseTime(additionalTimeInInput.value);
-            const additionalTimeOut = parseTime(additionalTimeOutInput.value);
+            if (startTime && endTime) {
+                const startDateTime = new Date(`1970-01-01T${startTime}Z`);
+                const endDateTime = new Date(`1970-01-01T${endTime}Z`);
+                const differenceInMinutes = (endDateTime - startDateTime) / 1000 / 60;
 
-            let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut);
-            hoursWorked = roundToClosestQuarterHour(hoursWorked);
-            
-            if (!isNaN(hoursWorked)) {
-                totalHoursWorked += hoursWorked;
-                hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
-            } else {
-                hoursWorkedSpan.textContent = '0.00';
+                totalMinutes += differenceInMinutes;
             }
         });
 
-        const ptoTime = parseFloat(ptoTimeInput.value) || 0;
-        const personalTime = parseFloat(personalHoursInput.value) || 0;
-        const holidayHours = parseFloat(holidayHoursInput.value) || 0;
+        const totalTimeWorkedHours = totalMinutes / 60;
+
+        // Add PTO, personal, and holiday time to total hours worked
+        const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
+        const totalTimeWithPto = totalTimeWorkedHours + ptoTimeUsed + personalTimeUsed + holidayTimeUsed;
+
+        totalTimeWorkedSpan.textContent = totalTimeWorkedHours.toFixed(2);
+        totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+    }
+
+    async function updatePtoHours(newPtoHours) {
+        console.log('Updating PTO hours...', newPtoHours);
         
-        totalHoursWithPto = totalHoursWorked + ptoTime + personalTime + holidayHours;
+        const recordId = await getRecordIdByEmail(userEmail);
+        console.log('Record ID for updating PTO hours:', recordId);
 
-        totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
-        totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
-        console.log('Total hours worked:', totalHoursWorked);
-        console.log('Total hours with PTO:', totalHoursWithPto);
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+        console.log('Endpoint for updating PTO hours:', endpoint);
 
-        validatePtoHours(totalHoursWithPto);
-        validatePersonalHours(totalHoursWithPto); // Added this line
-    }
-
-    function parseTime(timeString) {
-        if (!timeString) {
-            return null;
-        }
-        const [hours, minutes] = timeString.split(':').map(num => parseInt(num, 10));
-        return { hours, minutes };
-    }
-
-    function calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut) {
-        if (!startTime || !endTime) {
-            return NaN; // Return NaN if start time or end time is missing
-        }
-
-        const startDateTime = new Date(startDate);
-        startDateTime.setHours(startTime.hours, startTime.minutes);
-
-        const endDateTime = new Date(startDate);
-        endDateTime.setHours(endTime.hours, endTime.minutes);
-
-        let totalHoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60);
-
-        if (lunchStart && lunchEnd) {
-            const lunchStartDateTime = new Date(startDate);
-            lunchStartDateTime.setHours(lunchStart.hours, lunchStart.minutes);
-
-            const lunchEndDateTime = new Date(startDate);
-            lunchEndDateTime.setHours(lunchEnd.hours, lunchEnd.minutes);
-
-            if (lunchEndDateTime < lunchStartDateTime) {
-                alert('Lunch End time cannot be earlier than Lunch Start time');
-                totalHoursWorked -= 0; // Invalid lunch break duration
-            } else {
-                const lunchBreakHours = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
-                totalHoursWorked -= lunchBreakHours;
+        const updateData = {
+            fields: {
+                'PTO Hours': newPtoHours
             }
-        }
+        };
 
-        if (additionalTimeIn && additionalTimeOut) {
-            const additionalTimeInDateTime = new Date(startDate);
-            additionalTimeInDateTime.setHours(additionalTimeIn.hours, additionalTimeIn.minutes);
+        try {
+            const response = await fetch(endpoint, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            });
 
-            const additionalTimeOutDateTime = new Date(startDate);
-            additionalTimeOutDateTime.setHours(additionalTimeOut.hours, additionalTimeOut.minutes);
+            if (!response.ok) {
+                throw new Error(`Failed to update PTO hours: ${response.statusText}`);
+            }
 
-            const additionalTimeWorked = (additionalTimeOutDateTime - additionalTimeInDateTime) / (1000 * 60 * 60);
-            totalHoursWorked += additionalTimeWorked;
-        }
-
-        return Math.max(0, totalHoursWorked); // Ensure hours worked is not negative
-    }
-
-    function roundToClosestQuarterHour(hours) {
-        const quarterHours = Math.round(hours * 4) / 4;
-        return quarterHours;
-    }
-
-    function validatePtoHours(totalHoursWithPto) {
-        const remainingPTO = Math.max(0, availablePTOHours - parseFloat(ptoTimeInput.value || 0));
-        const ptoUsed = totalHoursWithPto - parseFloat(totalTimeWorkedSpan.textContent);
-        console.log('PTO used:', ptoUsed);
-
-        if (ptoUsed > availablePTOHours) {
-            ptoValidationMessage.textContent = 'PTO time used cannot exceed available PTO hours';
-            ptoValidationMessage.style.color = 'red';
-        } else if (totalHoursWithPto > 40 && parseFloat(ptoTimeInput.value) > 0) {
-            ptoValidationMessage.textContent = 'Total hours including PTO cannot exceed 40 hours';
-            ptoValidationMessage.style.color = 'red';
-        } else {
-            ptoValidationMessage.textContent = '';
+            console.log('PTO hours updated successfully');
+            await fetchPtoHours();
+        } catch (error) {
+            console.error('Error updating PTO hours:', error);
         }
     }
 
-    function validatePersonalHours(totalHoursWithPto) {
-        const remainingPersonal = Math.max(0, availablePersonalHours - parseFloat(personalHoursInput.value || 0));
-        const personalUsed = totalHoursWithPto - parseFloat(totalTimeWorkedSpan.textContent);
-        console.log('Personal used:', personalUsed);
-
-        if (personalUsed > availablePersonalHours) {
-            ptoValidationMessage.textContent = 'Personal time used cannot exceed available Personal hours';
-            ptoValidationMessage.style.color = 'red';
-        } else if (totalHoursWithPto > 40 && parseFloat(personalHoursInput.value) > 0) {
-            ptoValidationMessage.textContent = 'Total hours including Personal time cannot exceed 40 hours';
-            ptoValidationMessage.style.color = 'red';
-        } else {
-            ptoValidationMessage.textContent = '';
-        }
+    function resetForm() {
+        console.log('Resetting form...');
+        timeEntryForm.reset();
+        remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2);
+        remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2);
+        totalTimeWorkedSpan.textContent = '0.00';
+        totalTimeWithPtoSpan.textContent = '0.00';
+        ptoValidationMessage.textContent = '';
+        personalTimeDisplay.textContent = `Personal Time: ${availablePersonalHours.toFixed(2)}`;
+        ptoHoursDisplay.textContent = `Available PTO Hours: ${availablePTOHours.toFixed(2)}`;
     }
 
-    function handleLogout(event) {
-        event.preventDefault();
+    function handleLogout() {
         console.log('Logging out...');
-        
         localStorage.removeItem('userEmail');
-        sessionStorage.removeItem('user');
         window.location.href = 'index.html';
     }
 
-    async function updatePtoHours() {
-        console.log('Updating PTO hours...');
-        
-        const usedPtoHoursValue = parseFloat(ptoTimeInput.value) || 0;
-        const newPtoHoursValue = availablePTOHours - usedPtoHoursValue;
-
-        console.log('Used PTO hours value:', usedPtoHoursValue);
-        console.log('New PTO hours value:', newPtoHoursValue);
-
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        console.log('Endpoint for update:', endpoint);
-
-        try {
-            const response = await fetch(endpoint, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            console.log('Fetched data for update:', data);
-
-            if (data.records.length > 0) {
-                const recordId = data.records[0].id;
-                console.log('Record ID:', recordId);
-
-                const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        fields: {
-                            'PTO Hours': newPtoHoursValue
-                        }
-                    })
-                });
-
-                const updateResponseData = await updateResponse.json();
-                console.log('Update response data:', updateResponseData);
-
-                if (!updateResponse.ok) {
-                    throw new Error(`Failed to update PTO hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
-                }
-
-                console.log('PTO hours updated successfully');
-                alert('PTO hours updated successfully!');
-                clearForm();
-            } else {
-                throw new Error('No record found for user');
-            }
-        } catch (error) {
-            console.error('Error updating PTO hours:', error);
-            alert('Failed to update PTO hours. Error: ' + error.message);
-            clearForm();
-        }
-    }
-
-    async function updatePersonalHours() {
-        console.log('Updating Personal hours...');
-        
-        const usedPersonalHoursValue = parseFloat(personalHoursInput.value) || 0;
-        const newPersonalHoursValue = availablePersonalHours - usedPersonalHoursValue;
-
-        console.log('Used Personal hours value:', usedPersonalHoursValue);
-        console.log('New Personal hours value:', newPersonalHoursValue);
-
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        console.log('Endpoint for update:', endpoint);
-
-        try {
-            const response = await fetch(endpoint, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            console.log('Fetched data for update:', data);
-
-            if (data.records.length > 0) {
-                const recordId = data.records[0].id;
-                console.log('Record ID:', recordId);
-
-                const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        fields: {
-                            'Personaltime': newPersonalHoursValue
-                        }
-                    })
-                });
-
-                const updateResponseData = await updateResponse.json();
-                console.log('Update response data:', updateResponseData);
-
-                if (!updateResponse.ok) {
-                    throw new Error(`Failed to update Personal hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
-                }
-
-                console.log('Personal hours updated successfully');
-                alert('Personal hours updated successfully!');
-                clearForm();
-            } else {
-                throw new Error('No record found for user');
-            }
-        } catch (error) {
-            console.error('Error updating Personal hours:', error);
-            alert('Failed to update Personal hours. Error: ' + error.message);
-            clearForm();
-        }
-    }
-
-    function clearForm() {
-        console.log('Clearing form...');
-        timeEntryForm.reset();
-        ptoTimeInput.value = 0;
-        personalHoursInput.value = 0;
-        holidayHoursInput.value = 0;
-        totalTimeWorkedSpan.textContent = '0.00';
-        totalTimeWithPtoSpan.textContent = '0.00';
-        remainingPtoHoursElement.textContent = '0.00';
-        remainingPersonalHoursElement.textContent = '0.00';
-    }
-
-    function resetForm(event) {
+    timeEntryForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        console.log('Resetting form...');
-        clearForm();
-    }
-
-    document.getElementById('submit-button').addEventListener('click', (event) => {
-        event.preventDefault(); // Prevent form submission
-
-        const totalTimeWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
-        const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
-        const personalTimeUsed = parseFloat(personalHoursInput.value) || 0;
-        const holidayHoursUsed = parseFloat(holidayHoursInput.value) || 0;
-
-        if (ptoTimeUsed === 0 && personalTimeUsed === 0 && holidayHoursUsed === 0) {
-            alert('Nothing to change');
-            return;
-        }
-
-        if (totalTimeWithPto > 40 && (ptoTimeUsed > 0 || personalTimeUsed > 0 || holidayHoursUsed > 0)) {
-            alert('Total hours including PTO, Personal time, or Holiday time cannot exceed 40 hours.');
-            return;
-        }
-
-        updatePtoHours();
-        updatePersonalHours();
-    });
-
-    async function initializeForm() {
-        console.log('Initializing form...');
+        console.log('Submitting form...');
         
-        const today = new Date();
-        adjustToWednesday(today);
-        weekEndingInput.value = today.toISOString().split('T')[0];
-        handleWeekEndingChange();
-    }
-
-    initializeForm();
-
-    function populateTimeDropdown(input) {
-        const select = document.createElement('select');
-        const times = [];
-        for (let hour = 0; hour < 24; hour++) {
-            for (let minute = 0; minute < 60; minute += 15) {
-                const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-                times.push(time);
-            }
-        }
-
-        times.forEach(time => {
-            const option = document.createElement('option');
-            option.value = time;
-            option.textContent = time;
-            select.appendChild(option);
-        });
-
-        input.replaceWith(select);
-        select.addEventListener('change', () => {
-            input.value = select.value;
-            input.dispatchEvent(new Event('change'));
-        });
-    }
-
-    // Handle arrow key navigation
-    function handleArrowKeys(event) {
-        const key = event.key;
-        const currentInput = event.target;
-        const inputs = Array.from(document.querySelectorAll('input[type="time"], select'));
-
-        let index = inputs.indexOf(currentInput);
-
-        if (key === 'ArrowRight') {
-            index = (index + 1) % inputs.length;
-        } else if (key === 'ArrowLeft') {
-            index = (index - 1 + inputs.length) % inputs.length;
-        } else if (key === 'ArrowDown') {
-            index = (index + 6) % inputs.length; // Assuming 7 time fields per row
-        } else if (key === 'ArrowUp') {
-            index = (index - 6 + inputs.length) % inputs.length; // Assuming 7 time fields per row
-        }
-
-        inputs[index].focus();
-    }
+        const newPtoHours = parseFloat(remainingPtoHoursElement.textContent);
+        await updatePtoHours(newPtoHours);
+    });
 });
