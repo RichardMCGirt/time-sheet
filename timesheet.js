@@ -1,115 +1,16 @@
+// main.js
+
+document.addEventListener("DOMContentLoaded", async function () {
+    console.log('DOM fully loaded and parsed');
+
+
+
+
 const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
 const baseId = 'app9gw2qxhGCmtJvW';
 const tableId = 'tbljmLpqXScwhiWTt/';
-const cloudName = 'dhju1fzne'; // Replace with your Cloudinary cloud name
-const unsignedUploadPreset = 'Timeoff'; // Replace with your unsigned upload preset
 
 
-
-
-async function getRecordIdByEmail(email) {
-    const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={Email}='${email}'`;
-    console.log('Fetching record ID for email:', email);
-    try {
-        const response = await fetch(endpoint, {
-            headers: {
-                'Authorization': `Bearer ${apiKey}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch record: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        if (data.records.length > 0) {
-            const recordId = data.records[0].id;
-            console.log('Record ID:', recordId);
-            return recordId;
-        } else {
-            throw new Error('No record found for the provided email.');
-        }
-    } catch (error) {
-        console.error('Error fetching record ID:', error);
-        throw error;
-    }
-}
-
-async function uploadImageToCloudinary(blob) {
-    const formData = new FormData();
-    formData.append('file', blob);
-    formData.append('upload_preset', unsignedUploadPreset);
-
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: 'POST',
-        body: formData
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-        console.log('Uploaded image URL:', data.secure_url);
-        return data.secure_url;
-    } else {
-        throw new Error('Failed to upload image to Cloudinary: ' + data.error.message);
-    }
-}
-
-async function captureScreenshotAndPatch(userEmail) {
-    console.log('Capturing screenshot and patching to Airtable...');
-    
-    try {
-        const recordId = await getRecordIdByEmail(userEmail);
-        if (!recordId) {
-            alert('No record found for the provided email.');
-            return;
-        }
-
-        html2canvas(document.getElementById('time-entry-form')).then(canvas => {
-            canvas.toBlob(async blob => {
-                try {
-                    const fileUrl = await uploadImageToCloudinary(blob);
-                    console.log('File URL:', fileUrl);
-
-                    const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-                    console.log('Endpoint for patch:', endpoint);
-
-                    const response = await fetch(endpoint, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            fields: {
-                                "Screenshot": [
-                                    {
-                                        "url": fileUrl
-                                    }
-                                ]
-                            }
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Failed to patch data: ${response.statusText}`);
-                    }
-
-                    const data = await response.json();
-                    console.log('Success:', data);
-                    alert('Screenshot patched to Airtable successfully!');
-                } catch (error) {
-                    console.error('Error uploading image or patching to Airtable:', error);
-                    alert('Error uploading image or patching to Airtable.');
-                }
-            });
-        });
-    } catch (error) {
-        console.error('Error during screenshot capture and patch:', error);
-    }
-}
-
-document.addEventListener("DOMContentLoaded", async function() {
-    console.log('DOM fully loaded and parsed');
 
     let userEmail = localStorage.getItem('userEmail') || '';
     console.log('User email:', userEmail);
@@ -147,12 +48,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     } else {
         console.log('No user email found, redirecting to index.html');
         window.location.href = 'index.html';
-    }
-
-    // Function to hide the PTO hours display
-    function hidePtoHoursDisplay() {
-        //ptoHoursDisplay.style.display = 'none';
-        //personalTimeDisplay.style.display = 'none';
     }
 
     // Add event listener to PTO time input field
@@ -193,9 +88,22 @@ document.addEventListener("DOMContentLoaded", async function() {
     logoutButton.addEventListener('click', handleLogout);
     resetButton.addEventListener('click', resetForm);
 
+    // Initialize form
+    await initializeForm();
+
+    // Attach screenshot and patch function to submit button
+    document.getElementById('submit-button').addEventListener('click', handleSubmit);
+
+    // Hide PTO hours display
+    function hidePtoHoursDisplay() {
+        //ptoHoursDisplay.style.display = 'none';
+        //personalTimeDisplay.style.display = 'none';
+    }
+
+    // Fetch PTO hours
     async function fetchPtoHours() {
         console.log('Fetching PTO hours...');
-        
+
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
         console.log('Endpoint:', endpoint);
 
@@ -234,32 +142,33 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    // Fetch Personal hours
     async function fetchPersonalTime() {
         console.log('Fetching Personal hours...');
-    
+
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
         console.log('Endpoint:', endpoint);
-    
+
         try {
             const response = await fetch(endpoint, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
                 }
             });
-    
+
             if (!response.ok) {
                 throw new Error(`Failed to fetch data: ${response.statusText}`);
             }
-    
+
             const data = await response.json();
             console.log('Fetched data:', data);
-    
+
             if (data.records.length > 0) {
                 const userRecord = data.records[0].fields;
-    
+
                 const personalHours = parseFloat(userRecord['Personaltime']) || 0;
                 availablePersonalHours = personalHours;
-    
+
                 personalTimeDisplay.textContent = `Personal Time: ${personalHours.toFixed(2)}`;
                 remainingPersonalHoursElement.textContent = personalHours.toFixed(2);
                 console.log('Personal hours:', personalHours);
@@ -274,9 +183,10 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    // Handle PTO time change
     function handlePtoTimeChange() {
         console.log('Handling PTO time change...');
-        
+
         const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
         const remainingPtoHours = Math.max(0, availablePTOHours - ptoTimeUsed);
         console.log('PTO time used:', ptoTimeUsed);
@@ -294,9 +204,10 @@ document.addEventListener("DOMContentLoaded", async function() {
         calculateTotalTimeWorked();
     }
 
+    // Handle Personal time change
     function handlePersonalTimeChange() {
         console.log('Handling Personal time change...');
-        
+
         const personalTimeUsed = parseFloat(personalHoursInput.value) || 0;
         const remainingPersonalHours = Math.max(0, availablePersonalHours - personalTimeUsed);
         console.log('Personal time used:', personalTimeUsed);
@@ -315,24 +226,33 @@ document.addEventListener("DOMContentLoaded", async function() {
         calculateTotalTimeWorked();
     }
 
+    // Handle Holiday hours change
     function handleHolidayHoursChange() {
         console.log('Handling Holiday hours change...');
         calculateTotalTimeWorked();
     }
 
+    // Update PTO hours display
     function updatePtoHoursDisplay(remainingHours) {
         ptoHoursDisplay.textContent = `PTO Hours: ${remainingHours.toFixed(2)}`;
     }
 
+    // Update Personal time display
     function updatePersonalTimeDisplay(personalTimeUsed, remainingPersonalHours) {
         personalTimeDisplay.textContent = `Personal Time: ${remainingPersonalHours.toFixed(2)}`;
         remainingPersonalHoursElement.textContent = remainingPersonalHours.toFixed(2);
-        totalTimeWithPtoSpan.textContent = (parseFloat(totalTimeWorkedSpan.textContent) + personalTimeUsed + (parseFloat(ptoTimeInput.value) || 0) + (parseFloat(holidayHoursInput.value) || 0)).toFixed(2);
+        totalTimeWithPtoSpan.textContent = (
+            parseFloat(totalTimeWorkedSpan.textContent) +
+            personalTimeUsed +
+            (parseFloat(ptoTimeInput.value) || 0) +
+            (parseFloat(holidayHoursInput.value) || 0)
+        ).toFixed(2);
     }
 
+    // Handle week-ending date change
     async function handleWeekEndingChange() {
         console.log('Handling week-ending date change...');
-        
+
         const selectedDate = new Date(weekEndingInput.value);
         adjustToWednesday(selectedDate);
         weekEndingInput.value = selectedDate.toISOString().split('T')[0];
@@ -345,23 +265,25 @@ document.addEventListener("DOMContentLoaded", async function() {
         populateWeekDates(selectedDate);
     }
 
+    // Adjust date to the nearest Wednesday
     function adjustToWednesday(date) {
         const dayOfWeek = date.getDay();
         const offset = (2 - dayOfWeek + 7) % 7; // 3 is Wednesday (0=Sunday, 1=Monday, ..., 6=Saturday)
         date.setDate(date.getDate() + offset);
     }
-    
+
+    // Populate dates for the week
     function populateWeekDates(weekEndingDate) {
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
         daysOfWeek.forEach((day, index) => {
             const currentDate = new Date(weekEndingDate);
             currentDate.setDate(currentDate.getDate() - (6 - index)); // Adjusting to the correct day in the week
-    
+
             const inputField = timeEntryForm.elements[day];
             inputField.value = currentDate.toISOString().split('T')[0];
-            
+
             console.log(`Set date for ${day}:`, currentDate);
-    
+
             const checkboxId = `did-not-work-${index + 1}`;
             let checkbox = document.getElementById(checkboxId);
             if (!checkbox) {
@@ -372,7 +294,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 checkbox.addEventListener('change', (event) => {
                     toggleWorkInputs(index, event.target.checked);
                 });
-    
+
                 const cell = document.createElement('td');
                 cell.appendChild(checkbox);
                 inputField.parentElement.parentElement.appendChild(cell);
@@ -380,10 +302,11 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         });
     }
-    
-    window.toggleWorkInputs = function(index, didNotWork) {
+
+    // Toggle work inputs
+    window.toggleWorkInputs = function (index, didNotWork) {
         console.log(`Toggling work inputs for index ${index}:`, didNotWork);
-        
+
         const startTimeInput = timeEntryForm.elements[`start_time${index + 1}`];
         const lunchStartInput = timeEntryForm.elements[`lunch_start${index + 1}`];
         const lunchEndInput = timeEntryForm.elements[`lunch_end${index + 1}`];
@@ -432,12 +355,67 @@ document.addEventListener("DOMContentLoaded", async function() {
             delete additionalTimeOutInput.dataset.originalValue;
 
             calculateTotalTimeWorked();
+            updateLunchOptions(index);
         }
     }
 
+    // Update lunch options
+    function updateLunchOptions(index) {
+        const startTimeInput = timeEntryForm.elements[`start_time${index + 1}`];
+        const endTimeInput = timeEntryForm.elements[`end_time${index + 1}`];
+        const lunchStartInput = timeEntryForm.elements[`lunch_start${index + 1}`];
+        const lunchEndInput = timeEntryForm.elements[`lunch_end${index + 1}`];
+
+        const startTime = parseTime(startTimeInput.value);
+        const endTime = parseTime(endTimeInput.value);
+
+        if (startTime && endTime) {
+            const lunchStartOptions = generateTimeOptions(startTime, endTime);
+            const lunchEndOptions = generateTimeOptions(startTime, endTime);
+
+            updateDropdownOptions(lunchStartInput, lunchStartOptions);
+            updateDropdownOptions(lunchEndInput, lunchEndOptions);
+        }
+    }
+
+    // Generate time options
+    function generateTimeOptions(startTime, endTime) {
+        const options = [];
+        let currentTime = new Date();
+        currentTime.setHours(startTime.hours, startTime.minutes, 0, 0);
+        const endDateTime = new Date();
+        endDateTime.setHours(endTime.hours, endTime.minutes, 0, 0);
+
+        while (currentTime < endDateTime) {
+            options.push(formatTime(currentTime));
+            currentTime.setMinutes(currentTime.getMinutes() + 15);
+        }
+
+        return options;
+    }
+
+    // Update dropdown options
+    function updateDropdownOptions(dropdown, options) {
+        dropdown.innerHTML = '';
+        options.forEach(option => {
+            const opt = document.createElement('option');
+            opt.value = option;
+            opt.textContent = option;
+            dropdown.appendChild(opt);
+        });
+    }
+
+    // Format time as HH:MM
+    function formatTime(date) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+
+    // Calculate total time worked
     function calculateTotalTimeWorked() {
         console.log('Calculating total time worked...');
-        
+
         let totalHoursWorked = 0;
         let totalHoursWithPto = 0;
 
@@ -463,10 +441,15 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut);
             hoursWorked = roundToClosestQuarterHour(hoursWorked);
-            
+
             if (!isNaN(hoursWorked)) {
-                totalHoursWorked += hoursWorked;
-                hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
+                if (hoursWorked > 24) {
+                    alert(`Total hours worked on ${dateInput.value} cannot exceed 24 hours.`);
+                    hoursWorkedSpan.textContent = '0.00';
+                } else {
+                    totalHoursWorked += hoursWorked;
+                    hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
+                }
             } else {
                 hoursWorkedSpan.textContent = '0.00';
             }
@@ -475,7 +458,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         const ptoTime = parseFloat(ptoTimeInput.value) || 0;
         const personalTime = parseFloat(personalHoursInput.value) || 0;
         const holidayHours = parseFloat(holidayHoursInput.value) || 0;
-        
+
         totalHoursWithPto = totalHoursWorked + ptoTime + personalTime + holidayHours;
 
         totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
@@ -487,6 +470,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         validatePersonalHours(totalHoursWithPto); // Added this line
     }
 
+    // Parse time string
     function parseTime(timeString) {
         if (!timeString) {
             return null;
@@ -495,49 +479,52 @@ document.addEventListener("DOMContentLoaded", async function() {
         return { hours, minutes };
     }
 
+    // Calculate hours worked
     function calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut) {
         if (!startTime || !endTime) {
             return NaN; // Return NaN if start time or end time is missing
         }
-    
+
         const startDateTime = new Date(startDate);
         startDateTime.setHours(startTime.hours, startTime.minutes);
-    
+
         const endDateTime = new Date(startDate);
         endDateTime.setHours(endTime.hours, endTime.minutes);
-    
+
         let totalHoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60); // Total hours between start and end time
-    
+
         if (lunchStart && lunchEnd) {
             const lunchStartDateTime = new Date(startDate);
             lunchStartDateTime.setHours(lunchStart.hours, lunchStart.minutes);
-    
+
             const lunchEndDateTime = new Date(startDate);
             lunchEndDateTime.setHours(lunchEnd.hours, lunchEnd.minutes);
-    
+
             const lunchBreakHours = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
             totalHoursWorked -= lunchBreakHours;
         }
-    
+
         if (additionalTimeIn && additionalTimeOut) {
             const additionalTimeInDateTime = new Date(startDate);
             additionalTimeInDateTime.setHours(additionalTimeIn.hours, additionalTimeIn.minutes);
-    
+
             const additionalTimeOutDateTime = new Date(startDate);
             additionalTimeOutDateTime.setHours(additionalTimeOut.hours, additionalTimeOut.minutes);
-    
+
             const additionalTimeWorked = (additionalTimeOutDateTime - additionalTimeInDateTime) / (1000 * 60 * 60);
             totalHoursWorked += additionalTimeWorked;
         }
-    
+
         return Math.max(0, totalHoursWorked); // Ensure hours worked is not negative
     }
 
+    // Round to the closest quarter hour
     function roundToClosestQuarterHour(hours) {
         const quarterHours = Math.round(hours * 4) / 4;
         return quarterHours;
     }
 
+    // Validate PTO hours
     function validatePtoHours(totalHoursWithPto) {
         const remainingPTO = Math.max(0, availablePTOHours - parseFloat(ptoTimeInput.value || 0));
         const ptoUsed = totalHoursWithPto - parseFloat(totalTimeWorkedSpan.textContent);
@@ -554,6 +541,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    // Validate Personal hours
     function validatePersonalHours(totalHoursWithPto) {
         const remainingPersonal = Math.max(0, availablePersonalHours - parseFloat(personalHoursInput.value || 0));
         const personalUsed = totalHoursWithPto - parseFloat(totalTimeWorkedSpan.textContent);
@@ -570,18 +558,20 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    // Handle logout
     function handleLogout(event) {
         event.preventDefault();
         console.log('Logging out...');
-        
+
         localStorage.removeItem('userEmail');
         sessionStorage.removeItem('user');
         window.location.href = 'index.html';
     }
 
+    // Update PTO hours
     async function updatePtoHours() {
         console.log('Updating PTO hours...');
-        
+
         const usedPtoHoursValue = parseFloat(ptoTimeInput.value) || 0;
         const newPtoHoursValue = availablePTOHours - usedPtoHoursValue;
 
@@ -642,9 +632,10 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    // Update Personal hours
     async function updatePersonalHours() {
         console.log('Updating Personal hours...');
-        
+
         const usedPersonalHoursValue = parseFloat(personalHoursInput.value) || 0;
         const newPersonalHoursValue = availablePersonalHours - usedPersonalHoursValue;
 
@@ -705,6 +696,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    // Clear form
     function clearForm() {
         console.log('Clearing form...');
         timeEntryForm.reset();
@@ -717,13 +709,15 @@ document.addEventListener("DOMContentLoaded", async function() {
         remainingPersonalHoursElement.textContent = '0.00';
     }
 
+    // Reset form
     function resetForm(event) {
         event.preventDefault();
         console.log('Resetting form...');
         clearForm();
     }
 
-    document.getElementById('submit-button').addEventListener('click', (event) => {
+    // Handle form submission
+    function handleSubmit(event) {
         event.preventDefault(); // Prevent form submission
 
         const totalTimeWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
@@ -743,44 +737,46 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         updatePtoHours();
         updatePersonalHours();
-    });
+        captureScreenshotAndPatch(userEmail);
+    }
 
+    // Initialize form
     async function initializeForm() {
         console.log('Initializing form...');
-        
+
         const today = new Date();
         adjustToWednesday(today);
         weekEndingInput.value = today.toISOString().split('T')[0];
         handleWeekEndingChange();
     }
 
-    initializeForm();
-
-    // Function to capture screenshot and patch to Airtable
-    async function captureScreenshotAndPatch() {
+    // Capture screenshot and patch to Airtable
+    async function captureScreenshotAndPatch(userEmail) {
         console.log('Capturing screenshot and patching to Airtable...');
-        
-        html2canvas(document.getElementById('time-entry-form')).then(canvas => {
-            canvas.toBlob(async blob => {
-                const fileUrl = URL.createObjectURL(blob);
-                console.log('File URL:', fileUrl);
 
-                const formData = new FormData();
-                formData.append('file', blob, 'screenshot.png');
+        try {
+            const recordId = await getRecordIdByEmail(userEmail);
+            if (!recordId) {
+                alert('No record found for the provided email.');
+                return;
+            }
 
-                const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}`;
-                console.log('Endpoint for patch:', endpoint);
+            html2canvas(document.getElementById('time-entry-form')).then(canvas => {
+                canvas.toBlob(async blob => {
+                    try {
+                        const fileUrl = await uploadImageToCloudinary(blob);
+                        console.log('File URL:', fileUrl);
 
-                try {
-                    const response = await fetch(endpoint, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            records: [{
-                                id: 'recYourRecordId', // Replace with the actual record ID you want to update
+                        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+                        console.log('Endpoint for patch:', endpoint);
+
+                        const response = await fetch(endpoint, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${apiKey}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
                                 fields: {
                                     "Screenshot": [
                                         {
@@ -788,30 +784,75 @@ document.addEventListener("DOMContentLoaded", async function() {
                                         }
                                     ]
                                 }
-                            }]
-                        })
-                    });
+                            })
+                        });
 
-                    if (!response.ok) {
-                        throw new Error(`Failed to patch data: ${response.statusText}`);
+                        if (!response.ok) {
+                            throw new Error(`Failed to patch data: ${response.statusText}`);
+                        }
+
+                        const data = await response.json();
+                        console.log('Success:', data);
+                        alert('Screenshot patched to Airtable successfully!');
+                    } catch (error) {
+                        console.error('Error uploading image or patching to Airtable:', error);
+                        alert('Error uploading image or patching to Airtable.');
                     }
-
-                    const data = await response.json();
-                    console.log('Success:', data);
-                    alert('Screenshot patched to Airtable successfully!');
-                } catch (error) {
-                    console.error('Error patching screenshot to Airtable:', error);
-                    alert('Error patching screenshot to Airtable.');
-                }
+                });
             });
-        });
+        } catch (error) {
+            console.error('Error during screenshot capture and patch:', error);
+        }
     }
 
-    // Attach screenshot and patch function to submit button
-    document.getElementById('submit-button').addEventListener('click', (event) => {
-        event.preventDefault();
-        captureScreenshotAndPatch();
-    });
+    // Get record ID by email
+    async function getRecordIdByEmail(email) {
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={Email}='${email}'`;
+        console.log('Fetching record ID for email:', email);
+        try {
+            const response = await fetch(endpoint, {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch record: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (data.records.length > 0) {
+                const recordId = data.records[0].id;
+                console.log('Record ID:', recordId);
+                return recordId;
+            } else {
+                throw new Error('No record found for the provided email.');
+            }
+        } catch (error) {
+            console.error('Error fetching record ID:', error);
+            throw error;
+        }
+    }
+
+    // Upload image to Cloudinary
+    async function uploadImageToCloudinary(blob) {
+        const formData = new FormData();
+        formData.append('file', blob);
+        formData.append('upload_preset', unsignedUploadPreset);
+
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            console.log('Uploaded image URL:', data.secure_url);
+            return data.secure_url;
+        } else {
+            throw new Error('Failed to upload image to Cloudinary: ' + data.error.message);
+        }
+    }
 
     // Handle arrow key navigation
     function handleArrowKeys(event) {
