@@ -1,8 +1,11 @@
-const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
-const baseId = 'appMq9W12jZyCJeXe';
-const tableId = 'tblhTl5q7sEFDv66Z';
+const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
+const baseId = 'app9gw2qxhGCmtJvW';
+const tableId = 'tbljmLpqXScwhiWTt/';
 const cloudName = 'dhju1fzne'; // Replace with your Cloudinary cloud name
 const unsignedUploadPreset = 'Timeoff'; // Replace with your unsigned upload preset
+
+
+
 
 async function getRecordIdByEmail(email) {
     const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={Email}='${email}'`;
@@ -496,37 +499,37 @@ document.addEventListener("DOMContentLoaded", async function() {
         if (!startTime || !endTime) {
             return NaN; // Return NaN if start time or end time is missing
         }
-
+    
         const startDateTime = new Date(startDate);
         startDateTime.setHours(startTime.hours, startTime.minutes);
-
+    
         const endDateTime = new Date(startDate);
         endDateTime.setHours(endTime.hours, endTime.minutes);
-
-        let totalHoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60);
-
+    
+        let totalHoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60); // Total hours between start and end time
+    
         if (lunchStart && lunchEnd) {
             const lunchStartDateTime = new Date(startDate);
             lunchStartDateTime.setHours(lunchStart.hours, lunchStart.minutes);
-
+    
             const lunchEndDateTime = new Date(startDate);
             lunchEndDateTime.setHours(lunchEnd.hours, lunchEnd.minutes);
-
+    
             const lunchBreakHours = (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
             totalHoursWorked -= lunchBreakHours;
         }
-
+    
         if (additionalTimeIn && additionalTimeOut) {
             const additionalTimeInDateTime = new Date(startDate);
             additionalTimeInDateTime.setHours(additionalTimeIn.hours, additionalTimeIn.minutes);
-
+    
             const additionalTimeOutDateTime = new Date(startDate);
             additionalTimeOutDateTime.setHours(additionalTimeOut.hours, additionalTimeOut.minutes);
-
+    
             const additionalTimeWorked = (additionalTimeOutDateTime - additionalTimeInDateTime) / (1000 * 60 * 60);
             totalHoursWorked += additionalTimeWorked;
         }
-
+    
         return Math.max(0, totalHoursWorked); // Ensure hours worked is not negative
     }
 

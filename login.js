@@ -1,6 +1,6 @@
-const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
-const baseId = 'appMq9W12jZyCJeXe'; // Extracted base ID
-const tableId = 'tblRqUgMsd2QSd5ka'; // Extracted table ID
+const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
+const baseId = 'app9gw2qxhGCmtJvW';
+const tableId = 'tbljmLpqXScwhiWTt/';
 
 // DOM elements
 
