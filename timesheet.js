@@ -1,8 +1,8 @@
 const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
 const baseId = 'appMq9W12jZyCJeXe';
 const tableId = 'tblhTl5q7sEFDv66Z';
-const cloudName = 'dhju1fzne'; // Replace with your Cloudinary cloud name
-const unsignedUploadPreset = 'Timeoff'; // Replace with your unsigned upload preset
+const cloudName = 'dhju1fzne';
+const unsignedUploadPreset = 'Timeoff';
 
 async function getRecordIdByEmail(email) {
     const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={Email}='${email}'`;
@@ -118,7 +118,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     const weekEndingInput = document.getElementById('week-ending');
     const timeEntryForm = document.getElementById('time-entry-form');
     const ptoTimeSpan = document.getElementById('pto-time');
-    const holidayTimeSpan = document.getElementById('holiday-hours');
+    const personalTimeSpan = document.getElementById('personal-time-summary');
+    const holidayTimeSpan = document.getElementById('Holiday-hours');
     const totalTimeWorkedSpan = document.getElementById('total-time-worked');
     const totalTimeWithPtoSpan = document.getElementById('total-time-with-pto-value');
     const ptoValidationMessage = document.getElementById('pto-validation-message');
@@ -385,20 +386,20 @@ document.addEventListener("DOMContentLoaded", async function() {
         additionalTimeOutInput.disabled = didNotWork;
 
         if (didNotWork) {
-            startTimeInput.value = '00:00';
-            lunchStartInput.value = '00:00';
-            lunchEndInput.value = '00:00';
-            endTimeInput.value = '00:00';
-            additionalTimeInInput.value = '00:00';
-            additionalTimeOutInput.value = '00:00';
+            startTimeInput.value = '--:--';
+            lunchStartInput.value = '--:--';
+            lunchEndInput.value = '--:--';
+            endTimeInput.value = '--:--';
+            additionalTimeInInput.value = '--:--';
+            additionalTimeOutInput.value = '--:--';
             hoursWorkedSpan.textContent = '0.00';
         } else {
-            startTimeInput.value = startTimeInput.dataset.originalValue || '';
-            lunchStartInput.value = lunchStartInput.dataset.originalValue || '';
-            lunchEndInput.value = lunchEndInput.dataset.originalValue || '';
-            endTimeInput.value = endTimeInput.dataset.originalValue || '';
-            additionalTimeInInput.value = additionalTimeInInput.dataset.originalValue || '';
-            additionalTimeOutInput.value = additionalTimeOutInput.dataset.originalValue || '';
+            startTimeInput.value = startTimeInput.dataset.originalValue || '--:--';
+            lunchStartInput.value = lunchStartInput.dataset.originalValue || '--:--';
+            lunchEndInput.value = lunchEndInput.dataset.originalValue || '--:--';
+            endTimeInput.value = endTimeInput.dataset.originalValue || '--:--';
+            additionalTimeInInput.value = additionalTimeInInput.dataset.originalValue || '--:--';
+            additionalTimeOutInput.value = additionalTimeOutInput.dataset.originalValue || '--:--';
 
             delete startTimeInput.dataset.originalValue;
             delete lunchStartInput.dataset.originalValue;
@@ -838,6 +839,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
 
         ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
+        personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
         holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
     }
 });
