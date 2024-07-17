@@ -541,22 +541,7 @@ const tableId = 'tbljmLpqXScwhiWTt/';
         }
     }
 
-    // Validate Personal hours
-    function validatePersonalHours(totalHoursWithPto) {
-        const remainingPersonal = Math.max(0, availablePersonalHours - parseFloat(personalHoursInput.value || 0));
-        const personalUsed = totalHoursWithPto - parseFloat(totalTimeWorkedSpan.textContent);
-        console.log('Personal used:', personalUsed);
-
-        if (personalUsed > availablePersonalHours) {
-            ptoValidationMessage.textContent = 'Personal time used cannot exceed available Personal hours';
-            ptoValidationMessage.style.color = 'red';
-        } else if (totalHoursWithPto > 40 && parseFloat(personalHoursInput.value) > 0) {
-            ptoValidationMessage.textContent = 'Total hours including Personal time cannot exceed 40 hours';
-            ptoValidationMessage.style.color = 'red';
-        } else {
-            ptoValidationMessage.textContent = '';
-        }
-    }
+  
 
     // Handle logout
     function handleLogout(event) {
@@ -750,60 +735,7 @@ const tableId = 'tbljmLpqXScwhiWTt/';
         handleWeekEndingChange();
     }
 
-    // Capture screenshot and patch to Airtable
-    async function captureScreenshotAndPatch(userEmail) {
-        console.log('Capturing screenshot and patching to Airtable...');
-
-        try {
-            const recordId = await getRecordIdByEmail(userEmail);
-            if (!recordId) {
-                alert('No record found for the provided email.');
-                return;
-            }
-
-            html2canvas(document.getElementById('time-entry-form')).then(canvas => {
-                canvas.toBlob(async blob => {
-                    try {
-                        const fileUrl = await uploadImageToCloudinary(blob);
-                        console.log('File URL:', fileUrl);
-
-                        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-                        console.log('Endpoint for patch:', endpoint);
-
-                        const response = await fetch(endpoint, {
-                            method: 'PATCH',
-                            headers: {
-                                'Authorization': `Bearer ${apiKey}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                fields: {
-                                    "Screenshot": [
-                                        {
-                                            "url": fileUrl
-                                        }
-                                    ]
-                                }
-                            })
-                        });
-
-                        if (!response.ok) {
-                            throw new Error(`Failed to patch data: ${response.statusText}`);
-                        }
-
-                        const data = await response.json();
-                        console.log('Success:', data);
-                        alert('Screenshot patched to Airtable successfully!');
-                    } catch (error) {
-                        console.error('Error uploading image or patching to Airtable:', error);
-                        alert('Error uploading image or patching to Airtable.');
-                    }
-                });
-            });
-        } catch (error) {
-            console.error('Error during screenshot capture and patch:', error);
-        }
-    }
+  
 
     // Get record ID by email
     async function getRecordIdByEmail(email) {
@@ -834,25 +766,6 @@ const tableId = 'tbljmLpqXScwhiWTt/';
         }
     }
 
-    // Upload image to Cloudinary
-    async function uploadImageToCloudinary(blob) {
-        const formData = new FormData();
-        formData.append('file', blob);
-        formData.append('upload_preset', unsignedUploadPreset);
-
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-        if (response.ok) {
-            console.log('Uploaded image URL:', data.secure_url);
-            return data.secure_url;
-        } else {
-            throw new Error('Failed to upload image to Cloudinary: ' + data.error.message);
-        }
-    }
 
     // Handle arrow key navigation
     function handleArrowKeys(event) {
