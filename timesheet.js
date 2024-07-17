@@ -817,6 +817,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     function updateTotalPtoAndHolidayHours() {
         let totalPtoHours = 0;
         let totalHolidayHours = 0;
+        let totalPersonalHours= 0;
 
         const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
         ptoInputs.forEach(input => {
@@ -828,6 +829,12 @@ document.addEventListener("DOMContentLoaded", async function() {
         holidayInputs.forEach(input => {
             const value = parseFloat(input.value) || 0;
             totalHolidayHours += value;
+        });
+
+        const personalHoursInput = document.querySelectorAll('input[name^="Personal_hours');
+        personalHoursInput.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            totalPersonalHours += value;
         });
 
         ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
