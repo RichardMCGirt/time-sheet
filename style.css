@@ -100,18 +100,25 @@ header {
     border-radius: 5px;
     border: none;
     padding: 5px;
+    background-color: #34495e;
+    color:  #ecf0f1;
 }
 
 .time-entry-table {
     width: 100%;
     margin: 20px 0;
     border-collapse: collapse;
+    
 }
 
 .time-entry-table th, .time-entry-table td {
     text-align: center;
     padding: 10px;
     border: 1px solid #ecf0f1;
+    
+}
+td tr{
+    background-color: #34495e;;
 }
 
 .time-entry-table th {
@@ -126,12 +133,10 @@ header {
 .checkbox-container {
     display: inline-block;
     cursor: pointer;
+    
 }
 
-.checkbox-container img {
-    width: 20px;
-    height: 20px;
-}
+
 
 .summary {
     background-color: #c0392b;
