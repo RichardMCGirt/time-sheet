@@ -117,7 +117,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     const holidayHoursInput = document.getElementById('Holiday-hours');
     const weekEndingInput = document.getElementById('week-ending');
     const timeEntryForm = document.getElementById('time-entry-form');
-    const ptoTimeInput = document.getElementById('pto-time');
+    const ptoTimeSpan = document.getElementById('pto-time');
+    const holidayTimeSpan = document.getElementById('holiday-hours');
     const totalTimeWorkedSpan = document.getElementById('total-time-worked');
     const totalTimeWithPtoSpan = document.getElementById('total-time-with-pto-value');
     const ptoValidationMessage = document.getElementById('pto-validation-message');
@@ -153,7 +154,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     // Add event listener to PTO time input field
-    ptoTimeInput.addEventListener('input', hidePtoHoursDisplay);
     personalHoursInput.addEventListener('input', hidePtoHoursDisplay);
     holidayHoursInput.addEventListener('input', hidePtoHoursDisplay);
 
@@ -184,7 +184,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(calculateTotalTimeWorked, 300);
     });
-    ptoTimeInput.addEventListener('input', handlePtoTimeChange);
     personalHoursInput.addEventListener('input', handlePersonalTimeChange);
     holidayHoursInput.addEventListener('input', handleHolidayHoursChange);
     logoutButton.addEventListener('click', handleLogout);
@@ -271,26 +270,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    function handlePtoTimeChange() {
-        console.log('Handling PTO time change...');
-        
-        const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
-        const remainingPtoHours = Math.max(0, availablePTOHours - ptoTimeUsed);
-        console.log('PTO time used:', ptoTimeUsed);
-        console.log('Remaining PTO hours:', remainingPtoHours);
-
-        if (ptoTimeUsed > availablePTOHours) {
-            ptoValidationMessage.textContent = 'PTO time used cannot exceed available PTO hours';
-            ptoValidationMessage.style.color = 'red';
-        } else {
-            ptoValidationMessage.textContent = '';
-        }
-
-        remainingPtoHoursElement.textContent = remainingPtoHours.toFixed(2);
-        updatePtoHoursDisplay(remainingPtoHours);
-        calculateTotalTimeWorked();
-    }
-
     function handlePersonalTimeChange() {
         console.log('Handling Personal time change...');
         
@@ -317,14 +296,14 @@ document.addEventListener("DOMContentLoaded", async function() {
         calculateTotalTimeWorked();
     }
 
-    function updatePtoHoursDisplay(remainingHours) {
-        ptoHoursDisplay.textContent = `PTO Hours: ${remainingHours.toFixed(2)}`;
+    function updatePersonalHoursDisplay(remainingHours) {
+        personalTimeDisplay.textContent = `Personal Time: ${remainingHours.toFixed(2)}`;
     }
 
     function updatePersonalTimeDisplay(personalTimeUsed, remainingPersonalHours) {
         personalTimeDisplay.textContent = `Personal Time: ${remainingPersonalHours.toFixed(2)}`;
         remainingPersonalHoursElement.textContent = remainingPersonalHours.toFixed(2);
-        totalTimeWithPtoSpan.textContent = (parseFloat(totalTimeWorkedSpan.textContent) + personalTimeUsed + (parseFloat(ptoTimeInput.value) || 0) + (parseFloat(holidayHoursInput.value) || 0)).toFixed(2);
+        totalTimeWithPtoSpan.textContent = (parseFloat(totalTimeWorkedSpan.textContent) + personalTimeUsed + (parseFloat(ptoTimeSpan.textContent) || 0) + (parseFloat(holidayTimeSpan.textContent) || 0)).toFixed(2);
     }
 
     async function handleWeekEndingChange() {
@@ -469,7 +448,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         });
 
-        const ptoTime = parseFloat(ptoTimeInput.value) || 0;
+        const ptoTime = parseFloat(ptoTimeSpan.textContent) || 0;
         const personalTime = parseFloat(personalHoursInput.value) || 0;
         const holidayHours = parseFloat(holidayHoursInput.value) || 0;
         
@@ -482,10 +461,13 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         validatePtoHours(totalHoursWithPto);
         validatePersonalHours(totalHoursWithPto); // Added this line
+
+        // Calculate and update total PTO and Holiday hours used
+        updateTotalPtoAndHolidayHours();
     }
 
     function parseTime(timeString) {
-        if (!timeString) {
+        if (!timeString || timeString === "--:--") {
             return null;
         }
         const [hours, minutes] = timeString.split(':').map(num => parseInt(num, 10));
@@ -536,14 +518,14 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     function validatePtoHours(totalHoursWithPto) {
-        const remainingPTO = Math.max(0, availablePTOHours - parseFloat(ptoTimeInput.value || 0));
+        const remainingPTO = Math.max(0, availablePTOHours - parseFloat(ptoTimeSpan.textContent || 0));
         const ptoUsed = totalHoursWithPto - parseFloat(totalTimeWorkedSpan.textContent);
         console.log('PTO used:', ptoUsed);
 
         if (ptoUsed > availablePTOHours) {
             ptoValidationMessage.textContent = 'PTO time used cannot exceed available PTO hours';
             ptoValidationMessage.style.color = 'red';
-        } else if (totalHoursWithPto > 40 && parseFloat(ptoTimeInput.value) > 0) {
+        } else if (totalHoursWithPto > 40 && parseFloat(ptoTimeSpan.textContent) > 0) {
             ptoValidationMessage.textContent = 'Total hours including PTO cannot exceed 40 hours';
             ptoValidationMessage.style.color = 'red';
         } else {
@@ -579,7 +561,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     async function updatePtoHours() {
         console.log('Updating PTO hours...');
         
-        const usedPtoHoursValue = parseFloat(ptoTimeInput.value) || 0;
+        const usedPtoHoursValue = parseFloat(ptoTimeSpan.textContent) || 0;
         const newPtoHoursValue = availablePTOHours - usedPtoHoursValue;
 
         console.log('Used PTO hours value:', usedPtoHoursValue);
@@ -705,7 +687,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     function clearForm() {
         console.log('Clearing form...');
         timeEntryForm.reset();
-        ptoTimeInput.value = 0;
+        ptoTimeSpan.textContent = '0';
         personalHoursInput.value = 0;
         holidayHoursInput.value = 0;
         totalTimeWorkedSpan.textContent = '0.00';
@@ -724,7 +706,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         event.preventDefault(); // Prevent form submission
 
         const totalTimeWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
-        const ptoTimeUsed = parseFloat(ptoTimeInput.value) || 0;
+        const ptoTimeUsed = parseFloat(ptoTimeSpan.textContent) || 0;
         const personalTimeUsed = parseFloat(personalHoursInput.value) || 0;
         const holidayHoursUsed = parseFloat(holidayHoursInput.value) || 0;
 
@@ -829,5 +811,26 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
 
         inputs[index].focus();
+    }
+
+    // Function to update total PTO and Holiday hours used
+    function updateTotalPtoAndHolidayHours() {
+        let totalPtoHours = 0;
+        let totalHolidayHours = 0;
+
+        const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
+        ptoInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            totalPtoHours += value;
+        });
+
+        const holidayInputs = document.querySelectorAll('input[name^="Holiday_hours"]');
+        holidayInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            totalHolidayHours += value;
+        });
+
+        ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
+        holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
     }
 });
