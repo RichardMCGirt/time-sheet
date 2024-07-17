@@ -406,12 +406,12 @@ document.addEventListener("DOMContentLoaded", async function() {
         additionalTimeOutInput.disabled = didNotWork;
 
         if (didNotWork) {
-            startTimeInput.value = '';
-            lunchStartInput.value = '';
-            lunchEndInput.value = '';
-            endTimeInput.value = '';
-            additionalTimeInInput.value = '';
-            additionalTimeOutInput.value = '';
+            startTimeInput.value = '00:00';
+            lunchStartInput.value = '00:00';
+            lunchEndInput.value = '00:00';
+            endTimeInput.value = '00:00';
+            additionalTimeInInput.value = '00:00';
+            additionalTimeOutInput.value = '00:00';
             hoursWorkedSpan.textContent = '0.00';
         } else {
             startTimeInput.value = startTimeInput.dataset.originalValue || '';

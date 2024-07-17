@@ -28,8 +28,8 @@ header {
 .user-info {
     margin-left: 20px;
     display: flex;
-   align-items: center;
-   gap: 20px; /* Adjust the spacing as needed */
+    align-items: center;
+    gap: 20px; /* Adjust the spacing as needed */
 }
 
 .user-info span {
@@ -82,7 +82,7 @@ header {
 
 .time-entry-form {
     width: 90%;
-    max-width: 1200px;
+    max-width: 1850px;
     margin: 0 auto;
     background-color: #34495e;
     padding: 20px;
@@ -101,24 +101,19 @@ header {
     border: none;
     padding: 5px;
     background-color: #34495e;
-    color:  #ecf0f1;
+    color: #ecf0f1;
 }
 
 .time-entry-table {
     width: 100%;
     margin: 20px 0;
     border-collapse: collapse;
-    
 }
 
 .time-entry-table th, .time-entry-table td {
     text-align: center;
     padding: 10px;
     border: 1px solid #ecf0f1;
-    
-}
-td tr{
-    background-color: #34495e;;
 }
 
 .time-entry-table th {
@@ -130,13 +125,36 @@ td tr{
     background-color: #34495e;
 }
 
+input[type="time"], 
+input[type="number"], 
+input[type="date"] {
+    background-color: #34495e; /* Ensure background color is not white */
+    color: #ecf0f1; /* White text color for contrast */
+    border: none; /* Remove default border */
+    border-radius: 4px; /* Optional: rounded corners */
+    padding: 5px; /* Optional: add padding */
+    text-align: center; /* Center the text */
+}
+
+/* Optional: Additional styling for better appearance */
+input[type="time"]::placeholder, 
+input[type="number"]::placeholder, 
+input[type="date"]::placeholder {
+    color: #ecf0f1; /* White placeholder color */
+    opacity: 1; /* Ensure the color is applied */
+}
+
+input[type="time"]:-webkit-autofill, 
+input[type="number"]:-webkit-autofill, 
+input[type="date"]:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px #34495e inset !important;
+    -webkit-text-fill-color: #ecf0f1 !important;
+}
+
 .checkbox-container {
     display: inline-block;
     cursor: pointer;
-    
 }
-
-
 
 .summary {
     background-color: #c0392b;
@@ -144,12 +162,12 @@ td tr{
 
 .summary-section {
     text-align: center;
-    margin-top: 20px;
+    margin-top: -70px;
 }
 
 .summary-form {
     width: 90%;
-    max-width: 1050px;
+    max-width: 1850px;
     margin: 0 auto;
     background-color: #34495e;
     padding: 20px;
