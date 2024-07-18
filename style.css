@@ -71,6 +71,16 @@ header {
     background-color: #c0392b;
 }
 
+.narrow-column {
+    text-align: center;
+    width: 100px; /* Set the desired width for the columns */
+}
+
+.narrow-input {
+    width: 100%; /* Makes the input fill the cell */
+    max-width: 50%; /* Ensures the input does not exceed the cell width */
+}
+
 .form-group {
     display: flex;
     justify-content: center; /* Center the content horizontally */
@@ -130,6 +140,15 @@ header {
 .time-entry-table td {
     background-color: #34495e;
     width: auto;
+}
+
+.time-input {
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+    padding: 5px;
+    text-align: center;
+    color: red;
 }
 
 input[type="time"], 
