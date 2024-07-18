@@ -745,6 +745,7 @@ async function updatePersonalHours() {
         ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
         holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
         personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
+        document.getElementById('total-personal-time-display').textContent = ` ${totalPersonalHours.toFixed(2)} `;
 
         remainingPtoHoursElement.textContent = (availablePTOHours - totalPtoHours).toFixed(2);
         remainingPersonalHoursElement.textContent = (availablePersonalHours - totalPersonalHours).toFixed(2);
