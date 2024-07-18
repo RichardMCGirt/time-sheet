@@ -54,8 +54,6 @@ h1 {
     text-align: center;
 }
 
-
-
 .form-group {
     margin-bottom: 20px;
     position: relative;
@@ -100,14 +98,11 @@ h1 {
     transition: background-color 0.3s ease;
     margin-top: 10px;
     margin: 0 auto; /* Center the button */
-    
 }
 
 .submit-button:hover {
     background: linear-gradient(to right, #4e0da5, #2064d8); /* Matched hover color */
 }
-
-
 
 .signup-link a:hover {
     text-decoration: underline;
@@ -143,10 +138,16 @@ h1 {
     font-size: 16px;
 }
 
-    .form-value {
-        color: #1abc9c;
-        font-weight: bold;
-        font-size: 20px;
-        text-align: left;
-    }
+.form-value {
+    color: #1abc9c;
+    font-weight: bold;
+    font-size: 20px;
+    text-align: left;
+}
 
+@media (max-width: 768px) {
+    main {
+        padding: 10px;
+        box-shadow: none;
+    }
+}

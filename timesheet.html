@@ -30,20 +30,21 @@
             <form id="time-entry-form" class="time-entry-form">
                 <div class="form-group">
                     <label for="week-ending" class="form-label">Week Ending (Wednesday):</label>
-                    <input type="date" id="week-ending" name="week_ending" required class="input-date">
+                    <input type="date" id="week-ending" name="week_ending" required class="input-date" style="font-size: 30px;" width="20px">
+
                 </div>
                 
                 <table id="time-entry-table" class="time-entry-table">
                     <thead>
                         <tr>
-                            <th style="text-align: center;">Date</th>
-                            <th style="text-align: center;">Start Time</th>
-                            <th style="text-align: center;">Lunch Start</th>
-                            <th style="text-align: center;">Lunch End</th>
-                            <th style="text-align: center;">End Time</th>
-                            <th class="additional-time" style="text-align: center;">Additional Time In</th>
-                            <th class="additional-time" style="text-align: center;">Additional Time Out</th>
-                            <th style="text-align: center;">Hours Worked</th>
+                            <th>Date</th>
+                            <th class="time-column">Start Time</th>
+                            <th class="time-column">Lunch Start</th>
+                            <th class="time-column">Lunch End</th>
+                            <th class="time-column">End Time</th>
+                            <th class="time-column">Additional Time In</th>
+                            <th class="time-column">Additional Time Out</th>
+                            <th>Hours Worked</th>
                             <th class="narrow-column">PTO Hours</th>
                             <th class="narrow-column">Personal Hours</th>
                             <th class="narrow-column">Holiday Hours</th>
@@ -158,44 +159,43 @@
             <br>
             <section id="summary" class="summary-section">
                 <form id="summary-form" class="summary-form">
-                    <div class="form-row" style="display: flex; align-items: center;">
-                        <label for="pto-time" class="form-label" style="width: 200px; text-align: right; padding-right: 10px;">PTO time used (hours):</label>
+                    <div class="form-row">
+                        <label for="pto-time" class="form-label">PTO time used (hours):</label>
                         <span type="number" id="pto-time" name="pto_time" min="0"></span>
                     </div>
-                    <div class="form-row" style="display: flex; align-items: center;">
-                        <label for="personal-time" class="form-label" style="width: 200px; text-align: right; padding-right: 10px;"></label>
+                    <div class="form-row">
+                        <label for="personal-time" class="form-label"></label>
                         <span type="number" id="personal-time" name="personal_time" min="0"></span>
-                        </div>
-                        <div class="form-row" style="display: flex; align-items: center;">
-                            <label for="personal-time" class="form-label" style="width: 200px; text-align: right; padding-right: 10px;">Personal time used (hours):</label>
+                    </div>
+                    <div class="form-row">
+                        <label for="personal-time" class="form-label">Personal time used (hours):</label>
                         <div id="total-personal-time-display"></div>
                     </div>
-                    <div class="form-row" style="display: flex; align-items: center;">
-                        <label for="Holiday-hours" class="form-label" style="width: 200px; text-align: right; padding-right: 10px;">Holiday (hours):</label>
+                    <div class="form-row">
+                        <label for="Holiday-hours" class="form-label">Holiday (hours):</label>
                         <span type="number" id="Holiday-hours" name="Holiday_hours" min="0"></span>
                     </div>
-                    <div class="form-row" style="display: flex; align-items: center;">
-                        <label for="total-time-worked" class="form-label" style="width: 200px; text-align: right; padding-right: 10px;">Total Hours Worked:</label>
+                    <div class="form-row">
+                        <label for="total-time-worked" class="form-label">Total Hours Worked:</label>
                         <span id="total-time-worked" class="form-value">0.00</span>
                     </div>
-                    <div class="form-row" style="display: flex; align-items: center;">
-                        <label for="total-time-with-pto" class="form-label" style="width: 200px; text-align: right; padding-right: 10px;">Total Time:</label>
+                    <div class="form-row">
+                        <label for="total-time-with-pto" class="form-label">Total Time:</label>
                         <span id="total-time-with-pto-value" class="form-value">0.00</span>
-
                     </div>
-                    <div class="form-row" style="display: flex; align-items: center;">
-                        <label for="remaining-pto-hours" class="form-label" style="width: 200px; text-align: right; padding-right: 10px;">Remaining PTO Hours:</label>
+                    <div class="form-row">
+                        <label for="remaining-pto-hours" class="form-label">Remaining PTO Hours:</label>
                         <span id="remaining-pto-hours" class="form-value">0.00</span>
                     </div>
-                    <div class="form-row" style="display: flex; align-items: center;">
-                        <label for="remaining-personal-hours" class="form-label" style="width: 200px; text-align: right; padding-right: 10px;">Remaining Personal Hours:</label>
+                    <div class="form-row">
+                        <label for="remaining-personal-hours" class="form-label">Remaining Personal Hours:</label>
                         <span id="remaining-personal-hours" class="form-value">0.00</span>
                     </div>
-                
                     <span id="pto-validation-message" class="validation-message"></span><br>
                     <button id="submit-button" class="submit-button">Submit</button>
                 </form>
             </section>
+            
             
         </section>
         <br>

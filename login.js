@@ -78,3 +78,15 @@ async function fetchJoke() {
         console.error('Error fetching joke:', error);
     }
 }
+
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+}
+
+// Use debounce for fetchJoke to avoid rapid calls if needed
+document.addEventListener("DOMContentLoaded", debounce(fetchJoke, 300));
