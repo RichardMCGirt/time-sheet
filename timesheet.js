@@ -1,8 +1,8 @@
 const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
 const baseId = 'appMq9W12jZyCJeXe';
 const tableId = 'tblhTl5q7sEFDv66Z';
-const cloudName = 'dhju1fzne';
-const unsignedUploadPreset = 'Timeoff';
+const cloudName = 'dhju1fzne'; // Replace with your Cloudinary cloud name
+const unsignedUploadPreset = 'Timeoff'; // Replace with your unsigned upload preset
 
 async function getRecordIdByEmail(email) {
     const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={Email}='${email}'`;
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const weekEndingInput = document.getElementById('week-ending');
     const timeEntryForm = document.getElementById('time-entry-form');
     const ptoTimeSpan = document.getElementById('pto-time');
-    const personalTimeSpan = document.getElementById('personal-time-summary');
+    const personalTimeSpan = document.getElementById('personal-time');
     const holidayTimeSpan = document.getElementById('Holiday-hours');
     const totalTimeWorkedSpan = document.getElementById('total-time-worked');
     const totalTimeWithPtoSpan = document.getElementById('total-time-with-pto-value');
@@ -153,10 +153,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         //ptoHoursDisplay.style.display = 'none';
         //personalTimeDisplay.style.display = 'none';
     }
-
-    // Add event listener to PTO time input field
-    personalHoursInput.addEventListener('input', hidePtoHoursDisplay);
-    holidayHoursInput.addEventListener('input', hidePtoHoursDisplay);
 
     // Add event listener to update personal time display
     personalHoursInput.addEventListener('input', handlePersonalTimeChange);
@@ -394,12 +390,12 @@ document.addEventListener("DOMContentLoaded", async function() {
             additionalTimeOutInput.value = '--:--';
             hoursWorkedSpan.textContent = '0.00';
         } else {
-            startTimeInput.value = startTimeInput.dataset.originalValue || '--:--';
-            lunchStartInput.value = lunchStartInput.dataset.originalValue || '--:--';
-            lunchEndInput.value = lunchEndInput.dataset.originalValue || '--:--';
-            endTimeInput.value = endTimeInput.dataset.originalValue || '--:--';
-            additionalTimeInInput.value = additionalTimeInInput.dataset.originalValue || '--:--';
-            additionalTimeOutInput.value = additionalTimeOutInput.dataset.originalValue || '--:--';
+            startTimeInput.value = startTimeInput.dataset.originalValue || '';
+            lunchStartInput.value = lunchStartInput.dataset.originalValue || '';
+            lunchEndInput.value = lunchEndInput.dataset.originalValue || '';
+            endTimeInput.value = endTimeInput.dataset.originalValue || '';
+            additionalTimeInInput.value = additionalTimeInInput.dataset.originalValue || '';
+            additionalTimeOutInput.value = additionalTimeOutInput.dataset.originalValue || '';
 
             delete startTimeInput.dataset.originalValue;
             delete lunchStartInput.dataset.originalValue;
@@ -450,8 +446,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
 
         const ptoTime = parseFloat(ptoTimeSpan.textContent) || 0;
-        const personalTime = parseFloat(personalHoursInput.value) || 0;
-        const holidayHours = parseFloat(holidayHoursInput.value) || 0;
+        const personalTime = parseFloat(personalTimeSpan.textContent) || 0;
+        const holidayHours = parseFloat(holidayTimeSpan.textContent) || 0;
         
         totalHoursWithPto = totalHoursWorked + ptoTime + personalTime + holidayHours;
 
@@ -832,14 +828,18 @@ document.addEventListener("DOMContentLoaded", async function() {
             totalHolidayHours += value;
         });
 
-        const personalHoursInput = document.querySelectorAll('input[name^="Personal_hours');
-        personalHoursInput.forEach(input => {
+        const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
+        personalInputs.forEach(input => {
             const value = parseFloat(input.value) || 0;
             totalPersonalHours += value;
         });
 
         ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
-        personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
         holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
+        personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
+
+        console.log('Total PTO hours:', totalPtoHours);
+        console.log('Total Holiday hours:', totalHolidayHours);
+        console.log('Total Personal hours:', totalPersonalHours);
     }
 });

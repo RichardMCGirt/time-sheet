@@ -124,10 +124,12 @@ header {
 .time-entry-table th {
     background-color: #1abc9c;
     color: #ecf0f1;
+    width: auto;
 }
 
 .time-entry-table td {
     background-color: #34495e;
+    width: auto;
 }
 
 input[type="time"], 
@@ -140,6 +142,7 @@ input[type="date"] {
     padding: 5px; /* Optional: add padding */
     text-align: center; /* Center the text */
     font-weight: bolder;
+    width: auto;
 }
 
 /* Optional: Additional styling for better appearance */
