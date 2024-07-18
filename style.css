@@ -31,12 +31,12 @@ header {
     margin-left: 20px;
     display: flex;
     align-items: center;
-    gap: 20px; /* Adjust the spacing as needed */
+    gap: 20px;
 }
 
 .user-info span {
-    font-size: 16px; /* Adjust size as needed */
-    color: #ecf0f1; /* Adjust color as needed */
+    font-size: 16px;
+    color: #ecf0f1;
     font-weight: bolder;
 }
 
@@ -49,7 +49,6 @@ header {
     color: #ecf0f1;
     text-decoration: none;
     display: inline-block;
-    font-weight: bolder;
 }
 
 .user-info .logout-button:hover {
@@ -73,19 +72,19 @@ header {
 
 .narrow-column {
     text-align: center;
-    width: 20%; /* Set the desired width for the columns */
+    width: 20%;
 }
 
 .narrow-input {
-    width: 100%; /* Makes the input fill the cell */
-    max-width: 50%; /* Ensures the input does not exceed the cell width */
+    width: 100%;
+    max-width: 50%;
 }
 
 .form-group {
     display: flex;
-    justify-content: center; /* Center the content horizontally */
-    align-items: center; /* Center the content vertically */
-    gap: 10px; /* Space between the label and input */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
 
 .time-entry {
@@ -108,33 +107,35 @@ header {
     font-weight: bold;
 }
 
-.input-date, .input-time {
-    position: relative;
-    padding-left: 30px; /* Adjust space for the icon */
-    color: #ecf0f1; /* White text color for contrast */
+.input-time {
+    font-size: medium;
 }
 
+.input-date, .input-time {
+    position: relative;
+    padding-left: 30px;
+    color: #ecf0f1;
+}
 
 input[type="time"], 
 input[type="number"], 
 input[type="date"] {
-    background-color: #34495e; /* Ensure background color is not white */
-    color: #ecf0f1; /* White text color for contrast */
-    border: none; /* Remove default border */
-    border-radius: 4px; /* Optional: rounded corners */
-    padding: 5px; /* Optional: add padding */
-    text-align: center; /* Center the text */
+    background-color: #34495e;
+    color: #ecf0f1;
+    border: none;
+    border-radius: 4px;
+    padding: 5px;
+    text-align: center;
     font-weight: bolder;
     width: auto;
-    font-size: larger;
+    font-size: large;
 }
 
-/* Optional: Additional styling for better appearance */
 input[type="time"]::placeholder, 
 input[type="number"]::placeholder, 
 input[type="date"]::placeholder {
-    color: #ecf0f1; /* White placeholder color */
-    opacity: 1; /* Ensure the color is applied */
+    color: #ecf0f1;
+    opacity: 1;
     font-weight: bolder;
 }
 
@@ -190,7 +191,6 @@ input[type="date"] {
     display: flex;
     justify-content: center;
     align-items: center;
-    text-align: center;
     padding: 20px;
 }
 
@@ -198,7 +198,6 @@ input[type="date"] {
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
     background-color: #34495e;
     padding: 20px;
     border-radius: 10px;
@@ -208,7 +207,6 @@ input[type="date"] {
 
 .form-row {
     display: flex;
- 
     align-items: center;
     width: 100%;
     margin: 10px 0;
@@ -221,7 +219,6 @@ input[type="date"] {
     padding-right: 10px;
     color: #ecf0f1;
     font-weight: bold;
-   
 }
 
 .form-value {
@@ -229,7 +226,6 @@ input[type="date"] {
     font-weight: bold;
     font-size: 20px;
     text-align: center;
-    gap: -145px;
 }
 
 .validation-message {

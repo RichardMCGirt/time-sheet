@@ -615,3 +615,27 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.personalTimeDisplay.style.display = 'none';
     }
 });
+
+function toggleDisplay() {
+    const ptoValue = parseFloat(ptoInput.value) || 0;
+    const personalValue = parseFloat(personalInput.value) || 0;
+
+    if (ptoValue > 0) {
+        ptoInfo.style.display = 'none';
+    } else {
+        ptoInfo.style.display = 'block';
+    }
+
+    if (personalValue > 0) {
+        personalTimeDisplay.style.display = 'none';
+    } else {
+        personalTimeDisplay.style.display = 'block';
+    }
+}
+
+ptoInput.addEventListener('input', toggleDisplay);
+personalInput.addEventListener('input', toggleDisplay);
+
+// Initialize display based on current input values
+toggleDisplay();
+
