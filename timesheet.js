@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", async function() {
     console.log('DOM fully loaded and parsed');
 
-    const apiKey = 'patlpJTj4IzTPxTT3.3de1a5fb5b5881b393d5616821ff762125f1962d1849879d0719eb3b8d580bde';
-    const baseId = 'appMq9W12jZyCJeXe';
-    const tableId = 'tblhTl5q7sEFDv66Z';
+    const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
+    const baseId = 'app9gw2qxhGCmtJvW';
+    const tableId = 'tbljmLpqXScwhiWTt';
     const cloudName = 'dhju1fzne'; // Replace with your Cloudinary cloud name
     const unsignedUploadPreset = 'Timeoff'; // Replace with your unsigned upload preset
 
@@ -82,7 +82,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(calculateTotalTimeWorked, 300);
     });
-    personalHoursInput.addEventListener('input', handlePersonalTimeChange);
     holidayHoursInput.addEventListener('input', handleHolidayHoursChange);
     logoutButton.addEventListener('click', handleLogout);
     resetButton.addEventListener('click', resetForm);
@@ -456,131 +455,120 @@ document.addEventListener("DOMContentLoaded", async function() {
         window.location.href = 'index.html';
     }
 
-    async function updatePtoHours() {
-        console.log('Updating PTO hours...');
-        
-        const usedPtoHoursValue = parseFloat(ptoTimeSpan.textContent) || 0;
-        const newPtoHoursValue = availablePTOHours - usedPtoHoursValue;
+    // Update PTO hours in Airtable
+async function updatePtoHours() {
+    console.log('Updating PTO hours...');
+    const usedPtoHoursValue = parseFloat(ptoTimeSpan.textContent) || 0;
+    const newPtoHoursValue = availablePTOHours - usedPtoHoursValue;
 
-        console.log('Used PTO hours value:', usedPtoHoursValue);
-        console.log('New PTO hours value:', newPtoHoursValue);
+    console.log('Used PTO hours value:', usedPtoHoursValue);
+    console.log('New PTO hours value:', newPtoHoursValue);
 
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        console.log('Endpoint for update:', endpoint);
+    const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+    console.log('Endpoint for update:', endpoint);
 
-        try {
-            const response = await fetch(endpoint, {
+    try {
+        const response = await fetch(endpoint, {
+            headers: { Authorization: `Bearer ${apiKey}` }
+        });
+
+        if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
+        const data = await response.json();
+        console.log('Fetched data for update:', data);
+
+        if (data.records.length > 0) {
+            const recordId = data.records[0].id;
+            console.log('Record ID:', recordId);
+
+            const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
+                method: 'PATCH',
                 headers: {
-                    Authorization: `Bearer ${apiKey}`
-                }
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fields: { 'PTO Hours': newPtoHoursValue }
+                })
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data: ${response.statusText}`);
-            }
+            const updateResponseData = await updateResponse.json();
+            console.log('Update response data:', updateResponseData);
 
-            const data = await response.json();
-            console.log('Fetched data for update:', data);
-
-            if (data.records.length > 0) {
-                const recordId = data.records[0].id;
-                console.log('Record ID:', recordId);
-
-                const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        fields: {
-                            'PTO Hours': newPtoHoursValue
-                        }
-                    })
-                });
-
-                const updateResponseData = await updateResponse.json();
-                console.log('Update response data:', updateResponseData);
-
-                if (!updateResponse.ok) {
-                    throw new Error(`Failed to update PTO hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
-                }
-
-                console.log('PTO hours updated successfully');
-                alert('PTO hours updated successfully!');
-                clearForm();
-            } else {
-                throw new Error('No record found for user');
-            }
-        } catch (error) {
-            console.error('Error updating PTO hours:', error);
-            alert('Failed to update PTO hours. Error: ' + error.message);
+            if (!updateResponse.ok) throw new Error(`Failed to update PTO hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
+            console.log('PTO hours updated successfully');
+            alert('PTO hours updated successfully!');
             clearForm();
+
+            // Log remaining PTO hours
+            const remainingPtoHours = parseFloat(newPtoHoursValue.toFixed(2));
+            console.log('Remaining PTO Hours:', remainingPtoHours);
+        } else {
+            throw new Error('No record found for user');
         }
+    } catch (error) {
+        console.error('Error updating PTO hours:', error);
+        alert('Failed to update PTO hours. Error: ' + error.message);
+        clearForm();
     }
+}
 
-    async function updatePersonalHours() {
-        console.log('Updating Personal hours...');
-        
-        const usedPersonalHoursValue = parseFloat(personalTimeSpan.textContent) || 0;
-        const newPersonalHoursValue = availablePersonalHours - usedPersonalHoursValue;
+// Update Personal hours in Airtable
+async function updatePersonalHours() {
+    console.log('Updating Personal hours...');
+    const usedPersonalHoursValue = parseFloat(personalTimeSpan.textContent) || 0;
+    const newPersonalHoursValue = availablePersonalHours - usedPersonalHoursValue;
 
-        console.log('Used Personal hours value:', usedPersonalHoursValue);
-        console.log('New Personal hours value:', newPersonalHoursValue);
+    console.log('Used Personal hours value:', usedPersonalHoursValue);
+    console.log('New Personal hours value:', newPersonalHoursValue);
 
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        console.log('Endpoint for update:', endpoint);
+    const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+    console.log('Endpoint for update:', endpoint);
 
-        try {
-            const response = await fetch(endpoint, {
+    try {
+        const response = await fetch(endpoint, {
+            headers: { Authorization: `Bearer ${apiKey}` }
+        });
+
+        if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
+        const data = await response.json();
+        console.log('Fetched data for update:', data);
+
+        if (data.records.length > 0) {
+            const recordId = data.records[0].id;
+            console.log('Record ID:', recordId);
+
+            const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
+                method: 'PATCH',
                 headers: {
-                    Authorization: `Bearer ${apiKey}`
-                }
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fields: { 'Personaltime': newPersonalHoursValue }
+                })
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data: ${response.statusText}`);
-            }
+            const updateResponseData = await updateResponse.json();
+            console.log('Update response data:', updateResponseData);
 
-            const data = await response.json();
-            console.log('Fetched data for update:', data);
-
-            if (data.records.length > 0) {
-                const recordId = data.records[0].id;
-                console.log('Record ID:', recordId);
-
-                const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        fields: {
-                            'Personaltime': newPersonalHoursValue
-                        }
-                    })
-                });
-
-                const updateResponseData = await updateResponse.json();
-                console.log('Update response data:', updateResponseData);
-
-                if (!updateResponse.ok) {
-                    throw new Error(`Failed to update Personal hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
-                }
-
-                console.log('Personal hours updated successfully');
-                alert('Personal hours updated successfully!');
-                clearForm();
-            } else {
-                throw new Error('No record found for user');
-            }
-        } catch (error) {
-            console.error('Error updating Personal hours:', error);
-            alert('Failed to update Personal hours. Error: ' + error.message);
+            if (!updateResponse.ok) throw new Error(`Failed to update Personal hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
+            console.log('Personal hours updated successfully');
+            alert('Personal hours updated successfully!');
             clearForm();
+
+            // Log remaining Personal hours
+            const remainingPersonalHours = parseFloat(newPersonalHoursValue.toFixed(2));
+            console.log('Remaining Personal Hours:', remainingPersonalHours);
+        } else {
+            throw new Error('No record found for user');
         }
+    } catch (error) {
+        console.error('Error updating Personal hours:', error);
+        alert('Failed to update Personal hours. Error: ' + error.message);
+        clearForm();
     }
+}
+
 
     function clearForm() {
         console.log('Clearing form...');
@@ -600,27 +588,42 @@ document.addEventListener("DOMContentLoaded", async function() {
         clearForm();
     }
 
-    document.getElementById('submit-button').addEventListener('click', (event) => {
+    document.getElementById('submit-button').addEventListener('click', async (event) => {
         event.preventDefault(); // Prevent form submission
-
+    
         const totalTimeWithPto = parseFloat(totalTimeWithPtoSpan.textContent);
         const ptoTimeUsed = parseFloat(ptoTimeSpan.textContent) || 0;
         const personalTimeUsed = parseFloat(personalTimeSpan.textContent) || 0;
         const holidayHoursUsed = parseFloat(holidayTimeSpan.textContent) || 0;
-
+    
         if (ptoTimeUsed === 0 && personalTimeUsed === 0 && holidayHoursUsed === 0) {
             alert('Nothing to change');
             return;
         }
-
+    
         if (totalTimeWithPto > 40 && (ptoTimeUsed > 0 || personalTimeUsed > 0 || holidayHoursUsed > 0)) {
             alert('Total hours including PTO, Personal time, or Holiday time cannot exceed 40 hours.');
             return;
         }
-
-        updatePtoHours();
-        updatePersonalHours();
+    
+        try {
+            await updatePtoHours();
+            await updatePersonalHours();
+            alert('Updates successful! The page will now refresh.');
+            location.reload(); // Refreshes the page
+        } catch (error) {
+            alert('Failed to update data. ' + error.message);
+        }
     });
+    
+
+    async function refreshData() {
+        console.log('Refreshing data...');
+        await fetchPtoHours();
+        await fetchPersonalTime();
+        console.log('Data refreshed successfully');
+    }
+    
 
     async function initializeForm() {
         console.log('Initializing form...');
