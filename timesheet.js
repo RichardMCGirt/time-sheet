@@ -58,15 +58,11 @@ document.addEventListener("DOMContentLoaded", async function() {
     elements.logoutButton.addEventListener('click', handleLogout);
     elements.resetButton.addEventListener('click', resetForm);
 
-    const timeInputs = document.querySelectorAll('input[type="time"]');
+    const timeInputs = document.querySelectorAll('select.time-dropdown');
     timeInputs.forEach(input => {
         input.addEventListener('focus', () => input.showPicker());
         input.addEventListener('keydown', handleArrowKeys);
     });
-
-    // Set the width of the week ending input
-    elements.weekEndingInput.style.width = '320x';
-
 
     // Fetch PTO hours and personal time from Airtable
     await fetchPtoHours();
@@ -137,43 +133,10 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    // Handle personal time change
-    function handlePersonalTimeChange() {
-        console.log('Handling Personal time change...');
-        const personalTimeUsed = parseFloat(elements.personalHoursInput.value) || 0;
-        const remainingPersonalHours = Math.max(0, availablePersonalHours - personalTimeUsed);
-        console.log('Personal time used:', personalTimeUsed);
-        console.log('Remaining Personal hours:', remainingPersonalHours);
-
-        if (personalTimeUsed > availablePersonalHours) {
-            elements.ptoValidationMessage.textContent = 'Personal time used cannot exceed available Personal hours';
-            elements.ptoValidationMessage.style.color = 'red';
-        } else {
-            elements.ptoValidationMessage.textContent = '';
-        }
-
-        elements.remainingPersonalHoursElement.textContent = remainingPersonalHours.toFixed(2);
-        updatePersonalHoursDisplay(remainingPersonalHours);
-        updatePersonalTimeDisplay(personalTimeUsed, remainingPersonalHours);
-        calculateTotalTimeWorked();
-    }
-
     // Handle holiday hours change
     function handleHolidayHoursChange() {
         console.log('Handling Holiday hours change...');
         calculateTotalTimeWorked();
-    }
-
-    // Update personal hours display
-    function updatePersonalHoursDisplay(remainingHours) {
-        elements.personalTimeDisplay.textContent = `Personal Time: ${remainingHours.toFixed(2)}`;
-    }
-
-    // Update personal time display
-    function updatePersonalTimeDisplay(personalTimeUsed, remainingPersonalHours) {
-        elements.personalTimeDisplay.textContent = personalTimeUsed.toFixed(2);
-        elements.remainingPersonalHoursElement.textContent = remainingPersonalHours.toFixed(2);
-        elements.totalTimeWithPtoSpan.textContent = (parseFloat(elements.totalTimeWorkedSpan.textContent) + personalTimeUsed + (parseFloat(elements.ptoTimeSpan.textContent) || 0) + (parseFloat(elements.holidayTimeSpan.textContent) || 0)).toFixed(2);
     }
 
     // Handle week ending date change
@@ -324,6 +287,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         if (ptoUsed > availablePTOHours) {
             elements.ptoValidationMessage.textContent = 'PTO time used cannot exceed available PTO hours';
             elements.ptoValidationMessage.style.color = 'red';
+            disablePtoInputs();
         } else if (totalHoursWithPto > 40 && parseFloat(elements.ptoTimeSpan.textContent) > 0) {
             elements.ptoValidationMessage.textContent = 'Total hours including PTO cannot exceed 40 hours';
             elements.ptoValidationMessage.style.color = 'red';
@@ -341,12 +305,29 @@ document.addEventListener("DOMContentLoaded", async function() {
         if (personalUsed > availablePersonalHours) {
             elements.ptoValidationMessage.textContent = 'Personal time used cannot exceed available Personal hours';
             elements.ptoValidationMessage.style.color = 'red';
+            disablePersonalInputs();
         } else if (totalHoursWithPto > 40 && parseFloat(elements.personalTimeSpan.textContent) > 0) {
             elements.ptoValidationMessage.textContent = 'Total hours including Personal time cannot exceed 40 hours';
             elements.ptoValidationMessage.style.color = 'red';
         } else {
             elements.ptoValidationMessage.textContent = '';
         }
+    }
+
+    // Disable PTO inputs when hours are exhausted
+    function disablePtoInputs() {
+        const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
+        ptoInputs.forEach(input => {
+            input.disabled = true;
+        });
+    }
+
+    // Disable Personal inputs when hours are exhausted
+    function disablePersonalInputs() {
+        const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
+        personalInputs.forEach(input => {
+            input.disabled = true;
+        });
     }
 
     // Debounce function to limit the rate of execution
@@ -592,7 +573,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     function handleArrowKeys(event) {
         const key = event.key;
         const currentInput = event.target;
-        const inputs = Array.from(document.querySelectorAll('input[type="time"]'));
+        const inputs = Array.from(document.querySelectorAll('select.time-dropdown'));
 
         let index = inputs.indexOf(currentInput);
 
@@ -644,6 +625,27 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         elements.remainingPtoHoursElement.textContent = (availablePTOHours - totalPtoHours).toFixed(2);
         elements.remainingPersonalHoursElement.textContent = (availablePersonalHours - totalPersonalHours).toFixed(2);
+
+        // Update total time with PTO
+        const totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
+        elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+
+        // Validate and disable fields if necessary
+        if (availablePTOHours - totalPtoHours <= 0) {
+            elements.ptoValidationMessage.textContent = 'No more PTO hours available';
+            elements.ptoValidationMessage.style.color = 'red';
+            disablePtoInputs();
+        } else {
+            elements.ptoValidationMessage.textContent = '';
+        }
+
+        if (availablePersonalHours - totalPersonalHours <= 0) {
+            elements.ptoValidationMessage.textContent = 'No more personal hours available';
+            elements.ptoValidationMessage.style.color = 'red';
+            disablePersonalInputs();
+        } else {
+            elements.ptoValidationMessage.textContent = '';
+        }
     }
 
     // Hide PTO hours display and personal time display if input is provided
@@ -685,4 +687,52 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Initialize display based on current input values
     toggleDisplay();
+
+    // Initialize time dropdowns
+    function initializeTimeDropdowns() {
+        const timeDropdowns = document.querySelectorAll('select.time-dropdown');
+        timeDropdowns.forEach(dropdown => {
+            for (let hour = 0; hour < 24; hour++) {
+                ['00', '15', '30', '45'].forEach(minute => {
+                    const option = document.createElement('option');
+                    option.value = `${String(hour).padStart(2, '0')}:${minute}`;
+                    option.text = `${String(hour).padStart(2, '0')}:${minute}`;
+                    dropdown.appendChild(option);
+                });
+            }
+        });
+    }
+
+    // Initialize keyboard navigation
+    function initializeKeyboardNavigation() {
+        document.addEventListener('keydown', (event) => {
+            if (!event.shiftKey) return;
+
+            const { key } = event;
+            const activeElement = document.activeElement;
+
+            if (activeElement.tagName.toLowerCase() === 'select' || activeElement.tagName.toLowerCase() === 'input') {
+                const inputs = Array.from(document.querySelectorAll('select.time-dropdown, input[type="number"], input[type="checkbox"]'));
+                let currentIndex = inputs.indexOf(activeElement);
+
+                if (key === 'ArrowRight') {
+                    currentIndex = (currentIndex + 1) % inputs.length;
+                } else if (key === 'ArrowLeft') {
+                    currentIndex = (currentIndex - 1 + inputs.length) % inputs.length;
+                } else if (key === 'ArrowDown') {
+                    currentIndex = (currentIndex + 6) % inputs.length;
+                } else if (key === 'ArrowUp') {
+                    currentIndex = (currentIndex - 6 + inputs.length) % inputs.length;
+                }
+
+                inputs[currentIndex].focus();
+                event.preventDefault();
+            }
+        });
+    }
+
+    // Initialize the form and dropdowns
+    initializeForm();
+    initializeTimeDropdowns();
+    initializeKeyboardNavigation();
 });

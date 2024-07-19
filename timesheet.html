@@ -30,32 +30,32 @@
             <form id="time-entry-form" class="time-entry-form">
                 <div class="form-group">
                     <label for="week-ending" class="Week-Ending">Week Ending (Wednesday):</label>
-                    <input type="date" id="week-ending" name="week_ending" required style="font-size: 30px;" width="20px">
+                    <input type="date" id="week-ending" name="week_ending" required style="font-size: 20px;" width="20px">
 
                 </div>
                 
                 <table id="time-entry-table" class="time-entry-table">
                     <thead>
                         <tr>
-                            <th>Date</th>
+                            <th class="date-column">Date</th>
                             <th class="time-column">Start Time</th>
                             <th class="time-column">Lunch Start</th>
                             <th class="time-column">Lunch End</th>
                             <th class="time-column">End Time</th>
                             <th class="time-column">Additional Time In</th>
                             <th class="time-column">Additional Time Out</th>
-                            <th>Hours Worked</th>
+                            <th class="hours-worked-column">Hours Worked</th>
                             <th class="narrow-column">PTO Hours</th>
                             <th class="narrow-column">Personal Hours</th>
                             <th class="narrow-column">Holiday Hours</th>
-                            <th style="text-align: center;">Did not work</th>
+                            <th class="work-column">Did not work</th>
                         </tr>
                     </thead>
                     <tbody id="time-entry-body">
                         <!-- Rows for time entries -->
                         <tr data-day="1">
                             <td style="text-align: center;"><input type="date" name="date1" readonly></td>
-                            <td style="text-align: center;"><input type="time" name="start_time1" step="900"></td>
+                            <td style="text-align: center;"><input type="time" name="start_time1"></td>
                             <td style="text-align: center;"><input type="time" name="lunch_start1" step="900"></td>
                             <td style="text-align: center;"><input type="time" name="lunch_end1" step="900"></td>
                             <td style="text-align: center;"><input type="time" name="end_time1" step="900"></td>
@@ -161,19 +161,15 @@
                 <form id="summary-form" class="summary-form">
                     <div class="form-row">
                         <label for="pto-time" class="form-label">PTO time used (hours):</label>
-                        <span type="number" id="pto-time" name="pto_time" min="0"></span>
-                    </div>
-                    <div class="form-row">
-                        <label for="personal-time" class="form-label"></label>
-                        <span type="number" id="personal-time" name="personal_time" min="0"></span>
+                        <span type="number" id="pto-time" name="pto_time" min="0">0</span>
                     </div>
                     <div class="form-row">
                         <label for="personal-time" class="form-label">Personal time used (hours):</label>
-                        <div id="total-personal-time-display"></div>
+                        <div id="total-personal-time-display">0</div>
                     </div>
                     <div class="form-row">
                         <label for="Holiday-hours" class="form-label">Holiday (hours):</label>
-                        <span type="number" id="Holiday-hours" name="Holiday_hours" min="0"></span>
+                        <span type="number" id="Holiday-hours" name="Holiday_hours" min="0">0</span>
                     </div>
                     <div class="form-row">
                         <label for="total-time-worked" class="form-label">Total Hours Worked:</label>
@@ -195,9 +191,6 @@
                     <button id="submit-button" class="submit-button">Submit</button>
                 </form>
             </section>
-            
-            
-            
         </section>
         <br>
         <button id="playPauseButton" class="play-pause-button">Play</button>
@@ -206,6 +199,11 @@
     <script src="timesheet.js"></script>
     <script src="musicControl.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            initializeTimeDropdowns();
+            initializeKeyboardNavigation();
+        });
+    </script>
 </body>
 </html>

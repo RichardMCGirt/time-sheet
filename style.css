@@ -70,16 +70,90 @@ header {
     background-color: #c0392b;
 }
 
+.date-column {
+    width: 10%;
+    min-width: 100px;
+}
+
+.time-column {
+    width: 10%;
+    min-width: 100px;
+}
+
+.hours-worked-column {
+    width: 8%;
+    min-width: 80px;
+}
+
 .narrow-column {
+    width: 5%;
+    min-width: 50px;
+}
+
+.work-column {
+    width: 10%;
+    min-width: 100px;
+}
+
+/* Table styling */
+.time-entry-table {
+    width: 100%;
+    table-layout: fixed;
+    margin: 20px 0;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.time-entry-table th, .time-entry-table td {
     text-align: center;
-    width: 300px;
+    padding: 10px;
+    border: 1px solid #ecf0f1;
 }
 
-.narrow-input {
-    width: 20%;
-    max-width: 80%;
+.time-entry-table th {
+    background-color: #1abc9c;
+    color: #ecf0f1;
 }
 
+.time-entry-table td {
+    background-color: #34495e;
+}
+
+/* Input styling */
+.time-entry-table input[type="date"],
+.time-entry-table input[type="time"],
+.time-entry-table input[type="number"],
+.time-entry-table input[type="checkbox"] {
+    background-color: #34495e;
+    color: #ecf0f1;
+    border: none;
+    border-radius: 4px;
+    padding: 5px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.time-entry-table input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
+.time-entry-table input[type="time"]::placeholder,
+.time-entry-table input[type="number"]::placeholder,
+.time-entry-table input[type="date"]::placeholder {
+    color: #ecf0f1;
+    opacity: 1;
+    font-weight: bolder;
+}
+
+.time-entry-table input[type="time"]:-webkit-autofill,
+.time-entry-table input[type="number"]:-webkit-autofill,
+.time-entry-table input[type="date"]:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px #34495e inset !important;
+    -webkit-text-fill-color: #ecf0f1 !important;
+}
+
+/* General form and button styling */
 .form-group {
     display: flex;
     justify-content: center;
@@ -87,19 +161,40 @@ header {
     gap: 10px;
 }
 
-.time-entry {
-    display: inline-block;
-    text-align: left;
-    margin-top: 20px;
-}
-
 .time-entry-form {
-    width: 90%;
+    width: 96%;
     max-width: 2550px;
     margin: 0 auto;
     background-color: #34495e;
     padding: 20px;
     border-radius: 10px;
+}
+
+.submit-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #1abc9c;
+    color: #ecf0f1;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.submit-button:hover {
+    background-color: #16a085;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .time-entry-table th, .time-entry-table td {
+        font-size: 12px;
+    }
+
+    .submit-button {
+        font-size: 14px;
+    }
 }
 
 .form-label {
@@ -176,12 +271,10 @@ input[type="date"] {
 .time-entry-table th {
     background-color: #1abc9c;
     color: #ecf0f1;
-    width: 70%;
 }
 
 .time-entry-table td {
     background-color: #34495e;
-    width: auto;
 }
 
 .time-input {
