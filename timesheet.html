@@ -157,40 +157,41 @@
             </form>
             <br>
             <br>
-            <section id="summary" class="summary-section">
-                <form id="summary-form" class="summary-form">
-                    <div class="form-row">
-                        <label for="pto-time" class="form-label">PTO time used (hours):</label>
-                        <span type="number" id="pto-time" name="pto_time" min="0">0</span>
+            <section id="summary" class="summary-section" style="display: flex; justify-content: center; align-items: center; padding: 20px;">
+                <form id="summary-form" class="summary-form" style="display: flex; flex-direction: column; align-items: center; background-color: #34495e; padding: 20px; border-radius: 10px; width: 100%; max-width: 600px;">
+                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
+                        <label for="pto-time" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">PTO time used (hours):</label>
+                        <span type="number" id="pto-time" name="pto_time" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0</span>
                     </div>
-                    <div class="form-row">
-                        <label for="personal-time" class="form-label">Personal time used (hours):</label>
-                        <div id="total-personal-time-display">0</div>
+                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
+                        <label for="personal-time" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Personal time used (hours):</label>
+                        <div id="total-personal-time-display" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0</div>
                     </div>
-                    <div class="form-row">
-                        <label for="Holiday-hours" class="form-label">Holiday (hours):</label>
-                        <span type="number" id="Holiday-hours" name="Holiday_hours" min="0">0</span>
+                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
+                        <label for="Holiday-hours" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Holiday (hours):</label>
+                        <span type="number" id="Holiday-hours" name="Holiday_hours" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0</span>
                     </div>
-                    <div class="form-row">
-                        <label for="total-time-worked" class="form-label">Total Hours Worked:</label>
-                        <span id="total-time-worked" class="form-value">0.00</span>
+                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
+                        <label for="total-time-worked" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Total Hours Worked:</label>
+                        <span id="total-time-worked" class="form-value" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
                     </div>
-                    <div class="form-row">
-                        <label for="total-time-with-pto" class="form-label">Total Time:</label>
-                        <span id="total-time-with-pto-value" class="form-value">0.00</span>
+                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
+                        <label for="total-time-with-pto" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Total Time:</label>
+                        <span id="total-time-with-pto-value" class="form-value" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
                     </div>
-                    <div class="form-row">
-                        <label for="remaining-pto-hours" class="form-label">Remaining PTO Hours:</label>
-                        <span id="remaining-pto-hours" class="form-value">0.00</span>
+                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
+                        <label for="remaining-pto-hours" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Remaining PTO Hours:</label>
+                        <span id="remaining-pto-hours" class="form-value" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
                     </div>
-                    <div class="form-row">
-                        <label for="remaining-personal-hours" class="form-label">Remaining Personal Hours:</label>
-                        <span id="remaining-personal-hours" class="form-value">0.00</span>
+                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
+                        <label for="remaining-personal-hours" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Remaining Personal Hours:</label>
+                        <span id="remaining-personal-hours" class="form-value" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
                     </div>
-                    <span id="pto-validation-message" class="validation-message"></span><br>
-                    <button id="submit-button" class="submit-button">Submit</button>
+                    <span id="pto-validation-message" class="validation-message" style="color: red; text-align: center;"></span><br>
+                    <button id="submit-button" class="submit-button" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #1abc9c; color: #ecf0f1; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px;">Submit</button>
                 </form>
             </section>
+            
         </section>
         <br>
         <button id="playPauseButton" class="play-pause-button">Play</button>

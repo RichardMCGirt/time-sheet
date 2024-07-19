@@ -271,10 +271,14 @@ input[type="date"] {
 .time-entry-table th {
     background-color: #1abc9c;
     color: #ecf0f1;
+    height: 45px;
+    font-weight: bold;
 }
 
 .time-entry-table td {
     background-color: #34495e;
+    font-weight: 800;
+    height: 30px;
 }
 
 .time-input {
@@ -285,23 +289,7 @@ input[type="date"] {
     color: red;
 }
 
-.summary-section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
 
-.summary-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #34495e;
-    padding: 20px;
-    border-radius: 10px;
-    width: 100%;
-    max-width: 600px;
-}
 
 .form-row {
     display: flex;
