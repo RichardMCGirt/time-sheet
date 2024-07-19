@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener("DOMContentLoaded", async function() {
     console.log('DOM fully loaded and parsed');
 
     initializeTimeDropdowns();
@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     const tableId = 'tbljmLpqXScwhiWTt';
 
     let userEmail = localStorage.getItem('userEmail') || '';
-    let userName = userEmail.split('@')[0];
     console.log('User email:', userEmail);
 
     const elements = {
@@ -392,7 +391,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 if (!updateResponse.ok) throw new Error(`Failed to update PTO hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
                 console.log('PTO hours updated successfully');
-                alert(`${userName}, your PTO hours have been updated successfully! You have ${newPtoHoursValue.toFixed(2)} PTO hours remaining.`);
+                alert('PTO hours updated successfully!');
                 clearForm();
 
                 const remainingPtoHours = parseFloat(newPtoHoursValue.toFixed(2));
@@ -411,8 +410,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         console.log('Updating Personal hours...');
         const usedPersonalHoursValue = parseFloat(elements.personalTimeSpan.textContent) || 0;
         const newPersonalHoursValue = Math.max(0, availablePersonalHours - usedPersonalHoursValue);
+        const finalPersonalHoursValue = newPersonalHoursValue > 0 ? newPersonalHoursValue : availablePersonalHours;
         console.log('Used Personal hours value:', usedPersonalHoursValue);
         console.log('New Personal hours value:', newPersonalHoursValue);
+        console.log('Final Personal hours value:', finalPersonalHoursValue);
 
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
         console.log('Endpoint for update:', endpoint);
@@ -433,7 +434,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         Authorization: `Bearer ${apiKey}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ fields: { 'Personaltime': newPersonalHoursValue } })
+                    body: JSON.stringify({ fields: { 'Personaltime': finalPersonalHoursValue } })
                 });
 
                 const updateResponseData = await updateResponse.json();
@@ -441,10 +442,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 if (!updateResponse.ok) throw new Error(`Failed to update Personal hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
                 console.log('Personal hours updated successfully');
-                alert(`${userName}, your personal hours have been updated successfully! You have ${newPersonalHoursValue.toFixed(2)} personal hours remaining.`);
+                alert('Personal hours updated successfully!');
                 clearForm();
 
-                const remainingPersonalHours = parseFloat(newPersonalHoursValue.toFixed(2));
+                const remainingPersonalHours = parseFloat(finalPersonalHoursValue.toFixed(2));
                 console.log('Remaining Personal Hours:', remainingPersonalHours);
             } else {
                 throw new Error('No record found for user');
@@ -622,7 +623,20 @@ document.addEventListener("DOMContentLoaded", async function () {
         elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
     }
 
-  
+    function initializeTimeDropdowns() {
+        const timeDropdowns = document.querySelectorAll('select.time-dropdown');
+        timeDropdowns.forEach(dropdown => {
+            for (let hour = 0; hour < 24; hour++) {
+                ['00', '15', '30', '45'].forEach(minute => {
+                    const option = document.createElement('option');
+                    option.value = `${String(hour).padStart(2, '0')}:${minute}`;
+                    option.text = `${String(hour).padStart(2, '0')}:${minute}`;
+                    dropdown.appendChild(option);
+                });
+            }
+        });
+    }
+
     function initializeKeyboardNavigation() {
         document.addEventListener('keydown', (event) => {
             if (!event.shiftKey) return;
@@ -649,4 +663,15 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         });
     }
+
+    function showPickerOnFocus() {
+        const timeInputs = document.querySelectorAll('select.time-dropdown, input[type="number"]');
+        timeInputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                if (input.showPicker) input.showPicker();
+            });
+        });
+    }
+
+    showPickerOnFocus();
 });
