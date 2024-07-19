@@ -50,7 +50,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     // Event listeners for input fields
-    elements.holidayHoursInput.addEventListener('input', hidePtoHoursDisplay);
     elements.holidayHoursInput.addEventListener('input', handleHolidayHoursChange);
     elements.weekEndingInput.addEventListener('focus', () => elements.weekEndingInput.showPicker());
     elements.weekEndingInput.addEventListener('change', handleWeekEndingChange);
@@ -314,21 +313,45 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    // Disable PTO inputs when hours are exhausted
-    function disablePtoInputs() {
-        const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
-        ptoInputs.forEach(input => {
-            input.disabled = true;
+  // Prevent adding more PTO hours if remaining PTO is zero, but allow decreasing values
+function preventExceedingPtoInputs() {
+    const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
+    ptoInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const currentValue = parseFloat(input.value) || 0;
+            if (currentValue > availablePTOHours) {
+                input.value = availablePTOHours;
+            }
+            // Allow decreasing the value
+            if (currentValue > availablePTOHours || (availablePTOHours - currentValue) < 0) {
+                input.value = Math.max(availablePTOHours, currentValue);
+            }
         });
-    }
+    });
+}
 
-    // Disable Personal inputs when hours are exhausted
-    function disablePersonalInputs() {
-        const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
-        personalInputs.forEach(input => {
-            input.disabled = true;
+// Prevent adding more personal hours if remaining personal hours are zero, but allow decreasing values
+function preventExceedingPersonalInputs() {
+    const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
+    personalInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const currentValue = parseFloat(input.value) || 0;
+            if (currentValue > availablePersonalHours) {
+                input.value = availablePersonalHours;
+            }
+            // Allow decreasing the value
+            if (currentValue > availablePersonalHours || (availablePersonalHours - currentValue) < 0) {
+                input.value = Math.max(availablePersonalHours, currentValue);
+            }
         });
-    }
+    });
+}
+
+await fetchPtoHours();
+await fetchPersonalTime();
+preventExceedingPtoInputs();
+preventExceedingPersonalInputs();
+
 
     // Debounce function to limit the rate of execution
     function debounce(func, wait) {
@@ -349,6 +372,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     timeInputs.forEach(input => {
         input.addEventListener('focus', () => scrollToElement(input));
     });
+
+    // Handle logout event
     function handleLogout(event) {
         event.preventDefault();
         console.log('Logging out...');
@@ -358,9 +383,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             window.location.href = 'index.html';
         }, 100);  // Delay of 100ms before redirecting
     }
-    
-   
-    
 
     // Update PTO hours in Airtable
     async function updatePtoHours() {
@@ -520,7 +542,10 @@ document.addEventListener("DOMContentLoaded", async function() {
         handleWeekEndingChange();
     }
 
+    // Initialize the form and dropdowns
     initializeForm();
+    initializeTimeDropdowns();
+    initializeKeyboardNavigation();
 
     // Capture screenshot and patch to Airtable
     async function captureScreenshotAndPatch() {
@@ -626,70 +651,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
         document.getElementById('total-personal-time-display').textContent = ` ${totalPersonalHours.toFixed(2)} `;
 
-        elements.remainingPtoHoursElement.textContent = (availablePTOHours - totalPtoHours).toFixed(2);
-        elements.remainingPersonalHoursElement.textContent = (availablePersonalHours - totalPersonalHours).toFixed(2);
+        elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(2);
+        elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(2);
 
         // Update total time with PTO
         const totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
         elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
-
-        // Validate and disable fields if necessary
-        if (availablePTOHours - totalPtoHours <= 0) {
-            elements.ptoValidationMessage.textContent = 'No more PTO hours available';
-            elements.ptoValidationMessage.style.color = 'red';
-            disablePtoInputs();
-        } else {
-            elements.ptoValidationMessage.textContent = '';
-        }
-
-        if (availablePersonalHours - totalPersonalHours <= 0) {
-            elements.ptoValidationMessage.textContent = 'No more personal hours available';
-            elements.ptoValidationMessage.style.color = 'red';
-            disablePersonalInputs();
-        } else {
-            elements.ptoValidationMessage.textContent = '';
-        }
     }
-
-    // Hide PTO hours display and personal time display if input is provided
-    function hidePtoHoursDisplay() {
-        elements.ptoHoursDisplay.style.display = 'none';
-        elements.personalTimeDisplay.style.display = 'none';
-    }
-
-    // Toggle display based on input in number fields
-    function toggleDisplay() {
-        console.log('Toggling display based on input values...');
-        const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
-        const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
-
-        let ptoValue = 0;
-        ptoInputs.forEach(input => ptoValue += parseFloat(input.value) || 0);
-        let personalValue = 0;
-        personalInputs.forEach(input => personalValue += parseFloat(input.value) || 0);
-
-        if (ptoValue > 0) {
-            elements.ptoHoursDisplay.style.display = 'none';
-        } else {
-            elements.ptoHoursDisplay.style.display = 'block';
-        }
-
-        if (personalValue > 0) {
-            elements.personalTimeDisplay.style.display = 'none';
-        } else {
-            elements.personalTimeDisplay.style.display = 'block';
-        }
-    }
-
-    // Attach input event listeners to number fields in the table
-    const ptoNumberInputs = document.querySelectorAll('input[name^="PTO_hours"]');
-    ptoNumberInputs.forEach(input => input.addEventListener('input', toggleDisplay));
-
-    const personalNumberInputs = document.querySelectorAll('input[name^="Personal_hours"]');
-    personalNumberInputs.forEach(input => input.addEventListener('input', toggleDisplay));
-
-    // Initialize display based on current input values
-    toggleDisplay();
 
     // Initialize time dropdowns
     function initializeTimeDropdowns() {
@@ -733,9 +701,4 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         });
     }
-
-    // Initialize the form and dropdowns
-    initializeForm();
-    initializeTimeDropdowns();
-    initializeKeyboardNavigation();
 });

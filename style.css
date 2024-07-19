@@ -367,4 +367,42 @@ input[type="date"] {
         padding: 10px;
         box-shadow: none;
     }
+    
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .user-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .form-label {
+        text-align: left;
+        width: 100%;
+    }
+    
+    .form-value {
+        text-align: left;
+    }
+    
+    .time-entry-table th, .time-entry-table td {
+        font-size: 12px;
+        padding: 5px;
+    }
+    
+    .time-entry-form, .summary-form {
+        padding: 10px;
+    }
+    
+    .submit-button, .play-pause-button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
 }

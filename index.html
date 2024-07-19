@@ -3,209 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Time Tracking Software</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Login</title>
+    <link rel="stylesheet" href="index.css">
 </head>
-<body style="text-align: center;">
+<body>
+    
     <main>
-        <header>
-            <div class="header-left">
-                <img src="vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
-            </div>
-            <div id="pto-info" style="display: none;">
-                <h1>PTO Hours Available: <span id="pto-hours">Loading...</span></h1>
-                <label for="personal-time">Personal time used (hours):</label>
-                <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input">
-            </div>
-            <div id="pto-hours-display"></div>
-            <div id="personal-time-display"></div>
-            <div class="header-right">
-                <div class="user-info">
-                    <span id="user-email">user@example.com</span>
-                    <a href="#" id="logout-button" class="logout-button">Logout</a>
+        <section id="login-section">
+            <div class="login-container">
+                <h1>Log In</h1>
+                <div class="logo-box">
+                    <img src="VANIR-transparent.png" alt="Vanir Installed Sales Logo" class="logo">
                 </div>
-            </div>
-        </header>
-        <section id="time-entry" class="time-entry">
-            <form id="time-entry-form" class="time-entry-form">
-                <div class="form-group">
-                    <label for="week-ending" class="Week-Ending">Week Ending (Wednesday):</label>
-                    <input type="date" id="week-ending" name="week_ending" required style="font-size: 20px;" width="20px">
-                </div>
-                
-                <table id="time-entry-table" class="time-entry-table">
-                    <thead>
-                        <tr>
-                            <th class="date-column">Date</th>
-                            <th class="time-column">Start Time</th>
-                            <th class="time-column">Lunch Start</th>
-                            <th class="time-column">Lunch End</th>
-                            <th class="time-column">End Time</th>
-                            <th class="time-column">Additional Time In</th>
-                            <th class="time-column">Additional Time Out</th>
-                            <th class="hours-worked-column">Hours Worked</th>
-                            <th class="narrow-column">PTO Hours</th>
-                            <th class="narrow-column">Personal Hours</th>
-                            <th class="narrow-column">Holiday Hours</th>
-                            <th class="work-column">Did not work</th>
-                        </tr>
-                    </thead>
-                    <tbody id="time-entry-body">
-                        <!-- Rows for time entries -->
-                        <tr data-day="1">
-                            <td style="text-align: center;"><input type="date" name="date1" readonly></td>
-                            <td style="text-align: center;"><select name="start_time1" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_start1" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_end1" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="end_time1" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_In1" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_Out1" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><span id="hours-worked-today1">0</span></td>
-                            <td class="narrow-column"><input type="number" name="PTO_hours1" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Personal_hours1" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Holiday_hours1" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td style="text-align: center;"><input type="checkbox" id="did-not-work-1" name="did_not_work1" onchange="toggleWorkInputs(0, this.checked)"></td>
-                        </tr>
-                        <tr data-day="2">
-                            <td style="text-align: center;"><input type="date" name="date2" readonly></td>
-                            <td style="text-align: center;"><select name="start_time2" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_start2" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_end2" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="end_time2" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_In2" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_Out2" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><span id="hours-worked-today2">0</span></td>
-                            <td class="narrow-column"><input type="number" name="PTO_hours2" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Personal_hours2" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Holiday_hours2" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td style="text-align: center;"><input type="checkbox" id="did-not-work-2" name="did_not_work2" onchange="toggleWorkInputs(1, this.checked)"></td>
-                        </tr>
-                        <tr data-day="3">
-                            <td style="text-align: center;"><input type="date" name="date3" readonly></td>
-                            <td style="text-align: center;"><select name="start_time3" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_start3" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_end3" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="end_time3" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_In3" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_Out3" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><span id="hours-worked-today3">0</span></td>
-                            <td class="narrow-column"><input type="number" name="PTO_hours3" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Personal_hours3" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Holiday_hours3" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td style="text-align: center;"><input type="checkbox" id="did-not-work-3" name="did_not_work3" onchange="toggleWorkInputs(2, this.checked)"></td>
-                        </tr>
-                        <tr data-day="4">
-                            <td style="text-align: center;"><input type="date" name="date4" readonly></td>
-                            <td style="text-align: center;"><select name="start_time4" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_start4" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_end4" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="end_time4" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_In4" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_Out4" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><span id="hours-worked-today4">0</span></td>
-                            <td class="narrow-column"><input type="number" name="PTO_hours4" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Personal_hours4" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Holiday_hours4" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td style="text-align: center;"><input type="checkbox" id="did-not-work-4" name="did_not_work4" onchange="toggleWorkInputs(3, this.checked)"></td>
-                        </tr>
-                        <tr data-day="5">
-                            <td style="text-align: center;"><input type="date" name="date5" readonly></td>
-                            <td style="text-align: center;"><select name="start_time5" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_start5" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_end5" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="end_time5" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_In5" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_Out5" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><span id="hours-worked-today5">0</span></td>
-                            <td class="narrow-column"><input type="number" name="PTO_hours5" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Personal_hours5" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Holiday_hours5" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td style="text-align: center;"><input type="checkbox" id="did-not-work-5" name="did_not_work5" onchange="toggleWorkInputs(4, this.checked)"></td>
-                        </tr>
-                        <tr data-day="6">
-                            <td style="text-align: center;"><input type="date" name="date6" readonly></td>
-                            <td style="text-align: center;"><select name="start_time6" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_start6" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_end6" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="end_time6" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_In6" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_Out6" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><span id="hours-worked-today6">0</span></td>
-                            <td class="narrow-column"><input type="number" name="PTO_hours6" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Personal_hours6" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Holiday_hours6" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td style="text-align: center;"><input type="checkbox" id="did-not-work-6" name="did_not_work6" onchange="toggleWorkInputs(5, this.checked)"></td>
-                        </tr>
-                        <tr data-day="7">
-                            <td style="text-align: center;"><input type="date" name="date7" readonly></td>
-                            <td style="text-align: center;"><select name="start_time7" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_start7" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="lunch_end7" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><select name="end_time7" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_In7" class="time-dropdown"></select></td>
-                            <td class="additional-time" style="text-align: center;"><select name="Additional_Time_Out7" class="time-dropdown"></select></td>
-                            <td style="text-align: center;"><span id="hours-worked-today7">0</span></td>
-                            <td class="narrow-column"><input type="number" name="PTO_hours7" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Personal_hours7" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td class="narrow-column"><input type="number" name="Holiday_hours7" min="0" step="1" class="form-control time-input narrow-input"></td>
-                            <td style="text-align: center;"><input type="checkbox" id="did-not-work-7" name="did_not_work7" onchange="toggleWorkInputs(6, this.checked)"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <button id="reset-button" class="submit-button">Reset</button>
-            </form>
-            <br>
-            <br>
-            <section id="summary" class="summary-section">
-                <form id="summary-form" class="summary-form">
-                    <div class="form-row">
-                        <label for="pto-time" class="form-label">PTO time used (hours):</label>
-                        <span type="number" id="pto-time" name="pto_time" min="0"></span>
+                <form id="login-form" class="login-form">
+                    <div class="form-fields">
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" name="email" class="input-text" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" id="password" name="password" class="input-text" required>
+                        </div>
                     </div>
-                    <div class="form-row">
-                        <label for="personal-time" class="form-label"></label>
-                        <span type="number" id="personal-time" name="personal_time" min="0"></span>
-                    </div>
-                    <div class="form-row">
-                        <label for="personal-time" class="form-label">Personal time used (hours):</label>
-                        <div id="total-personal-time-display"></div>
-                    </div>
-                    <div class="form-row">
-                        <label for="Holiday-hours" class="form-label">Holiday (hours):</label>
-                        <span type="number" id="Holiday-hours" name="Holiday_hours" min="0"></span>
-                    </div>
-                    <div class="form-row">
-                        <label for="total-time-worked" class="form-label">Total Hours Worked:</label>
-                        <span id="total-time-worked" class="form-value">0.00</span>
-                    </div>
-                    <div class="form-row">
-                        <label for="total-time-with-pto" class="form-label">Total Time:</label>
-                        <span id="total-time-with-pto-value" class="form-value">0.00</span>
-                    </div>
-                    <div class="form-row">
-                        <label for="remaining-pto-hours" class="form-label">Remaining PTO Hours:</label>
-                        <span id="remaining-pto-hours" class="form-value">0.00</span>
-                    </div>
-                    <div class="form-row">
-                        <label for="remaining-personal-hours" class="form-label">Remaining Personal Hours:</label>
-                        <span id="remaining-personal-hours" class="form-value">0.00</span>
-                    </div>
-                    <span id="pto-validation-message" class="validation-message"></span><br>
-                    <button id="submit-button" class="submit-button">Submit</button>
+                    <button id="loginButton" class="submit-button" type="button">Login</button>
                 </form>
-            </section>
-        </section>
-        <br>
+               
+            </div>
         <button id="playPauseButton" class="play-pause-button">Play</button>
-    </main>
+        <section id="joke-section">
+            <h2>Today's Joke</h2>
+            <p id="joke-text" style="color: black;"></p> <!-- Element to display the joke with inline text color black -->
+        </section>
+    <br>
     <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
-    <script src="timesheet.js"></script>
+    <script src="login.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/airtable/bundles/airtable.browser.js"></script>
     <script src="musicControl.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            initializeTimeDropdowns();
-        });
-    </script>
 </body>
 </html>
