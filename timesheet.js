@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", async function() {
     console.log('DOM fully loaded and parsed');
 
+       // Initialize time dropdowns
+       initializeTimeDropdowns();
+
     // Constants for API keys and Airtable information
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
