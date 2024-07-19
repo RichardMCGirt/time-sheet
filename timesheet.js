@@ -349,15 +349,18 @@ document.addEventListener("DOMContentLoaded", async function() {
     timeInputs.forEach(input => {
         input.addEventListener('focus', () => scrollToElement(input));
     });
-
-    // Handle logout action
     function handleLogout(event) {
         event.preventDefault();
         console.log('Logging out...');
         localStorage.removeItem('userEmail');
         sessionStorage.removeItem('user');
-        window.location.href = 'index.html';
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 100);  // Delay of 100ms before redirecting
     }
+    
+   
+    
 
     // Update PTO hours in Airtable
     async function updatePtoHours() {
