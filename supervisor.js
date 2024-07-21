@@ -48,9 +48,11 @@ document.addEventListener("DOMContentLoaded", async function() {
             records.forEach(record => {
                 const fields = record.fields;
                 const employeeName = fields['Full Name'] || 'Unknown';
-                const nameHeader = document.createElement('h3');
-                nameHeader.textContent = ` ${employeeName}`;
-                timesheetsBody.appendChild(nameHeader);
+
+                const nameContainer = document.createElement('div');
+                nameContainer.classList.add('name-container');
+                nameContainer.textContent = `${employeeName}`;
+                timesheetsBody.appendChild(nameContainer);
 
                 const table = document.createElement('table');
                 table.classList.add('time-entry-table');
@@ -98,8 +100,9 @@ document.addEventListener("DOMContentLoaded", async function() {
                 timesheetsBody.appendChild(table);
             });
         } else {
-            const noRecordsRow = document.createElement('tr');
-            noRecordsRow.innerHTML = `<td colspan="12">No records found for the supervisor: ${supervisorEmail}</td>`;
+            const noRecordsRow = document.createElement('div');
+            noRecordsRow.classList.add('name-container');
+            noRecordsRow.textContent = `No records found for the supervisor: ${supervisorEmail}`;
             timesheetsBody.appendChild(noRecordsRow);
         }
     }

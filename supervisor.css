@@ -84,6 +84,14 @@ main {
     margin: 10px 0;
 }
 
+.name-container {
+    text-align: left;
+    font-size: 18px;
+    font-weight: bold;
+    color: #ecf0f1;
+    margin-top: 20px;
+}
+
 .time-entry-table {
     width: 100%;
     border-collapse: collapse;
