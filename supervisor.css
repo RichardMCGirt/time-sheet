@@ -1,0 +1,182 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    font-weight: bolder;
+}
+
+header {
+    background-color: #34495e;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.header-left .logo {
+    height: 50px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    font-weight: bolder;
+}
+
+.user-info {
+    margin-left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-info span {
+    font-size: 16px;
+    color: #ecf0f1;
+    font-weight: bolder;
+}
+
+.user-info .logout-button {
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    padding: 5px 10px;
+    background-color: #e74c3c;
+    color: #ecf0f1;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.user-info .logout-button:hover {
+    background-color: #c0392b;
+}
+
+.logout-button {
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 10px;
+    padding: 5px 10px;
+    background-color: #e74c3c;
+    color: #ecf0f1;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.logout-button:hover {
+    background-color: #c0392b;
+}
+
+main {
+    padding: 20px;
+}
+
+.timesheets-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-x: auto;
+}
+
+.timesheets-section h1, .timesheets-section h3 {
+    margin: 10px 0;
+}
+
+#timesheets-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    overflow: hidden;
+}
+
+#timesheets-body h3 {
+    grid-column: span 4;
+}
+
+#timesheets-body tr {
+    display: contents;
+}
+
+#timesheets-body td {
+    padding: 10px;
+    border: 1px solid #ecf0f1;
+    background-color: #34495e;
+    font-weight: 800;
+    height: 30px;
+}
+
+#timesheets-body input[type="date"],
+#timesheets-body input[type="time"],
+#timesheets-body input[type="number"],
+#timesheets-body input[type="checkbox"] {
+    background-color: #34495e;
+    color: #ecf0f1;
+    border: none;
+    border-radius: 4px;
+    padding: 5px;
+    text-align: center;
+    font-weight: bolder;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#timesheets-body input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
+#timesheets-body input::placeholder {
+    color: #ecf0f1;
+    opacity: 1;
+    font-weight: bolder;
+}
+
+#timesheets-body input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px #34495e inset !important;
+    -webkit-text-fill-color: #ecf0f1 !important;
+}
+
+.submit-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #1abc9c;
+    color: #ecf0f1;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.submit-button:hover {
+    background-color: #16a085;
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .user-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #timesheets-body {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    #timesheets-body td {
+        padding: 5px;
+        font-size: 12px;
+    }
+
+    .submit-button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+}
