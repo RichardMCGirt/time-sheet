@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     const elements = {
         ptoHoursElement: document.getElementById('pto-hours'),
-        personalHoursInput: document.getElementById('personal-time-input'),
         holidayHoursInput: document.getElementById('Holiday-hours'),
         weekEndingInput: document.getElementById('week-ending'),
         timeEntryForm: document.getElementById('time-entry-form'),
@@ -120,7 +119,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         } catch (error) {
             console.error('Error fetching personal hours:', error);
-            elements.personalHoursInput.value = 'Error fetching personal hours';
             elements.personalTimeDisplay.textContent = 'Error fetching personal time';
             elements.remainingPersonalHoursElement.textContent = 'Error';
         }
@@ -410,7 +408,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         console.log('Updating Personal hours...');
         const usedPersonalHoursValue = parseFloat(elements.personalTimeSpan.textContent) || 0;
         const newPersonalHoursValue = Math.max(0, availablePersonalHours - usedPersonalHoursValue);
-        const finalPersonalHoursValue = newPersonalHoursValue > 0 ? newPersonalHoursValue : availablePersonalHours;
+        const finalPersonalHoursValue = newPersonalHoursValue;
         console.log('Used Personal hours value:', usedPersonalHoursValue);
         console.log('New Personal hours value:', newPersonalHoursValue);
         console.log('Final Personal hours value:', finalPersonalHoursValue);
@@ -611,6 +609,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         console.log('Total Holiday hours:', totalHolidayHours);
         console.log('Total Personal hours:', totalPersonalHours);
 
+
         elements.ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
         elements.holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
         elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
@@ -618,7 +617,6 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(2);
         elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(2);
-
         const totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
         elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
     }

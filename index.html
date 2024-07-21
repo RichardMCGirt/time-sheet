@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    
     <main>
         <section id="login-section">
             <div class="login-container">
@@ -28,12 +27,13 @@
                     </div>
                     <button id="loginButton" class="submit-button" type="button">Login</button>
                 </form>
-               
+                <button id="forgotPasswordButton" class="forgot-password-button">Forgot Password?</button>
+            </div>
         </section>
         <button id="playPauseButton" class="play-pause-button">Play</button>
         <section id="joke-section">
             <h2>Today's Joke</h2>
-            <p id="joke-text" style="color: black;"></p> <!-- Element to display the joke with inline text color black -->
+            <p id="joke-text" style="color: black;"></p>
         </section>
         <br>
         <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
@@ -42,5 +42,10 @@
     <script src="login.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/airtable/bundles/airtable.browser.js"></script>
     <script src="musicControl.js"></script>
+    <script>
+    document.getElementById('forgotPasswordButton').addEventListener('click', function() {
+        window.location.href = 'forgot_password.html';
+    });
+    </script>
 </body>
 </html>
