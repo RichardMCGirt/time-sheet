@@ -21,7 +21,7 @@
             <div id="personal-time-display"></div>
             <div class="header-right">
                 <div class="user-info">
-                    <span id="user-email">user@example.com</span>
+                    <span id="user-email"  class="clickable">user@example.com</span>
                     <a href="#" id="logout-button" class="logout-button">Logout</a>
                 </div>
             </div>
@@ -219,6 +219,11 @@
             localStorage.removeItem('userEmail');
             sessionStorage.removeItem('user');
             window.location.href = 'index.html';
+        });
+
+        // Add click event for email navigation
+        document.getElementById('user-email').addEventListener('click', function() {
+            window.location.href = 'supervisor.html';
         });
     </script>
 </body>

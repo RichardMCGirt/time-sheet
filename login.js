@@ -88,5 +88,10 @@ function debounce(func, wait) {
     };
 }
 
+function loginUser(email) {
+    localStorage.setItem('userEmail', email);
+    window.location.href = 'timesheet.html';
+}
+
 // Use debounce for fetchJoke to avoid rapid calls if needed
 document.addEventListener("DOMContentLoaded", debounce(fetchJoke, 300));

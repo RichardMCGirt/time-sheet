@@ -8,8 +8,25 @@ document.addEventListener("DOMContentLoaded", async function() {
     const baseId = 'app9gw2qxhGCmtJvW';
     const tableId = 'tbljmLpqXScwhiWTt';
 
-    let userEmail = localStorage.getItem('userEmail') || '';
-    console.log('User email:', userEmail);
+    const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
+    const userEmailElement = document.getElementById('user-email');
+
+    if (userEmailElement) {
+        userEmailElement.textContent = userEmail;
+        userEmailElement.classList.add('clickable');
+    }
+
+    document.getElementById('logout-button').addEventListener('click', function(event) {
+        event.preventDefault();
+        localStorage.removeItem('userEmail');
+        window.location.href = 'index.html';
+    });
+
+    if (userEmailElement) {
+        userEmailElement.addEventListener('click', function() {
+            window.location.href = 'supervisor.html';
+        });
+    }
 
     const elements = {
         ptoHoursElement: document.getElementById('pto-hours'),
@@ -571,4 +588,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     showPickerOnFocus();
+
+    // Add click event for email navigation
+    document.getElementById('user-email').addEventListener('click', function() {
+        window.location.href = 'supervisor.html';
+    });
 });
