@@ -22,9 +22,27 @@
         <section id="timesheets-section" class="timesheets-section">
             <h1>Approve Timesheets</h1>
             <h3 id="week-ending-display"></h3>
-            <div id="timesheets-body">
-                <!-- Timesheets will be populated here -->
-            </div>
+            <table class="time-entry-table">
+                <thead>
+                    <tr>
+                        <th class="date-column">Date</th>
+                        <th class="time-column">Start Time</th>
+                        <th class="time-column">Lunch Start</th>
+                        <th class="time-column">Lunch End</th>
+                        <th class="time-column">End Time</th>
+                        <th class="time-column">Additional Time In</th>
+                        <th class="time-column">Additional Time Out</th>
+                        <th class="hours-worked-column">Hours Worked</th>
+                        <th class="narrow-column">PTO Hours</th>
+                        <th class="narrow-column">Personal Hours</th>
+                        <th class="narrow-column">Holiday Hours</th>
+                        <th class="work-column">Did not work</th>
+                    </tr>
+                </thead>
+                <tbody id="timesheets-body">
+                    <!-- Timesheets will be populated here -->
+                </tbody>
+            </table>
         </section>
     </main>
     <script src="supervisor.js"></script>
