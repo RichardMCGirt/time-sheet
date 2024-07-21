@@ -86,16 +86,17 @@ main {
 
 .time-entry-table {
     width: 100%;
-    table-layout: fixed;
-    margin: 20px 0;
     border-collapse: collapse;
+    margin: 20px 0;
     font-size: 14px;
+    table-layout: auto;
 }
 
 .time-entry-table th, .time-entry-table td {
     text-align: center;
     padding: 10px;
     border: 1px solid #ecf0f1;
+    white-space: nowrap;
 }
 
 .time-entry-table th {
@@ -114,14 +115,14 @@ main {
 .time-entry-table input[type="time"],
 .time-entry-table input[type="number"],
 .time-entry-table input[type="checkbox"] {
-    background-color: #2c3e50; /* Match the background color */
-    color: #ecf0f1; /* White text color */
+    background-color: #2c3e50;
+    color: #ecf0f1;
     border: 1px solid #ecf0f1;
     border-radius: 4px;
     padding: 5px;
     text-align: center;
     font-weight: bolder;
-    width: 100%;
+    width: auto;
     box-sizing: border-box;
 }
 
@@ -131,7 +132,8 @@ main {
 }
 
 .time-entry-table input[type="number"] {
-    width: auto; /* Adjust to fit content */
+    width: auto;
+    min-width: 50px;
 }
 
 .time-entry-table input::placeholder {

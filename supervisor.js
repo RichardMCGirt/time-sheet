@@ -49,8 +49,32 @@ document.addEventListener("DOMContentLoaded", async function() {
                 const fields = record.fields;
                 const employeeName = fields['Full Name'] || 'Unknown';
                 const nameHeader = document.createElement('h3');
-                nameHeader.textContent = `Employee: ${employeeName}`;
+                nameHeader.textContent = ` ${employeeName}`;
                 timesheetsBody.appendChild(nameHeader);
+
+                const table = document.createElement('table');
+                table.classList.add('time-entry-table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th class="date-column">Date</th>
+                            <th class="time-column">Start Time</th>
+                            <th class="time-column">Lunch Start</th>
+                            <th class="time-column">Lunch End</th>
+                            <th class="time-column">End Time</th>
+                            <th class="time-column">Additional Time In</th>
+                            <th class="time-column">Additional Time Out</th>
+                            <th class="hours-worked-column">Hours Worked</th>
+                            <th class="narrow-column">PTO Hours</th>
+                            <th class="narrow-column">Personal Hours</th>
+                            <th class="narrow-column">Holiday Hours</th>
+                            <th class="work-column">Did not work</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+
+                const tbody = table.querySelector('tbody');
 
                 for (let day = 1; day <= 7; day++) {
                     const row = document.createElement('tr');
@@ -68,8 +92,10 @@ document.addEventListener("DOMContentLoaded", async function() {
                         <td><input type="number" name="holiday_hours${day}" value="${fields[`Holiday Hours${day}`] || ''}" readonly></td>
                         <td><input type="checkbox" id="did-not-work-${day}" ${fields[`Did Not Work${day}`] ? 'checked' : ''} disabled></td>
                     `;
-                    timesheetsBody.appendChild(row);
+                    tbody.appendChild(row);
                 }
+
+                timesheetsBody.appendChild(table);
             });
         } else {
             const noRecordsRow = document.createElement('tr');
