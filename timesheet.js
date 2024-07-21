@@ -62,68 +62,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     await fetchPtoHours();
     await fetchPersonalTime();
 
-    async function fetchPtoHours() {
-        console.log('Fetching PTO hours...');
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        console.log('Endpoint:', endpoint);
-
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
-            
-            const data = await response.json();
-            console.log('Fetched data:', data);
-
-            if (data.records.length > 0) {
-                const userRecord = data.records[0].fields;
-                const ptoHours = parseFloat(userRecord['PTO Hours']) || 0;
-                availablePTOHours = ptoHours;
-
-                elements.ptoHoursElement.textContent = ptoHours.toFixed(2);
-                elements.remainingPtoHoursElement.textContent = ptoHours.toFixed(2);
-                elements.ptoHoursDisplay.textContent = `Available PTO Hours: ${ptoHours.toFixed(2)}`;
-                console.log('PTO hours:', ptoHours);
-            } else {
-                throw new Error('No PTO record found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching PTO hours:', error);
-            elements.ptoHoursElement.textContent = 'Error fetching PTO';
-            elements.remainingPtoHoursElement.textContent = 'Error';
-            elements.ptoHoursDisplay.textContent = 'Error';
-        }
-    }
-
-    async function fetchPersonalTime() {
-        console.log('Fetching Personal hours...');
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        console.log('Endpoint:', endpoint);
-
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
-
-            const data = await response.json();
-            console.log('Fetched data:', data);
-
-            if (data.records.length > 0) {
-                const userRecord = data.records[0].fields;
-                const personalHours = parseFloat(userRecord['Personaltime']) || 0;
-                availablePersonalHours = personalHours;
-
-                elements.personalTimeDisplay.textContent = `Personal Time: ${personalHours.toFixed(2)}`;
-                elements.remainingPersonalHoursElement.textContent = personalHours.toFixed(2);
-                console.log('Personal hours:', personalHours);
-            } else {
-                throw new Error('No personal time record found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching personal hours:', error);
-            elements.personalTimeDisplay.textContent = 'Error fetching personal time';
-            elements.remainingPersonalHoursElement.textContent = 'Error';
-        }
-    }
-
     function handleHolidayHoursChange() {
         console.log('Handling Holiday hours change...');
         calculateTotalTimeWorked();
@@ -293,6 +231,44 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    function updateTotalPtoAndHolidayHours() {
+        let totalPtoHours = 0;
+        let totalHolidayHours = 0;
+        let totalPersonalHours = 0;
+
+        const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
+        ptoInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            totalPtoHours += value;
+        });
+
+        const holidayInputs = document.querySelectorAll('input[name^="Holiday_hours"]');
+        holidayInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            totalHolidayHours += value;
+        });
+
+        const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
+        personalInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            totalPersonalHours += value;
+        });
+
+        console.log('Total PTO hours:', totalPtoHours);
+        console.log('Total Holiday hours:', totalHolidayHours);
+        console.log('Total Personal hours:', totalPersonalHours);
+
+        elements.ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
+        elements.holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
+        elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
+        document.getElementById('total-personal-time-display').textContent = totalPersonalHours.toFixed(2);
+
+        elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(2);
+        elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(2);
+        const totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
+        elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+    }
+
     function preventExceedingPtoInputs() {
         const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
         ptoInputs.forEach(input => {
@@ -304,9 +280,72 @@ document.addEventListener("DOMContentLoaded", async function() {
                 if (currentValue > availablePTOHours || (availablePTOHours - currentValue) < 0) {
                     input.value = Math.max(availablePTOHours, currentValue);
                 }
+                updateTotalPtoAndHolidayHours();
             });
         });
     }
+
+    async function fetchPtoHours() {
+        console.log('Fetching PTO hours...');
+        const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
+        const baseId = 'app9gw2qxhGCmtJvW';
+        const tableId = 'tbljmLpqXScwhiWTt';
+    
+        const userEmail = localStorage.getItem('userEmail');
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+    
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch PTO hours: ${response.statusText}`);
+    
+            const data = await response.json();
+            console.log('Fetched PTO hours:', data);
+    
+            if (data.records.length > 0) {
+                const record = data.records[0].fields;
+                availablePTOHours = record['PTO Hours'] || 0;
+                elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
+                console.log('Available PTO hours:', availablePTOHours);
+            } else {
+                console.log('No PTO hours data found for user');
+            }
+        } catch (error) {
+            console.error('Error fetching PTO hours:', error);
+            alert('Failed to fetch PTO hours. Error: ' + error.message);
+        }
+    }
+    
+    // Make sure to define the fetchPersonalTime function as well
+    async function fetchPersonalTime() {
+        console.log('Fetching Personal hours...');
+        const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
+        const baseId = 'app9gw2qxhGCmtJvW';
+        const tableId = 'tbljmLpqXScwhiWTt';
+    
+        const userEmail = localStorage.getItem('userEmail');
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+    
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch Personal hours: ${response.statusText}`);
+    
+            const data = await response.json();
+            console.log('Fetched Personal hours:', data);
+    
+            if (data.records.length > 0) {
+                const record = data.records[0].fields;
+                availablePersonalHours = record['Personaltime'] || 0;
+                elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
+                console.log('Available Personal hours:', availablePersonalHours);
+            } else {
+                console.log('No Personal hours data found for user');
+            }
+        } catch (error) {
+            console.error('Error fetching Personal hours:', error);
+            alert('Failed to fetch Personal hours. Error: ' + error.message);
+        }
+    }
+    
 
     function preventExceedingPersonalInputs() {
         const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
@@ -319,6 +358,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 if (currentValue > availablePersonalHours || (availablePersonalHours - currentValue) < 0) {
                     input.value = Math.max(availablePersonalHours, currentValue);
                 }
+                updateTotalPtoAndHolidayHours();
             });
         });
     }
@@ -390,17 +430,12 @@ document.addEventListener("DOMContentLoaded", async function() {
                 if (!updateResponse.ok) throw new Error(`Failed to update PTO hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
                 console.log('PTO hours updated successfully');
                 alert('PTO hours updated successfully!');
-                clearForm();
-
-                const remainingPtoHours = parseFloat(newPtoHoursValue.toFixed(2));
-                console.log('Remaining PTO Hours:', remainingPtoHours);
             } else {
                 throw new Error('No record found for user');
             }
         } catch (error) {
             console.error('Error updating PTO hours:', error);
             alert('Failed to update PTO hours. Error: ' + error.message);
-            clearForm();
         }
     }
 
@@ -408,10 +443,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         console.log('Updating Personal hours...');
         const usedPersonalHoursValue = parseFloat(elements.personalTimeSpan.textContent) || 0;
         const newPersonalHoursValue = Math.max(0, availablePersonalHours - usedPersonalHoursValue);
-        const finalPersonalHoursValue = newPersonalHoursValue;
         console.log('Used Personal hours value:', usedPersonalHoursValue);
         console.log('New Personal hours value:', newPersonalHoursValue);
-        console.log('Final Personal hours value:', finalPersonalHoursValue);
 
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
         console.log('Endpoint for update:', endpoint);
@@ -432,7 +465,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                         Authorization: `Bearer ${apiKey}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ fields: { 'Personaltime': finalPersonalHoursValue } })
+                    body: JSON.stringify({ fields: { 'Personaltime': newPersonalHoursValue } })
                 });
 
                 const updateResponseData = await updateResponse.json();
@@ -441,17 +474,12 @@ document.addEventListener("DOMContentLoaded", async function() {
                 if (!updateResponse.ok) throw new Error(`Failed to update Personal hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
                 console.log('Personal hours updated successfully');
                 alert('Personal hours updated successfully!');
-                clearForm();
-
-                const remainingPersonalHours = parseFloat(finalPersonalHoursValue.toFixed(2));
-                console.log('Remaining Personal Hours:', remainingPersonalHours);
             } else {
                 throw new Error('No record found for user');
             }
         } catch (error) {
             console.error('Error updating Personal hours:', error);
             alert('Failed to update Personal hours. Error: ' + error.message);
-            clearForm();
         }
     }
 
@@ -513,55 +541,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     initializeTimeDropdowns();
     initializeKeyboardNavigation();
 
-    async function captureScreenshotAndPatch() {
-        console.log('Capturing screenshot and patching to Airtable...');
-        html2canvas(document.getElementById('time-entry-form')).then(canvas => {
-            canvas.toBlob(async blob => {
-                const fileUrl = URL.createObjectURL(blob);
-                console.log('File URL:', fileUrl);
-
-                const formData = new FormData();
-                formData.append('file', blob, 'screenshot.png');
-
-                const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}`;
-                console.log('Endpoint for patch:', endpoint);
-
-                try {
-                    const response = await fetch(endpoint, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            records: [{
-                                id: 'recYourRecordId',
-                                fields: {
-                                    "Screenshot": [
-                                        { "url": fileUrl }
-                                    ]
-                                }
-                            }]
-                        })
-                    });
-
-                    if (!response.ok) throw new Error(`Failed to patch data: ${response.statusText}`);
-                    const data = await response.json();
-                    console.log('Success:', data);
-                    alert('Screenshot patched to Airtable successfully!');
-                } catch (error) {
-                    console.error('Error patching screenshot to Airtable:', error);
-                    alert('Error patching screenshot to Airtable.');
-                }
-            });
-        });
-    }
-
-    elements.submitButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        captureScreenshotAndPatch();
-    });
-
     function handleArrowKeys(event) {
         const key = event.key;
         const currentInput = event.target;
@@ -580,86 +559,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
 
         inputs[index].focus();
-    }
-
-    function updateTotalPtoAndHolidayHours() {
-        let totalPtoHours = 0;
-        let totalHolidayHours = 0;
-        let totalPersonalHours = 0;
-
-        const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
-        ptoInputs.forEach(input => {
-            const value = parseFloat(input.value) || 0;
-            totalPtoHours += value;
-        });
-
-        const holidayInputs = document.querySelectorAll('input[name^="Holiday_hours"]');
-        holidayInputs.forEach(input => {
-            const value = parseFloat(input.value) || 0;
-            totalHolidayHours += value;
-        });
-
-        const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
-        personalInputs.forEach(input => {
-            const value = parseFloat(input.value) || 0;
-            totalPersonalHours += value;
-        });
-
-        console.log('Total PTO hours:', totalPtoHours);
-        console.log('Total Holiday hours:', totalHolidayHours);
-        console.log('Total Personal hours:', totalPersonalHours);
-
-
-        elements.ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
-        elements.holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
-        elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
-        document.getElementById('total-personal-time-display').textContent = ` ${totalPersonalHours.toFixed(2)} `;
-
-        elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(2);
-        elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(2);
-        const totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
-        elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
-    }
-
-    function initializeTimeDropdowns() {
-        const timeDropdowns = document.querySelectorAll('select.time-dropdown');
-        timeDropdowns.forEach(dropdown => {
-            for (let hour = 0; hour < 24; hour++) {
-                ['00', '15', '30', '45'].forEach(minute => {
-                    const option = document.createElement('option');
-                    option.value = `${String(hour).padStart(2, '0')}:${minute}`;
-                    option.text = `${String(hour).padStart(2, '0')}:${minute}`;
-                    dropdown.appendChild(option);
-                });
-            }
-        });
-    }
-
-    function initializeKeyboardNavigation() {
-        document.addEventListener('keydown', (event) => {
-            if (!event.shiftKey) return;
-
-            const { key } = event;
-            const activeElement = document.activeElement;
-
-            if (activeElement.tagName.toLowerCase() === 'select' || activeElement.tagName.toLowerCase() === 'input') {
-                const inputs = Array.from(document.querySelectorAll('select.time-dropdown, input[type="number"], input[type="checkbox"]'));
-                let currentIndex = inputs.indexOf(activeElement);
-
-                if (key === 'ArrowRight') {
-                    currentIndex = (currentIndex + 1) % inputs.length;
-                } else if (key === 'ArrowLeft') {
-                    currentIndex = (currentIndex - 1 + inputs.length) % inputs.length;
-                } else if (key === 'ArrowDown') {
-                    currentIndex = (currentIndex + 6) % inputs.length;
-                } else if (key === 'ArrowUp') {
-                    currentIndex = (currentIndex - 6 + inputs.length) % inputs.length;
-                }
-
-                inputs[currentIndex].focus();
-                event.preventDefault();
-            }
-        });
     }
 
     function showPickerOnFocus() {

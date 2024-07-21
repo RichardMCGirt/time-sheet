@@ -10,9 +10,11 @@ const newPasswordInput = document.getElementById('new-password');
 const confirmPasswordInput = document.getElementById('confirm-password');
 const submitEmailButton = document.getElementById('submitEmailButton');
 const resetPasswordButton = document.getElementById('resetPasswordButton');
+const goBackButton = document.getElementById('goBackButton');
 
 submitEmailButton.addEventListener('click', handleEmailSubmit);
 resetPasswordButton.addEventListener('click', handlePasswordReset);
+goBackButton.addEventListener('click', handleGoBack);
 
 async function handleEmailSubmit() {
     const email = emailInput.value;
@@ -103,4 +105,8 @@ async function handlePasswordReset() {
         console.error('Error resetting password:', error);
         alert('Error resetting password: ' + error.message);
     }
+}
+
+function handleGoBack() {
+    window.location.href = 'index.html';
 }
