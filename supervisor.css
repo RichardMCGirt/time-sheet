@@ -74,6 +74,32 @@ main {
     padding: 20px;
 }
 
+.date-column {
+    width: 10%;
+    min-width: 100px;
+}
+
+.time-column {
+    width: 10%;
+    min-width: 100px;
+}
+
+.hours-worked-column {
+    width: 8%;
+    min-width: 80px;
+}
+
+.narrow-column {
+    width: 5%;
+    min-width: 50px;
+}
+
+.work-column {
+    width: 10%;
+    min-width: 100px;
+}
+
+
 .timesheets-section {
     max-width: 1200px;
     margin: 0 auto;
