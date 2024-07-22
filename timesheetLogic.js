@@ -582,105 +582,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         window.location.href = 'supervisor.html';
     });
 
-    elements.submitButton.addEventListener('click', async function(event) {
-        event.preventDefault();
-        const formData = new FormData(elements.timeEntryForm);
-
-        const payload = {
-            fields: {
-                "Week Ending - Date": formData.get('week_ending') || '',
-                "Date1 - Date": formData.get('date1') || '',
-                "Start Time1": formData.get('start_time1') || '',
-                "Lunch Start1": formData.get('lunch_start1') || '',
-                "Lunch End1": formData.get('lunch_end1') || '',
-                "End Time1": formData.get('end_time1') || '',
-                "Additional Time In1": formData.get('Additional_Time_In1') || '',
-                "Additional Time Out1": formData.get('Additional_Time_Out1') || '',
-                "Hours Worked1": formData.get('hours_worked1') || 0,
-                "PTO Hours1": formData.get('PTO_hours1') || 0,
-                "Personal Hours1": formData.get('Personal_hours1') || 0,
-                "Holiday Hours1": formData.get('Holiday_hours1') || 0,
-                "Did Not Work1": formData.get('did_not_work1') ? true : false,
-                
-                "Date2 - Date": formData.get('date2') || '',
-                "Start Time2": formData.get('start_time2') || '',
-                "Lunch Start2": formData.get('lunch_start2') || '',
-                "Lunch End2": formData.get('lunch_end2') || '',
-                "End Time2": formData.get('end_time2') || '',
-                "Additional Time In2": formData.get('Additional_Time_In2') || '',
-                "Additional Time Out2": formData.get('Additional_Time_Out2') || '',
-                "Hours Worked2": formData.get('hours_worked2') || 0,
-                "PTO Hours2": formData.get('PTO_hours2') || 0,
-                "Personal Hours2": formData.get('Personal_hours2') || 0,
-                "Holiday Hours2": formData.get('Holiday_hours2') || 0,
-                "Did Not Work2": formData.get('did_not_work2') ? true : false,
-                
-                "Date3 - Date": formData.get('date3') || '',
-                "Start Time3": formData.get('start_time3') || '',
-                "Lunch Start3": formData.get('lunch_start3') || '',
-                "Lunch End3": formData.get('lunch_end3') || '',
-                "End Time3": formData.get('end_time3') || '',
-                "Additional Time In3": formData.get('Additional_Time_In3') || '',
-                "Additional Time Out3": formData.get('Additional_Time_Out3') || '',
-                "Hours Worked3": formData.get('hours_worked3') || 0,
-                "PTO Hours3": formData.get('PTO_hours3') || 0,
-                "Personal Hours3": formData.get('Personal_hours3') || 0,
-                "Holiday Hours3": formData.get('Holiday_hours3') || 0,
-                "Did Not Work3": formData.get('did_not_work3') ? true : false,
-                
-                "Date4 - Date": formData.get('date4') || '',
-                "Start Time4": formData.get('start_time4') || '',
-                "Lunch Start4": formData.get('lunch_start4') || '',
-                "Lunch End4": formData.get('lunch_end4') || '',
-                "End Time4": formData.get('end_time4') || '',
-                "Additional Time In4": formData.get('Additional_Time_In4') || '',
-                "Additional Time Out4": formData.get('Additional_Time_Out4') || '',
-                "Hours Worked4": formData.get('hours_worked4') || 0,
-                "PTO Hours4": formData.get('PTO_hours4') || 0,
-                "Personal Hours4": formData.get('Personal_hours4') || 0,
-                "Holiday Hours4": formData.get('Holiday_hours4') || 0,
-                "Did Not Work4": formData.get('did_not_work4') ? true : false,
-                
-                "Date5 - Date": formData.get('date5') || '',
-                "Start Time5": formData.get('start_time5') || '',
-                "Lunch Start5": formData.get('lunch_start5') || '',
-                "Lunch End5": formData.get('lunch_end5') || '',
-                "End Time5": formData.get('end_time5') || '',
-                "Additional Time In5": formData.get('Additional_Time_In5') || '',
-                "Additional Time Out5": formData.get('Additional_Time_Out5') || '',
-                "Hours Worked5": formData.get('hours_worked5') || 0,
-                "PTO Hours5": formData.get('PTO_hours5') || 0,
-                "Personal Hours5": formData.get('Personal_hours5') || 0,
-                "Holiday Hours5": formData.get('Holiday_hours5') || 0,
-                "Did Not Work5": formData.get('did_not_work5') ? true : false,
-                
-                "Date6 - Date": formData.get('date6') || '',
-                "Start Time6": formData.get('start_time6') || '',
-                "Lunch Start6": formData.get('lunch_start6') || '',
-                "Lunch End6": formData.get('lunch_end6') || '',
-                "End Time6": formData.get('end_time6') || '',
-                "Additional Time In6": formData.get('Additional_Time_In6') || '',
-                "Additional Time Out6": formData.get('Additional_Time_Out6') || '',
-                "Hours Worked6": formData.get('hours_worked6') || 0,
-                "PTO Hours6": formData.get('PTO_hours6') || 0,
-                "Personal Hours6": formData.get('Personal_hours6') || 0,
-                "Holiday Hours6": formData.get('Holiday_hours6') || 0,
-                "Did Not Work6": formData.get('did_not_work6') ? true : false,
-                
-                "Date7 - Date": formData.get('date7') || '',
-                "Start Time7": formData.get('start_time7') || '',
-                "Lunch Start7": formData.get('lunch_start7') || '',
-                "Lunch End7": formData.get('lunch_end7') || '',
-                "End Time7": formData.get('end_time7') || '',
-                "Additional Time In7": formData.get('Additional_Time_In7') || '',
-                "Additional Time Out7": formData.get('Additional_Time_Out7') || '',
-                "Hours Worked7": formData.get('hours_worked7') || 0,
-                "PTO Hours7": formData.get('PTO_hours7') || 0,
-                "Personal Hours7": formData.get('Personal_hours7') || 0,
-                "Holiday Hours7": formData.get('Holiday_hours7') || 0,
-                "Did Not Work7": formData.get('did_not_work7') ? true : false
-            }
-        };
+   
 
         try {
             const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}`, {
@@ -705,4 +607,3 @@ document.addEventListener("DOMContentLoaded", async function() {
             alert('Failed to submit data. Error: ' + error.message);
         }
     });
-});

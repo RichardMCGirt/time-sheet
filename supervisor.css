@@ -64,6 +64,7 @@ header {
     margin: 10px 0;
     color: #ecf0f1;
     font-weight: bold;
+    padding-left: 20px;
 }
 
 .time-entry-table {
@@ -81,7 +82,7 @@ header {
 }
 
 .time-entry-table th {
-    background-color: #1abc9c;
+  
     color: #ecf0f1;
 }
 
