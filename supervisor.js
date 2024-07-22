@@ -1,11 +1,9 @@
-document.addEventListener("DOMContentLoaded", async function() {
+document.addEventListener("DOMContentLoaded", async function () {
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
     const tableId = 'tbljmLpqXScwhiWTt';
     const supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
     const userEmailElement = document.getElementById('user-email');
-    const weekEndingDisplay = document.getElementById('week-ending-display');
-    const weekEndingDateSpan = document.getElementById('week-ending-date');
     const timesheetsBody = document.getElementById('timesheets-body');
     const searchInput = document.getElementById('search-input');
     const dateFilter = document.getElementById('date-filter');
@@ -15,61 +13,56 @@ document.addEventListener("DOMContentLoaded", async function() {
         userEmailElement.classList.add('clickable');
     }
 
-    function getNearestWednesday(date) {
-        const dayOfWeek = date.getDay();
-        const diff = (3 - dayOfWeek + 7) % 7; // 3 represents Wednesday
-        date.setDate(date.getDate() + diff);
-        return date;
-    }
-
-    function formatDateString(date) {
-        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-        return date.toLocaleDateString('en-US', options);
-    }
-
-    function setWeekEndingDate() {
-        const today = new Date();
-        const nearestWednesday = getNearestWednesday(today);
-        weekEndingDateSpan.textContent = formatDateString(nearestWednesday);
-    }
-
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
-        const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-        if (!response.ok) {
-            console.error(`Failed to fetch supervisor name: ${response.statusText}`);
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) {
+                throw new Error(`Failed to fetch supervisor name: ${response.statusText}`);
+            }
+            const data = await response.json();
+            console.log('Supervisor data:', data);
+            return data.records.length > 0 ? data.records[0].fields['Full Name'] : null;
+        } catch (error) {
+            console.error(error);
             return null;
         }
-        const data = await response.json();
-        return data.records.length > 0 ? data.records[0].fields['Full Name'] : null;
     }
 
     async function fetchTimesheets(supervisorName) {
-        let filterFormula;
-        if (supervisorEmail === 'katy@vanirinstalledsales.com') {
-            filterFormula = '';
-        } else {
-            filterFormula = `AND({Supervisor}='${supervisorName}')`;
-        }
+        let filterFormula = supervisorEmail === 'katy@vanirinstalledsales.com' ? '{Employee Number}!=BLANK()' : `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}`;
-        const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-        if (!response.ok) {
-            console.error(`Failed to fetch timesheets: ${response.statusText}`);
-            return;
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) {
+                throw new Error(`Failed to fetch timesheets: ${response.statusText}`);
+            }
+            const data = await response.json();
+            console.log('Timesheets data:', data);
+            console.log('Number of employees:', data.records.length);
+            populateTimesheets(data.records);
+        } catch (error) {
+            console.error(error);
         }
-        const data = await response.json();
-        populateTimesheets(data.records);
     }
 
     function populateTimesheets(records) {
         timesheetsBody.innerHTML = ''; // Clear any existing rows
 
-        // Sort records by employee name alphabetically
-        records.sort((a, b) => {
-            const nameA = a.fields['Full Name'] ? a.fields['Full Name'].toLowerCase() : '';
-            const nameB = b.fields['Full Name'] ? b.fields['Full Name'].toLowerCase() : '';
-            return nameA.localeCompare(nameB);
-        });
+        // Sort records by Employee Number if supervisor is Katy Schumacher, otherwise by employee name
+        if (supervisorEmail === 'katy@vanirinstalledsales.com') {
+            records.sort((a, b) => {
+                const empNumA = a.fields['Employee Number'] ? String(a.fields['Employee Number']) : '';
+                const empNumB = b.fields['Employee Number'] ? String(b.fields['Employee Number']) : '';
+                return empNumA.localeCompare(empNumB);
+            });
+        } else {
+            records.sort((a, b) => {
+                const nameA = a.fields['Full Name'] ? a.fields['Full Name'].toLowerCase() : '';
+                const nameB = b.fields['Full Name'] ? b.fields['Full Name'].toLowerCase() : '';
+                return nameA.localeCompare(nameB);
+            });
+        }
 
         if (records.length > 0) {
             records.forEach(record => {
@@ -87,32 +80,17 @@ document.addEventListener("DOMContentLoaded", async function() {
                     <thead>
                         <tr>
                             <th class="date-column">Date</th>
-                         <th class="narrow-column">Hours Worked</th>
-
+                            <th class="narrow-column">Hours Worked</th>
                             <th class="narrow-column">PTO Hours used</th>
                             <th class="narrow-column">Personal Hours used</th>
                             <th class="narrow-column">Holiday Hours used</th>
                             <th class="narrow-column">Total Hours</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody>
+                        ${generateRows(fields)}
+                    </tbody>
                 `;
-
-                const tbody = table.querySelector('tbody');
-
-                for (let day = 1; day <= 7; day++) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <th><input type="date" name="date${day}" value="${fields[`Date${day}`] || ''}" readonly></th>
-                                                <th><input type="number" name="hours_worked${day}" value="${fields[`PTO Hours${day}`] || ''}" placeholder="0" readonly></th>
-
-                        <th><input type="number" name="pto_hours${day}" value="${fields[`PTO Hours${day}`] || ''}" placeholder="0" readonly></th>
-                        <th><input type="number" name="personal_hours${day}" value="${fields[`Personal Hours${day}`] || ''}" placeholder="0" readonly></th>
-                        <th><input type="number" name="holiday_hours${day}" value="${fields[`Holiday Hours${day}`] || ''}" placeholder="0" readonly></th>
-                        <th><input type="number" name="total_hours${day}" value="${fields[`Hours Worked${day}`] || ''}" placeholder="0" readonly></th>
-                    `;
-                    tbody.appendChild(row);
-                }
 
                 timesheetsBody.appendChild(table);
             });
@@ -122,6 +100,23 @@ document.addEventListener("DOMContentLoaded", async function() {
             noRecordsRow.textContent = `No records found for the supervisor: ${supervisorEmail}`;
             timesheetsBody.appendChild(noRecordsRow);
         }
+    }
+
+    function generateRows(fields) {
+        let rows = '';
+        for (let day = 1; day <= 7; day++) {
+            rows += `
+                <tr>
+                    <th><input type="date" name="date${day}" value="${fields[`Date${day}`] || ''}" readonly></th>
+                    <th><input type="number" name="hours_worked${day}" value="${fields[`Hours Worked${day}`] || ''}" placeholder="0" readonly></th>
+                    <th><input type="number" name="pto_hours${day}" value="${fields[`PTO Hours${day}`] || ''}" placeholder="0" readonly></th>
+                    <th><input type="number" name="personal_hours${day}" value="${fields[`Personal Hours${day}`] || ''}" placeholder="0" readonly></th>
+                    <th><input type="number" name="holiday_hours${day}" value="${fields[`Holiday Hours${day}`] || ''}" placeholder="0" readonly></th>
+                    <th><input type="number" name="total_hours${day}" value="${fields[`Total Hours${day}`] || ''}" placeholder="0" readonly></th>
+                </tr>
+            `;
+        }
+        return rows;
     }
 
     function filterTimesheets() {
@@ -153,21 +148,17 @@ document.addEventListener("DOMContentLoaded", async function() {
     searchInput.addEventListener('input', filterTimesheets);
     dateFilter.addEventListener('input', filterTimesheets);
 
-    setWeekEndingDate();
-
     const supervisorName = await fetchSupervisorName(supervisorEmail);
-    if (supervisorName || supervisorEmail === 'katy@vanirinstalledsales.com') {
-        await fetchTimesheets(supervisorName || 'Katy Schumacher');
-    }
+    await fetchTimesheets(supervisorName);
 
-    document.getElementById('logout-button').addEventListener('click', function(event) {
+    document.getElementById('logout-button').addEventListener('click', function (event) {
         event.preventDefault();
         localStorage.removeItem('userEmail');
         window.location.href = 'index.html';
     });
 
     if (userEmailElement) {
-        userEmailElement.addEventListener('click', function() {
+        userEmailElement.addEventListener('click', function () {
             window.location.href = 'timesheet.html';
         });
     }
