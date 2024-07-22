@@ -1,10 +1,32 @@
 document.addEventListener("DOMContentLoaded", async function() {
+    console.log('DOM fully loaded and parsed');
+
+    initializeTimeDropdowns();
+    initializeKeyboardNavigation();
+
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
     const tableId = 'tbljmLpqXScwhiWTt';
 
-    let userEmail = localStorage.getItem('userEmail') || '';
-    console.log('User email:', userEmail);
+    const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
+    const userEmailElement = document.getElementById('user-email');
+
+    if (userEmailElement) {
+        userEmailElement.textContent = userEmail;
+        userEmailElement.classList.add('clickable');
+    }
+
+    document.getElementById('logout-button').addEventListener('click', function(event) {
+        event.preventDefault();
+        localStorage.removeItem('userEmail');
+        window.location.href = 'index.html';
+    });
+
+    if (userEmailElement) {
+        userEmailElement.addEventListener('click', function() {
+            window.location.href = 'supervisor.html';
+        });
+    }
 
     const elements = {
         ptoHoursElement: document.getElementById('pto-hours'),
@@ -280,6 +302,68 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     }
 
+    async function fetchPtoHours() {
+        console.log('Fetching PTO hours...');
+        const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
+        const baseId = 'app9gw2qxhGCmtJvW';
+        const tableId = 'tbljmLpqXScwhiWTt';
+    
+        const userEmail = localStorage.getItem('userEmail');
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+    
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch PTO hours: ${response.statusText}`);
+    
+            const data = await response.json();
+            console.log('Fetched PTO hours:', data);
+    
+            if (data.records.length > 0) {
+                const record = data.records[0].fields;
+                availablePTOHours = record['PTO Hours'] || 0;
+                elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
+                console.log('Available PTO hours:', availablePTOHours);
+            } else {
+                console.log('No PTO hours data found for user');
+            }
+        } catch (error) {
+            console.error('Error fetching PTO hours:', error);
+            alert('Failed to fetch PTO hours. Error: ' + error.message);
+        }
+    }
+    
+    // Make sure to define the fetchPersonalTime function as well
+    async function fetchPersonalTime() {
+        console.log('Fetching Personal hours...');
+        const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
+        const baseId = 'app9gw2qxhGCmtJvW';
+        const tableId = 'tbljmLpqXScwhiWTt';
+    
+        const userEmail = localStorage.getItem('userEmail');
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+    
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch Personal hours: ${response.statusText}`);
+    
+            const data = await response.json();
+            console.log('Fetched Personal hours:', data);
+    
+            if (data.records.length > 0) {
+                const record = data.records[0].fields;
+                availablePersonalHours = record['Personaltime'] || 0;
+                elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
+                console.log('Available Personal hours:', availablePersonalHours);
+            } else {
+                console.log('No Personal hours data found for user');
+            }
+        } catch (error) {
+            console.error('Error fetching Personal hours:', error);
+            alert('Failed to fetch Personal hours. Error: ' + error.message);
+        }
+    }
+    
+
     function preventExceedingPersonalInputs() {
         const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
         personalInputs.forEach(input => {
@@ -505,30 +589,105 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     showPickerOnFocus();
 
-    async function submitTimesheet() {
-        const weekEnding = elements.weekEndingInput.value;
-        const rows = Array.from(document.querySelectorAll('#time-entry-body tr'));
-        const fields = {};
-    
-        rows.forEach((row, index) => {
-            const day = index + 1;
-            fields[`Date${day}`] = row.querySelector(`input[name="date${day}"]`).value;
-            fields[`Start Time${day}`] = row.querySelector(`input[name="start_time${day}"]`).value;
-            fields[`Lunch Start${day}`] = row.querySelector(`input[name="lunch_start${day}"]`).value;
-            fields[`Lunch End${day}`] = row.querySelector(`input[name="lunch_end${day}"]`).value;
-            fields[`End Time${day}`] = row.querySelector(`input[name="end_time${day}"]`).value;
-            fields[`Additional Time In${day}`] = row.querySelector(`input[name="Additional_Time_In${day}"]`).value;
-            fields[`Additional Time Out${day}`] = row.querySelector(`input[name="Additional_Time_Out${day}"]`).value;
-            fields[`Hours Worked${day}`] = row.querySelector(`#hours-worked-today${day}`).textContent;
-            fields[`PTO Hours${day}`] = row.querySelector(`input[name="PTO_hours${day}"]`).value;
-            fields[`Personal Hours${day}`] = row.querySelector(`input[name="Personal_hours${day}"]`).value;
-            fields[`Holiday Hours${day}`] = row.querySelector(`input[name="Holiday_hours${day}"]`).value;
-            fields[`Did Not Work${day}`] = row.querySelector(`input[name="did_not_work${day}"]`).checked;
-        });
-    
-        fields['Email'] = userEmail;
-        fields['Week Ending'] = weekEnding;
-    
+    // Add click event for email navigation
+    document.getElementById('user-email').addEventListener('click', function() {
+        window.location.href = 'supervisor.html';
+    });
+
+    elements.submitButton.addEventListener('click', async function(event) {
+        event.preventDefault();
+        const formData = new FormData(elements.timeEntryForm);
+
+        const payload = {
+            fields: {
+                "Week Ending - Date": formData.get('week_ending'),
+                "Date1 - Date": formData.get('date1'),
+                "Start Time1": formData.get('start_time1'),
+                "Lunch Start1": formData.get('lunch_start1'),
+                "Lunch End1": formData.get('lunch_end1'),
+                "End Time1": formData.get('end_time1'),
+                "Additional Time In1": formData.get('Additional_Time_In1'),
+                "Additional Time Out1": formData.get('Additional_Time_Out1'),
+                "Hours Worked1": formData.get('hours_worked1'),
+                "PTO Hours1": formData.get('PTO_hours1'),
+                "Personal Hours1": formData.get('Personal_hours1'),
+                "Holiday Hours1": formData.get('Holiday_hours1'),
+                "Did Not Work1": formData.get('did_not_work1') ? true : false,
+                "Date2 - Date": formData.get('date2'),
+                "Start Time2": formData.get('start_time2'),
+                "Lunch Start2": formData.get('lunch_start2'),
+                "Lunch End2": formData.get('lunch_end2'),
+                "End Time2": formData.get('end_time2'),
+                "Additional Time In2": formData.get('Additional_Time_In2'),
+                "Additional Time Out2": formData.get('Additional_Time_Out2'),
+                "Hours Worked2": formData.get('hours_worked2'),
+                "PTO Hours2": formData.get('PTO_hours2'),
+                "Personal Hours2": formData.get('Personal_hours2'),
+                "Holiday Hours2": formData.get('Holiday_hours2'),
+                "Did Not Work2": formData.get('did_not_work2') ? true : false,
+                "Date3 - Date": formData.get('date3'),
+                "Start Time3": formData.get('start_time3'),
+                "Lunch Start3": formData.get('lunch_start3'),
+                "Lunch End3": formData.get('lunch_end3'),
+                "End Time3": formData.get('end_time3'),
+                "Additional Time In3": formData.get('Additional_Time_In3'),
+                "Additional Time Out3": formData.get('Additional_Time_Out3'),
+                "Hours Worked3": formData.get('hours_worked3'),
+                "PTO Hours3": formData.get('PTO_hours3'),
+                "Personal Hours3": formData.get('Personal_hours3'),
+                "Holiday Hours3": formData.get('Holiday_hours3'),
+                "Did Not Work3": formData.get('did_not_work3') ? true : false,
+                "Date4 - Date": formData.get('date4'),
+                "Start Time4": formData.get('start_time4'),
+                "Lunch Start4": formData.get('lunch_start4'),
+                "Lunch End4": formData.get('lunch_end4'),
+                "End Time4": formData.get('end_time4'),
+                "Additional Time In4": formData.get('Additional_Time_In4'),
+                "Additional Time Out4": formData.get('Additional_Time_Out4'),
+                "Hours Worked4": formData.get('hours_worked4'),
+                "PTO Hours4": formData.get('PTO_hours4'),
+                "Personal Hours4": formData.get('Personal_hours4'),
+                "Holiday Hours4": formData.get('Holiday_hours4'),
+                "Did Not Work4": formData.get('did_not_work4') ? true : false,
+                "Date5 - Date": formData.get('date5'),
+                "Start Time5": formData.get('start_time5'),
+                "Lunch Start5": formData.get('lunch_start5'),
+                "Lunch End5": formData.get('lunch_end5'),
+                "End Time5": formData.get('end_time5'),
+                "Additional Time In5": formData.get('Additional_Time_In5'),
+                "Additional Time Out5": formData.get('Additional_Time_Out5'),
+                "Hours Worked5": formData.get('hours_worked5'),
+                "PTO Hours5": formData.get('PTO_hours5'),
+                "Personal Hours5": formData.get('Personal_hours5'),
+                "Holiday Hours5": formData.get('Holiday_hours5'),
+                "Did Not Work5": formData.get('did_not_work5') ? true : false,
+                "Date6 - Date": formData.get('date6'),
+                "Start Time6": formData.get('start_time6'),
+                "Lunch Start6": formData.get('lunch_start6'),
+                "Lunch End6": formData.get('lunch_end6'),
+                "End Time6": formData.get('end_time6'),
+                "Additional Time In6": formData.get('Additional_Time_In6'),
+                "Additional Time Out6": formData.get('Additional_Time_Out6'),
+                "Hours Worked6": formData.get('hours_worked6'),
+                "PTO Hours6": formData.get('PTO_hours6'),
+                "Personal Hours6": formData.get('Personal_hours6'),
+                "Holiday Hours6": formData.get('Holiday_hours6'),
+                "Did Not Work6": formData.get('did_not_work6') ? true : false,
+                "Date7 - Date": formData.get('date7'),
+                "Start Time7": formData.get('start_time7'),
+                "Lunch Start7": formData.get('lunch_start7'),
+                "Lunch End7": formData.get('lunch_end7'),
+                "End Time7": formData.get('end_time7'),
+                "Additional Time In7": formData.get('Additional_Time_In7'),
+                "Additional Time Out7": formData.get('Additional_Time_Out7'),
+                "Hours Worked7": formData.get('hours_worked7'),
+                "PTO Hours7": formData.get('PTO_hours7'),
+                "Personal Hours7": formData.get('Personal_hours7'),
+                "Holiday Hours7": formData.get('Holiday_hours7'),
+                "Did Not Work7": formData.get('did_not_work7') ? true : false
+            }
+        };
+
         try {
             const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}`, {
                 method: 'POST',
@@ -536,22 +695,20 @@ document.addEventListener("DOMContentLoaded", async function() {
                     Authorization: `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ fields })
+                body: JSON.stringify(payload)
             });
-    
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`Failed to submit timesheet: ${response.statusText} - ${JSON.stringify(errorData)}`);
+                throw new Error(`Failed to submit data: ${response.statusText}`);
             }
-            console.log('Timesheet submitted successfully');
+
+            const data = await response.json();
+            console.log('Data submitted successfully:', data);
+            alert('Data submitted successfully!');
+
         } catch (error) {
-            console.error('Error submitting timesheet:', error);
-            alert('Failed to submit timesheet. Error: ' + error.message);
+            console.error('Error submitting data:', error);
+            alert('Failed to submit data. Error: ' + error.message);
         }
-    }
-    
-    elements.submitButton.addEventListener('click', async (event) => {
-        event.preventDefault();
-        await submitTimesheet();
     });
-})    
+});

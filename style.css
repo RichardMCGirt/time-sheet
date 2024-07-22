@@ -21,6 +21,23 @@ header {
     height: 50px;
 }
 
+#pto-info {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Adjust the gap as needed */
+}
+
+.info-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adjust the gap as needed */
+    color: #ecf0f1;
+}
+
+.info-container p {
+    margin: 0;
+}
+
 .header-right {
     display: flex;
     align-items: center;
@@ -69,6 +86,7 @@ header {
 .logout-button:hover {
     background-color: #c0392b;
 }
+
 
 .date-column {
     width: 10%;
