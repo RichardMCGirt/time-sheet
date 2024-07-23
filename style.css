@@ -8,10 +8,33 @@ body {
     font-weight: bolder;
 }
 
-body.dark-mode {
-    background-color: #ecf0f1;
-    color: #2c3e50;
+body.light-mode {
+    background-color: #ffffff;
+    color: #000000;
 }
+
+body.light-mode .header {
+    background-color: #f0f0f0;
+}
+
+body.light-mode .form-label {
+    color: #000000;
+}
+
+body.light-mode .form-value {
+    color: #000000;
+}
+
+body.light-mode .submit-button {
+    background-color: #1abc9c;
+    color: #ffffff;
+}
+
+body.light-mode .toggle-button {
+    background-color: #000000;
+    color: #ffffff;
+}
+
 
 header {
     background-color: #34495e;

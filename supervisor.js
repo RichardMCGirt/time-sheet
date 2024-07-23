@@ -38,7 +38,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     async function fetchTimesheets(supervisorName) {
         let filterFormula = supervisorEmail === 'katy@vanirinstalledsales.com' ? '{Employee Number}!=BLANK()' : `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}`;
+        let endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}`;
+        
+        if (supervisorEmail === 'katy@vanirinstalledsales.com') {
+            endpoint += '&sort[0][field]=Employee Number&sort[0][direction]=asc';
+        }
+
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
             if (!response.ok) {
@@ -54,16 +59,21 @@ document.addEventListener("DOMContentLoaded", async function () {
     function populateTimesheets(records) {
         timesheetsBody.innerHTML = ''; // Clear any existing rows
 
-        records.sort((a, b) => {
-            const nameA = a.fields['Full Name'] ? a.fields['Full Name'].toLowerCase() : '';
-            const nameB = b.fields['Full Name'] ? b.fields['Full Name'].toLowerCase() : '';
-            return nameA.localeCompare(nameB);
-        });
+        if (supervisorEmail !== 'katy@vanirinstalledsales.com') {
+            records.sort((a, b) => {
+                const nameA = a.fields['Full Name'] ? a.fields['Full Name'].toLowerCase() : '';
+                const nameB = b.fields['Full Name'] ? b.fields['Full Name'].toLowerCase() : '';
+                return nameA.localeCompare(nameB);
+            });
+        }
 
         if (records.length > 0) {
             records.forEach(record => {
                 const fields = record.fields;
                 const employeeName = fields['Full Name'] || 'Unknown';
+                const employeeNumber = fields['Employee Number'];
+
+                if (!employeeNumber) return; // Skip records without Employee Number
 
                 const nameContainer = document.createElement('div');
                 nameContainer.classList.add('name-container');
@@ -143,14 +153,32 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function exportToExcel() {
         const wb = XLSX.utils.book_new();
-        const ws_data = [];
-        const tables = timesheetsBody.querySelectorAll('.time-entry-table');
-        
+        let ws_data = [];
+        let tables = timesheetsBody.querySelectorAll('.time-entry-table');
+
+        // Convert NodeList to array for sorting
+        tables = Array.from(tables);
+
+        // Sort tables
+        if (supervisorEmail === 'katy@vanirinstalledsales.com') {
+            tables.sort((a, b) => {
+                const idA = a.previousElementSibling.textContent.toLowerCase();
+                const idB = b.previousElementSibling.textContent.toLowerCase();
+                return idA.localeCompare(idB);
+            });
+        } else {
+            tables.sort((a, b) => {
+                const nameA = a.previousElementSibling.textContent.toLowerCase();
+                const nameB = b.previousElementSibling.textContent.toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+        }
+
         tables.forEach((table, index) => {
             const nameContainer = table.previousElementSibling;
             const employeeName = nameContainer.textContent;
             const rows = table.querySelectorAll('tbody tr');
-            
+
             ws_data.push([employeeName]);
             ws_data.push(['Date', 'Hours Worked', 'PTO Hours used', 'Personal Hours used', 'Holiday Hours used', 'Total Hours']);
             rows.forEach(row => {
@@ -166,16 +194,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
 
         const ws = XLSX.utils.aoa_to_sheet(ws_data);
-        
+
         // Set column widths
         ws['!cols'] = [
-            { wch: 20 }, // Employee Name
-            { wch: 15 }, // Date
-            { wch: 15 }, // Hours Worked
-            { wch: 15 }, // PTO Hours used
-            { wch: 15 }, // Personal Hours used
-            { wch: 15 }, // Holiday Hours used
-            { wch: 15 }  // Total Hours
+            { wch: 18 }, // Employee Name
+            { wch: 18 }, // Date
+            { wch: 12 }, // Hours Worked
+            { wch: 13 }, // PTO Hours used
+            { wch: 17 }, // Personal Hours used
+            { wch: 16 }, // Holiday Hours used
+            { wch: 10 }  // Total Hours
         ];
 
         XLSX.utils.book_append_sheet(wb, ws, "Timesheets");
