@@ -149,7 +149,10 @@ h1 {
     height: 0;
     padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
     position: relative;
-    margin: 0 auto;
+    overflow: hidden; /* Hide overflow */
+    border-radius: 10px; /* Add border radius */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow */
+    margin-top: 20px;
 }
 
 .giphy-embed {

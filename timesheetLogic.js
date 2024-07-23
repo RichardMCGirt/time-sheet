@@ -583,27 +583,4 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
 
    
-
-        try {
-            const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}`, {
-                method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to submit data: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            console.log('Data submitted successfully:', data);
-            alert('Data submitted successfully!');
-
-        } catch (error) {
-            console.error('Error submitting data:', error);
-            alert('Failed to submit data. Error: ' + error.message);
-        }
-    });
+})

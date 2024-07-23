@@ -412,3 +412,69 @@ input[type="date"] {
         padding: 8px 16px;
     }
 }
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    main {
+        padding: 10px;
+        box-shadow: none;
+    }
+    
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .user-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .form-label {
+        text-align: left;
+        width: 100%;
+    }
+    
+    .form-value {
+        text-align: left;
+    }
+    
+    .time-entry-table th,
+    .time-entry-table td {
+        font-size: 12px;
+        padding: 5px;
+    }
+    
+    .time-entry-form, .summary-form {
+        padding: 10px;
+    }
+    
+    .submit-button, .play-pause-button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+}
+
+/* Mobile Table Scroll */
+.table-container {
+    width: 100%;
+    overflow-x: auto; /* Enable horizontal scroll for the table */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling for mobile */
+    margin: 0 -10px; /* Adjust margin to compensate for padding */
+    padding: 10px;
+}
+
+@media (orientation: landscape) and (max-width: 768px) {
+    main {
+        width: 90%; /* Adjust width for landscape mode */
+    }
+
+    th, td {
+        font-size: 14px; /* Adjust font size for readability */
+    }
+}
