@@ -146,17 +146,23 @@ document.addEventListener("DOMContentLoaded", async function () {
         const ws_data = [];
         const tables = timesheetsBody.querySelectorAll('.time-entry-table');
         
-        tables.forEach(table => {
+        tables.forEach((table, index) => {
             const nameContainer = table.previousElementSibling;
             const employeeName = nameContainer.textContent;
             const rows = table.querySelectorAll('tbody tr');
             
-            ws_data.push([employeeName, 'Date', 'Hours Worked', 'PTO Hours used', 'Personal Hours used', 'Holiday Hours used', 'Total Hours']);
+            ws_data.push([employeeName]);
+            ws_data.push(['Date', 'Hours Worked', 'PTO Hours used', 'Personal Hours used', 'Holiday Hours used', 'Total Hours']);
             rows.forEach(row => {
                 const columns = row.querySelectorAll('th');
                 const rowArray = Array.from(columns).map(column => column.querySelector('input') ? column.querySelector('input').value : column.textContent);
-                ws_data.push([employeeName, ...rowArray]);
+                ws_data.push(rowArray);
             });
+
+            // Add an empty row between tables
+            if (index < tables.length - 1) {
+                ws_data.push([]);
+            }
         });
 
         const ws = XLSX.utils.aoa_to_sheet(ws_data);

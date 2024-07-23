@@ -425,6 +425,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     }
 
+    
+
     showPickerOnFocus();
 
     // Add click event for email navigation
