@@ -8,6 +8,11 @@ body {
     font-weight: bolder;
 }
 
+body.dark-mode {
+    background-color: #ecf0f1;
+    color: #2c3e50;
+}
+
 header {
     background-color: #34495e;
     padding: 20px;
@@ -17,31 +22,19 @@ header {
     border-bottom: 2px solid #ecf0f1;
 }
 
+header.dark-mode {
+    background-color: #ecf0f1;
+    border-bottom: 2px solid #2c3e50;
+}
+
 .header-left .logo {
     height: 50px;
-}
-
-#pto-info {
-    display: flex;
-    align-items: center;
-    gap: 20px; /* Adjust the gap as needed */
-}
-
-.info-container {
-    display: flex;
-    align-items: center;
-    gap: 10px; /* Adjust the gap as needed */
-    color: #ecf0f1;
-}
-
-.info-container p {
-    margin: 0;
 }
 
 .header-right {
     display: flex;
     align-items: center;
-    font-weight: bolder;
+    gap: 10px;
 }
 
 .user-info {
@@ -57,7 +50,8 @@ header {
     font-weight: bolder;
 }
 
-.user-info .logout-button {
+.logout-button,
+.toggle-button {
     font-size: 16px;
     font-weight: bold;
     border-radius: 5px;
@@ -66,58 +60,36 @@ header {
     color: #ecf0f1;
     text-decoration: none;
     display: inline-block;
+    transition: background-color 0.3s ease;
 }
 
-.user-info .logout-button:hover {
+.logout-button:hover,
+.toggle-button:hover {
     background-color: #c0392b;
 }
 
-.logout-button {
-    font-size: 20px;
-    font-weight: bold;
-    border-radius: 10px;
-    padding: 5px 10px;
-    background-color: #e74c3c;
+body.dark-mode .logout-button,
+body.dark-mode .toggle-button {
+    background-color: #3498db;
+}
+
+body.dark-mode .logout-button:hover,
+body.dark-mode .toggle-button:hover {
+    background-color: #2980b9;
+}
+
+.name-container {
+    text-align: left;
+    font-size: 18px;
+    margin: 10px 0;
     color: #ecf0f1;
-    text-decoration: none;
-    display: inline-block;
+    font-weight: bold;
+    padding-left: 20px;
 }
 
-.logout-button:hover {
-    background-color: #c0392b;
-}
-
-
-.date-column {
-    width: 10%;
-    min-width: 100px;
-}
-
-.time-column {
-    width: 10%;
-    min-width: 100px;
-}
-
-.hours-worked-column {
-    width: 8%;
-    min-width: 80px;
-}
-
-.narrow-column {
-    width: 5%;
-    min-width: 50px;
-}
-
-.work-column {
-    width: 10%;
-    min-width: 100px;
-}
-
-/* Table styling */
 .time-entry-table {
-    width: 100%;
-    table-layout: fixed;
-    margin: 20px 0;
+    width: 70%;
+    margin: 20px auto;
     border-collapse: collapse;
     font-size: 14px;
 }
@@ -129,7 +101,6 @@ header {
 }
 
 .time-entry-table th {
-    background-color: #1abc9c;
     color: #ecf0f1;
 }
 
@@ -137,41 +108,39 @@ header {
     background-color: #34495e;
 }
 
-/* Input styling */
 .time-entry-table input[type="date"],
 .time-entry-table input[type="time"],
 .time-entry-table input[type="number"],
-.time-entry-table input[type="checkbox"] {
-    background-color: #34495e;
-    color: #ecf0f1;
+.time-entry-table input[type="text"],
+input[type="date"],
+input[type="text"] {
+    background-color: inherit; /* Use the same background color as the body */
+    color: white;
     border: none;
     border-radius: 4px;
     padding: 5px;
     text-align: center;
     font-size: 14px;
+    font-weight: bold;
 }
 
-.time-entry-table input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-}
-
-.time-entry-table input[type="time"]::placeholder,
+.time-entry-table input[type="date"]::placeholder,
 .time-entry-table input[type="number"]::placeholder,
-.time-entry-table input[type="date"]::placeholder {
-    color: #ecf0f1;
+input[type="date"]::placeholder,
+input[type="text"]::placeholder {
+    color: grey;
     opacity: 1;
     font-weight: bolder;
 }
 
 .time-entry-table input[type="time"]:-webkit-autofill,
 .time-entry-table input[type="number"]:-webkit-autofill,
-.time-entry-table input[type="date"]:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0 30px #34495e inset !important;
-    -webkit-text-fill-color: #ecf0f1 !important;
+input[type="date"]:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px inherit inset !important;
+    -webkit-text-fill-color: white !important;
 }
 
-/* General form and button styling */
+/* Form Styling */
 .form-group {
     display: flex;
     justify-content: center;
@@ -186,33 +155,6 @@ header {
     background-color: #34495e;
     padding: 20px;
     border-radius: 10px;
-}
-
-.submit-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #1abc9c;
-    color: #ecf0f1;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 20px;
-}
-
-.submit-button:hover {
-    background-color: #16a085;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .time-entry-table th, .time-entry-table td {
-        font-size: 12px;
-    }
-
-    .submit-button {
-        font-size: 14px;
-    }
 }
 
 .form-label {
@@ -231,14 +173,14 @@ input[type="number"] {
 .input-date, .input-time {
     position: relative;
     padding-left: 30px;
-    color: #ecf0f1;
+    color: grey;
 }
 
-input[type="time"], 
-input[type="number"], 
+input[type="time"],
+input[type="number"],
 input[type="date"] {
-    background-color: #34495e;
-    color: #ecf0f1;
+    background-color: inherit;
+    color: white;
     border: none;
     border-radius: 4px;
     padding: 5px;
@@ -249,111 +191,24 @@ input[type="date"] {
     font-size: large;
 }
 
-input[type="time"]::placeholder, 
-input[type="number"]::placeholder, 
+input[type="time"]::placeholder,
+input[type="number"]::placeholder,
 input[type="date"]::placeholder {
-    color: #ecf0f1;
+    color: white;
     opacity: 1;
     font-weight: bolder;
 }
 
-input[type="time"]:-webkit-autofill, 
-input[type="number"]:-webkit-autofill, 
+input[type="time"]:-webkit-autofill,
+input[type="number"]:-webkit-autofill,
 input[type="date"]:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0 30px #34495e inset !important;
-    -webkit-text-fill-color: #ecf0f1 !important;
+    -webkit-box-shadow: 0 0 0 30px inherit inset !important;
+    -webkit-text-fill-color: white !important;
 }
 
-.checkbox-container {
-    display: inline-block;
-    cursor: pointer;
-}
-
-.time-entry-table {
-    width: 100%;
-    table-layout: fixed;
-    margin: 20px 0;
-    border-collapse: collapse;
-}
-
-input[type="date"] {
-    font-size: larger;
-}
-
-.time-entry-table th, .time-entry-table td {
-    text-align: center;
-    padding: 10px;
-    border: 1px solid #ecf0f1;
-}
-
-.time-entry-table th {
-    background-color: #1abc9c;
-    color: #ecf0f1;
-    height: 45px;
-    font-weight: bold;
-}
-
-.time-entry-table td {
-    background-color: #34495e;
-    font-weight: 800;
-    height: 30px;
-}
-
-.time-input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 5px;
-    text-align: center;
-    color: red;
-}
-
-
-
-.form-row {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    margin: 10px 0;
-    gap: 10px;
-}
-
-.form-label {
-    width: 200px;
-    text-align: right;
-    padding-right: 10px;
-    color: #ecf0f1;
-    font-weight: bold;
-}
-
-.form-value {
-    color: #1abc9c;
-    font-weight: bold;
-    font-size: 20px;
-    text-align: center;
-}
-
-.validation-message {
-    color: red;
-}
-
-.submit-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #1abc9c;
-    color: #ecf0f1;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 20px;
-}
-
-.submit-button:hover {
-    background-color: #16a085;
-}
-
+/* Button Styling */
+.submit-button,
 .play-pause-button {
-    margin-top: 20px;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
@@ -362,119 +217,19 @@ input[type="date"] {
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
 }
 
+.submit-button:hover,
 .play-pause-button:hover {
     background-color: #16a085;
 }
 
-@media (max-width: 768px) {
-    main {
-        padding: 10px;
-        box-shadow: none;
-    }
-    
-    header {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .user-info {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .form-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .form-label {
-        text-align: left;
-        width: 100%;
-    }
-    
-    .form-value {
-        text-align: left;
-    }
-    
-    .time-entry-table th, .time-entry-table td {
-        font-size: 12px;
-        padding: 5px;
-    }
-    
-    .time-entry-form, .summary-form {
-        padding: 10px;
-    }
-    
-    .submit-button, .play-pause-button {
-        font-size: 14px;
-        padding: 8px 16px;
-    }
-}
-
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-    main {
-        padding: 10px;
-        box-shadow: none;
-    }
-    
-    header {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .user-info {
+    .header-right {
         flex-direction: column;
         gap: 10px;
-    }
-    
-    .form-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .form-label {
-        text-align: left;
-        width: 100%;
-    }
-    
-    .form-value {
-        text-align: left;
-    }
-    
-    .time-entry-table th,
-    .time-entry-table td {
-        font-size: 12px;
-        padding: 5px;
-    }
-    
-    .time-entry-form, .summary-form {
-        padding: 10px;
-    }
-    
-    .submit-button, .play-pause-button {
-        font-size: 14px;
-        padding: 8px 16px;
-    }
-}
-
-/* Mobile Table Scroll */
-.table-container {
-    width: 100%;
-    overflow-x: auto; /* Enable horizontal scroll for the table */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling for mobile */
-    margin: 0 -10px; /* Adjust margin to compensate for padding */
-    padding: 10px;
-}
-
-@media (orientation: landscape) and (max-width: 768px) {
-    main {
-        width: 90%; /* Adjust width for landscape mode */
-    }
-
-    th, td {
-        font-size: 14px; /* Adjust font size for readability */
     }
 }

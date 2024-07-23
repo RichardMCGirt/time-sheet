@@ -3,24 +3,36 @@ const baseId = 'app9gw2qxhGCmtJvW';
 const tableId = 'tbljmLpqXScwhiWTt/';
 
 // DOM elements
-
 const jokeText = document.getElementById('joke-text'); // Element to display the joke
+const loginButton = document.getElementById('loginButton');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
 
-document.getElementById('loginButton').addEventListener('click', login);
+loginButton.addEventListener('click', login);
 
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM fully loaded and parsed");
-    fetchJoke(); // Fetch joke on page load
+    debounce(fetchJoke, 300)(); // Fetch joke on page load with debounce
 });
 
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+}
+
 async function login() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const email = emailInput.value;
+    const password = passwordInput.value;
 
     console.log("Login attempt with email:", email);
 
     if (!email || !password) {
         alert('Please fill in both email and password fields.');
+        return;
+    }
+
+    if (!validateEmail(email)) {
+        alert('Please enter a valid email address.');
         return;
     }
 
@@ -32,7 +44,7 @@ async function login() {
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`Network response was not ok: ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -45,10 +57,10 @@ async function login() {
             localStorage.setItem('userEmail', email);
 
             const backgroundMusic = document.getElementById('backgroundMusic');
-            backgroundMusic.play();
-            sessionStorage.setItem('isMusicPlaying', 'true');
-
-           
+            if (backgroundMusic) {
+                backgroundMusic.play();
+                sessionStorage.setItem('isMusicPlaying', 'true');
+            }
 
             window.location.href = 'timesheet.html';
         } else {
@@ -60,10 +72,9 @@ async function login() {
     }
 }
 
-
 async function fetchJoke() {
     console.log('Fetching a random joke...');
-    
+
     try {
         const response = await fetch('https://official-joke-api.appspot.com/jokes/random');
         if (!response.ok) {
@@ -87,11 +98,3 @@ function debounce(func, wait) {
         timeout = setTimeout(() => func.apply(context, args), wait);
     };
 }
-
-function loginUser(email) {
-    localStorage.setItem('userEmail', email);
-    window.location.href = 'timesheet.html';
-}
-
-// Use debounce for fetchJoke to avoid rapid calls if needed
-document.addEventListener("DOMContentLoaded", debounce(fetchJoke, 300));
