@@ -108,13 +108,15 @@ body.dark-mode .toggle-button:hover {
 }
 
 .name-container {
-    text-align: left;
+    text-align: left; /* Ensures text is left-aligned */
     font-size: 18px;
     margin: 10px 0;
     color: var(--text-color-dark);
     font-weight: bold;
     padding-left: 20px;
     transition: color 0.3s ease;
+    width: 70%; /* Match the width of the table */
+    margin: 0 auto; /* Center the container */
 }
 
 body.dark-mode .name-container {
@@ -315,8 +317,13 @@ body.dark-mode .play-pause-button:hover {
 }
 
 @media (max-width: 768px) {
-    .header-right {
-        flex-direction: column;
-        gap: 10px;
+    .name-container {
+        width: 100%; /* Full width on smaller screens */
+        padding-left: 10px; /* Adjust padding for smaller screens */
+    }
+
+    .time-entry-table {
+        width: 100%; /* Full width on smaller screens */
+        margin: 10px 0; /* Adjust margin for smaller screens */
     }
 }

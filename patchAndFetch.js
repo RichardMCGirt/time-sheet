@@ -187,4 +187,6 @@ async function patchTimesheetData(payload) {
         console.error('Error updating timesheet data:', error);
         alert('Failed to update timesheet data. Error: ' + error.message);
     }
+
+    
 }
