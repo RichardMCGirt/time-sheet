@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <th class="date-column">Date</th>
+                            <th class="date-column">Date Ending</th>
                             <th class="narrow-column">Hours Worked</th>
                             <th class="narrow-column">PTO Hours used</th>
                             <th class="narrow-column">Personal Hours used</th>
@@ -153,44 +153,35 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function exportToExcel() {
         const wb = XLSX.utils.book_new();
-        let ws_data = [];
-        let tables = timesheetsBody.querySelectorAll('.time-entry-table');
+        let ws_data = [
+            ['Employee Name', 'Date Ending', 'Hours Worked', 'PTO Hours used', 'Personal Hours used', 'Holiday Hours used', 'Total Hours']
+        ];
 
-        // Convert NodeList to array for sorting
-        tables = Array.from(tables);
-
-        // Sort tables
-        if (supervisorEmail === 'katy@vanirinstalledsales.com') {
-            tables.sort((a, b) => {
-                const idA = a.previousElementSibling.textContent.toLowerCase();
-                const idB = b.previousElementSibling.textContent.toLowerCase();
-                return idA.localeCompare(idB);
-            });
-        } else {
-            tables.sort((a, b) => {
-                const nameA = a.previousElementSibling.textContent.toLowerCase();
-                const nameB = b.previousElementSibling.textContent.toLowerCase();
-                return nameA.localeCompare(nameB);
-            });
-        }
-
-        tables.forEach((table, index) => {
+        const tables = timesheetsBody.querySelectorAll('.time-entry-table');
+        tables.forEach(table => {
             const nameContainer = table.previousElementSibling;
             const employeeName = nameContainer.textContent;
             const rows = table.querySelectorAll('tbody tr');
+            let totalHours = [0, 0, 0, 0, 0];
+            let date1 = '', date7 = '';
 
-            ws_data.push([employeeName]);
-            ws_data.push(['Date', 'Hours Worked', 'PTO Hours used', 'Personal Hours used', 'Holiday Hours used', 'Total Hours']);
-            rows.forEach(row => {
+            rows.forEach((row, index) => {
                 const columns = row.querySelectorAll('th');
-                const rowArray = Array.from(columns).map(column => column.querySelector('input') ? column.querySelector('input').value : column.textContent);
-                ws_data.push(rowArray);
+                if (index === 0) {
+                    date1 = columns[0].querySelector('input').value || '';
+                }
+                if (index === rows.length - 1) {
+                    date7 = columns[0].querySelector('input').value || '';
+                }
+                totalHours[0] += parseFloat(columns[1].querySelector('input').value) || 0;
+                totalHours[1] += parseFloat(columns[2].querySelector('input').value) || 0;
+                totalHours[2] += parseFloat(columns[3].querySelector('input').value) || 0;
+                totalHours[3] += parseFloat(columns[4].querySelector('input').value) || 0;
+                totalHours[4] += parseFloat(columns[5].querySelector('input').value) || 0;
             });
 
-            // Add an empty row between tables
-            if (index < tables.length - 1) {
-                ws_data.push([]);
-            }
+            const dateRange = ` ${date7}`;
+            ws_data.push([employeeName, dateRange, ...totalHours]);
         });
 
         const ws = XLSX.utils.aoa_to_sheet(ws_data);
@@ -198,10 +189,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Set column widths
         ws['!cols'] = [
             { wch: 18 }, // Employee Name
-            { wch: 18 }, // Date
-            { wch: 12 }, // Hours Worked
-            { wch: 13 }, // PTO Hours used
-            { wch: 17 }, // Personal Hours used
+            { wch: 25 }, // Date
+            { wch: 14 }, // Hours Worked
+            { wch: 18 }, // PTO Hours used
+            { wch: 16 }, // Personal Hours used
             { wch: 16 }, // Holiday Hours used
             { wch: 10 }  // Total Hours
         ];
