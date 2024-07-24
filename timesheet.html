@@ -20,11 +20,11 @@
             <div class="info-container">
                 <div id="pto-display">
                     <p>PTO Hours Available</p>
-                    <div id="pto-hours-display">Loading...</div>
+                    <div id="pto-hours-display" min="0">Loading...</div>
                 </div>
                 <div id="personal-display">
                     <p>Personal Time Available</p>
-                    <div id="personal-time-display"></div>
+                    <div id="personal-time-display" min="0"></div>
                 </div>
             </div>
             <div class="header-right">
@@ -182,22 +182,22 @@
                     </div>
                     <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
                         <label for="total-time-worked" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Total Hours Worked:</label>
-                        <span id="total-time-worked" class="form-value" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
+                        <span id="total-time-worked" class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
                     </div>
                     <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
                         <label for="total-time-with-pto" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Total Time:</label>
-                        <span id="total-time-with-pto-value" class="form-value" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
+                        <span id="total-time-with-pto-value" class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
                     </div>
                     <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
                         <label for="remaining-pto-hours" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Remaining PTO Hours:</label>
-                        <span id="remaining-pto-hours" class="form-value" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
+                        <span id="remaining-pto-hours" class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
                     </div>
                     <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
                         <label for="remaining-personal-hours" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Remaining Personal Hours:</label>
-                        <span id="remaining-personal-hours" class="form-value" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
+                        <span id="remaining-personal-hours"  class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
                     </div>
                     <span id="pto-validation-message" class="validation-message" style="color: red; text-align: center;"></span><br>
-                    <button id="submit-button" class="submit-button" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #1abc9c; color: #ecf0f1; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px;">Submit</button>
+                    <button id="submit-button" class="submit-button" min="0" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #1abc9c; color: #ecf0f1; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px;">Submit</button>
                 </form>
             </section>
             

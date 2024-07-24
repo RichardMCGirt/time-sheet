@@ -12,27 +12,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         userEmailElement.textContent = supervisorEmail;
         userEmailElement.classList.add('clickable');
     }
-    
-
-    document.getElementById('dark-mode-toggle').addEventListener('click', function () {
-        document.body.classList.toggle('dark-mode');
-    });
 
     document.getElementById('export-button').addEventListener('click', function () {
         exportToExcel();
     });
-
-    function checkPTOInput(input) {
-        const ptoDisplay = document.getElementById('pto-display');
-        const value = input.value;
-        ptoDisplay.style.display = value && value > 0 ? 'none' : 'block';
-    }
-    
-    function checkPersonalInput(input) {
-        const personalDisplay = document.getElementById('personal-display');
-        const value = input.value;
-        personalDisplay.style.display = value && value > 0 ? 'none' : 'block';
-    }
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
@@ -50,12 +33,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     async function fetchTimesheets(supervisorName) {
-        let filterFormula = supervisorEmail === 'katy@vanirinstalledsales.com' ? '{Employee Number}!=BLANK()' : `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
-        let endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}`;
-        
+        let filterFormula;
         if (supervisorEmail === 'katy@vanirinstalledsales.com') {
-            endpoint += '&sort[0][field]=Employee Number&sort[0][direction]=asc';
+            filterFormula = '{Employee Number}!=BLANK()';
+        } else {
+            filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
         }
+
+        let endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
 
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
@@ -71,14 +56,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function populateTimesheets(records) {
         timesheetsBody.innerHTML = ''; // Clear any existing rows
-
-        if (supervisorEmail !== 'katy@vanirinstalledsales.com') {
-            records.sort((a, b) => {
-                const nameA = a.fields['Full Name'] ? a.fields['Full Name'].toLowerCase() : '';
-                const nameB = b.fields['Full Name'] ? b.fields['Full Name'].toLowerCase() : '';
-                return nameA.localeCompare(nameB);
-            });
-        }
 
         if (records.length > 0) {
             records.forEach(record => {
@@ -127,20 +104,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     function generateRows(fields) {
-        let rows = '';
-        for (let day = 1; day <= 7; day++) {
-            rows += `
-                <tr>
-                    <th><input type="date" name="date${day}" value="${fields[`Date${day}`] || ''}" readonly></th>
-                    <th><input type="number" name="hours_worked${day}" value="${fields[`Hours Worked${day}`] || ''}" placeholder="0" readonly></th>
-                    <th><input type="number" name="pto_hours${day}" value="${fields[`PTO Hours${day}`] || ''}" placeholder="0" readonly></th>
-                    <th><input type="number" name="personal_hours${day}" value="${fields[`Personal Hours${day}`] || ''}" placeholder="0" readonly></th>
-                    <th><input type="number" name="holiday_hours${day}" value="${fields[`Holiday Hours${day}`] || ''}" placeholder="0" readonly></th>
-                    <th><input type="number" name="total_hours${day}" value="${fields[`Total Hours${day}`] || ''}" placeholder="0" readonly></th>
-                </tr>
-            `;
-        }
-        return rows;
+        return `
+            <tr>
+                <th><input type="date" name="dateEnding" value="${fields['Date7'] || ''}" readonly></th>
+                <th><input type="number" name="hours_worked" value="${fields['Hours Worked'] || ''}" placeholder="0" readonly></th>
+                <th><input type="number" name="pto_hours" value="${fields['PTO Hours'] || ''}" placeholder="0" readonly></th>
+                <th><input type="number" name="personal_hours" value="${fields['Personal Hours'] || ''}" placeholder="0" readonly></th>
+                <th><input type="number" name="holiday_hours" value="${fields['Holiday Hours'] || ''}" placeholder="0" readonly></th>
+                <th><input type="number" name="total_hours" value="${fields['Total Hours'] || ''}" placeholder="0" readonly></th>
+            </tr>
+        `;
     }
 
     function filterTimesheets() {
@@ -182,16 +155,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             const employeeNumber = nameContainer.getAttribute('data-employee-number');
             const rows = table.querySelectorAll('tbody tr');
             let totalHours = [0, 0, 0, 0, 0];
-            let date1 = '', date7 = '';
+            let dateEnding = '';
 
             rows.forEach((row, index) => {
                 const columns = row.querySelectorAll('th');
-                if (index === 0) {
-                    date1 = columns[0].querySelector('input').value || '';
-                }
-                if (index === rows.length - 1) {
-                    date7 = columns[0].querySelector('input').value || '';
-                }
+                dateEnding = columns[0].querySelector('input').value || '';
                 totalHours[0] += parseFloat(columns[1].querySelector('input').value) || 0;
                 totalHours[1] += parseFloat(columns[2].querySelector('input').value) || 0;
                 totalHours[2] += parseFloat(columns[3].querySelector('input').value) || 0;
@@ -199,8 +167,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 totalHours[4] += parseFloat(columns[5].querySelector('input').value) || 0;
             });
 
-            const dateRange = `${date1} - ${date7}`;
-            ws_data.push([employeeNumber, employeeName, dateRange, ...totalHours]);
+            ws_data.push([employeeNumber, employeeName, dateEnding, ...totalHours]);
         });
 
         const ws = XLSX.utils.aoa_to_sheet(ws_data);
@@ -221,9 +188,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         XLSX.writeFile(wb, "timesheets.xlsx");
     }
 
-    searchInput.addEventListener('input', filterTimesheets);
-    dateFilter.addEventListener('input', filterTimesheets);
-
     const supervisorName = await fetchSupervisorName(supervisorEmail);
     await fetchTimesheets(supervisorName);
 
@@ -238,4 +202,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             window.location.href = 'timesheet.html';
         });
     }
+
+    searchInput.addEventListener('input', filterTimesheets);
+    dateFilter.addEventListener('input', filterTimesheets);
 });
