@@ -150,8 +150,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
         console.log('Total hours worked:', totalHoursWorked);
         console.log('Total hours with PTO:', totalHoursWithPto);
-        validatePtoHours(totalHoursWithPto);
-        validatePersonalHours(totalHoursWithPto);
+        validatePtoHours(totalHoursWorked, ptoTime, personalTime);
         updateTotalPtoAndHolidayHours();
     }
 
@@ -197,34 +196,19 @@ document.addEventListener("DOMContentLoaded", async function() {
         return Math.round(hours * 4) / 4;
     }
 
-    function validatePtoHours(totalHoursWithPto) {
-        const remainingPTO = Math.max(0, availablePTOHours - parseFloat(elements.ptoTimeSpan.textContent || 0));
-        const ptoUsed = totalHoursWithPto - parseFloat(elements.totalTimeWorkedSpan.textContent);
-        console.log('PTO used:', ptoUsed);
+    function validatePtoHours(totalHoursWorked, ptoTime, personalTime) {
+        const remainingPTO = Math.max(0, availablePTOHours - ptoTime);
+        const totalHoursWithPto = totalHoursWorked + ptoTime + personalTime;
+        console.log('PTO used:', ptoTime);
 
-        if (ptoUsed > availablePTOHours) {
+        if (totalHoursWithPto > 40 && (ptoTime > 0 || personalTime > 0)) {
+            elements.ptoValidationMessage.textContent = 'Total hours including PTO and Personal time cannot exceed 40 hours';
+            elements.ptoValidationMessage.style.color = 'red';
+        } else if (ptoTime > availablePTOHours) {
             elements.ptoValidationMessage.textContent = 'PTO time used cannot exceed available PTO hours';
             elements.ptoValidationMessage.style.color = 'red';
-            disablePtoInputs();
-        } else if (totalHoursWithPto > 40 && parseFloat(elements.ptoTimeSpan.textContent) > 0) {
-            elements.ptoValidationMessage.textContent = 'Total hours including PTO cannot exceed 40 hours';
-            elements.ptoValidationMessage.style.color = 'red';
-        } else {
-            elements.ptoValidationMessage.textContent = '';
-        }
-    }
-
-    function validatePersonalHours(totalHoursWithPto) {
-        const remainingPersonal = Math.max(0, availablePersonalHours - parseFloat(elements.personalTimeSpan.textContent || 0));
-        const personalUsed = totalHoursWithPto - parseFloat(elements.totalTimeWorkedSpan.textContent);
-        console.log('Personal used:', personalUsed);
-
-        if (personalUsed > availablePersonalHours) {
+        } else if (personalTime > availablePersonalHours) {
             elements.ptoValidationMessage.textContent = 'Personal time used cannot exceed available Personal hours';
-            elements.ptoValidationMessage.style.color = 'red';
-            disablePersonalInputs();
-        } else if (totalHoursWithPto > 40 && parseFloat(elements.personalTimeSpan.textContent) > 0) {
-            elements.ptoValidationMessage.textContent = 'Total hours including Personal time cannot exceed 40 hours';
             elements.ptoValidationMessage.style.color = 'red';
         } else {
             elements.ptoValidationMessage.textContent = '';
@@ -281,19 +265,21 @@ document.addEventListener("DOMContentLoaded", async function() {
                     input.value = Math.max(availablePTOHours, currentValue);
                 }
                 updateTotalPtoAndHolidayHours();
+                checkPTOInput(input);
             });
         });
     }
+
     function checkPTOInput(input) {
         const ptoDisplay = document.getElementById('pto-display');
-        const value = input.value;
-        ptoDisplay.style.display = value && value > 0 ? 'none' : 'block';
+        const value = parseFloat(input.value) || 0;
+        ptoDisplay.style.display = value > 0 ? 'none' : 'block';
     }
-    
+
     function checkPersonalInput(input) {
         const personalDisplay = document.getElementById('personal-display');
-        const value = input.value;
-        personalDisplay.style.display = value && value > 0 ? 'none' : 'block';
+        const value = parseFloat(input.value) || 0;
+        personalDisplay.style.display = value > 0 ? 'none' : 'block';
     }
 
     async function fetchPtoHours() {
@@ -326,7 +312,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
     
-    // Make sure to define the fetchPersonalTime function as well
     async function fetchPersonalTime() {
         console.log('Fetching Personal hours...');
         const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
@@ -356,7 +341,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             alert('Failed to fetch Personal hours. Error: ' + error.message);
         }
     }
-    
 
     function preventExceedingPersonalInputs() {
         const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
@@ -370,6 +354,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                     input.value = Math.max(availablePersonalHours, currentValue);
                 }
                 updateTotalPtoAndHolidayHours();
+                checkPersonalInput(input);
             });
         });
     }
@@ -525,7 +510,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             return;
         }
 
-        if (totalTimeWithPto > 40 && (ptoTimeUsed > 0 || personalTimeUsed > 0 || holidayHoursUsed > 0)) {
+        if (totalTimeWithPto > 40 && (ptoTimeUsed > 0 || personalTimeUsed > 0)) {
             alert('Total hours including PTO, Personal time, or Holiday time cannot exceed 40 hours.');
             return;
         }
