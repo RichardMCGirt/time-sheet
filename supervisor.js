@@ -111,12 +111,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     function generateRows(fields) {
         return `
             <tr>
-                <th><input type="date" name="dateEnding" value="${fields['Date7'] || ''}" readonly></th>
+                <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
                 <th><input type="number" name="hours_worked" value="${fields['Total Hours Worked'] || ''}" placeholder="0" readonly></th>
                 <th><input type="number" name="pto_hours" value="${fields['PTO time used'] || ''}" placeholder="0" readonly></th>
                 <th><input type="number" name="personal_hours" value="${fields['Personal Time Used'] || ''}" placeholder="0" readonly></th>
                 <th><input type="number" name="holiday_hours" value="${fields['Holiday Hours Used'] || ''}" placeholder="0" readonly></th>
-                <th><input type="number" name="total_hours" value="${fields['Total Hours'] || ''}" placeholder="0" readonly></th>
+                <th><input type="number" name="total_hours" value="${fields['TotalTimeWithPTO'] || ''}" placeholder="0" readonly></th>
             </tr>
         `;
     }
@@ -203,6 +203,5 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
-    searchInput.addEventListener('input', filterTimesheets);
-    dateFilter.addEventListener('input', filterTimesheets);
+
 });
