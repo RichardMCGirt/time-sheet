@@ -284,6 +284,17 @@ document.addEventListener("DOMContentLoaded", async function() {
             });
         });
     }
+    function checkPTOInput(input) {
+        const ptoDisplay = document.getElementById('pto-display');
+        const value = input.value;
+        ptoDisplay.style.display = value && value > 0 ? 'none' : 'block';
+    }
+    
+    function checkPersonalInput(input) {
+        const personalDisplay = document.getElementById('personal-display');
+        const value = input.value;
+        personalDisplay.style.display = value && value > 0 ? 'none' : 'block';
+    }
 
     async function fetchPtoHours() {
         console.log('Fetching PTO hours...');

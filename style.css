@@ -71,6 +71,15 @@ body.light-mode .header-right .toggle-button {
     border: 1px solid #cccccc;
 }
 
+.info-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 20px;
+    gap: 15px;
+}
+
+
 body.light-mode .info-container {
     background-color: #ffffff;
     border: 1px solid #cccccc;

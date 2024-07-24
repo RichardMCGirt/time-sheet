@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         userEmailElement.textContent = supervisorEmail;
         userEmailElement.classList.add('clickable');
     }
+    
 
     document.getElementById('dark-mode-toggle').addEventListener('click', function () {
         document.body.classList.toggle('dark-mode');
@@ -20,6 +21,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById('export-button').addEventListener('click', function () {
         exportToExcel();
     });
+
+    function checkPTOInput(input) {
+        const ptoDisplay = document.getElementById('pto-display');
+        const value = input.value;
+        ptoDisplay.style.display = value && value > 0 ? 'none' : 'block';
+    }
+    
+    function checkPersonalInput(input) {
+        const personalDisplay = document.getElementById('personal-display');
+        const value = input.value;
+        personalDisplay.style.display = value && value > 0 ? 'none' : 'block';
+    }
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
