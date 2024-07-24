@@ -198,9 +198,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const personalHours = row.querySelector('input[name="personal_hours"]').value;
                 const holidayHours = row.querySelector('input[name="holiday_hours"]').value;
                 const totalHours = row.querySelector('input[name="total_hours"]').value;
-                const approved = row.querySelector('input[name="approved"]').checked ? 'Yes' : 'No';
 
-                data.push([employeeName, date, hoursWorked, ptoHours, personalHours, holidayHours, totalHours, approved]);
+                data.push([employeeName, date, hoursWorked, ptoHours, personalHours, holidayHours, totalHours]);
             });
         });
 
@@ -228,4 +227,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
         console.error('No supervisor found with email:', supervisorEmail);
     }
+
+    document.getElementById('logout-button').addEventListener('click', function (event) {
+        event.preventDefault();
+        localStorage.removeItem('userEmail');
+        window.location.href = 'index.html';
+    });
+
+    if (userEmailElement) {
+        userEmailElement.addEventListener('click', function () {
+            window.location.href = 'timesheet.html';
+        });
+    }
+
 });
