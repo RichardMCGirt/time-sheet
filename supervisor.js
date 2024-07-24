@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         userEmailElement.classList.add('clickable');
     }
 
-    document.getElementById('export-button').addEventListener('click', exportToExcel);
+    document.getElementById('export-button').addEventListener('click', exportToCSV);
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
@@ -147,50 +147,45 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
-    function exportToExcel() {
-        const wb = XLSX.utils.book_new();
-        let ws_data = [
-            ['Employee Number', 'Employee Name', 'Date Ending', 'Hours Worked', 'PTO Hours used', 'Personal Hours used', 'Holiday Hours used', 'Total Hours']
-        ];
+    function exportToCSV() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Employee Name,Date Ending,Hours Worked,PTO Hours,Personal Hours,Holiday Hours,Total Hours\n";
 
         const tables = timesheetsBody.querySelectorAll('.time-entry-table');
         tables.forEach(table => {
             const nameContainer = table.previousElementSibling;
             const employeeName = nameContainer.textContent;
-            const employeeNumber = new URLSearchParams(nameContainer.querySelector('a').href).get('employeeNumber');
             const rows = table.querySelectorAll('tbody tr');
-            let totalHours = [0, 0, 0, 0, 0];
-            let dateEnding = '';
 
-            rows.forEach((row) => {
-                const columns = row.querySelectorAll('th');
-                dateEnding = columns[0].querySelector('input').value || '';
-                totalHours[0] += parseFloat(columns[1].querySelector('input').value) || 0;
-                totalHours[1] += parseFloat(columns[2].querySelector('input').value) || 0;
-                totalHours[2] += parseFloat(columns[3].querySelector('input').value) || 0;
-                totalHours[3] += parseFloat(columns[4].querySelector('input').value) || 0;
-                totalHours[4] += parseFloat(columns[5].querySelector('input').value) || 0;
+            rows.forEach(row => {
+                const date = row.querySelector('input[name="dateEnding"]').value;
+                const hoursWorked = row.querySelector('input[name="hours_worked"]').value;
+                const ptoHours = row.querySelector('input[name="pto_hours"]').value;
+                const personalHours = row.querySelector('input[name="personal_hours"]').value;
+                const holidayHours = row.querySelector('input[name="holiday_hours"]').value;
+                const totalHours = row.querySelector('input[name="total_hours"]').value;
+
+                const rowContent = [
+                    employeeName,
+                    date,
+                    hoursWorked,
+                    ptoHours,
+                    personalHours,
+                    holidayHours,
+                    totalHours
+                ].join(",");
+
+                csvContent += rowContent + "\n";
             });
-
-            ws_data.push([employeeNumber, employeeName, dateEnding, ...totalHours]);
         });
 
-        const ws = XLSX.utils.aoa_to_sheet(ws_data);
-
-        // Set column widths
-        ws['!cols'] = [
-            { wch: 18 }, // Employee Number
-            { wch: 18 }, // Employee Name
-            { wch: 25 }, // Date
-            { wch: 14 }, // Hours Worked
-            { wch: 18 }, // PTO Hours used
-            { wch: 16 }, // Personal Hours used
-            { wch: 16 }, // Holiday Hours used
-            { wch: 10 }  // Total Hours
-        ];
-
-        XLSX.utils.book_append_sheet(wb, ws, "Timesheets");
-        XLSX.writeFile(wb, "timesheets.xlsx");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "timesheets.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     const supervisorName = await fetchSupervisorName(supervisorEmail);
@@ -208,6 +203,5 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
-    searchInput.addEventListener('input', filterTimesheets);
-    dateFilter.addEventListener('input', filterTimesheets);
+   
 });
