@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         userEmailElement.classList.add('clickable');
     }
 
-    document.getElementById('export-button').addEventListener('click', exportToCSV);
+    document.getElementById('export-button').addEventListener('click', exportToExcel);
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
@@ -91,10 +91,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                             <th class="narrow-column">Personal Hours used</th>
                             <th class="narrow-column">Holiday Hours used</th>
                             <th class="narrow-column">Total Hours</th>
+                            <th class="narrow-column">Approve</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${generateRows(fields)}
+                        ${generateRows(fields, record.id)}
                     </tbody>
                 `;
 
@@ -108,7 +109,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    function generateRows(fields) {
+    function generateRows(fields, recordId) {
         return `
             <tr>
                 <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
@@ -117,9 +118,43 @@ document.addEventListener("DOMContentLoaded", async function () {
                 <th><input type="number" name="personal_hours" value="${fields['Personal Time Used'] || ''}" placeholder="0" readonly></th>
                 <th><input type="number" name="holiday_hours" value="${fields['Holiday Hours Used'] || ''}" placeholder="0" readonly></th>
                 <th><input type="number" name="total_hours" value="${fields['TotalTimeWithPTO'] || ''}" placeholder="0" readonly></th>
+                <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Approved'] ? 'checked' : ''}></th>
             </tr>
         `;
     }
+
+    async function updateApprovalStatus(recordId, isApproved) {
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+        const body = JSON.stringify({
+            fields: {
+                Approved: isApproved
+            }
+        });
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body
+            });
+            if (!response.ok) throw new Error(`Failed to update approval status: ${response.statusText}`);
+            const data = await response.json();
+            console.log('Approval status updated:', data);
+        } catch (error) {
+            console.error('Error updating approval status:', error);
+        }
+    }
+
+    function handleCheckboxChange(event) {
+        const checkbox = event.target;
+        const recordId = checkbox.getAttribute('data-record-id');
+        updateApprovalStatus(recordId, checkbox.checked);
+    }
+
+    timesheetsBody.addEventListener('change', handleCheckboxChange);
 
     function filterTimesheets() {
         const nameFilter = searchInput.value.toLowerCase();
@@ -147,10 +182,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
-    function exportToCSV() {
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Employee Name,Date Ending,Hours Worked,PTO Hours,Personal Hours,Holiday Hours,Total Hours\n";
-
+    function exportToExcel() {
+        // Collect data
+        let data = [];
         const tables = timesheetsBody.querySelectorAll('.time-entry-table');
         tables.forEach(table => {
             const nameContainer = table.previousElementSibling;
@@ -164,44 +198,34 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const personalHours = row.querySelector('input[name="personal_hours"]').value;
                 const holidayHours = row.querySelector('input[name="holiday_hours"]').value;
                 const totalHours = row.querySelector('input[name="total_hours"]').value;
+                const approved = row.querySelector('input[name="approved"]').checked ? 'Yes' : 'No';
 
-                const rowContent = [
-                    employeeName,
-                    date,
-                    hoursWorked,
-                    ptoHours,
-                    personalHours,
-                    holidayHours,
-                    totalHours
-                ].join(",");
-
-                csvContent += rowContent + "\n";
+                data.push([employeeName, date, hoursWorked, ptoHours, personalHours, holidayHours, totalHours, approved]);
             });
         });
 
+        // Convert to CSV format
+        let csvContent = "data:text/csv;charset=utf-8," 
+            + "Employee Name,Date Ending,Hours Worked,PTO Hours Used,Personal Hours Used,Holiday Hours Used,Total Hours,Approved\n";
+
+        data.forEach(row => {
+            csvContent += row.join(",") + "\n";
+        });
+
+        // Create a link and trigger download
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "timesheets.csv");
+        link.setAttribute("download", "timesheets_data.csv");
         document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
     }
 
+    // Initial fetch
     const supervisorName = await fetchSupervisorName(supervisorEmail);
-    await fetchTimesheets(supervisorName);
-
-    document.getElementById('logout-button').addEventListener('click', function (event) {
-        event.preventDefault();
-        localStorage.removeItem('userEmail');
-        window.location.href = 'index.html';
-    });
-
-    if (userEmailElement) {
-        userEmailElement.addEventListener('click', function () {
-            window.location.href = 'timesheet.html';
-        });
+    if (supervisorName) {
+        await fetchTimesheets(supervisorName);
+    } else {
+        console.error('No supervisor found with email:', supervisorEmail);
     }
-
-
 });
