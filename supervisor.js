@@ -13,17 +13,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         userEmailElement.classList.add('clickable');
     }
 
-    document.getElementById('export-button').addEventListener('click', function () {
-        exportToExcel();
-    });
+    document.getElementById('export-button').addEventListener('click', exportToExcel);
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) {
-                throw new Error(`Failed to fetch supervisor name: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`Failed to fetch supervisor name: ${response.statusText}`);
             const data = await response.json();
             return data.records.length > 0 ? data.records[0].fields['Full Name'] : null;
         } catch (error) {
@@ -32,42 +28,56 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    async function fetchTimesheets(supervisorName) {
-        let filterFormula;
-        if (supervisorEmail === 'katy@vanirinstalledsales.com') {
-            filterFormula = '{Employee Number}!=BLANK()';
-        } else {
-            filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
+    async function fetchEmployeeName(employeeNumber) {
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Employee Number}='${employeeNumber}')`;
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch employee name: ${response.statusText}`);
+            const data = await response.json();
+            return data.records.length > 0 ? data.records[0].fields['Full Name'] : 'Unknown';
+        } catch (error) {
+            console.error(error);
+            return 'Unknown';
         }
+    }
 
-        let endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
+    async function fetchTimesheets(supervisorName) {
+        const filterFormula = supervisorEmail === 'katy@vanirinstalledsales.com' ? 
+                              '{Employee Number}!=BLANK()' : 
+                              `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
+
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
 
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) {
-                throw new Error(`Failed to fetch timesheets: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`Failed to fetch timesheets: ${response.statusText}`);
             const data = await response.json();
-            populateTimesheets(data.records);
+            await populateTimesheets(data.records);
         } catch (error) {
             console.error(error);
         }
     }
 
-    function populateTimesheets(records) {
+    async function populateTimesheets(records) {
         timesheetsBody.innerHTML = ''; // Clear any existing rows
 
         if (records.length > 0) {
-            records.forEach(record => {
+            for (const record of records) {
                 const fields = record.fields;
-                const employeeName = fields['Full Name'] || 'Unknown';
                 const employeeNumber = fields['Employee Number'];
 
-                if (!employeeNumber) return; // Skip records without Employee Number
+                if (!employeeNumber) continue; // Skip records without Employee Number
+
+                const employeeName = await fetchEmployeeName(employeeNumber);
 
                 const nameContainer = document.createElement('div');
                 nameContainer.classList.add('name-container');
-                nameContainer.textContent = `${employeeName}`;
+                nameContainer.textContent = employeeName;
+                nameContainer.addEventListener('click', () => {
+                    // Redirect to the employee's record
+                    window.location.href = `employee_record.html?employeeNumber=${employeeNumber}`;
+                });
+                nameContainer.classList.add('clickable');
                 timesheetsBody.appendChild(nameContainer);
 
                 const table = document.createElement('table');
@@ -89,12 +99,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 `;
 
                 timesheetsBody.appendChild(table);
-
-                if (supervisorEmail === 'katy@vanirinstalledsales.com') {
-                    nameContainer.setAttribute('data-employee-number', employeeNumber);
-                    nameContainer.style.display = 'none'; // Hide employee number
-                }
-            });
+            }
         } else {
             const noRecordsRow = document.createElement('div');
             noRecordsRow.classList.add('name-container');
@@ -126,8 +131,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             const employeeName = nameContainer.textContent.toLowerCase();
             const rows = table.querySelectorAll('tbody tr');
 
-            let nameMatches = employeeName.includes(nameFilter);
-            let dateMatches = !dateFilterValue || Array.from(rows).some(row => {
+            const nameMatches = employeeName.includes(nameFilter);
+            const dateMatches = !dateFilterValue || Array.from(rows).some(row => {
                 const dateInput = row.querySelector('input[type="date"]');
                 return dateInput && dateInput.value === dateFilterValue;
             });
@@ -152,12 +157,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         tables.forEach(table => {
             const nameContainer = table.previousElementSibling;
             const employeeName = nameContainer.textContent;
-            const employeeNumber = nameContainer.getAttribute('data-employee-number');
+            const employeeNumber = new URLSearchParams(nameContainer.querySelector('a').href).get('employeeNumber');
             const rows = table.querySelectorAll('tbody tr');
             let totalHours = [0, 0, 0, 0, 0];
             let dateEnding = '';
 
-            rows.forEach((row, index) => {
+            rows.forEach((row) => {
                 const columns = row.querySelectorAll('th');
                 dateEnding = columns[0].querySelector('input').value || '';
                 totalHours[0] += parseFloat(columns[1].querySelector('input').value) || 0;
