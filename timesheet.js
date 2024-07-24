@@ -284,24 +284,20 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     async function fetchPtoHours() {
         console.log('Fetching PTO hours...');
-        const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
-        const baseId = 'app9gw2qxhGCmtJvW';
-        const tableId = 'tbljmLpqXScwhiWTt';
-    
-        const userEmail = localStorage.getItem('userEmail');
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-    
+
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
             if (!response.ok) throw new Error(`Failed to fetch PTO hours: ${response.statusText}`);
-    
+
             const data = await response.json();
             console.log('Fetched PTO hours:', data);
-    
+
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
                 availablePTOHours = record['PTO Hours'] || 0;
                 elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
+                elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2); // Set initial remaining PTO hours
                 console.log('Available PTO hours:', availablePTOHours);
             } else {
                 console.log('No PTO hours data found for user');
@@ -311,27 +307,23 @@ document.addEventListener("DOMContentLoaded", async function() {
             alert('Failed to fetch PTO hours. Error: ' + error.message);
         }
     }
-    
+
     async function fetchPersonalTime() {
         console.log('Fetching Personal hours...');
-        const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
-        const baseId = 'app9gw2qxhGCmtJvW';
-        const tableId = 'tbljmLpqXScwhiWTt';
-    
-        const userEmail = localStorage.getItem('userEmail');
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-    
+
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
             if (!response.ok) throw new Error(`Failed to fetch Personal hours: ${response.statusText}`);
-    
+
             const data = await response.json();
             console.log('Fetched Personal hours:', data);
-    
+
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
                 availablePersonalHours = record['Personaltime'] || 0;
                 elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
+                elements.remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2); // Set initial remaining Personal hours
                 console.log('Available Personal hours:', availablePersonalHours);
             } else {
                 console.log('No Personal hours data found for user');
