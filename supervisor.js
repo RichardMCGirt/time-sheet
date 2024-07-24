@@ -99,6 +99,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                 `;
 
                 timesheetsBody.appendChild(table);
+
+                if (supervisorEmail === 'katy@vanirinstalledsales.com') {
+                    nameContainer.setAttribute('data-employee-number', employeeNumber);
+                    nameContainer.style.display = 'none'; // Hide employee number
+                }
             });
         } else {
             const noRecordsRow = document.createElement('div');
@@ -154,13 +159,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     function exportToExcel() {
         const wb = XLSX.utils.book_new();
         let ws_data = [
-            ['Employee Name', 'Date Ending', 'Hours Worked', 'PTO Hours used', 'Personal Hours used', 'Holiday Hours used', 'Total Hours']
+            ['Employee Number', 'Employee Name', 'Date Ending', 'Hours Worked', 'PTO Hours used', 'Personal Hours used', 'Holiday Hours used', 'Total Hours']
         ];
 
         const tables = timesheetsBody.querySelectorAll('.time-entry-table');
         tables.forEach(table => {
             const nameContainer = table.previousElementSibling;
             const employeeName = nameContainer.textContent;
+            const employeeNumber = nameContainer.getAttribute('data-employee-number');
             const rows = table.querySelectorAll('tbody tr');
             let totalHours = [0, 0, 0, 0, 0];
             let date1 = '', date7 = '';
@@ -180,14 +186,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                 totalHours[4] += parseFloat(columns[5].querySelector('input').value) || 0;
             });
 
-            const dateRange = ` ${date7}`;
-            ws_data.push([employeeName, dateRange, ...totalHours]);
+            const dateRange = `${date1} - ${date7}`;
+            ws_data.push([employeeNumber, employeeName, dateRange, ...totalHours]);
         });
 
         const ws = XLSX.utils.aoa_to_sheet(ws_data);
 
         // Set column widths
         ws['!cols'] = [
+            { wch: 18 }, // Employee Number
             { wch: 18 }, // Employee Name
             { wch: 25 }, // Date
             { wch: 14 }, // Hours Worked
