@@ -22,6 +22,7 @@ const elements = {
     personalTimeDisplay: document.getElementById('personal-time-display'),
     resetButton: document.getElementById('reset-button'),
     submitButton: document.getElementById('submit-button'),
+    totalPersonalTimeDisplay: document.getElementById('total-personal-time-display'),
 };
 
 document.addEventListener("DOMContentLoaded", async function() {
@@ -36,7 +37,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     elements.ptoHoursDisplay.textContent = 'Loading...';
     elements.personalTimeDisplay.textContent = 'Loading...';
 
-    const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
     if (userEmail) {
         elements.userEmailElement.textContent = userEmail;
         console.log('User email set in the UI');
@@ -51,6 +51,40 @@ document.addEventListener("DOMContentLoaded", async function() {
     elements.timeEntryForm.addEventListener('input', debounce(calculateTotalTimeWorked, 300));
     elements.logoutButton.addEventListener('click', handleLogout);
     elements.resetButton.addEventListener('click', resetForm);
+
+    await fetchPtoHours();
+    await fetchPersonalTime();
+
+    elements.submitButton.addEventListener('click', async (event) => {
+        event.preventDefault();
+
+        const ptoTimeUsed = parseFloat(elements.ptoTimeSpan.textContent) || 0;
+        const personalTimeUsed = parseFloat(elements.personalTimeSpan.textContent) || 0;
+
+        const remainingPtoHours = availablePTOHours - ptoTimeUsed;
+        const remainingPersonalHours = availablePersonalHours - personalTimeUsed;
+
+        await updatePtoHours(remainingPtoHours);
+        await updatePersonalHours(remainingPersonalHours);
+
+        alert('Updates successful! The page will now refresh.');
+        location.reload();
+    });
+
+    const personalTimeInputs = document.querySelectorAll('input[name^="Personal_hours"]');
+    personalTimeInputs.forEach(input => {
+        input.addEventListener('input', updateTotalPersonalHours);
+    });
+
+    function updateTotalPersonalHours() {
+        let totalPersonalHours = 0;
+        personalTimeInputs.forEach(input => {
+            totalPersonalHours += parseFloat(input.value) || 0;
+        });
+        elements.totalPersonalTimeDisplay.textContent = totalPersonalHours.toFixed(2);
+        elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
+        elements.remainingPersonalHoursElement.textContent = (availablePersonalHours - totalPersonalHours).toFixed(2);
+    }
 
     const timeInputs = document.querySelectorAll('select.time-dropdown');
     timeInputs.forEach(input => {
@@ -220,7 +254,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         if (personalUsed > availablePersonalHours) {
             elements.ptoValidationMessage.textContent = 'Personal time used cannot exceed available Personal hours';
             elements.ptoValidationMessage.style.color = 'red';
-            disablePersonalInputs();
         } else if (totalHoursWithPto > 40 && parseFloat(elements.personalTimeSpan.textContent) > 0) {
             elements.ptoValidationMessage.textContent = 'Total hours including Personal time cannot exceed 40 hours';
             elements.ptoValidationMessage.style.color = 'red';
@@ -259,7 +292,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
         elements.holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
         elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
-        document.getElementById('total-personal-time-display').textContent = totalPersonalHours.toFixed(2);
 
         elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(2);
         elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(2);
@@ -307,7 +339,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         return function (...args) {
             const context = this;
             clearTimeout(timeout);
-      };
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
     }
 
     function scrollToElement(element) {
@@ -345,41 +378,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         console.log('Resetting form...');
         clearForm();
     }
-
-    elements.submitButton.addEventListener('click', async (event) => {
-        event.preventDefault();
-
-        const totalTimeWithPto = parseFloat(elements.totalTimeWithPtoSpan.textContent);
-        const ptoTimeUsed = parseFloat(elements.ptoTimeSpan.textContent) || 0;
-        const personalTimeUsed = parseFloat(elements.personalTimeSpan.textContent) || 0;
-        const holidayHoursUsed = parseFloat(elements.holidayTimeSpan.textContent) || 0;
-
-        const payload = {
-            'Total Hours Worked': parseFloat(elements.totalTimeWorkedSpan.textContent),
-            'PTO time used': ptoTimeUsed,
-            'Personal Time Used': personalTimeUsed,
-            'Holiday Hours Used': holidayHoursUsed,
-        };
-
-        for (let i = 1; i <= 7; i++) {
-            payload[`Date${i}`] = elements.timeEntryForm.elements[`date${i}`].value;
-            payload[`Hours Worked${i}`] = parseFloat(document.getElementById(`hours-worked-today${i}`).textContent);
-            payload[`PTO Hours${i}`] = parseFloat(elements.timeEntryForm.elements[`PTO_hours${i}`].value) || 0;
-            payload[`Personal Hours${i}`] = parseFloat(elements.timeEntryForm.elements[`Personal_hours${i}`].value) || 0;
-            payload[`Holiday Hours${i}`] = parseFloat(elements.timeEntryForm.elements[`Holiday_hours${i}`].value) || 0;
-            payload[`Total Hours${i}`] = payload[`Hours Worked${i}`] + payload[`PTO Hours${i}`] + payload[`Personal Hours${i}`] + payload[`Holiday Hours${i}`];
-        }
-
-        try {
-            await updatePtoHours();
-            await updatePersonalHours();
-            await patchTimesheetData(payload);
-            alert('Updates successful! The page will now refresh.');
-            location.reload();
-        } catch (error) {
-            alert('Failed to update data. ' + error.message);
-        }
-    });
 
     async function initializeForm() {
         console.log('Initializing form...');
@@ -422,15 +420,17 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     }
 
-   
-
-    document.getElementById('light-mode-toggle').addEventListener('click', function () {
+    document.getElementById('toggle-mode').addEventListener('click', function () {
         document.body.classList.toggle('light-mode');
+        if (document.body.classList.contains('light-mode')) {
+            this.textContent = 'Dark Mode';
+        } else {
+            this.textContent = 'Light Mode';
+        }
     });
 
     showPickerOnFocus();
 
-    // Add click event for email navigation
     document.getElementById('user-email').addEventListener('click', function() {
         window.location.href = 'supervisor.html';
     });
