@@ -220,13 +220,17 @@ document.addEventListener("DOMContentLoaded", async function () {
         link.click();
     }
 
-    // Initial fetch
-    const supervisorName = await fetchSupervisorName(supervisorEmail);
-    if (supervisorName) {
-        await fetchTimesheets(supervisorName);
-    } else {
-        console.error('No supervisor found with email:', supervisorEmail);
+    async function refreshData() {
+        const supervisorName = await fetchSupervisorName(supervisorEmail);
+        if (supervisorName) {
+            await fetchTimesheets(supervisorName);
+        } else {
+            console.error('No supervisor found with email:', supervisorEmail);
+        }
     }
+
+    // Initial fetch
+    await refreshData();
 
     document.getElementById('logout-button').addEventListener('click', function (event) {
         event.preventDefault();
@@ -240,4 +244,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
+    // Refresh data every 60 seconds
+    setInterval(refreshData, 120000);
 });
