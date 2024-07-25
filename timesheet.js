@@ -489,172 +489,33 @@ document.addEventListener("DOMContentLoaded", async function() {
         clearForm();
     }
 
-
-    
-
-    
-
     elements.submitButton.addEventListener('click', async (event) => {
         event.preventDefault();
-    
-        const totalPtoHours = parseFloat(elements.ptoTimeSpan.textContent) || 0;
-        const totalHolidayHours = parseFloat(elements.holidayTimeSpan.textContent) || 0;
-        const totalPersonalHours = parseFloat(elements.personalTimeSpan.textContent) || 0;
-        const totalTimeWithPto = parseFloat(elements.totalTimeWithPtoSpan.textContent) || 0;;
-      
-    
-    
-    
-        if (totalTimeWithPto > 40 && (totalPtoHours > 0 || totalPersonalHours > 0)) {
+
+        const totalTimeWithPto = parseFloat(elements.totalTimeWithPtoSpan.textContent);
+        const ptoTimeUsed = parseFloat(elements.ptoTimeSpan.textContent) || 0;
+        const personalTimeUsed = parseFloat(elements.personalTimeSpan.textContent) || 0;
+        const holidayHoursUsed = parseFloat(elements.holidayTimeSpan.textContent) || 0;
+
+        if (ptoTimeUsed === 0 && personalTimeUsed === 0 && holidayHoursUsed === 0) {
+            alert('Nothing to change');
+            return;
+        }
+
+        if (totalTimeWithPto > 40 && (ptoTimeUsed > 0 || personalTimeUsed > 0)) {
             alert('Total hours including PTO, Personal time, or Holiday time cannot exceed 40 hours.');
             return;
         }
-    
+
         try {
-            await updatePtoHours(totalPtoHours);
-            await updatePersonalHours(totalPersonalHours);
-            await updateHolidayHours(totalHolidayHours);
+            await updatePtoHours();
+            await updatePersonalHours();
             alert('Updates successful! The page will now refresh.');
             location.reload();
         } catch (error) {
             alert('Failed to update data. ' + error.message);
         }
     });
-    
-    async function updatePtoHours(totalPtoHours) {
-        console.log('Updating PTO hours...');
-        const newPtoHoursValue = Math.max(0, availablePTOHours - totalPtoHours);
-        console.log('Used PTO hours value:', totalPtoHours);
-        console.log('New PTO hours value:', newPtoHoursValue);
-    
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        console.log('Endpoint for update:', endpoint);
-    
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
-            const data = await response.json();
-            console.log('Fetched data for update:', data);
-    
-            if (data.records.length > 0) {
-                const recordId = data.records[0].id;
-                console.log('Record ID:', recordId);
-    
-                const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ fields: { 'PTO time used': totalPtoHours } })
-                });
-    
-                const updateResponseData = await updateResponse.json();
-                console.log('Update response data:', updateResponseData);
-    
-                if (!updateResponse.ok) throw new Error(`Failed to update PTO hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
-                console.log('PTO hours updated successfully');
-                alert('PTO hours updated successfully!');
-            } else {
-                throw new Error('No record found for user');
-            }
-        } catch (error) {
-            console.error('Error updating PTO hours:', error);
-            alert('Failed to update PTO hours. Error: ' + error.message);
-        }
-    }
-    
-    async function updatePersonalHours(totalPersonalHours) {
-        console.log('Updating Personal hours...');
-        const newPersonalHoursValue = Math.max(0, availablePersonalHours - totalPersonalHours);
-        console.log('Used Personal hours value:', totalPersonalHours);
-        console.log('New Personal hours value:', newPersonalHoursValue);
-    
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        console.log('Endpoint for update:', endpoint);
-    
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
-            const data = await response.json();
-            console.log('Fetched data for update:', data);
-    
-            if (data.records.length > 0) {
-                const recordId = data.records[0].id;
-                console.log('Record ID:', recordId);
-    
-                const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ fields: { 'Personal Time Used': totalPersonalHours,  } })
-                });
-    
-                const updateResponseData = await updateResponse.json();
-                console.log('Update response data:', updateResponseData);
-    
-                if (!updateResponse.ok) throw new Error(`Failed to update Personal hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
-                console.log('Personal hours updated successfully');
-                alert('Personal hours updated successfully!');
-            } else {
-                throw new Error('No record found for user');
-            }
-        } catch (error) {
-            console.error('Error updating Personal hours:', error);
-            alert('Failed to update Personal hours. Error: ' + error.message);
-        }
-    }
-    
-    async function updateHolidayHours(totalHolidayHours) {
-        console.log('Updating Holiday hours...');
-        console.log('Used Holiday hours value:', totalHolidayHours);
-    
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        console.log('Endpoint for update:', endpoint);
-    
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
-            const data = await response.json();
-            console.log('Fetched data for update:', data);
-    
-            if (data.records.length > 0) {
-                const recordId = data.records[0].id;
-                console.log('Record ID:', recordId);
-    
-                if (totalHolidayHours !== 0) {
-                    const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                        method: 'PATCH',
-                        headers: {
-                            Authorization: `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ fields: { 'totalHolidayHours': totalHolidayHours } })
-                    });
-    
-                    const updateResponseData = await updateResponse.json();
-                    console.log('Update response data:', updateResponseData);
-    
-                    if (!updateResponse.ok) throw new Error(`Failed to update Holiday hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
-                    console.log('Holiday hours updated successfully');
-                    alert('Holiday hours updated successfully!');
-                } else {
-                    console.log('Total Holiday hours is zero, no update required.');
-                    alert('No update needed as the holiday hours value is zero.');
-                }
-            } else {
-                throw new Error('No record found for user');
-            }
-        } catch (error) {
-            console.error('Error updating Holiday hours:', error);
-            alert('Failed to update Holiday hours. Error: ' + error.message);
-        }
-    }
-    
-    
-    
 
     async function initializeForm() {
         console.log('Initializing form...');
