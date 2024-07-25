@@ -468,22 +468,32 @@ document.addEventListener("DOMContentLoaded", async function() {
         clearForm();
     }
 
-    async function sendDataToAirtable(date, ptoTime, personalTime, holidayHours, totalTimeWorked, totalTimeWithPto) {
+    function calculateColumnSum(columnName) {
+        const inputs = document.querySelectorAll(`input[name^="${columnName}"]`);
+        let total = 0;
+        inputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            total += value;
+        });
+        return total;
+    }
+
+    async function sendDataToAirtable(date7, totalPtoHours, totalPersonalHours, totalHolidayHours, totalTimeWorked, totalTimeWithPto) {
         console.log('Preparing to send data to Airtable:', {
-            date,
-            ptoTime,
-            personalTime,
-            holidayHours,
+            date7,
+            totalPtoHours,
+            totalPersonalHours,
+            totalHolidayHours,
             totalTimeWorked,
             totalTimeWithPto
         });
     
         // Ensure default values and handle missing fields
         const data = {
-            "date7": date || '0',
-            "PTO Time Used": parseFloat(ptoTime) || 0,
-            "Personal Time Used": parseFloat(personalTime) || 0,
-            "Holiday Hours Used": parseFloat(holidayHours) || 0,
+            "date7": date7 || '0',
+            "PTO Time Used": parseFloat(totalPtoHours) || 0,
+            "Personal Time Used": parseFloat(totalPersonalHours) || 0,
+            "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
             "Total Hours Worked": parseFloat(totalTimeWorked) || 0,
             "Total Time with PTO": parseFloat(totalTimeWithPto) || 0
         };
@@ -516,11 +526,47 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
     
-    // Example call to the function
-    sendDataToAirtable('2023-07-20', '8', '2', '1', '40', '51');
     
-
-    // Capture changes in the relevant fields and send to Airtable
+    function captureAndSendData() {
+        // Capture the value of date7 from the form
+        const date7 = elements.timeEntryForm.elements['date7']?.value || '0';
+    
+        // Calculate the sums of the columns
+        const totalPtoHours = calculateColumnSum('PTO_hours');
+        const totalPersonalHours = calculateColumnSum('Personal_hours');
+        const totalHolidayHours = calculateColumnSum('Holiday_hours');
+    
+        // Call sendDataToAirtable with captured values
+        sendDataToAirtable(
+            date7,
+            totalPtoHours,
+            totalPersonalHours,
+            totalHolidayHours,
+            elements.totalTimeWorkedSpan.textContent,
+            elements.totalTimeWithPtoSpan.textContent
+        );
+    }
+    
+    
+    // Ensure `date7` is properly set in the form when the week-ending date changes
+    async function handleWeekEndingChange() {
+        console.log('Handling week-ending date change...');
+        const selectedDate = new Date(elements.weekEndingInput.value);
+        adjustToWednesday(selectedDate);
+        elements.weekEndingInput.value = selectedDate.toISOString().split('T')[0];
+        console.log('Adjusted week-ending date:', selectedDate);
+    
+        const date7 = new Date(selectedDate);
+        date7.setDate(selectedDate.getDate() + 6);
+        elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
+        populateWeekDates(selectedDate);
+    
+        // Capture and send data after updating dates
+        captureAndSendData();
+    }
+    
+    
+    // Add event listener for capturing data on relevant field changes
     document.querySelectorAll('tr[data-day]').forEach(row => {
         row.addEventListener('input', function() {
             const date = row.querySelector(`input[name="date${row.dataset.day}"]`).value;
@@ -529,10 +575,61 @@ document.addEventListener("DOMContentLoaded", async function() {
             const holidayHours = row.querySelector(`input[name="Holiday_hours${row.dataset.day}"]`)?.value || '0';
             const totalTimeWorked = row.querySelector(`#hours-worked-today${row.dataset.day}`)?.textContent || '0.00';
             const totalTimeWithPto = elements.totalTimeWithPtoSpan.textContent;
-
+    
             sendDataToAirtable(date, ptoTime, personalTime, holidayHours, totalTimeWorked, totalTimeWithPto);
         });
     });
+    
+window.onload = function() {
+    document.getElementById('submit-button').addEventListener('click', async function() {
+        // Get values from your input fields
+        let numberValue = parseFloat(document.getElementById('numberInput').value);
+        let dateValue = new Date(document.getElementById('dateInput').value);
+        
+        // Calculate sum (assuming you want to sum numberValue with a constant or another value)
+        let sum = numberValue + 7; // Example: Adding 7 to numberValue (adjust as needed)
+        
+        // Format dateValue as required (e.g., YYYY-MM-DD)
+        let formattedDate = dateValue.toISOString().split('T')[0];
+        
+        // Prepare data for Airtable
+        let airtableData = {
+            fields: {
+                'Sum': sum,
+                'Date': formattedDate,
+                // Add other fields if necessary
+            }
+        };
+        
+        // Update Airtable with personal hours and PTO hours
+        let airtableApiKey = 'YOUR_AIRTABLE_API_KEY';
+        let airtableBaseId = 'YOUR_AIRTABLE_BASE_ID';
+        let airtableTableName = 'YOUR_AIRTABLE_TABLE_NAME';
+        
+        try {
+            let response = await fetch(`https://api.airtable.com/v0/${airtableBaseId}/${airtableTableName}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${airtableApiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(airtableData)
+            });
+            
+            if (response.ok) {
+                let jsonResponse = await response.json();
+                console.log('Data successfully sent to Airtable:', jsonResponse);
+            } else {
+                console.error('Error sending data to Airtable:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Network error:', error);
+        }
+    });
+};
+
+
+    
 
     async function initializeForm() {
         console.log('Initializing form...');
