@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     elements.timeEntryForm.addEventListener('input', debounce(calculateTotalTimeWorked, 300));
     elements.logoutButton.addEventListener('click', handleLogout);
     elements.resetButton.addEventListener('click', resetForm);
+    elements.submitButton.addEventListener('click', handleSubmit);
 
     const timeInputs = document.querySelectorAll('select.time-dropdown');
     timeInputs.forEach(input => {
@@ -354,38 +355,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     }
 
-    await fetchPtoHours();
-    await fetchPersonalTime();
-    preventExceedingPtoInputs();
-    preventExceedingPersonalInputs();
-
-    function debounce(func, wait) {
-        let timeout;
-        return function (...args) {
-            const context = this;
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(context, args), wait);
-        };
-    }
-
-    function scrollToElement(element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    timeInputs.forEach(input => {
-        input.addEventListener('focus', () => scrollToElement(input));
-    });
-
-    function handleLogout(event) {
-        event.preventDefault();
-        console.log('Logging out...');
-        localStorage.removeItem('userEmail');
-        sessionStorage.removeItem('user');
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 100);
-    }
-
     async function updatePtoHours() {
         console.log('Updating PTO hours...');
         const usedPtoHoursValue = parseFloat(elements.ptoTimeSpan.textContent) || 0;
@@ -450,6 +419,66 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    async function handleSubmit(event) {
+        event.preventDefault();
+        console.log('Submitting form...');
+        await updatePtoHours();
+        await updatePersonalHours();
+        await sendDataToAirtable();
+    }
+
+    async function sendDataToAirtable() {
+        const date7 = elements.timeEntryForm.elements['date7']?.value || '0';
+        const totalPtoHours = calculateColumnSum('PTO_hours');
+        const totalPersonalHours = calculateColumnSum('Personal_hours');
+        const totalHolidayHours = calculateColumnSum('Holiday_hours');
+
+        console.log('Preparing to send data to Airtable:', {
+            date7,
+            totalPtoHours,
+            totalPersonalHours,
+            totalHolidayHours,
+            totalTimeWorked: elements.totalTimeWorkedSpan.textContent,
+            totalTimeWithPto: elements.totalTimeWithPtoSpan.textContent
+        });
+
+        const data = {
+            "date7": date7 || '0',
+            "PTO Time Used": parseFloat(totalPtoHours) || 0,
+            "Personal Time Used": parseFloat(totalPersonalHours) || 0,
+            "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
+            "Total Hours Worked": parseFloat(elements.totalTimeWorkedSpan.textContent) || 0,
+            "Total Time with PTO": parseFloat(elements.totalTimeWithPtoSpan.textContent) || 0
+        };
+
+        console.log('Data to be sent:', data);
+
+        try {
+            const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields: data })
+            });
+
+            const result = await response.json();
+
+            console.log('Fetch response:', response);
+            console.log('Result:', result);
+
+            if (!response.ok) {
+                throw new Error(result.error?.message || 'Failed to update Airtable');
+            }
+
+            console.log('Success:', result);
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Error: ${error.message}`);
+        }
+    }
+
     function clearForm() {
         console.log('Clearing form...');
         elements.timeEntryForm.reset();
@@ -478,158 +507,32 @@ document.addEventListener("DOMContentLoaded", async function() {
         return total;
     }
 
-    async function sendDataToAirtable(date7, totalPtoHours, totalPersonalHours, totalHolidayHours, totalTimeWorked, totalTimeWithPto) {
-        console.log('Preparing to send data to Airtable:', {
-            date7,
-            totalPtoHours,
-            totalPersonalHours,
-            totalHolidayHours,
-            totalTimeWorked,
-            totalTimeWithPto
-        });
-    
-        // Ensure default values and handle missing fields
-        const data = {
-            "date7": date7 || '0',
-            "PTO Time Used": parseFloat(totalPtoHours) || 0,
-            "Personal Time Used": parseFloat(totalPersonalHours) || 0,
-            "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
-            "Total Hours Worked": parseFloat(totalTimeWorked) || 0,
-            "Total Time with PTO": parseFloat(totalTimeWithPto) || 0
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            const context = this;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
         };
-    
-        console.log('Data to be sent:', data);
-    
-        try {
-            const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ fields: data })
-            });
-    
-            const result = await response.json();
-    
-            console.log('Fetch response:', response);
-            console.log('Result:', result);
-    
-            if (!response.ok) {
-                throw new Error(result.error?.message || 'Failed to update Airtable');
-            }
-    
-            console.log('Success:', result);
-        } catch (error) {
-            console.error('Error:', error);
-            alert(`Error: ${error.message}`);
-        }
     }
-    
-    
-    function captureAndSendData() {
-        // Capture the value of date7 from the form
-        const date7 = elements.timeEntryForm.elements['date7']?.value || '0';
-    
-        // Calculate the sums of the columns
-        const totalPtoHours = calculateColumnSum('PTO_hours');
-        const totalPersonalHours = calculateColumnSum('Personal_hours');
-        const totalHolidayHours = calculateColumnSum('Holiday_hours');
-    
-        // Call sendDataToAirtable with captured values
-        sendDataToAirtable(
-            date7,
-            totalPtoHours,
-            totalPersonalHours,
-            totalHolidayHours,
-            elements.totalTimeWorkedSpan.textContent,
-            elements.totalTimeWithPtoSpan.textContent
-        );
-    }
-    
-    
-    // Ensure `date7` is properly set in the form when the week-ending date changes
-    async function handleWeekEndingChange() {
-        console.log('Handling week-ending date change...');
-        const selectedDate = new Date(elements.weekEndingInput.value);
-        adjustToWednesday(selectedDate);
-        elements.weekEndingInput.value = selectedDate.toISOString().split('T')[0];
-        console.log('Adjusted week-ending date:', selectedDate);
-    
-        const date7 = new Date(selectedDate);
-        date7.setDate(selectedDate.getDate() + 6);
-        elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
-        populateWeekDates(selectedDate);
-    
-        // Capture and send data after updating dates
-        captureAndSendData();
-    }
-    
-    
-    // Add event listener for capturing data on relevant field changes
-    document.querySelectorAll('tr[data-day]').forEach(row => {
-        row.addEventListener('input', function() {
-            const date = row.querySelector(`input[name="date${row.dataset.day}"]`).value;
-            const ptoTime = row.querySelector(`input[name="PTO_hours${row.dataset.day}"]`)?.value || '0';
-            const personalTime = row.querySelector(`input[name="Personal_hours${row.dataset.day}"]`)?.value || '0';
-            const holidayHours = row.querySelector(`input[name="Holiday_hours${row.dataset.day}"]`)?.value || '0';
-            const totalTimeWorked = row.querySelector(`#hours-worked-today${row.dataset.day}`)?.textContent || '0.00';
-            const totalTimeWithPto = elements.totalTimeWithPtoSpan.textContent;
-    
-            sendDataToAirtable(date, ptoTime, personalTime, holidayHours, totalTimeWorked, totalTimeWithPto);
-        });
-    });
-    
-window.onload = function() {
-    document.getElementById('submit-button').addEventListener('click', async function() {
-        // Get values from your input fields
-        let numberValue = parseFloat(document.getElementById('numberInput').value);
-        let dateValue = new Date(document.getElementById('dateInput').value);
-        
-        // Calculate sum (assuming you want to sum numberValue with a constant or another value)
-        let sum = numberValue + 7; // Example: Adding 7 to numberValue (adjust as needed)
-        
-        // Format dateValue as required (e.g., YYYY-MM-DD)
-        let formattedDate = dateValue.toISOString().split('T')[0];
-        
-        // Prepare data for Airtable
-        let airtableData = {
-            fields: {
-                'Sum': sum,
-                'Date': formattedDate,
-                // Add other fields if necessary
-            }
-        };
-        
-        // Update Airtable with personal hours and PTO hours
-        let airtableApiKey = 'YOUR_AIRTABLE_API_KEY';
-        let airtableBaseId = 'YOUR_AIRTABLE_BASE_ID';
-        let airtableTableName = 'YOUR_AIRTABLE_TABLE_NAME';
-        
-        try {
-            let response = await fetch(`https://api.airtable.com/v0/${airtableBaseId}/${airtableTableName}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${airtableApiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(airtableData)
-            });
-            
-            if (response.ok) {
-                let jsonResponse = await response.json();
-                console.log('Data successfully sent to Airtable:', jsonResponse);
-            } else {
-                console.error('Error sending data to Airtable:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Network error:', error);
-        }
-    });
-};
 
+    function scrollToElement(element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
-    
+    timeInputs.forEach(input => {
+        input.addEventListener('focus', () => scrollToElement(input));
+    });
+
+    function handleLogout(event) {
+        event.preventDefault();
+        console.log('Logging out...');
+        localStorage.removeItem('userEmail');
+        sessionStorage.removeItem('user');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 100);
+    }
 
     async function initializeForm() {
         console.log('Initializing form...');
