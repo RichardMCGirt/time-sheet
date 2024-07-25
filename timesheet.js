@@ -372,7 +372,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                     Authorization: `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ fields: { 'PTO Hours': newPtoHoursValue } })
+                body: JSON.stringify({ fields: { 'PTO Time Used': newPtoHoursValue } })
             });
 
             const updateResponseData = await updateResponse.json();
@@ -420,6 +420,19 @@ document.addEventListener("DOMContentLoaded", async function() {
     async function handleSubmit(event) {
         event.preventDefault();
         console.log('Submitting form...');
+        const totalPtoHours = parseFloat(elements.ptoTimeSpan.textContent) || 0;
+        const totalPersonalHours = parseFloat(elements.personalTimeSpan.textContent) || 0;
+
+        if (totalPtoHours > availablePTOHours) {
+            alert('PTO time used cannot exceed available PTO hours');
+            return;
+        }
+
+        if (totalPersonalHours > availablePersonalHours) {
+            alert('Personal time used cannot exceed available Personal hours');
+            return;
+        }
+
         try {
             await updatePtoHours();
             await updatePersonalHours();

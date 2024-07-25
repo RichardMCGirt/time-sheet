@@ -90,6 +90,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                             <th class="narrow-column">PTO Hours used</th>
                             <th class="narrow-column">Personal Hours used</th>
                             <th class="narrow-column">Holiday Hours used</th>
+                            <th class="narrow-column">Gifted Hours</th>
                             <th class="narrow-column">Total Hours</th>
                             <th class="narrow-column">Approve</th>
                         </tr>
@@ -110,14 +111,23 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     function generateRows(fields, recordId) {
+        const hoursWorked = fields['Total Hours Worked'] || 0;
+        const ptoHours = fields['PTO Time Used'] || 0;
+        const personalHours = fields['Personal Time Used'] || 0;
+        const holidayHours = fields['Holiday Hours Used'] || 0;
+
+        const giftedHours = hoursWorked > 0 ? Math.min(3, 40 - holidayHours) : 0;
+        const totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours + giftedHours);
+
         return `
             <tr>
                 <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
-                <th><input type="number" name="hours_worked" value="${fields['Total Hours Worked'] || ''}" placeholder="0" readonly></th>
-                <th><input type="number" name="pto_hours" value="${fields['PTO Time Used'] || ''}" placeholder="0" readonly></th>
-                <th><input type="number" name="personal_hours" value="${fields['Personal Time Used'] || ''}" placeholder="0" readonly></th>
-                <th><input type="number" name="holiday_hours" value="${fields['Holiday Hours Used'] || ''}" placeholder="0" readonly></th>
-                <th><input type="number" name="total_hours" value="${fields['TotalTimeWithPTO'] || ''}" placeholder="0" readonly></th>
+                <th><input type="number" name="hours_worked" value="${hoursWorked}" placeholder="0" readonly></th>
+                <th><input type="number" name="pto_hours" value="${ptoHours}" placeholder="0" readonly></th>
+                <th><input type="number" name="personal_hours" value="${personalHours}" placeholder="0" readonly></th>
+                <th><input type="number" name="holiday_hours" value="${holidayHours}" placeholder="0" readonly></th>
+                <th><input type="number" name="gifted_hours" value="${giftedHours}" placeholder="0" readonly></th>
+                <th><input type="number" name="total_hours" value="${totalHours}" placeholder="0" readonly></th>
                 <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Approved'] ? 'checked' : ''}></th>
             </tr>
         `;
@@ -197,15 +207,16 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const ptoHours = row.querySelector('input[name="pto_hours"]').value;
                 const personalHours = row.querySelector('input[name="personal_hours"]').value;
                 const holidayHours = row.querySelector('input[name="holiday_hours"]').value;
+                const giftedHours = row.querySelector('input[name="gifted_hours"]').value;
                 const totalHours = row.querySelector('input[name="total_hours"]').value;
 
-                data.push([employeeName, date, hoursWorked, ptoHours, personalHours, holidayHours, totalHours]);
+                data.push([employeeName, date, hoursWorked, ptoHours, personalHours, holidayHours, giftedHours, totalHours]);
             });
         });
 
         // Convert to CSV format
         let csvContent = "data:text/csv;charset=utf-8," 
-            + "Employee Name,Date Ending,Hours Worked,PTO Hours Used,Personal Hours Used,Holiday Hours Used,Total Hours,Approved\n";
+            + "Employee Name,Date Ending,Hours Worked,PTO Hours Used,Personal Hours Used,Holiday Hours Used,Gifted Hours,Total Hours,Approved\n";
 
         data.forEach(row => {
             csvContent += row.join(",") + "\n";
