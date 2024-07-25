@@ -560,6 +560,43 @@ document.addEventListener("DOMContentLoaded", async function() {
         handleWeekEndingChange();
     }
 
+    const convertToCsvButton = document.getElementById('convert-to-csv-button');
+
+    convertToCsvButton.addEventListener('click', convertToCsv);
+
+    function convertToCsv() {
+        console.log('Converting to CSV...');
+
+        const rows = [];
+        const employeeEmailRow = [userEmail];
+        rows.push(employeeEmailRow);
+
+        const headerRow = ['Date', 'Start Time', 'Lunch Start', 'Lunch End', 'End Time', 'Additional Time In', 'Additional Time Out', 'Hours Worked', 'PTO Hours', 'Personal Hours', 'Holiday Hours'];
+        rows.push(headerRow);
+
+        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
+        daysOfWeek.forEach((day, index) => {
+            const row = [];
+            row.push(elements.timeEntryForm.elements[day].value);
+            const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'].map(field => elements.timeEntryForm.elements[`${field}${index + 1}`].value);
+            row.push(...timeFields);
+            row.push(document.getElementById(`hours-worked-today${index + 1}`).textContent);
+            row.push(elements.timeEntryForm.elements[`PTO_hours${index + 1}`]?.value || '');
+            row.push(elements.timeEntryForm.elements[`Personal_hours${index + 1}`]?.value || '');
+            row.push(elements.timeEntryForm.elements[`Holiday_hours${index + 1}`]?.value || '');
+            rows.push(row);
+        });
+
+        const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "time_entries.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     initializeForm();
     initializeTimeDropdowns();
     initializeKeyboardNavigation();
