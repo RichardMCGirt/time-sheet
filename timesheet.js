@@ -468,8 +468,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         clearForm();
     }
 
-    function sendDataToAirtable(date, ptoTime, personalTime, holidayHours, totalTimeWorked, totalTimeWithPto) {
-        console.log('Sending data to Airtable:', {
+    async function sendDataToAirtable(date, ptoTime, personalTime, holidayHours, totalTimeWorked, totalTimeWithPto) {
+        console.log('Preparing to send data to Airtable:', {
             date,
             ptoTime,
             personalTime,
@@ -478,33 +478,47 @@ document.addEventListener("DOMContentLoaded", async function() {
             totalTimeWithPto
         });
     
-        return fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                fields: {
-                    "date7": date || '0',
-                    "PTO time used": ptoTime || '0',
-                    "Personal Time used": personalTime || '0',
-                    "Holiday Hours Used": holidayHours || '0',
-                    "Total Hours Worked": totalTimeWorked || '0',
-                    "Total Time with PTO": totalTimeWithPto || '0'
-                }
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch((error) => {
+        // Ensure default values and handle missing fields
+        const data = {
+            "date7": date || '0',
+            "PTO Time Used": parseFloat(ptoTime) || 0,
+            "Personal Time Used": parseFloat(personalTime) || 0,
+            "Holiday Hours Used": parseFloat(holidayHours) || 0,
+            "Total Hours Worked": parseFloat(totalTimeWorked) || 0,
+            "Total Time with PTO": parseFloat(totalTimeWithPto) || 0
+        };
+    
+        console.log('Data to be sent:', data);
+    
+        try {
+            const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields: data })
+            });
+    
+            const result = await response.json();
+    
+            console.log('Fetch response:', response);
+            console.log('Result:', result);
+    
+            if (!response.ok) {
+                throw new Error(result.error?.message || 'Failed to update Airtable');
+            }
+    
+            console.log('Success:', result);
+        } catch (error) {
             console.error('Error:', error);
-        });
+            alert(`Error: ${error.message}`);
+        }
     }
     
-
+    // Example call to the function
+    sendDataToAirtable('2023-07-20', '8', '2', '1', '40', '51');
+    
 
     // Capture changes in the relevant fields and send to Airtable
     document.querySelectorAll('tr[data-day]').forEach(row => {
@@ -519,47 +533,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             sendDataToAirtable(date, ptoTime, personalTime, holidayHours, totalTimeWorked, totalTimeWithPto);
         });
     });
-
-    async function sendDataToAirtable(date, ptoTime, personalTime, holidayHours, totalTimeWorked, totalTimeWithPto) {
-        console.log('Sending data to Airtable:', {
-            date,
-            ptoTime,
-            personalTime,
-            holidayHours,
-            totalTimeWorked,
-            totalTimeWithPto
-        });
-    
-        // Ensure default values and handle missing fields
-        const data = {
-            "date7": date || '0',
-            "PTO time used": parseFloat(ptoTime) || 0,
-            "Personal Time used": parseFloat(personalTime) || 0,
-            "Holiday Hours Used": parseFloat(holidayHours) || 0,
-            "Total Hours Worked": parseFloat(totalTimeWorked) || 0,
-            "Total Time with PTO": parseFloat(totalTimeWithPto) || 0
-        };
-    
-    
-        try {
-            const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ fields: data })
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error?.message || 'Failed to update Airtable');
-            console.log('Success:', result);
-        } catch (error) {
-            console.error('Error:', error);
-            alert(`Error: ${error.message}`);
-        }
-    }
-    
-    
 
     async function initializeForm() {
         console.log('Initializing form...');
