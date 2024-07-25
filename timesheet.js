@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         personalTimeDisplay: document.getElementById('personal-time-display'),
         resetButton: document.getElementById('reset-button'),
         submitButton: document.getElementById('submit-button'),
+        countdownElement: document.getElementById('countdown'), // Add this line
     };
 
     let availablePTOHours = 0;
@@ -63,6 +64,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     await fetchPtoHours();
     await fetchPersonalTime();
+    await fetchPersonalEndDate(); // Fetch the personal end date
 
     function handleHolidayHoursChange() {
         console.log('Handling Holiday hours change...');
@@ -112,7 +114,104 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     }
 
-    window.toggleWorkInputs = function(index, didNotWork) {
+    async function fetchPersonalEndDate() {
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch Personal END Date: ${response.statusText}`);
+            const data = await response.json();
+            if (data.records.length > 0) {
+                const personalEndDate = data.records[0].fields['Personal END Date'];
+                startCountdown(personalEndDate);
+            } else {
+                console.log('No Personal END Date found for user');
+            }
+        } catch (error) {
+            console.error('Error fetching Personal END Date:', error);
+        }
+    }
+
+    function startCountdown(endDate) {
+        const endDateTime = new Date(endDate).getTime();
+
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const distance = endDateTime - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            elements.countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            if (distance < 0) {
+                clearInterval(interval);
+                elements.countdownElement.innerHTML = "EXPIRED";
+            }
+        };
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
+    }
+
+    // The rest of your existing code...
+
+    async function fetchPtoHours() {
+        console.log('Fetching PTO hours...');
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch PTO hours: ${response.statusText}`);
+
+            const data = await response.json();
+            console.log('Fetched PTO hours:', data);
+
+            if (data.records.length > 0) {
+                const record = data.records[0].fields;
+                availablePTOHours = record['PTO Hours'] || 0;
+                recordId = data.records[0].id; // Save the record ID
+                elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
+                elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2); // Set initial remaining PTO hours
+                console.log('Available PTO hours:', availablePTOHours);
+            } else {
+                console.log('No PTO hours data found for user');
+            }
+        } catch (error) {
+            console.error('Error fetching PTO hours:', error);
+            alert('Failed to fetch PTO hours. Error: ' + error.message);
+        }
+    }
+
+    async function fetchPersonalTime() {
+        console.log('Fetching Personal hours...');
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch Personal hours: ${response.statusText}`);
+
+            const data = await response.json();
+            console.log('Fetched Personal hours:', data);
+
+            if (data.records.length > 0) {
+                const record = data.records[0].fields;
+                availablePersonalHours = record['Personaltime'] || 0;
+                recordId = data.records[0].id; // Save the record ID
+                elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
+                elements.remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2); // Set initial remaining Personal hours
+                console.log('Available Personal hours:', availablePersonalHours);
+            } else {
+                console.log('No Personal hours data found for user');
+            }
+        } catch (error) {
+            console.error('Error fetching Personal hours:', error);
+            alert('Failed to fetch Personal hours. Error: ' + error.message);
+        }
+    }
+
+    function toggleWorkInputs(index, didNotWork) {
         console.log(`Toggling work inputs for index ${index}:`, didNotWork);
         const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'];
         timeFields.forEach(field => {
@@ -130,7 +229,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         if (!didNotWork) {
             calculateTotalTimeWorked();
         }
-    };
+    }
 
     function calculateTotalTimeWorked() {
         console.log('Calculating total time worked...');
@@ -282,77 +381,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         const personalDisplay = document.getElementById('personal-display');
         const value = parseFloat(input.value) || 0;
         personalDisplay.style.display = value > 0 ? 'none' : 'block';
-    }
-
-    async function fetchPtoHours() {
-        console.log('Fetching PTO hours...');
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch PTO hours: ${response.statusText}`);
-
-            const data = await response.json();
-            console.log('Fetched PTO hours:', data);
-
-            if (data.records.length > 0) {
-                const record = data.records[0].fields;
-                availablePTOHours = record['PTO Hours'] || 0;
-                recordId = data.records[0].id; // Save the record ID
-                elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
-                elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2); // Set initial remaining PTO hours
-                console.log('Available PTO hours:', availablePTOHours);
-            } else {
-                console.log('No PTO hours data found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching PTO hours:', error);
-            alert('Failed to fetch PTO hours. Error: ' + error.message);
-        }
-    }
-
-    async function fetchPersonalTime() {
-        console.log('Fetching Personal hours...');
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch Personal hours: ${response.statusText}`);
-
-            const data = await response.json();
-            console.log('Fetched Personal hours:', data);
-
-            if (data.records.length > 0) {
-                const record = data.records[0].fields;
-                availablePersonalHours = record['Personaltime'] || 0;
-                recordId = data.records[0].id; // Save the record ID
-                elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
-                elements.remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2); // Set initial remaining Personal hours
-                console.log('Available Personal hours:', availablePersonalHours);
-            } else {
-                console.log('No Personal hours data found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching Personal hours:', error);
-            alert('Failed to fetch Personal hours. Error: ' + error.message);
-        }
-    }
-
-    function preventExceedingPersonalInputs() {
-        const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
-        personalInputs.forEach(input => {
-            input.addEventListener('input', function() {
-                const currentValue = parseFloat(input.value) || 0;
-                if (currentValue > availablePersonalHours) {
-                    input.value = availablePersonalHours;
-                }
-                if (currentValue > availablePersonalHours || (availablePersonalHours - currentValue) < 0) {
-                    input.value = Math.max(availablePersonalHours, currentValue);
-                }
-                updateTotalPtoAndHolidayHours();
-                checkPersonalInput(input);
-            });
-        });
     }
 
     async function updatePtoHours() {
