@@ -380,10 +380,9 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             if (!updateResponse.ok) throw new Error(`Failed to update PTO hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
             console.log('PTO hours updated successfully');
-            alert('PTO hours updated successfully!');
         } catch (error) {
             console.error('Error updating PTO hours:', error);
-            alert('Failed to update PTO hours. Error: ' + error.message);
+            throw new Error('Failed to update PTO hours. Error: ' + error.message);
         }
     }
 
@@ -412,19 +411,24 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             if (!updateResponse.ok) throw new Error(`Failed to update Personal hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
             console.log('Personal hours updated successfully');
-            alert('Personal hours updated successfully!');
         } catch (error) {
             console.error('Error updating Personal hours:', error);
-            alert('Failed to update Personal hours. Error: ' + error.message);
+            throw new Error('Failed to update Personal hours. Error: ' + error.message);
         }
     }
 
     async function handleSubmit(event) {
         event.preventDefault();
         console.log('Submitting form...');
-        await updatePtoHours();
-        await updatePersonalHours();
-        await sendDataToAirtable();
+        try {
+            await updatePtoHours();
+            await updatePersonalHours();
+            await sendDataToAirtable();
+            alert('Submission successful!');
+            clearForm();
+        } catch (error) {
+            alert(`Submission failed: ${error.message}`);
+        }
     }
 
     async function sendDataToAirtable() {
@@ -475,7 +479,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             console.log('Success:', result);
         } catch (error) {
             console.error('Error:', error);
-            alert(`Error: ${error.message}`);
+            throw new Error(`Error: ${error.message}`);
         }
     }
 
@@ -489,6 +493,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.totalTimeWithPtoSpan.textContent = '0.00';
         elements.remainingPtoHoursElement.textContent = '0.00';
         elements.remainingPersonalHoursElement.textContent = '0.00';
+        window.location.reload(); // Refresh the screen
     }
 
     function resetForm(event) {
