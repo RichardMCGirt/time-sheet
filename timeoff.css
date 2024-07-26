@@ -40,9 +40,9 @@ header {
     justify-content: flex-end;
 }
 
-.header-right .user-info .clickable {
+.header-right .user-info span {
     margin-right: 15px;
-    cursor: pointer;
+    font-weight: bold;
 }
 
 .header-right .user-info .logout-button,
@@ -53,6 +53,12 @@ header {
     padding: 10px 20px;
     cursor: pointer;
     border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.header-right .user-info .logout-button:hover,
+.header-right .user-info .submit-button:hover {
+    background-color: #16a085;
 }
 
 .navbar {
@@ -137,8 +143,11 @@ header {
     outline: none;
 }
 
-.submit-button {
-    width: 100%;
+.submit-button,
+.add-button,
+.delete-date-range,
+.delete-single-date {
+    width: calc(50% - 10px);
     padding: 15px;
     background-color: #3498db;
     color: #ffffff;
@@ -148,10 +157,38 @@ header {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+    margin-top: 10px;
 }
 
-.submit-button:hover {
+.submit-button:hover,
+.add-button:hover,
+.delete-date-range:hover,
+.delete-single-date:hover {
     background-color: #2980b9;
+}
+
+.delete-date-range,
+.delete-single-date {
+    background-color: #e74c3c;
+}
+
+.delete-date-range:hover,
+.delete-single-date:hover {
+    background-color: #c0392b;
+}
+
+/* Flexbox styling for form groups */
+.form-group-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-group-row .form-group {
+    flex: 1;
+    min-width: calc(50% - 10px);
 }
 
 /* Loading Indicator */
@@ -203,6 +240,51 @@ header {
     opacity: 1;
 }
 
+/* Request Container Styling */
+.requests-section {
+    max-width: 800px;
+    margin: 50px auto;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.requests-section h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.request {
+    border-bottom: 1px solid #ccc;
+    padding: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.request p {
+    margin: 0;
+}
+
+.request div {
+    display: flex;
+    align-items: center;
+}
+
+.request label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.request input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
 /* Responsive Styling */
 @media (max-width: 768px) {
     header {
@@ -237,8 +319,20 @@ header {
         margin: 10px 0;
     }
 
-    .time-off-application {
+    .time-off-application,
+    .requests-section {
         padding: 20px;
         margin: 20px;
+    }
+
+    .form-group-row .form-group {
+        min-width: 100%;
+    }
+
+    .submit-button,
+    .add-button,
+    .delete-date-range,
+    .delete-single-date {
+        width: 100%;
     }
 }

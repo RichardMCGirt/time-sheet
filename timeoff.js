@@ -8,12 +8,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const ptoHoursElement = document.getElementById('pto-hours');
     const personalHoursElement = document.getElementById('personal-hours');
     const userEmail = localStorage.getItem('userEmail');
+    const userEmailElement = document.getElementById('user-email');
+    const requestsContainer = document.getElementById('requests-container');
 
     // Redirect to login page if user is not logged in
     if (!userEmail) {
         window.location.href = 'index.html';
         return;
     }
+
+    // Display user email
+    userEmailElement.textContent = userEmail;
 
     // Fetch user data from Airtable
     async function fetchUserData() {
@@ -42,12 +47,24 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
 
         // Validate dates
-        const startDate = new Date(timeOffForm.start_date.value);
-        const endDate = new Date(timeOffForm.end_date.value);
-        if (endDate < startDate) {
-            alert('End Date cannot be before Start Date.');
-            return;
+        const startDateElements = timeOffForm.querySelectorAll('input[name="start_date[]"]');
+        const endDateElements = timeOffForm.querySelectorAll('input[name="end_date[]"]');
+        const singleDateElements = timeOffForm.querySelectorAll('input[name="single_date[]"]');
+        const dateRanges = [];
+
+        for (let i = 0; i < startDateElements.length; i++) {
+            const startDate = new Date(startDateElements[i].value);
+            const endDate = new Date(endDateElements[i].value);
+            if (endDate < startDate) {
+                alert('End Date cannot be before Start Date.');
+                return;
+            }
+            dateRanges.push({ "Start Date": startDateElements[i].value, "End Date": endDateElements[i].value });
         }
+
+        singleDateElements.forEach(singleDate => {
+            dateRanges.push({ "Single Date": singleDate.value });
+        });
 
         // Collect form data
         const formData = new FormData(timeOffForm);
@@ -55,8 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const data = {
             fields: {
                 "Employee Name": userEmail,
-                "Start Date": formData.get('start_date'),
-                "End Date": formData.get('end_date'),
+                "Date Ranges": dateRanges,
                 "Reason": reason
             }
         };
@@ -77,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
             alert('Time-off request submitted successfully!');
             timeOffForm.reset();
             document.getElementById('other-reason').style.display = 'none';
+            displayRequest(data.fields);
         } catch (error) {
             console.error('Error submitting time-off request:', error);
             alert('Failed to submit time-off request. Please try again.');
@@ -85,6 +102,34 @@ document.addEventListener("DOMContentLoaded", function () {
             submitButton.textContent = 'Submit';
         }
     });
+
+    // Display submitted time-off request
+    function displayRequest(fields) {
+        const requestElement = document.createElement('div');
+        requestElement.classList.add('request');
+
+        const dateRangeElements = fields["Date Ranges"].map(range => {
+            if (range["Start Date"] && range["End Date"]) {
+                return `<p>Start Date: ${range["Start Date"]} - End Date: ${range["End Date"]}</p>`;
+            } else {
+                return `<p>Single Date: ${range["Single Date"]}</p>`;
+            }
+        }).join("");
+
+        requestElement.innerHTML = `
+            <div>
+                <p><strong>Employee:</strong> ${fields["Employee Name"]}</p>
+                ${dateRangeElements}
+                <p><strong>Reason:</strong> ${fields["Reason"]}</p>
+            </div>
+            <div>
+                <label for="approve-${fields["Employee Name"]}">Approve:</label>
+                <input type="checkbox" id="approve-${fields["Employee Name"]}" name="approve-${fields["Employee Name"]}">
+            </div>
+        `;
+
+        requestsContainer.appendChild(requestElement);
+    }
 
     // Initialize the form
     fetchUserData();

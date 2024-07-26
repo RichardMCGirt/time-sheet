@@ -19,7 +19,7 @@
         </div>
         <div class="header-right">
             <div class="user-info">
-                <span id="user-email" class="clickable">Jason.Smith@example.com</span>
+                <span id="user-email"></span>
                 <a href="#" id="logout-button" class="logout-button">Logout</a>
             </div>
         </div>
@@ -35,13 +35,22 @@
         <section id="time-off-application" class="time-off-application">
             <h1>Request Time Off</h1>
             <form id="time-off-form" class="time-off-form">
-                <div class="form-group">
-                    <label for="start-date">Start Date:</label>
-                    <input type="date" id="start-date" name="start_date" required>
+                <div id="date-range-container">
+                    <div class="date-range form-group-row" data-index="0">
+                        <div class="form-group">
+                            <label for="start-date-0">Start Date:</label>
+                            <input type="date" id="start-date-0" name="start_date[]" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="end-date-0">End Date:</label>
+                            <input type="date" id="end-date-0" name="end_date[]" required>
+                        </div>
+                        <button type="button" class="delete-date-range" onclick="deleteDateRange(0)">Delete Date Range</button>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="end-date">End Date:</label>
-                    <input type="date" id="end-date" name="end_date" required>
+                <div class="form-group-row">
+                    <button type="button" id="add-date-range" class="add-button">Add Another Date Range</button>
+                    <button type="button" id="add-single-date" class="add-button">Add Single Date</button>
                 </div>
                 <div class="form-group">
                     <label for="reason">Reason:</label>
@@ -61,20 +70,24 @@
                 <button id="submit-button" class="submit-button">Submit</button>
             </form>
         </section>
+        <section id="requests-section" class="requests-section">
+            <h2>Submitted Time-Off Requests</h2>
+            <div id="requests-container" class="requests-container"></div>
+        </section>
     </main>
 
     <div id="loading-indicator" class="active">Loading...</div>
 
     <script src="timeoff.js"></script>
     <script>
-        document.getElementById('start-date').addEventListener('change', function() {
+        document.getElementById('start-date-0').addEventListener('change', function() {
             const startDate = this.value;
-            document.getElementById('end-date').setAttribute('min', startDate);
+            document.getElementById('end-date-0').setAttribute('min', startDate);
         });
 
-        document.getElementById('end-date').addEventListener('change', function() {
+        document.getElementById('end-date-0').addEventListener('change', function() {
             const endDate = this.value;
-            document.getElementById('start-date').setAttribute('max', endDate);
+            document.getElementById('start-date-0').setAttribute('max', endDate);
         });
 
         document.getElementById('reason').addEventListener('change', function() {
@@ -87,6 +100,65 @@
                 otherReasonInput.required = false;
             }
         });
+
+        let dateRangeIndex = 1;
+        const dateRangeContainer = document.getElementById('date-range-container');
+
+        document.getElementById('add-date-range').addEventListener('click', function() {
+            const newDateRange = document.createElement('div');
+            newDateRange.classList.add('date-range', 'form-group-row');
+            newDateRange.setAttribute('data-index', dateRangeIndex);
+            newDateRange.innerHTML = `
+                <div class="form-group">
+                    <label for="start-date-${dateRangeIndex}">Start Date:</label>
+                    <input type="date" id="start-date-${dateRangeIndex}" name="start_date[]" required>
+                </div>
+                <div class="form-group">
+                    <label for="end-date-${dateRangeIndex}">End Date:</label>
+                    <input type="date" id="end-date-${dateRangeIndex}" name="end_date[]" required>
+                </div>
+                <button type="button" class="delete-date-range" onclick="deleteDateRange(${dateRangeIndex})">Delete Date Range</button>
+            `;
+            dateRangeContainer.appendChild(newDateRange);
+
+            document.getElementById(`start-date-${dateRangeIndex}`).addEventListener('change', function() {
+                const startDate = this.value;
+                document.getElementById(`end-date-${dateRangeIndex}`).setAttribute('min', startDate);
+            });
+
+            document.getElementById(`end-date-${dateRangeIndex}`).addEventListener('change', function() {
+                const endDate = this.value;
+                document.getElementById(`start-date-${dateRangeIndex}`).setAttribute('max', endDate);
+            });
+
+            dateRangeIndex++;
+        });
+
+        document.getElementById('add-single-date').addEventListener('click', function() {
+            const singleDateContainer = document.createElement('div');
+            singleDateContainer.classList.add('single-date', 'form-group-row');
+            singleDateContainer.setAttribute('data-index', dateRangeIndex);
+            singleDateContainer.innerHTML = `
+                <div class="form-group">
+                    <label for="single-date-${dateRangeIndex}">Date:</label>
+                    <input type="date" id="single-date-${dateRangeIndex}" name="single_date[]" required>
+                </div>
+                <button type="button" class="delete-single-date" onclick="deleteSingleDate(${dateRangeIndex})">Delete Date</button>
+            `;
+            dateRangeContainer.appendChild(singleDateContainer);
+
+            dateRangeIndex++;
+        });
+
+        function deleteDateRange(index) {
+            const dateRange = document.querySelector(`.date-range[data-index="${index}"]`);
+            dateRange.remove();
+        }
+
+        function deleteSingleDate(index) {
+            const singleDate = document.querySelector(`.single-date[data-index="${index}"]`);
+            singleDate.remove();
+        }
 
         // Enhance date input fields for better user experience
         const dateInputs = document.querySelectorAll('input[type="date"]');
