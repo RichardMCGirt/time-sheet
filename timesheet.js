@@ -142,9 +142,9 @@ document.addEventListener("DOMContentLoaded", async function() {
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            const milliseconds = Math.floor((distance % 1000));
+       
     
-            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s ${milliseconds}ms`;
+            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
     
             if (distance < 0) {
                 clearInterval(interval);

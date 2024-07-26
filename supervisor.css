@@ -1,28 +1,20 @@
 :root {
-    --bg-color-dark: #2c3e50;
-    --text-color-dark: #ecf0f1;
-    --header-bg-dark: #34495e;
-    --border-color-dark: #ecf0f1;
-    --button-bg-dark: #e74c3c;
-    --button-hover-bg-dark: #c0392b;
-    --input-bg-dark: #34495e;
+    --bg-color: #2c3e50;
+    --text-color: #ecf0f1;
+    --header-bg: #34495e;
+    --border-color: #ecf0f1;
+    --button-bg: #e74c3c;
+    --button-hover-bg: #c0392b;
+    --input-bg: #34495e;
     --input-text-color: white;
     --highlight-color: #1abc9c;
     --highlight-hover-color: #16a085;
-
-    --bg-color-light: #ecf0f1;
-    --text-color-light: #2c3e50;
-    --header-bg-light: #ecf0f1;
-    --border-color-light: #2c3e50;
-    --button-bg-light: #3498db;
-    --button-hover-bg-light: #2980b9;
-    --input-bg-light: #ecf0f1;
 }
 
 body {
     font-family: Arial, sans-serif;
-    background-color: var(--bg-color-dark);
-    color: var(--text-color-dark);
+    background-color: var(--bg-color);
+    color: var(--text-color);
     margin: 0;
     padding: 0;
     text-align: center;
@@ -30,24 +22,14 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-body.dark-mode {
-    background-color: var(--bg-color-light);
-    color: var(--text-color-light);
-}
-
 header {
-    background-color: var(--header-bg-dark);
+    background-color: var(--header-bg);
     padding: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid var(--border-color-dark);
+    border-bottom: 2px solid var(--border-color);
     transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-header.dark-mode {
-    background-color: var(--header-bg-light);
-    border-bottom: 2px solid var(--border-color-light);
 }
 
 .header-left .logo {
@@ -69,13 +51,9 @@ header.dark-mode {
 
 .user-info span {
     font-size: 16px;
-    color: var(--text-color-dark);
+    color: var(--text-color);
     font-weight: bolder;
     transition: color 0.3s ease;
-}
-
-body.dark-mode .user-info span {
-    color: var(--text-color-light);
 }
 
 .logout-button,
@@ -84,8 +62,8 @@ body.dark-mode .user-info span {
     font-weight: bold;
     border-radius: 5px;
     padding: 5px 10px;
-    background-color: var(--button-bg-dark);
-    color: var(--text-color-dark);
+    background-color: var(--button-bg);
+    color: var(--text-color);
     text-decoration: none;
     display: inline-block;
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -93,34 +71,19 @@ body.dark-mode .user-info span {
 
 .logout-button:hover,
 .toggle-button:hover {
-    background-color: var(--button-hover-bg-dark);
-}
-
-body.dark-mode .logout-button,
-body.dark-mode .toggle-button {
-    background-color: var(--button-bg-light);
-    color: var(--text-color-light);
-}
-
-body.dark-mode .logout-button:hover,
-body.dark-mode .toggle-button:hover {
-    background-color: var(--button-hover-bg-light);
+    background-color: var(--button-hover-bg);
 }
 
 .name-container {
     text-align: left; /* Ensures text is left-aligned */
     font-size: 18px;
     margin: 10px 0;
-    color: var(--text-color-dark);
+    color: var(--text-color);
     font-weight: bold;
     padding-left: 20px;
     transition: color 0.3s ease;
     width: 70%; /* Match the width of the table */
     margin: 0 auto; /* Center the container */
-}
-
-body.dark-mode .name-container {
-    color: var(--text-color-light);
 }
 
 .time-entry-table {
@@ -135,16 +98,16 @@ body.dark-mode .name-container {
 .time-entry-table td {
     text-align: center;
     padding: 10px;
-    border: 1px solid var(--border-color-dark);
+    border: 1px solid var(--border-color);
     transition: border-color 0.3s ease;
 }
 
 .time-entry-table th {
-    color: var(--text-color-dark);
+    color: var(--text-color);
 }
 
 .time-entry-table td {
-    background-color: var(--input-bg-dark);
+    background-color: var(--input-bg);
 }
 
 .time-entry-table input[type="date"],
@@ -178,39 +141,6 @@ input[type="date"]:-webkit-autofill {
     -webkit-text-fill-color: var(--input-text-color) !important;
 }
 
-body.dark-mode .time-entry-table td {
-    background-color: var(--input-bg-light);
-    border: 1px solid var(--border-color-light);
-}
-
-body.dark-mode .time-entry-table th {
-    color: var(--text-color-light);
-}
-
-body.dark-mode input[type="date"],
-body.dark-mode input[type="text"],
-body.dark-mode input[type="number"],
-body.dark-mode input[type="time"] {
-    background-color: var(--input-bg-light);
-    color: var(--text-color-light);
-    border: none;
-}
-
-body.dark-mode input[type="date"]::placeholder,
-body.dark-mode input[type="text"]::placeholder,
-body.dark-mode input[type="number"]::placeholder,
-body.dark-mode input[type="time"]::placeholder {
-    color: var(--text-color-light);
-}
-
-body.dark-mode input[type="date"]:-webkit-autofill,
-body.dark-mode input[type="text"]:-webkit-autofill,
-body.dark-mode input[type="number"]:-webkit-autofill,
-body.dark-mode input[type="time"]:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0 30px inherit inset !important;
-    -webkit-text-fill-color: var(--text-color-light) !important;
-}
-
 .form-group {
     display: flex;
     justify-content: center;
@@ -222,24 +152,16 @@ body.dark-mode input[type="time"]:-webkit-autofill {
     width: 96%;
     max-width: 2550px;
     margin: 0 auto;
-    background-color: var(--input-bg-dark);
+    background-color: var(--input-bg);
     padding: 20px;
     border-radius: 10px;
     transition: background-color 0.3s ease;
 }
 
-body.dark-mode .time-entry-form {
-    background-color: var(--input-bg-light);
-}
-
 .form-label {
-    color: var(--text-color-dark);
+    color: var(--text-color);
     font-weight: bold;
     transition: color 0.3s ease;
-}
-
-body.dark-mode .form-label {
-    color: var(--text-color-light);
 }
 
 input[type="number"] {
@@ -293,7 +215,7 @@ input[type="date"]:-webkit-autofill {
     border: none;
     border-radius: 5px;
     background-color: var(--highlight-color);
-    color: var(--text-color-dark);
+    color: var(--text-color);
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
@@ -306,15 +228,37 @@ input[type="date"]:-webkit-autofill {
     background-color: var(--highlight-hover-color);
 }
 
-body.dark-mode .submit-button,
-body.dark-mode .play-pause-button {
-    background-color: var(--highlight-color);
-    color: var(--text-color-light);
+.navbar {
+    background-color: var(--header-bg);
+    overflow: hidden;
+    transition: background-color 0.3s ease;
 }
 
-body.dark-mode .submit-button:hover,
-body.dark-mode .play-pause-button:hover {
-    background-color: var(--highlight-hover-color);
+.navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.navbar ul li {
+    display: inline;
+}
+
+.navbar ul li a {
+    display: inline-block;
+    color: var(--text-color);
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.navbar ul li a:hover {
+    background-color: var(--highlight-color);
+    color: var(--text-color);
 }
 
 @media (max-width: 768px) {
@@ -326,5 +270,14 @@ body.dark-mode .play-pause-button:hover {
     .time-entry-table {
         width: 100%; /* Full width on smaller screens */
         margin: 10px 0; /* Adjust margin for smaller screens */
+    }
+
+    .navbar ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .navbar ul li a {
+        padding: 10px;
     }
 }
