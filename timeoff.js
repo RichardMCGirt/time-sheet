@@ -1,34 +1,38 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     const userEmail = localStorage.getItem('userEmail');
     let currentRecordId = null; // Store the current record ID for editing
     let records = []; // Store the records locally for demonstration
+
+    // Define variables
+    const form = document.getElementById('timeOffForm');
+    const reasonDropdown = document.getElementById('reasonDropdown');
+    const reasonInput = document.getElementById('reasonInput');
+    const submittedData = document.getElementById('submittedData');
+    const requestsList = document.getElementById('previousRequests'); // Correct reference
 
     // Redirect to login page if no user email is found
     if (!userEmail) {
         console.log('No user email found, redirecting to index.html');
         window.location.href = 'index.html';
-        return; // Stop further execution if no user email
+        return;
     }
 
     // Simulate fetching employee name
     fetchEmployeeName(userEmail);
 
-    document.getElementById('timeOffForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        handleFormSubmit();
-    });
-
-    document.getElementById('reasonDropdown').addEventListener('change', function() {
-        const reasonInput = document.getElementById('reasonInput');
-        if (this.value === 'other') {
+    // Toggle reason input visibility based on dropdown selection
+    reasonDropdown.addEventListener('change', () => {
+        if (reasonDropdown.value === 'other') {
             reasonInput.classList.remove('hidden');
-            reasonInput.required = true;
-            this.classList.add('hidden');
         } else {
             reasonInput.classList.add('hidden');
-            reasonInput.required = false;
-            this.classList.remove('hidden');
         }
+    });
+
+    // Handle form submission
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        handleFormSubmit();
     });
 
     function fetchEmployeeName(email) {
@@ -38,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetchPreviousRequests(employeeName);
     }
 
-    function sendToAirtable(formData, recordId) {
+    function sendToLocalStorage(formData, recordId) {
         if (recordId) {
             // Update the record locally
             const record = records.find(record => record.id === recordId);
@@ -54,20 +58,21 @@ document.addEventListener('DOMContentLoaded', function() {
             records.push(newRecord);
         }
 
-        console.log('Records:', records);
-        fetchPreviousRequests(formData.employeeName);
+        // Save to localStorage
+        localStorage.setItem('timeOffRecords', JSON.stringify(records));
+        fetchPreviousRequests(formData.employeeName); // Ensure correct employee name is used
         displaySubmittedData(formData);
         currentRecordId = null; // Reset the current record ID after submission
     }
 
     function fetchPreviousRequests(employeeName) {
-        const employeeRecords = records.filter(record => record.fields.employeeName === employeeName);
-        displayPreviousRequests(employeeRecords);
+        const savedRecords = JSON.parse(localStorage.getItem('timeOffRecords')) || [];
+        records = savedRecords.filter(record => record.fields.employeeName === employeeName);
+        displayPreviousRequests(records);
     }
 
     function displayPreviousRequests(records) {
-        const container = document.getElementById('previousRequests');
-        container.innerHTML = '';
+        requestsList.innerHTML = ''; // Clear previous requests
 
         records.forEach(record => {
             const recordDiv = document.createElement('div');
@@ -85,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button class="deleteBtn" data-id="${record.id}">Delete</button>
             `;
 
-            container.appendChild(recordDiv);
+            requestsList.appendChild(recordDiv);
         });
 
         document.querySelectorAll('.editBtn').forEach(button => {
@@ -93,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const recordId = this.getAttribute('data-id');
                 const record = records.find(record => record.id === recordId);
                 currentRecordId = recordId; // Store the current record ID for editing
-                console.log(`Edit button clicked. Current record ID set to: ${currentRecordId}`); // Debugging line
                 fillFormForEdit(record);
             });
         });
@@ -112,16 +116,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('reasonInput').value = record.fields.reason;
 
         const reasonElement = document.getElementById('reasonDropdown');
-        const reasonInput = document.getElementById('reasonInput');
         if (record.fields.reason === 'other') {
             reasonInput.classList.remove('hidden');
-            reasonElement.classList.add('hidden');
+            reasonElement.value = 'other'; // Set the dropdown to 'other'
         } else {
             reasonInput.classList.add('hidden');
-            reasonElement.classList.remove('hidden');
+            reasonElement.value = record.fields.reason;
         }
-
-        console.log(`Form filled for editing. Current record ID: ${currentRecordId}`); // Debugging line
     }
 
     function handleFormSubmit() {
@@ -136,9 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
             approved: false // Default approved status
         };
 
-        console.log(`Form submitted. Current record ID: ${currentRecordId}`); // Debugging line
-
-        sendToAirtable(formData, currentRecordId);
+        sendToLocalStorage(formData, currentRecordId);
 
         // Clear only the necessary form fields, preserving the employee name
         document.getElementById('startDate').value = '';
@@ -146,28 +145,24 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('reasonDropdown').value = '';
         document.getElementById('reasonInput').value = '';
         document.getElementById('reasonInput').classList.add('hidden');
-        document.getElementById('reasonDropdown').classList.remove('hidden');
         currentRecordId = null;
     }
 
     function deleteRecord(recordId) {
         records = records.filter(record => record.id !== recordId);
-        console.log('Record deleted:', recordId);
+        localStorage.setItem('timeOffRecords', JSON.stringify(records));
         fetchPreviousRequests(document.getElementById('employeeName').value);
     }
 
     function displaySubmittedData(formData) {
         const container = document.getElementById('submittedData');
-        const recordDiv = document.createElement('div');
-        recordDiv.className = 'record';
-
-        recordDiv.innerHTML = `
-            <p>Employee Name: ${formData.employeeName}</p>
-            <p>Start Date: ${formData.startDate}</p>
-            <p>End Date: ${formData.endDate}</p>
-            <p>Reason: ${formData.reason}</p>
+        container.innerHTML = `
+            <h2>Submitted Time-Off Request</h2>
+            <p><strong>Employee Name:</strong> ${formData.employeeName}</p>
+            <p><strong>Start Date:</strong> ${formData.startDate}</p>
+            <p><strong>End Date:</strong> ${formData.endDate}</p>
+            <p><strong>Reason:</strong> ${formData.reason}</p>
         `;
-
-        container.appendChild(recordDiv);
+        container.classList.remove('hidden');
     }
 });

@@ -13,14 +13,6 @@
             <label for="employeeName">Employee Name</label>
             <input type="text" id="employeeName" name="employeeName" required>
 
-  
-
-            <label for="requestType">Request Type</label>
-            <select id="requestType" name="requestType" required>
-                <option value="vacation">Vacation</option>
-                        <option value="personal">Personal</option>
-            </select>
-
             <label for="startDate">Start Date</label>
             <input type="date" id="startDate" name="startDate" required>
 
@@ -46,8 +38,11 @@
             <p><strong>End Date:</strong> <span id="submittedEndDate"></span></p>
             <p><strong>Reason:</strong> <span id="submittedReason"></span></p>
         </div>
+        <div id="previousRequests">
+            <h2>Previous Requests</h2>
+            <ul id="requestsList"></ul>
+        </div>
     </div>
-    <div id="previousRequests"></div>
 
     <script src="timeoff.js"></script>
 </body>
