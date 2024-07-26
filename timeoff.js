@@ -69,11 +69,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // Collect form data
         const formData = new FormData(timeOffForm);
         const reason = formData.get('reason') === 'Other' ? formData.get('other_reason') : formData.get('reason');
+        const timestamp = new Date().toISOString();
         const data = {
             fields: {
                 "Employee Name": userEmail,
                 "Date Ranges": dateRanges,
-                "Reason": reason
+                "Reason": reason,
+                "Timestamp": timestamp
             }
         };
 
