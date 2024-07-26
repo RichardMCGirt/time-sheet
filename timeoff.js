@@ -90,9 +90,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 fields: {
                     'Employee Name': formData.employeeName,
                     'Request Type': formData.requestType,
-                    'Start Date': formData.startDate,
-                    'End Date': formData.endDate,
-                    'Reason': formData.reason
+                    'Time Off Start Date': formData.startDate,
+                    'Time Off End Date': formData.endDate,
+                    'Reason': formData.reason,
+                    'Approved': false // Default value
                 }
             })
         })
@@ -108,6 +109,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displaySubmittedData(formData) {
+        const approvedCheckbox = formData.approved ? '<input type="checkbox" checked disabled>' : '<input type="checkbox" disabled>';
+
         document.getElementById('submittedEmployeeName').innerText = formData.employeeName;
         document.getElementById('submittedRequestType').innerText = formData.requestType;
         document.getElementById('submittedStartDate').innerText = formData.startDate;

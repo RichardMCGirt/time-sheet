@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     const timesheetsBody = document.getElementById('timesheets-body');
     const searchInput = document.getElementById('search-input');
     const dateFilter = document.getElementById('date-filter');
+    const checkAllButton = document.getElementById('check-all-button');
+    const refreshButton = document.getElementById('refresh-button');
 
     if (userEmailElement) {
         userEmailElement.textContent = supervisorEmail;
@@ -14,7 +16,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     document.getElementById('export-button').addEventListener('click', exportToExcel);
-    document.getElementById('check-all-button').addEventListener('click', handleCheckAll);
+    checkAllButton.addEventListener('click', handleCheckAll);
+    refreshButton.addEventListener('click', refreshData);
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
@@ -63,6 +66,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         timesheetsBody.innerHTML = ''; // Clear any existing rows
 
         if (records.length > 0) {
+            let overHours = false;
             for (const record of records) {
                 const fields = record.fields;
                 const employeeNumber = fields['Employee Number'];
@@ -102,6 +106,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                 `;
 
                 timesheetsBody.appendChild(table);
+
+                // Check for over 40 hours
+                const totalHours = fields['Total Hours Worked'] + fields['PTO Time Used'] + fields['Personal Time Used'] + fields['Holiday Hours Used'];
+                if (totalHours > 40) {
+                    overHours = true;
+                }
+            }
+            if (overHours) {
+                displayOverHoursMessage();
             }
         } else {
             const noRecordsRow = document.createElement('div');
@@ -168,16 +181,32 @@ document.addEventListener("DOMContentLoaded", async function () {
     timesheetsBody.addEventListener('change', handleCheckboxChange);
 
     function handleCheckAll() {
-        if (supervisorEmail !== 'katy@vanirinstalledsales.com') {
-            const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
+        const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
+        const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+
+        if (allChecked) {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                const recordId = checkbox.getAttribute('data-record-id');
+                updateApprovalStatus(recordId, false);
+            });
+            checkAllButton.textContent = 'Check All';
+        } else {
             checkboxes.forEach(checkbox => {
                 checkbox.checked = true;
                 const recordId = checkbox.getAttribute('data-record-id');
                 updateApprovalStatus(recordId, true);
             });
-        } else {
-            alert("Check All feature is disabled for Katy.");
+            checkAllButton.textContent = 'Uncheck All';
         }
+    }
+
+    function displayOverHoursMessage() {
+        const messageContainer = document.getElementById('message-container');
+        messageContainer.textContent = 'Warning: Some employees have over 40 total hours.';
+        messageContainer.style.color = 'red';
+        messageContainer.style.fontWeight = 'bold';
+        messageContainer.style.marginBottom = '10px';
     }
 
     function filterTimesheets() {
