@@ -15,6 +15,10 @@ body {
     margin: 20px 0; /* Adjust margin as needed */
 }
 
+h3 {
+    color: white;
+}
+
 .pto-info-row div {
     display: flex;
     flex-direction: row;

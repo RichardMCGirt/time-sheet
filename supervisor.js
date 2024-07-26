@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     document.getElementById('export-button').addEventListener('click', exportToExcel);
+    document.getElementById('check-all-button').addEventListener('click', handleCheckAll);
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
@@ -165,6 +166,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     timesheetsBody.addEventListener('change', handleCheckboxChange);
+
+    function handleCheckAll() {
+        if (supervisorEmail !== 'katy@vanirinstalledsales.com') {
+            const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                const recordId = checkbox.getAttribute('data-record-id');
+                updateApprovalStatus(recordId, true);
+            });
+        } else {
+            alert("Check All feature is disabled for Katy.");
+        }
+    }
 
     function filterTimesheets() {
         const nameFilter = searchInput.value.toLowerCase();
