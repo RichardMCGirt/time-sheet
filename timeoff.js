@@ -1,8 +1,15 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const employeeEmail = 'employee@example.com'; // Replace with the actual email or logic to get the email
+    const userEmail = localStorage.getItem('userEmail');
+
+    // Redirect to login page if no user email is found
+    if (!userEmail) {
+        console.log('No user email found, redirecting to index.html');
+        window.location.href = 'index.html';
+        return; // Stop further execution if no user email
+    }
 
     // Fetch employee name from Airtable
-    fetchEmployeeName(employeeEmail);
+    fetchEmployeeName(userEmail);
 
     document.getElementById('timeOffForm').addEventListener('submit', function(event) {
         event.preventDefault(); // Prevent the form from submitting normally
@@ -35,18 +42,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('reasonDropdown').addEventListener('change', function() {
+        const reasonInput = document.getElementById('reasonInput');
         if (this.value === 'other') {
-            document.getElementById('reasonInput').classList.remove('hidden');
-            this.classList.add('hidden');
+            reasonInput.classList.remove('hidden');
         } else {
-            document.getElementById('reasonInput').classList.add('hidden');
+            reasonInput.classList.add('hidden');
         }
     });
 
     function fetchEmployeeName(email) {
         const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
         const baseId = 'app9gw2qxhGCmtJvW';
-        const tableId = 'tbljmLpqXScwhiWTt/';
+        const tableId = 'tbljmLpqXScwhiWTt';
 
         fetch(`https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=Email='${email}'`, {
             headers: {
@@ -71,9 +78,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function sendToAirtable(formData) {
         const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
         const baseId = 'app9gw2qxhGCmtJvW';
-        const tableId = 'tbljmLpqXScwhiWTt/';
+        const tableId = 'tbljmLpqXScwhiWTt';
 
-        fetch(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
+        fetch(`https://api.airtable.com/v0/${baseId}/${tableId}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
