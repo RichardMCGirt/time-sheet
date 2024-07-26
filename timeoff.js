@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchPreviousRequests(formData.employeeName); // Ensure correct employee name is used
         displaySubmittedData(formData);
         currentRecordId = null; // Reset the current record ID after submission
+        deleteExpiredRecords(); // Check for expired records after submission
     }
 
     function fetchPreviousRequests(employeeName) {
@@ -184,4 +185,22 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         container.classList.remove('hidden');
     }
+
+    function deleteExpiredRecords() {
+        const currentDate = new Date();
+        const savedRecords = JSON.parse(localStorage.getItem('timeOffRecords')) || [];
+        const validRecords = savedRecords.filter(record => {
+            const endDate = new Date(record.fields.endDate);
+            return currentDate <= endDate || (currentDate.getDate() === endDate.getDate() + 1 && currentDate.getMonth() === endDate.getMonth() && currentDate.getFullYear() === endDate.getFullYear());
+        });
+        if (validRecords.length !== savedRecords.length) {
+            localStorage.setItem('timeOffRecords', JSON.stringify(validRecords));
+            fetchPreviousRequests(document.getElementById('employeeName').value);
+        }
+    }
+
+    // Check for expired records every hour (3600000 milliseconds)
+    setInterval(deleteExpiredRecords, 3600000);
+    // Also call it once when the page loads
+    deleteExpiredRecords();
 });
