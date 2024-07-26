@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
+    const baseId = 'app9gw2qxhGCmtJvW';
+    const tableId = 'tbljmLpqXScwhiWTt';
+
     const userEmail = localStorage.getItem('userEmail');
     let currentRecordId = null; // Store the current record ID for editing
     let records = []; // Store the records locally for demonstration
@@ -17,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Simulate fetching employee name
+    // Fetch employee name using Airtable API
     fetchEmployeeName(userEmail);
 
     // Toggle reason input visibility based on dropdown selection
@@ -35,11 +39,26 @@ document.addEventListener('DOMContentLoaded', () => {
         handleFormSubmit();
     });
 
-    function fetchEmployeeName(email) {
-        const employeeName = "John Doe"; // Simulated employee name
-        document.getElementById('employeeName').value = employeeName;
-        document.getElementById('employeeName').readOnly = true;
-        fetchPreviousRequests(employeeName);
+    async function fetchEmployeeName(email) {
+        try {
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{Email}='${email}'`)}`;
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+            const data = await response.json();
+            if (data.records.length > 0) {
+                const employeeName = data.records[0].fields.name;
+                document.getElementById('employeeName').value = employeeName;
+                document.getElementById('employeeName').readOnly = true;
+                fetchPreviousRequests(employeeName);
+            } else {
+                console.error('No employee found with the given email.');
+            }
+        } catch (error) {
+            console.error('Error fetching employee name:', error);
+        }
     }
 
     function sendToLocalStorage(formData, recordId) {
