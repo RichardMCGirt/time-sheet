@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time-Off Application</title>
+    <link rel="stylesheet" href="timeoff.css">
+</head>
+<body style="text-align: center;">
+    <main>
+        <header>
+            <div class="header-left">
+                <img src="" alt="Vanir Installed Sales Logo" class="logo">
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span id="user-email" class="clickable">Jason.Smith@example.com</span>
+                    <a href="#" id="logout-button" class="logout-button">Logout</a>
+                </div>
+            </div>
+        </header>
+        
+        <section id="time-off-application" class="time-off-application">
+            <form id="time-off-form" class="time-off-form">
+                <div class="form-group">
+                    <label for="employee-name">Employee Name:</label>
+                    <select id="employee-name" name="employee_name" required style="font-size: 20px;">
+                        <option value="">Select Employee</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="start-date">Start Date:</label>
+                    <input type="date" id="start-date" name="start_date" required style="font-size: 20px;">
+                </div>
+                <div class="form-group">
+                    <label for="end-date">End Date:</label>
+                    <input type="date" id="end-date" name="end_date" required style="font-size: 20px;">
+                </div>
+                <div class="form-group">
+                    <label for="reason">Reason:</label>
+                    <textarea id="reason" name="reason" required style="font-size: 20px;"></textarea>
+                </div>
+                <button id="submit-button" class="submit-button" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #1abc9c; color: #ecf0f1; font-size: 16px; font-weight: bold; cursor: pointer;">Submit</button>
+            </form>
+        </section>
+    </main>
+    <script src="timeoff.js"></script>
+    <script>
+        document.getElementById('start-date').addEventListener('change', function() {
+            const startDate = this.value;
+            document.getElementById('end-date').setAttribute('min', startDate);
+        });
+
+        document.getElementById('end-date').addEventListener('change', function() {
+            const endDate = this.value;
+            document.getElementById('start-date').setAttribute('max', endDate);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+/* style.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ecf0f1;
+    color: #2c3e50;
+    margin: 0;
+    padding: 0;
+}
+
+.header-left .logo {
+    max-width: 150px;
+}
+
+.header-right .user-info {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.header-right .user-info .clickable {
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.header-right .user-info .logout-button,
+.header-right .user-info .submit-button {
+    background-color: #1abc9c;
+    color: #ecf0f1;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.time-off-application {
+    max-width: 600px;
+    margin: 50px auto;
+    background-color: #34495e;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.time-off-application .form-group {
+    margin-bottom: 20px;
+}
+
+.time-off-application .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #ecf0f1;
+}
+
+.time-off-application .form-group input,
+.time-off-application .form-group select,
+.time-off-application .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #bdc3c7;
+    border-radius: 5px;
+}
+
+#loading-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 18px;
+    display: none; /* Initially hidden */
+}
+
+/* Show loading indicator */
+#loading-indicator.active {
+    display: block;
+}
