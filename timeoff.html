@@ -3,184 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time-Off Application</title>
+    <title>Advanced Time-Off Request Form</title>
     <link rel="stylesheet" href="timeoff.css">
 </head>
 <body>
-    <header>
-        <div class="header-left">
-            <img src="vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
-        </div>
-        <div class="header-center">
-            <div id="pto-info" class="info-container">
-                <p>PTO Hours Available: <span id="pto-hours">Loading...</span></p>
-                <p>Personal Hours Available: <span id="personal-hours">Loading...</span></p>
-            </div>
-        </div>
-        <div class="header-right">
-            <div class="user-info">
-                <span id="user-email"></span>
-                <a href="#" id="logout-button" class="logout-button">Logout</a>
-            </div>
-        </div>
-    </header>
-    <nav class="navbar">
-        <ul>
-            <li><a href="timesheet.html">Timesheet</a></li>
-         
-        </ul>
-    </nav>
-    <main>
-        <section id="time-off-application" class="time-off-application">
-            <h1>Request Time Off</h1>
-            <form id="time-off-form" class="time-off-form">
-                <div id="date-range-container">
-                    <div class="date-range form-group-row" data-index="0">
-                        <div class="form-group">
-                            <label for="start-date-0">Start Date:</label>
-                            <input type="date" id="start-date-0" name="start_date[]" >
-                        </div>
-                        <div class="form-group">
-                            <label for="end-date-0">End Date:</label>
-                            <input type="date" id="end-date-0" name="end_date[]" >
-                        </div>
-                        <button type="button" class="delete-date-range" onclick="deleteDateRange(0)">Delete Date Range</button>
-                    </div>
-                </div>
-                <div class="form-group-row">
-                    <button type="button" id="add-date-range" class="add-button">Add Another Date Range</button>
-                    <button type="button" id="add-single-date" class="add-button">Add Single Date</button>
-                </div>
-                <div class="form-group">
-                    <label for="reason">Reason:</label>
-                    <select id="reason" name="reason" required>
-                        <option value="">Select Reason</option>
-                        <option value="Vacation">Vacation</option>
-                        <option value="Sick Leave">Sick Leave</option>
-                        <option value="Personal">Personal</option>
-                        <option value="Family Emergency">Family Emergency</option>
-                        <option value="Bereavement">Bereavement</option>
-                        <option value="Jury Duty">Jury Duty</option>
-                        <option value="Medical Appointment">Medical Appointment</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <input type="text" id="other-reason" name="other_reason" placeholder="Please specify" style="display: none; margin-top: 10px;">
-                </div>
-                <button id="submit-button" class="submit-button">Submit</button>
-            </form>
-        </section>
-        <section id="requests-section" class="requests-section">
-            <h2>Submitted Time-Off Requests</h2>
-            <div id="requests-container" class="requests-container"></div>
-        </section>
-    </main>
+    <div class="container">
+        <h1>Time-Off Request Form</h1>
+        <form id="timeOffForm">
+            <label for="employeeName">Employee Name</label>
+            <input type="text" id="employeeName" name="employeeName" required>
 
-    <div id="loading-indicator" class="active">Loading...</div>
+  
 
+            <label for="requestType">Request Type</label>
+            <select id="requestType" name="requestType" required>
+                <option value="vacation">Vacation</option>
+                <option value="sick">Sick</option>
+                <option value="personal">Personal</option>
+                <option value="other">Other</option>
+            </select>
+
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" name="startDate" required>
+
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate" name="endDate" required>
+
+            <label for="reason">Reason</label>
+            <select id="reasonDropdown" name="reason" required>
+                <option value="medical">Medical</option>
+                <option value="family">Family</option>
+                <option value="vacation">Vacation</option>
+                <option value="other">Other</option>
+            </select>
+            <input type="text" id="reasonInput" name="reason" class="hidden" placeholder="Please specify">
+
+            <button type="submit">Submit Request</button>
+        </form>
+        <div id="submittedData" class="hidden">
+            <h2>Submitted Time-Off Request</h2>
+            <p><strong>Employee Name:</strong> <span id="submittedEmployeeName"></span></p>
+            <p><strong>Request Type:</strong> <span id="submittedRequestType"></span></p>
+            <p><strong>Start Date:</strong> <span id="submittedStartDate"></span></p>
+            <p><strong>End Date:</strong> <span id="submittedEndDate"></span></p>
+            <p><strong>Reason:</strong> <span id="submittedReason"></span></p>
+        </div>
+    </div>
     <script src="timeoff.js"></script>
-    <script>
-        document.getElementById('start-date-0').addEventListener('change', function() {
-            const startDate = this.value;
-            document.getElementById('end-date-0').setAttribute('min', startDate);
-        });
-
-        document.getElementById('end-date-0').addEventListener('change', function() {
-            const endDate = this.value;
-            document.getElementById('start-date-0').setAttribute('max', endDate);
-        });
-
-        document.getElementById('reason').addEventListener('change', function() {
-            const otherReasonInput = document.getElementById('other-reason');
-            if (this.value === 'Other') {
-                otherReasonInput.style.display = 'block';
-                otherReasonInput.required = true;
-            } else {
-                otherReasonInput.style.display = 'none';
-                otherReasonInput.required = false;
-            }
-        });
-
-        let dateRangeIndex = 1;
-        const dateRangeContainer = document.getElementById('date-range-container');
-
-        document.getElementById('add-date-range').addEventListener('click', function() {
-            const newDateRange = document.createElement('div');
-            newDateRange.classList.add('date-range', 'form-group-row');
-            newDateRange.setAttribute('data-index', dateRangeIndex);
-            newDateRange.innerHTML = `
-                <div class="form-group">
-                    <label for="start-date-${dateRangeIndex}">Start Date:</label>
-                    <input type="date" id="start-date-${dateRangeIndex}" name="start_date[]" required>
-                </div>
-                <div class="form-group">
-                    <label for="end-date-${dateRangeIndex}">End Date:</label>
-                    <input type="date" id="end-date-${dateRangeIndex}" name="end_date[]" required>
-                </div>
-                <button type="button" class="delete-date-range" onclick="deleteDateRange(${dateRangeIndex})">Delete Date Range</button>
-            `;
-            dateRangeContainer.appendChild(newDateRange);
-
-            document.getElementById(`start-date-${dateRangeIndex}`).addEventListener('change', function() {
-                const startDate = this.value;
-                document.getElementById(`end-date-${dateRangeIndex}`).setAttribute('min', startDate);
-            });
-
-            document.getElementById(`end-date-${dateRangeIndex}`).addEventListener('change', function() {
-                const endDate = this.value;
-                document.getElementById(`start-date-${dateRangeIndex}`).setAttribute('max', endDate);
-            });
-
-            dateRangeIndex++;
-        });
-
-        document.getElementById('add-single-date').addEventListener('click', function() {
-            const singleDateContainer = document.createElement('div');
-            singleDateContainer.classList.add('single-date', 'form-group-row');
-            singleDateContainer.setAttribute('data-index', dateRangeIndex);
-            singleDateContainer.innerHTML = `
-                <div class="form-group">
-                    <label for="single-date-${dateRangeIndex}">Date:</label>
-                    <input type="date" id="single-date-${dateRangeIndex}" name="single_date[]" required>
-                </div>
-                <button type="button" class="delete-single-date" onclick="deleteSingleDate(${dateRangeIndex})">Delete Date</button>
-            `;
-            dateRangeContainer.appendChild(singleDateContainer);
-
-            dateRangeIndex++;
-        });
-
-        function deleteDateRange(index) {
-            const dateRange = document.querySelector(`.date-range[data-index="${index}"]`);
-            dateRange.remove();
-        }
-
-        function deleteSingleDate(index) {
-            const singleDate = document.querySelector(`.single-date[data-index="${index}"]`);
-            singleDate.remove();
-        }
-
-        // Enhance date input fields for better user experience
-        const dateInputs = document.querySelectorAll('input[type="date"]');
-        dateInputs.forEach(input => {
-            input.addEventListener('focus', () => input.showPicker());
-            input.addEventListener('keydown', function(event) {
-                let currentDate = new Date(this.value);
-                if (isNaN(currentDate)) currentDate = new Date();
-                if (event.key === 'ArrowDown') {
-                    currentDate.setDate(currentDate.getDate() + 1);
-                    this.value = currentDate.toISOString().split('T')[0];
-                } else if (event.key === 'ArrowUp') {
-                    currentDate.setDate(currentDate.getDate() - 1);
-                    this.value = currentDate.toISOString().split('T')[0];
-                } else if (event.key === 'ArrowRight') {
-                    currentDate.setMonth(currentDate.getMonth() + 1);
-                    this.value = currentDate.toISOString().split('T')[0];
-                } else if (event.key === 'ArrowLeft') {
-                    currentDate.setMonth(currentDate.getMonth() - 1);
-                    this.value = currentDate.toISOString().split('T')[0];
-                }
-            });
-        });
-    </script>
 </body>
 </html>

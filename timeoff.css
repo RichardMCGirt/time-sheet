@@ -1,338 +1,63 @@
-/* General Styling */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Arial, sans-serif;
     background-color: #f4f4f4;
-    color: #333;
     margin: 0;
     padding: 0;
-    text-align: center;
-}
-
-header {
-    background-color: #2c3e50;
-    color: #ecf0f1;
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.header-left .logo {
-    max-width: 150px;
-}
-
-.header-center {
-    flex-grow: 1;
-    text-align: center;
-}
-
-.info-container {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.header-right .user-info {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.header-right .user-info span {
-    margin-right: 15px;
-    font-weight: bold;
-}
-
-.header-right .user-info .logout-button,
-.header-right .user-info .submit-button {
-    background-color: #1abc9c;
-    color: #ecf0f1;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.header-right .user-info .logout-button:hover,
-.header-right .user-info .submit-button:hover {
-    background-color: #16a085;
-}
-
-.navbar {
-    background-color: #34495e;
-    padding: 10px 0;
-    margin-top: 10px;
-}
-
-.navbar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
     display: flex;
     justify-content: center;
-    flex-wrap: wrap;
+    align-items: center;
+    height: 100vh;
 }
 
-.navbar li {
-    margin: 0 10px;
-}
-
-.navbar a {
-    color: #ecf0f1;
-    text-decoration: none;
-    font-weight: bold;
-    padding: 10px 15px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.navbar a:hover {
-    background-color: #1abc9c;
-}
-
-.main {
+.container {
+    background-color: #fff;
     padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    width: 400px;
 }
 
-.time-off-application {
-    max-width: 600px;
-    margin: 50px auto;
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    text-align: left;
-}
-
-.time-off-application h1 {
+h1 {
     text-align: center;
-    color: #2c3e50;
-    margin-bottom: 20px;
+    color: #333;
 }
 
-.time-off-form .form-group {
-    margin-bottom: 20px;
+h2 {
+    color: #333;
 }
 
-.time-off-form .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #2c3e50;
+form {
+    display: flex;
+    flex-direction: column;
 }
 
-.time-off-form .form-group input,
-.time-off-form .form-group select,
-.time-off-form .form-group textarea {
-    width: 100%;
+label {
+    margin: 10px 0 5px;
+    color: #555;
+}
+
+input, select, textarea, button {
     padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
     border-radius: 5px;
-    box-sizing: border-box;
-    transition: border-color 0.3s;
 }
 
-.time-off-form .form-group input:focus,
-.time-off-form .form-group select:focus,
-.time-off-form .form-group textarea:focus {
-    border-color: #1abc9c;
-    outline: none;
-}
-
-.submit-button,
-.add-button,
-.delete-date-range,
-.delete-single-date {
-    width: calc(50% - 10px);
-    padding: 15px;
-    background-color: #3498db;
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: bold;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 10px;
-}
-
-.submit-button:hover,
-.add-button:hover,
-.delete-date-range:hover,
-.delete-single-date:hover {
-    background-color: #2980b9;
-}
-
-.delete-date-range,
-.delete-single-date {
-    background-color: #e74c3c;
-}
-
-.delete-date-range:hover,
-.delete-single-date:hover {
-    background-color: #c0392b;
-}
-
-/* Flexbox styling for form groups */
-.form-group-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.form-group-row .form-group {
-    flex: 1;
-    min-width: calc(50% - 10px);
-}
-
-/* Loading Indicator */
-#loading-indicator {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.75);
-    color: #ffffff;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 18px;
-    display: none;
-}
-
-#loading-indicator.active {
-    display: block;
-}
-
-/* Tooltip Styling */
-.tooltip {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-}
-
-.tooltip .tooltiptext {
-    visibility: hidden;
-    width: 120px;
-    background-color: #333;
+button {
+    background-color: #28a745;
     color: #fff;
-    text-align: center;
-    padding: 5px;
-    border-radius: 5px;
-    
-    position: absolute;
-    z-index: 1;
-    bottom: 125%; /* Position above the text */
-    left: 50%;
-    margin-left: -60px;
-    
-    opacity: 0;
-    transition: opacity 0.3s;
+    border: none;
+    cursor: pointer;
 }
 
-.tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
+button:hover {
+    background-color: #218838;
 }
 
-/* Request Container Styling */
-.requests-section {
-    max-width: 800px;
-    margin: 50px auto;
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    text-align: left;
+#submittedData {
+    margin-top: 20px;
 }
 
-.requests-section h2 {
-    text-align: center;
-    color: #2c3e50;
-    margin-bottom: 20px;
-}
-
-.request {
-    border-bottom: 1px solid #ccc;
-    padding: 15px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.request p {
-    margin: 0;
-}
-
-.request div {
-    display: flex;
-    align-items: center;
-}
-
-.request label {
-    margin-right: 10px;
-    font-weight: bold;
-}
-
-.request input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-}
-
-/* Responsive Styling */
-@media (max-width: 768px) {
-    header {
-        flex-direction: column;
-    }
-
-    .header-left,
-    .header-center,
-    .header-right {
-        width: 100%;
-        text-align: center;
-        margin: 10px 0;
-    }
-
-    .header-center {
-        order: 2;
-    }
-
-    .header-right {
-        order: 1;
-    }
-
-    .header-left {
-        order: 3;
-    }
-
-    .navbar ul {
-        flex-direction: column;
-    }
-
-    .navbar li {
-        margin: 10px 0;
-    }
-
-    .time-off-application,
-    .requests-section {
-        padding: 20px;
-        margin: 20px;
-    }
-
-    .form-group-row .form-group {
-        min-width: 100%;
-    }
-
-    .submit-button,
-    .add-button,
-    .delete-date-range,
-    .delete-single-date {
-        width: 100%;
-    }
+.hidden {
+    display: none;
 }
