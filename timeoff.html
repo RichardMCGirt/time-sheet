@@ -87,6 +87,29 @@
                 otherReasonInput.required = false;
             }
         });
+
+        // Enhance date input fields for better user experience
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        dateInputs.forEach(input => {
+            input.addEventListener('focus', () => input.showPicker());
+            input.addEventListener('keydown', function(event) {
+                let currentDate = new Date(this.value);
+                if (isNaN(currentDate)) currentDate = new Date();
+                if (event.key === 'ArrowDown') {
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    this.value = currentDate.toISOString().split('T')[0];
+                } else if (event.key === 'ArrowUp') {
+                    currentDate.setDate(currentDate.getDate() - 1);
+                    this.value = currentDate.toISOString().split('T')[0];
+                } else if (event.key === 'ArrowRight') {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    this.value = currentDate.toISOString().split('T')[0];
+                } else if (event.key === 'ArrowLeft') {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    this.value = currentDate.toISOString().split('T')[0];
+                }
+            });
+        });
     </script>
 </body>
 </html>
