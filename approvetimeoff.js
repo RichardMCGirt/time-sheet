@@ -54,31 +54,40 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 if (!employeeName) continue; // Skip records without Employee Name
 
-                const nameContainer = document.createElement('div');
-                nameContainer.classList.add('name-container');
-                nameContainer.textContent = employeeName;
-                requestsContainer.appendChild(nameContainer);
-
                 const requestElement = document.createElement('div');
                 requestElement.classList.add('request');
 
-                const dateRangeElements = JSON.parse(fields["Date Ranges"]).map(range => {
+                const dateRangeElements = JSON.parse(fields["Date Ranges"]).map((range, index) => {
                     if (range["Start Date"] && range["End Date"]) {
-                        return `<p>Start Date: ${range["Start Date"]} - End Date: ${range["End Date"]}</p>`;
+                        return `
+                            <p>
+                                <label>Start Date:</label>
+                                <input type="date" value="${range["Start Date"]}" data-record-id="${record.id}" data-range-index="${index}" data-field="Start Date" />
+                                <label>End Date:</label>
+                                <input type="date" value="${range["End Date"]}" data-record-id="${record.id}" data-range-index="${index}" data-field="End Date" />
+                            </p>`;
                     } else {
-                        return `<p>Single Date: ${range["Single Date"]}</p>`;
+                        return `
+                            <p>
+                                <label>Single Date:</label>
+                                <input type="date" value="${range["Single Date"]}" data-record-id="${record.id}" data-range-index="${index}" data-field="Single Date" />
+                            </p>`;
                     }
                 }).join("");
 
                 requestElement.innerHTML = `
+                    <h3>${employeeName}</h3>
                     <div>
-                        <p><strong>Employee:</strong> ${fields["Employee Name"]}</p>
                         ${dateRangeElements}
-                        <p><strong>Reason:</strong> ${fields["Reason"]}</p>
+                        <p>
+                            <label>Reason:</label>
+                            <input type="text" value="${fields["Reason"]}" data-record-id="${record.id}" data-field="Reason" />
+                        </p>
                     </div>
                     <div>
                         <label for="approve-${record.id}">Approve:</label>
-                        <input type="checkbox" id="approve-${record.id}" name="approve-${record.id}" ${fields["Approved"] ? 'checked' : ''} onchange="updateApprovalStatus('${record.id}', this.checked)">
+                        <input type="checkbox" id="approve-${record.id}" name="approve-${record.id}" ${fields["Time Off Approved"] ? 'checked' : ''} onchange="updateApprovalStatus('${record.id}', this.checked)">
+                        <button onclick="updateRequest('${record.id}')">Update</button>
                     </div>
                 `;
 
@@ -92,30 +101,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    async function updateApprovalStatus(recordId, isApproved) {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-        const body = JSON.stringify({
-            fields: {
-                Approved: isApproved
-            }
-        });
-
-        try {
-            const response = await fetch(endpoint, {
-                method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body
-            });
-            if (!response.ok) throw new Error(`Failed to update approval status: ${response.statusText}`);
-            const data = await response.json();
-            console.log('Approval status updated:', data);
-        } catch (error) {
-            console.error('Error updating approval status:', error);
-        }
-    }
+   
 
     async function refreshData() {
         const supervisorName = await fetchSupervisorName(supervisorEmail);

@@ -1,57 +1,146 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
-    const baseId = 'app9gw2qxhGCmtJvW';
-    const tableId = 'tbljmLpqXScwhiWTt';
+    // Element References
     const timeOffForm = document.getElementById('time-off-form');
     const submitButton = document.getElementById('submit-button');
-    const loadingIndicator = document.getElementById('loading-indicator');
+    const addButton = document.getElementById('add-date-range');
+    const addSingleButton = document.getElementById('add-single-date');
     const ptoHoursElement = document.getElementById('pto-hours');
     const personalHoursElement = document.getElementById('personal-hours');
     const userEmail = localStorage.getItem('userEmail');
     const userEmailElement = document.getElementById('user-email');
     const requestsContainer = document.getElementById('requests-container');
+    const dateContainer = document.getElementById('date-range-container');
+    let submissionCount = 0;
 
-    // Redirect to login page if user is not logged in
+    // Redirect if userEmail is not found
     if (!userEmail) {
         window.location.href = 'index.html';
         return;
     }
 
-    // Display user email
+    // Display the user's email
     userEmailElement.textContent = userEmail;
 
-    // Fetch user data from Airtable
-    async function fetchUserData() {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={Email}="${userEmail}"`;
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch user data: ${response.statusText}`);
-            const data = await response.json();
-            updateUserInfo(data.records[0].fields);
-        } catch (error) {
-            console.error(error);
-            alert('Failed to load user data. Please try again later.');
-        } finally {
-            loadingIndicator.classList.remove('active');
+    // Handle adding date inputs
+    addButton.addEventListener('click', function () {
+        if (submissionCount >= 4) {
+            alert('You can only add a maximum of 4 submissions.');
+            return;
         }
-    }
 
-    // Update user info in the header
-    function updateUserInfo(fields) {
-        ptoHoursElement.textContent = fields['PTO Hours'] || '0';
-        personalHoursElement.textContent = fields['Personal Hours'] || '0';
-    }
+        submissionCount++;
 
-    // Handle form submission
-    timeOffForm.addEventListener('submit', async function (event) {
+        const dateInputGroup = document.createElement('div');
+        dateInputGroup.classList.add('date-range', 'form-group-row');
+        dateInputGroup.setAttribute('data-index', submissionCount);
+        dateInputGroup.innerHTML = `
+            <div class="form-group">
+                <label for="start-date-${submissionCount}">Start Date:</label>
+                <input type="date" id="start-date-${submissionCount}" name="start_date[]" required>
+            </div>
+            <div class="form-group">
+                <label for="end-date-${submissionCount}">End Date:</label>
+                <input type="date" id="end-date-${submissionCount}" name="end_date[]" required>
+            </div>
+            <div class="form-group">
+                <label for="reason-${submissionCount}">Reason:</label>
+                <select id="reason-${submissionCount}" name="reason-${submissionCount}" required>
+                    <option value="">Select Reason</option>
+                    <option value="Vacation">Vacation</option>
+                    <option value="Sick Leave">Sick Leave</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Family Emergency">Family Emergency</option>
+                    <option value="Bereavement">Bereavement</option>
+                    <option value="Jury Duty">Jury Duty</option>
+                    <option value="Medical Appointment">Medical Appointment</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="other-reason-${submissionCount}" name="other_reason-${submissionCount}" placeholder="Please specify" style="display: none; margin-top: 10px;">
+            </div>
+            <button type="button" class="delete-date-range" onclick="deleteDateRange(${submissionCount})">Delete Date Range</button>
+        `;
+        dateContainer.appendChild(dateInputGroup);
+
+        document.getElementById(`start-date-${submissionCount}`).addEventListener('change', function () {
+            const startDate = this.value;
+            document.getElementById(`end-date-${submissionCount}`).setAttribute('min', startDate);
+        });
+
+        document.getElementById(`end-date-${submissionCount}`).addEventListener('change', function () {
+            const endDate = this.value;
+            document.getElementById(`start-date-${submissionCount}`).setAttribute('max', endDate);
+        });
+
+        document.getElementById(`reason-${submissionCount}`).addEventListener('change', function () {
+            const otherReasonInput = document.getElementById(`other-reason-${submissionCount}`);
+            if (this.value === 'Other') {
+                otherReasonInput.style.display = 'block';
+                otherReasonInput.required = true;
+            } else {
+                otherReasonInput.style.display = 'none';
+                otherReasonInput.required = false;
+            }
+        });
+    });
+
+    addSingleButton.addEventListener('click', function () {
+        if (submissionCount >= 4) {
+            alert('You can only add a maximum of 4 submissions.');
+            return;
+        }
+
+        submissionCount++;
+
+        const singleDateInputGroup = document.createElement('div');
+        singleDateInputGroup.classList.add('single-date', 'form-group-row');
+        singleDateInputGroup.setAttribute('data-index', submissionCount);
+        singleDateInputGroup.innerHTML = `
+            <div class="form-group">
+                <label for="single-date-${submissionCount}">Date:</label>
+                <input type="date" id="single-date-${submissionCount}" name="single_date[]" required>
+            </div>
+            <div class="form-group">
+                <label for="reason-${submissionCount}">Reason:</label>
+                <select id="reason-${submissionCount}" name="reason-${submissionCount}" required>
+                    <option value="">Select Reason</option>
+                    <option value="Vacation">Vacation</option>
+                    <option value="Sick Leave">Sick Leave</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Family Emergency">Family Emergency</option>
+                    <option value="Bereavement">Bereavement</option>
+                    <option value="Jury Duty">Jury Duty</option>
+                    <option value="Medical Appointment">Medical Appointment</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="other-reason-${submissionCount}" name="other_reason-${submissionCount}" placeholder="Please specify" style="display: none; margin-top: 10px;">
+            </div>
+            <button type="button" class="delete-single-date" onclick="deleteSingleDate(${submissionCount})">Delete Date</button>
+        `;
+        dateContainer.appendChild(singleDateInputGroup);
+
+        document.getElementById(`reason-${submissionCount}`).addEventListener('change', function () {
+            const otherReasonInput = document.getElementById(`other-reason-${submissionCount}`);
+            if (this.value === 'Other') {
+                otherReasonInput.style.display = 'block';
+                otherReasonInput.required = true;
+            } else {
+                otherReasonInput.style.display = 'none';
+                otherReasonInput.required = false;
+            }
+        });
+    });
+
+    // Handle time-off form submission
+    timeOffForm.addEventListener('submit', function (event) {
         event.preventDefault();
 
-        // Validate dates
         const startDateElements = timeOffForm.querySelectorAll('input[name="start_date[]"]');
         const endDateElements = timeOffForm.querySelectorAll('input[name="end_date[]"]');
         const singleDateElements = timeOffForm.querySelectorAll('input[name="single_date[]"]');
         const dateRanges = [];
+        const reasons = [];
 
+        // Validate date ranges
         for (let i = 0; i < startDateElements.length; i++) {
             const startDate = new Date(startDateElements[i].value);
             const endDate = new Date(endDateElements[i].value);
@@ -60,79 +149,55 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
             dateRanges.push({ "Start Date": startDateElements[i].value, "End Date": endDateElements[i].value });
+            reasons.push(timeOffForm.querySelector(`select[name="reason-${i+1}"]`).value);
         }
 
+        // Add single dates
         singleDateElements.forEach(singleDate => {
             dateRanges.push({ "Single Date": singleDate.value });
+            reasons.push(timeOffForm.querySelector(`select[name="reason-${submissionCount}"]`).value);
         });
 
-        // Collect form data
-        const formData = new FormData(timeOffForm);
-        const reason = formData.get('reason') === 'Other' ? formData.get('other_reason') : formData.get('reason');
-        const timestamp = new Date().toISOString();
-        const data = {
-            fields: {
-                "Employee Name": userEmail,
-                "Date Ranges": dateRanges,
-                "Reason": reason,
-                "Timestamp": timestamp
-            }
-        };
-
-        submitButton.disabled = true;
-        submitButton.textContent = 'Submitting...';
-
-        try {
-            const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-            if (!response.ok) throw new Error(`Failed to submit time-off request: ${response.statusText}`);
-            alert('Time-off request submitted successfully!');
-            timeOffForm.reset();
-            document.getElementById('other-reason').style.display = 'none';
-            displayRequest(data.fields);
-        } catch (error) {
-            console.error('Error submitting time-off request:', error);
-            alert('Failed to submit time-off request. Please try again.');
-        } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Submit';
+        if (dateRanges.length > 4) {
+            alert('You can only submit a maximum of 4 requests.');
+            return;
         }
-    });
 
-    // Display submitted time-off request
-    function displayRequest(fields) {
-        const requestElement = document.createElement('div');
-        requestElement.classList.add('request');
-
-        const dateRangeElements = fields["Date Ranges"].map(range => {
-            if (range["Start Date"] && range["End Date"]) {
-                return `<p>Start Date: ${range["Start Date"]} - End Date: ${range["End Date"]}</p>`;
-            } else {
-                return `<p>Single Date: ${range["Single Date"]}</p>`;
-            }
+        const requestDetails = dateRanges.map((range, index) => {
+            const reason = reasons[index];
+            return `
+                <div>
+                    <p><strong>Submission ${index + 1}:</strong> ${range["Start Date"] ? `${range["Start Date"]} to ${range["End Date"]}` : range["Single Date"]}</p>
+                    <p><strong>Reason:</strong> ${reason}</p>
+                </div>
+            `;
         }).join("");
 
+        const requestElement = document.createElement('div');
+        requestElement.classList.add('request');
         requestElement.innerHTML = `
             <div>
-                <p><strong>Employee:</strong> ${fields["Employee Name"]}</p>
-                ${dateRangeElements}
-                <p><strong>Reason:</strong> ${fields["Reason"]}</p>
-            </div>
-            <div>
-                <label for="approve-${fields["Employee Name"]}">Approve:</label>
-                <input type="checkbox" id="approve-${fields["Employee Name"]}" name="approve-${fields["Employee Name"]}">
+                <p><strong>Employee:</strong> ${userEmail}</p>
+                ${requestDetails}
             </div>
         `;
-
         requestsContainer.appendChild(requestElement);
-    }
 
-    // Initialize the form
-    fetchUserData();
+        alert('Time-off request submitted successfully!');
+        timeOffForm.reset();
+        submissionCount = 0; // Reset count after successful submission
+        dateContainer.innerHTML = ''; // Clear date inputs
+    });
+
+    // Delete date range
+    window.deleteDateRange = function (index) {
+        const dateRange = document.querySelector(`.date-range[data-index="${index}"]`);
+        dateRange.remove();
+    };
+
+    // Delete single date
+    window.deleteSingleDate = function (index) {
+        const singleDate = document.querySelector(`.single-date[data-index="${index}"]`);
+        singleDate.remove();
+    };
 });
