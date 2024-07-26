@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const userEmail = localStorage.getItem('userEmail');
+    let currentRecordId = null; // Store the current record ID for editing
+    let records = []; // Store the records locally for demonstration
 
     // Redirect to login page if no user email is found
     if (!userEmail) {
@@ -8,115 +10,164 @@ document.addEventListener('DOMContentLoaded', function() {
         return; // Stop further execution if no user email
     }
 
-    // Fetch employee name from Airtable
+    // Simulate fetching employee name
     fetchEmployeeName(userEmail);
 
     document.getElementById('timeOffForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the form from submitting normally
-
-        const reasonElement = document.getElementById('reasonDropdown');
-        const reasonValue = reasonElement.value === 'other' ? document.getElementById('reasonInput').value : reasonElement.value;
-
-        // Gather form data
-        const formData = {
-            employeeName: document.getElementById('employeeName').value,
-            requestType: document.getElementById('requestType').value,
-            startDate: document.getElementById('startDate').value,
-            endDate: document.getElementById('endDate').value,
-            reason: reasonValue,
-        };
-
-        // Save form data in local storage
-        localStorage.setItem('timeOffRequest', JSON.stringify(formData));
-
-        // Display form data in the submittedData section
-        displaySubmittedData(formData);
-
-        // Optionally, you can also clear the form
-        document.getElementById('timeOffForm').reset();
-        document.getElementById('reasonInput').classList.add('hidden');
-        document.getElementById('reasonDropdown').classList.remove('hidden');
-
-        // Send form data to Airtable
-        sendToAirtable(formData);
+        event.preventDefault();
+        handleFormSubmit();
     });
 
     document.getElementById('reasonDropdown').addEventListener('change', function() {
         const reasonInput = document.getElementById('reasonInput');
         if (this.value === 'other') {
             reasonInput.classList.remove('hidden');
+            reasonInput.required = true;
+            this.classList.add('hidden');
         } else {
             reasonInput.classList.add('hidden');
+            reasonInput.required = false;
+            this.classList.remove('hidden');
         }
     });
 
     function fetchEmployeeName(email) {
-        const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
-        const baseId = 'app9gw2qxhGCmtJvW';
-        const tableId = 'tbljmLpqXScwhiWTt';
+        const employeeName = "John Doe"; // Simulated employee name
+        document.getElementById('employeeName').value = employeeName;
+        document.getElementById('employeeName').readOnly = true;
+        fetchPreviousRequests(employeeName);
+    }
 
-        fetch(`https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=Email='${email}'`, {
-            headers: {
-                'Authorization': `Bearer ${apiKey}`
+    function sendToAirtable(formData, recordId) {
+        if (recordId) {
+            // Update the record locally
+            const record = records.find(record => record.id === recordId);
+            if (record) {
+                record.fields = formData;
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.records && data.records.length > 0) {
-                const employeeName = data.records[0].fields['name'];
-                document.getElementById('employeeName').value = employeeName;
-            } else {
-                alert('Employee not found.');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching employee name:', error);
-            alert('Error fetching employee name.');
+        } else {
+            // Create a new record locally
+            const newRecord = {
+                id: Date.now().toString(),
+                fields: formData
+            };
+            records.push(newRecord);
+        }
+
+        console.log('Records:', records);
+        fetchPreviousRequests(formData.employeeName);
+        displaySubmittedData(formData);
+        currentRecordId = null; // Reset the current record ID after submission
+    }
+
+    function fetchPreviousRequests(employeeName) {
+        const employeeRecords = records.filter(record => record.fields.employeeName === employeeName);
+        displayPreviousRequests(employeeRecords);
+    }
+
+    function displayPreviousRequests(records) {
+        const container = document.getElementById('previousRequests');
+        container.innerHTML = '';
+
+        records.forEach(record => {
+            const recordDiv = document.createElement('div');
+            recordDiv.className = 'record';
+
+            const approvedCheckbox = record.fields.approved ? '<input type="checkbox" checked disabled>' : '<input type="checkbox" disabled>';
+
+            recordDiv.innerHTML = `
+                <p>Employee Name: ${record.fields.employeeName}</p>
+                <p>Start Date: ${record.fields.startDate}</p>
+                <p>End Date: ${record.fields.endDate}</p>
+                <p>Reason: ${record.fields.reason}</p>
+                <p>Approved: ${approvedCheckbox}</p>
+                <button class="editBtn" data-id="${record.id}">Edit</button>
+                <button class="deleteBtn" data-id="${record.id}">Delete</button>
+            `;
+
+            container.appendChild(recordDiv);
+        });
+
+        document.querySelectorAll('.editBtn').forEach(button => {
+            button.addEventListener('click', function() {
+                const recordId = this.getAttribute('data-id');
+                const record = records.find(record => record.id === recordId);
+                currentRecordId = recordId; // Store the current record ID for editing
+                console.log(`Edit button clicked. Current record ID set to: ${currentRecordId}`); // Debugging line
+                fillFormForEdit(record);
+            });
+        });
+
+        document.querySelectorAll('.deleteBtn').forEach(button => {
+            button.addEventListener('click', function() {
+                const recordId = this.getAttribute('data-id');
+                deleteRecord(recordId);
+            });
         });
     }
 
-    function sendToAirtable(formData) {
-        const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
-        const baseId = 'app9gw2qxhGCmtJvW';
-        const tableId = 'tbljmLpqXScwhiWTt';
+    function fillFormForEdit(record) {
+        document.getElementById('startDate').value = record.fields.startDate;
+        document.getElementById('endDate').value = record.fields.endDate;
+        document.getElementById('reasonInput').value = record.fields.reason;
 
-        fetch(`https://api.airtable.com/v0/${baseId}/${tableId}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                fields: {
-                    'Employee Name': formData.employeeName,
-                    'Request Type': formData.requestType,
-                    'Time Off Start Date': formData.startDate,
-                    'Time Off End Date': formData.endDate,
-                    'Reason': formData.reason,
-                    'Approved': false // Default value
-                }
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-            alert('Time-off request submitted successfully to Airtable!');
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            alert('There was an error submitting your request to Airtable.');
-        });
+        const reasonElement = document.getElementById('reasonDropdown');
+        const reasonInput = document.getElementById('reasonInput');
+        if (record.fields.reason === 'other') {
+            reasonInput.classList.remove('hidden');
+            reasonElement.classList.add('hidden');
+        } else {
+            reasonInput.classList.add('hidden');
+            reasonElement.classList.remove('hidden');
+        }
+
+        console.log(`Form filled for editing. Current record ID: ${currentRecordId}`); // Debugging line
+    }
+
+    function handleFormSubmit() {
+        const reasonElement = document.getElementById('reasonDropdown');
+        const reasonValue = reasonElement.value === 'other' ? document.getElementById('reasonInput').value : reasonElement.value;
+
+        const formData = {
+            employeeName: document.getElementById('employeeName').value,
+            startDate: document.getElementById('startDate').value,
+            endDate: document.getElementById('endDate').value,
+            reason: reasonValue,
+            approved: false // Default approved status
+        };
+
+        console.log(`Form submitted. Current record ID: ${currentRecordId}`); // Debugging line
+
+        sendToAirtable(formData, currentRecordId);
+
+        // Clear only the necessary form fields, preserving the employee name
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        document.getElementById('reasonDropdown').value = '';
+        document.getElementById('reasonInput').value = '';
+        document.getElementById('reasonInput').classList.add('hidden');
+        document.getElementById('reasonDropdown').classList.remove('hidden');
+        currentRecordId = null;
+    }
+
+    function deleteRecord(recordId) {
+        records = records.filter(record => record.id !== recordId);
+        console.log('Record deleted:', recordId);
+        fetchPreviousRequests(document.getElementById('employeeName').value);
     }
 
     function displaySubmittedData(formData) {
-        const approvedCheckbox = formData.approved ? '<input type="checkbox" checked disabled>' : '<input type="checkbox" disabled>';
+        const container = document.getElementById('submittedData');
+        const recordDiv = document.createElement('div');
+        recordDiv.className = 'record';
 
-        document.getElementById('submittedEmployeeName').innerText = formData.employeeName;
-        document.getElementById('submittedRequestType').innerText = formData.requestType;
-        document.getElementById('submittedStartDate').innerText = formData.startDate;
-        document.getElementById('submittedEndDate').innerText = formData.endDate;
-        document.getElementById('submittedReason').innerText = formData.reason;
+        recordDiv.innerHTML = `
+            <p>Employee Name: ${formData.employeeName}</p>
+            <p>Start Date: ${formData.startDate}</p>
+            <p>End Date: ${formData.endDate}</p>
+            <p>Reason: ${formData.reason}</p>
+        `;
 
-        document.getElementById('submittedData').classList.remove('hidden');
+        container.appendChild(recordDiv);
     }
 });
