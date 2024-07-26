@@ -6,45 +6,65 @@
     <title>Time-Off Application</title>
     <link rel="stylesheet" href="timeoff.css">
 </head>
-<body style="text-align: center;">
+<body>
+    <header>
+        <div class="header-left">
+            <img src="path_to_logo.png" alt="Vanir Installed Sales Logo" class="logo">
+        </div>
+        <div class="header-center">
+            <div id="pto-info" class="info-container">
+                <p>PTO Hours Available: <span id="pto-hours">Loading...</span></p>
+                <p>Personal Hours Available: <span id="personal-hours">Loading...</span></p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <span id="user-email" class="clickable">Jason.Smith@example.com</span>
+                <a href="#" id="logout-button" class="logout-button">Logout</a>
+            </div>
+        </div>
+    </header>
+    <nav class="navbar">
+        <ul>
+            <li><a href="timesheet.html">Timesheet</a></li>
+            <li><a href="timeoff.html">Request Time Off</a></li>
+            <li><a href="#" id="logout-button">Logout</a></li>
+        </ul>
+    </nav>
     <main>
-        <header>
-            <div class="header-left">
-                <img src="" alt="Vanir Installed Sales Logo" class="logo">
-            </div>
-            <div class="header-right">
-                <div class="user-info">
-                    <span id="user-email" class="clickable">Jason.Smith@example.com</span>
-                    <a href="#" id="logout-button" class="logout-button">Logout</a>
-                </div>
-            </div>
-        </header>
-        
         <section id="time-off-application" class="time-off-application">
+            <h1>Request Time Off</h1>
             <form id="time-off-form" class="time-off-form">
                 <div class="form-group">
-                    <label for="employee-name">Employee Name:</label>
-                    <select id="employee-name" name="employee_name" required style="font-size: 20px;">
-                        <option value="">Select Employee</option>
-                        <!-- Options will be populated by JavaScript -->
-                    </select>
-                </div>
-                <div class="form-group">
                     <label for="start-date">Start Date:</label>
-                    <input type="date" id="start-date" name="start_date" required style="font-size: 20px;">
+                    <input type="date" id="start-date" name="start_date" required>
                 </div>
                 <div class="form-group">
                     <label for="end-date">End Date:</label>
-                    <input type="date" id="end-date" name="end_date" required style="font-size: 20px;">
+                    <input type="date" id="end-date" name="end_date" required>
                 </div>
                 <div class="form-group">
                     <label for="reason">Reason:</label>
-                    <textarea id="reason" name="reason" required style="font-size: 20px;"></textarea>
+                    <select id="reason" name="reason" required>
+                        <option value="">Select Reason</option>
+                        <option value="Vacation">Vacation</option>
+                        <option value="Sick Leave">Sick Leave</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Family Emergency">Family Emergency</option>
+                        <option value="Bereavement">Bereavement</option>
+                        <option value="Jury Duty">Jury Duty</option>
+                        <option value="Medical Appointment">Medical Appointment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="other-reason" name="other_reason" placeholder="Please specify" style="display: none; margin-top: 10px;">
                 </div>
-                <button id="submit-button" class="submit-button" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #1abc9c; color: #ecf0f1; font-size: 16px; font-weight: bold; cursor: pointer;">Submit</button>
+                <button id="submit-button" class="submit-button">Submit</button>
             </form>
         </section>
     </main>
+
+    <div id="loading-indicator" class="active">Loading...</div>
+
     <script src="timeoff.js"></script>
     <script>
         document.getElementById('start-date').addEventListener('change', function() {
@@ -55,6 +75,17 @@
         document.getElementById('end-date').addEventListener('change', function() {
             const endDate = this.value;
             document.getElementById('start-date').setAttribute('max', endDate);
+        });
+
+        document.getElementById('reason').addEventListener('change', function() {
+            const otherReasonInput = document.getElementById('other-reason');
+            if (this.value === 'Other') {
+                otherReasonInput.style.display = 'block';
+                otherReasonInput.required = true;
+            } else {
+                otherReasonInput.style.display = 'none';
+                otherReasonInput.required = false;
+            }
         });
     </script>
 </body>
