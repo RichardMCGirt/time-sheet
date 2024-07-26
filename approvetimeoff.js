@@ -7,6 +7,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     const requestsContainer = document.getElementById('requests-container');
     const loadingIndicator = document.getElementById('loading-indicator');
 
+    if (!supervisorEmail) {
+        window.location.href = 'index.html';
+        return;
+    }
+
     if (userEmailElement) {
         userEmailElement.textContent = supervisorEmail;
     }
@@ -25,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     async function fetchEmployeeRequests(supervisorName) {
-        const filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Name}!=BLANK())`;
+        const filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Name}!=BLANK(), {Reason}!=BLANK())`;
 
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}&sort[0][field]=CreatedTime&sort[0][direction]=asc`;
 
@@ -124,6 +129,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Initial fetch
     await refreshData();
 
+    // Logout function
     document.getElementById('logout-button').addEventListener('click', function (event) {
         event.preventDefault();
         localStorage.removeItem('userEmail');
