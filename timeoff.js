@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const employeeName = data.records[0].fields.name;
                 document.getElementById('employeeName').value = employeeName;
                 document.getElementById('employeeName').readOnly = true;
-                fetchPreviousRequests(employeeName);
+                fetchPreviousRequests(email);
             } else {
                 console.error('No employee found with the given email.');
             }
@@ -61,34 +61,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function sendToLocalStorage(formData, recordId) {
-        if (recordId) {
-            // Update the record locally
-            const record = records.find(record => record.id === recordId);
-            if (record) {
-                record.fields = formData;
-            }
-        } else {
-            // Create a new record locally
-            const newRecord = {
-                id: Date.now().toString(),
-                fields: formData
-            };
-            records.push(newRecord);
+    async function fetchPreviousRequests(email) {
+        try {
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{Email}='${email}'`)}`;
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+            const data = await response.json();
+            records = data.records;
+            displayPreviousRequests(records);
+        } catch (error) {
+            console.error('Error fetching previous requests:', error);
         }
-
-        // Save to localStorage
-        localStorage.setItem('timeOffRecords', JSON.stringify(records));
-        fetchPreviousRequests(formData.employeeName); // Ensure correct employee name is used
-        displaySubmittedData(formData);
-        currentRecordId = null; // Reset the current record ID after submission
-        deleteExpiredRecords(); // Check for expired records after submission
     }
 
-    function fetchPreviousRequests(employeeName) {
-        const savedRecords = JSON.parse(localStorage.getItem('timeOffRecords')) || [];
-        records = savedRecords.filter(record => record.fields.employeeName === employeeName);
-        displayPreviousRequests(records);
+    async function sendToAirtable(formData, recordId) {
+        try {
+            let url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
+            let method = 'POST';
+            if (recordId) {
+                url += `/${recordId}`;
+                method = 'PATCH';
+            }
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fields: formData
+                })
+            });
+
+            const data = await response.json();
+            console.log('Record saved successfully:', data);
+            fetchPreviousRequests(localStorage.getItem('userEmail')); // Refresh the records after saving
+        } catch (error) {
+            console.error('Error saving to Airtable:', error);
+        }
     }
 
     function displayPreviousRequests(records) {
@@ -101,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const approvedCheckbox = record.fields.approved ? '<input type="checkbox" checked disabled>' : '<input type="checkbox" disabled>';
 
             recordDiv.innerHTML = `
-                <p>Employee Name: ${record.fields.employeeName}</p>
+                <p>Employee Name: ${record.fields.name}</p>
                 <p>Start Date: ${record.fields.startDate}</p>
                 <p>End Date: ${record.fields.endDate}</p>
                 <p>Reason: ${record.fields.reason}</p>
@@ -148,17 +162,40 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleFormSubmit() {
         const reasonElement = document.getElementById('reasonDropdown');
         const reasonValue = reasonElement.value === 'other' ? document.getElementById('reasonInput').value : reasonElement.value;
-
+    
         const formData = {
-            employeeName: document.getElementById('employeeName').value,
+            Email: localStorage.getItem('userEmail'),
+            name: document.getElementById('employeeName').value,
             startDate: document.getElementById('startDate').value,
             endDate: document.getElementById('endDate').value,
             reason: reasonValue,
             approved: false // Default approved status
         };
+    
+        // Detect new fields (example logic, you might need to adapt it)
+        const newFields = [];
+        const savedRecords = records || [];
+        const existingFieldsCount = savedRecords.length;
 
-        sendToLocalStorage(formData, currentRecordId);
+        const newFieldNames = [
+            { name: `New Start Date ${existingFieldsCount + 1}`, type: 'date' },
+            { name: `New End Date ${existingFieldsCount + 1}`, type: 'date' },
+            { name: `Reason ${existingFieldsCount + 1}`, type: 'singleLineText' }
+        ];
 
+        newFields.push(...newFieldNames);
+    
+        // Add new fields to Airtable if there are any
+        if (newFields.length > 0) {
+            addFieldsToAirtable(newFields).then(() => {
+                // After fields are added, save the form data
+                sendToAirtable(formData, currentRecordId);
+            });
+        } else {
+            // Save the form data if there are no new fields
+            sendToAirtable(formData, currentRecordId);
+        }
+    
         // Clear only the necessary form fields, preserving the employee name
         document.getElementById('startDate').value = '';
         document.getElementById('endDate').value = '';
@@ -168,17 +205,60 @@ document.addEventListener('DOMContentLoaded', () => {
         currentRecordId = null;
     }
 
-    function deleteRecord(recordId) {
-        records = records.filter(record => record.id !== recordId);
-        localStorage.setItem('timeOffRecords', JSON.stringify(records));
-        fetchPreviousRequests(document.getElementById('employeeName').value);
+    async function addFieldsToAirtable(newFields) {
+        const url = `https://api.airtable.com/v0/meta/bases/${baseId}/tables/${tableId}/fields`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fields: newFields
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Fields added successfully:', data);
+            } else {
+                const errorData = await response.json();
+                console.error('Error adding fields:', errorData);
+            }
+        } catch (error) {
+            console.error('Error adding fields to Airtable:', error);
+        }
+    }
+
+    async function deleteRecord(recordId) {
+        try {
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+
+            if (response.ok) {
+                console.log('Record deleted successfully');
+                fetchPreviousRequests(localStorage.getItem('userEmail')); // Refresh the records after deletion
+            } else {
+                const errorData = await response.json();
+                console.error('Error deleting record:', errorData);
+            }
+        } catch (error) {
+            console.error('Error deleting record:', error);
+        }
     }
 
     function displaySubmittedData(formData) {
         const container = document.getElementById('submittedData');
         container.innerHTML = `
             <h2>Submitted Time-Off Request</h2>
-            <p><strong>Employee Name:</strong> ${formData.employeeName}</p>
+            <p><strong>Employee Name:</strong> ${formData.name}</p>
             <p><strong>Start Date:</strong> ${formData.startDate}</p>
             <p><strong>End Date:</strong> ${formData.endDate}</p>
             <p><strong>Reason:</strong> ${formData.reason}</p>
