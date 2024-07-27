@@ -4,15 +4,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableId = 'tbljmLpqXScwhiWTt';
 
     const userEmail = localStorage.getItem('userEmail');
-    let currentRecordId = null; // Store the current record ID for editing
     let records = []; // Store the records locally for demonstration
 
     // Define variables
     const form = document.getElementById('timeOffForm');
     const reasonDropdown = document.getElementById('reasonDropdown');
     const reasonInput = document.getElementById('reasonInput');
+    const requestsList = document.getElementById('requestsList');
+    const submissionStatus = document.getElementById('submissionStatus');
     const submittedData = document.getElementById('submittedData');
-    const requestsList = document.getElementById('previousRequests'); // Correct reference
+    const submittedEmployeeName = document.getElementById('submittedEmployeeName');
+    const submittedStartDate = document.getElementById('submittedStartDate');
+    const submittedStartTime = document.getElementById('submittedStartTime');
+    const submittedEndDate = document.getElementById('submittedEndDate');
+    const submittedEndTime = document.getElementById('submittedEndTime');
+    const submittedReason = document.getElementById('submittedReason');
 
     // Redirect to login page if no user email is found
     if (!userEmail) {
@@ -77,17 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function sendToAirtable(formData, recordId) {
+    async function sendToAirtable(formData) {
         try {
             let url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
-            let method = 'POST';
-            if (recordId) {
-                url += `/${recordId}`;
-                method = 'PATCH';
-            }
-
             const response = await fetch(url, {
-                method: method,
+                method: 'POST',
                 headers: {
                     Authorization: `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
@@ -97,190 +97,108 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
 
-            const data = await response.json();
-            console.log('Record saved successfully:', data);
-            fetchPreviousRequests(localStorage.getItem('userEmail')); // Refresh the records after saving
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Record saved successfully:', data);
+                submissionStatus.textContent = 'Submission successful!';
+                submissionStatus.classList.remove('hidden');
+                submissionStatus.classList.add('success');
+                displaySubmittedData(formData); // Display the submitted data
+                fetchPreviousRequests(localStorage.getItem('userEmail')); // Refresh the records after saving
+            } else {
+                throw new Error('Failed to save record');
+            }
         } catch (error) {
             console.error('Error saving to Airtable:', error);
+            submissionStatus.textContent = 'Submission failed. Please try again.';
+            submissionStatus.classList.remove('hidden');
+            submissionStatus.classList.add('error');
         }
+    }
+
+    function getNextAvailableIndex() {
+        let maxIndex = 0;
+        records.forEach(record => {
+            for (let i = 1; i <= 10; i++) {
+                if (record.fields[`Time off Start Date ${i}`]) {
+                    maxIndex = i;
+                }
+            }
+        });
+        return maxIndex + 1;
+    }
+
+    function handleFormSubmit() {
+        const reasonElement = document.getElementById('reasonDropdown');
+        const reasonValue = reasonElement.value === 'other' ? document.getElementById('reasonInput').value : reasonElement.value;
+
+        const nextIndex = getNextAvailableIndex();
+        if (nextIndex > 10) {
+            console.error('No available index to store the new time-off request.');
+            submissionStatus.textContent = 'No available index to store the new time-off request.';
+            submissionStatus.classList.remove('hidden');
+            submissionStatus.classList.add('error');
+            return;
+        }
+
+        const formData = {
+            Email: localStorage.getItem('userEmail'),
+            name: document.getElementById('employeeName').value,
+            [`Time off Start Date ${nextIndex}`]: document.getElementById('startDate').value,
+            [`Time off Start Time ${nextIndex}`]: document.getElementById('startTime').value,
+            [`Time off End Date ${nextIndex}`]: document.getElementById('endDate').value,
+            [`Time off End Time ${nextIndex}`]: document.getElementById('endTime').value,
+            [`Reason ${nextIndex}`]: reasonValue,
+            [`Time off Approved ${nextIndex}`]: false // Default approved status
+        };
+
+        sendToAirtable(formData);
+
+        // Clear only the necessary form fields, preserving the employee name
+        document.getElementById('startDate').value = '';
+        document.getElementById('startTime').value = '';
+        document.getElementById('endDate').value = '';
+        document.getElementById('endTime').value = '';
+        document.getElementById('reasonDropdown').value = '';
+        document.getElementById('reasonInput').value = '';
+        document.getElementById('reasonInput').classList.add('hidden');
     }
 
     function displayPreviousRequests(records) {
         requestsList.innerHTML = ''; // Clear previous requests
 
         records.forEach(record => {
-            const recordDiv = document.createElement('div');
-            recordDiv.className = 'record';
+            for (let i = 1; i <= 10; i++) {
+                if (record.fields[`Time off Start Date ${i}`]) {
+                    const recordItem = document.createElement('li');
+                    recordItem.className = 'record';
 
-            const approvedCheckbox = record.fields.approved ? '<input type="checkbox" checked disabled>' : '<input type="checkbox" disabled>';
+                    const approvedCheckbox = record.fields[`Time off Approved ${i}`] ? '<input type="checkbox" checked disabled>' : '<input type="checkbox" disabled>';
 
-            recordDiv.innerHTML = `
-                <p>Employee Name: ${record.fields.name}</p>
-                <p>Start Date: ${record.fields.startDate}</p>
-                <p>End Date: ${record.fields.endDate}</p>
-                <p>Reason: ${record.fields.reason}</p>
-                <p>Approved: ${approvedCheckbox}</p>
-                <button class="editBtn" data-id="${record.id}">Edit</button>
-                <button class="deleteBtn" data-id="${record.id}">Delete</button>
-            `;
+                    recordItem.innerHTML = `
+                        <p><strong>Employee Name:</strong> ${record.fields.name}</p>
+                        <p><strong>Start Date:</strong> ${record.fields[`Time off Start Date ${i}`]}</p>
+                        <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`]}</p>
+                        <p><strong>End Date:</strong> ${record.fields[`Time off End Date ${i}`]}</p>
+                        <p><strong>End Time:</strong> ${record.fields[`Time off End Time ${i}`]}</p>
+                        <p><strong>Reason:</strong> ${record.fields[`Reason ${i}`]}</p>
+                        <p><strong>Approved:</strong> ${approvedCheckbox}</p>
+                    `;
 
-            requestsList.appendChild(recordDiv);
-        });
-
-        document.querySelectorAll('.editBtn').forEach(button => {
-            button.addEventListener('click', function() {
-                const recordId = this.getAttribute('data-id');
-                const record = records.find(record => record.id === recordId);
-                currentRecordId = recordId; // Store the current record ID for editing
-                fillFormForEdit(record);
-            });
-        });
-
-        document.querySelectorAll('.deleteBtn').forEach(button => {
-            button.addEventListener('click', function() {
-                const recordId = this.getAttribute('data-id');
-                deleteRecord(recordId);
-            });
-        });
-    }
-
-    function fillFormForEdit(record) {
-        document.getElementById('startDate').value = record.fields.startDate;
-        document.getElementById('endDate').value = record.fields.endDate;
-        document.getElementById('reasonInput').value = record.fields.reason;
-
-        const reasonElement = document.getElementById('reasonDropdown');
-        if (record.fields.reason === 'other') {
-            reasonInput.classList.remove('hidden');
-            reasonElement.value = 'other'; // Set the dropdown to 'other'
-        } else {
-            reasonInput.classList.add('hidden');
-            reasonElement.value = record.fields.reason;
-        }
-    }
-
-    function handleFormSubmit() {
-        const reasonElement = document.getElementById('reasonDropdown');
-        const reasonValue = reasonElement.value === 'other' ? document.getElementById('reasonInput').value : reasonElement.value;
-    
-        const formData = {
-            Email: localStorage.getItem('userEmail'),
-            name: document.getElementById('employeeName').value,
-            startDate: document.getElementById('startDate').value,
-            endDate: document.getElementById('endDate').value,
-            reason: reasonValue,
-            approved: false // Default approved status
-        };
-    
-        // Detect new fields (example logic, you might need to adapt it)
-        const newFields = [];
-        const savedRecords = records || [];
-        const existingFieldsCount = savedRecords.length;
-
-        const newFieldNames = [
-            { name: `New Start Date ${existingFieldsCount + 1}`, type: 'date' },
-            { name: `New End Date ${existingFieldsCount + 1}`, type: 'date' },
-            { name: `Reason ${existingFieldsCount + 1}`, type: 'singleLineText' }
-        ];
-
-        newFields.push(...newFieldNames);
-    
-        // Add new fields to Airtable if there are any
-        if (newFields.length > 0) {
-            addFieldsToAirtable(newFields).then(() => {
-                // After fields are added, save the form data
-                sendToAirtable(formData, currentRecordId);
-            });
-        } else {
-            // Save the form data if there are no new fields
-            sendToAirtable(formData, currentRecordId);
-        }
-    
-        // Clear only the necessary form fields, preserving the employee name
-        document.getElementById('startDate').value = '';
-        document.getElementById('endDate').value = '';
-        document.getElementById('reasonDropdown').value = '';
-        document.getElementById('reasonInput').value = '';
-        document.getElementById('reasonInput').classList.add('hidden');
-        currentRecordId = null;
-    }
-
-    async function addFieldsToAirtable(newFields) {
-        const url = `https://api.airtable.com/v0/meta/bases/${baseId}/tables/${tableId}/fields`;
-
-        try {
-            const response = await fetch(url, {
-                method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    fields: newFields
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Fields added successfully:', data);
-            } else {
-                const errorData = await response.json();
-                console.error('Error adding fields:', errorData);
-            }
-        } catch (error) {
-            console.error('Error adding fields to Airtable:', error);
-        }
-    }
-
-    async function deleteRecord(recordId) {
-        try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
+                    requestsList.appendChild(recordItem);
                 }
-            });
-
-            if (response.ok) {
-                console.log('Record deleted successfully');
-                fetchPreviousRequests(localStorage.getItem('userEmail')); // Refresh the records after deletion
-            } else {
-                const errorData = await response.json();
-                console.error('Error deleting record:', errorData);
             }
-        } catch (error) {
-            console.error('Error deleting record:', error);
-        }
+        });
     }
 
     function displaySubmittedData(formData) {
-        const container = document.getElementById('submittedData');
-        container.innerHTML = `
-            <h2>Submitted Time-Off Request</h2>
-            <p><strong>Employee Name:</strong> ${formData.name}</p>
-            <p><strong>Start Date:</strong> ${formData.startDate}</p>
-            <p><strong>End Date:</strong> ${formData.endDate}</p>
-            <p><strong>Reason:</strong> ${formData.reason}</p>
-        `;
-        container.classList.remove('hidden');
-    }
+        submittedEmployeeName.textContent = formData.name;
+        submittedStartDate.textContent = formData[`Time off Start Date ${getNextAvailableIndex() - 1}`];
+        submittedStartTime.textContent = formData[`Time off Start Time ${getNextAvailableIndex() - 1}`];
+        submittedEndDate.textContent = formData[`Time off End Date ${getNextAvailableIndex() - 1}`];
+        submittedEndTime.textContent = formData[`Time off End Time ${getNextAvailableIndex() - 1}`];
+        submittedReason.textContent = formData[`Reason ${getNextAvailableIndex() - 1}`];
 
-    function deleteExpiredRecords() {
-        const currentDate = new Date();
-        const savedRecords = JSON.parse(localStorage.getItem('timeOffRecords')) || [];
-        const validRecords = savedRecords.filter(record => {
-            const endDate = new Date(record.fields.endDate);
-            return currentDate <= endDate || (currentDate.getDate() === endDate.getDate() + 1 && currentDate.getMonth() === endDate.getMonth() && currentDate.getFullYear() === endDate.getFullYear());
-        });
-        if (validRecords.length !== savedRecords.length) {
-            localStorage.setItem('timeOffRecords', JSON.stringify(validRecords));
-            fetchPreviousRequests(document.getElementById('employeeName').value);
-        }
+        submittedData.classList.remove('hidden');
     }
-
-    // Check for expired records every hour (3600000 milliseconds)
-    setInterval(deleteExpiredRecords, 3600000);
-    // Also call it once when the page loads
-    deleteExpiredRecords();
 });

@@ -16,8 +16,14 @@
             <label for="startDate">Start Date</label>
             <input type="date" id="startDate" name="startDate" required>
 
+            <label for="startTime">Start Time</label>
+            <input type="time" id="startTime" name="startTime" required>
+
             <label for="endDate">End Date</label>
             <input type="date" id="endDate" name="endDate" required>
+
+            <label for="endTime">End Time</label>
+            <input type="time" id="endTime" name="endTime" required>
 
             <label for="reason">Reason</label>
             <select id="reasonDropdown" name="reason" required>
@@ -30,12 +36,14 @@
 
             <button type="submit">Submit Request</button>
         </form>
+        <div id="submissionStatus" class="hidden"></div>
         <div id="submittedData" class="hidden">
             <h2>Submitted Time-Off Request</h2>
             <p><strong>Employee Name:</strong> <span id="submittedEmployeeName"></span></p>
-            <p><strong>Request Type:</strong> <span id="submittedRequestType"></span></p>
             <p><strong>Start Date:</strong> <span id="submittedStartDate"></span></p>
+            <p><strong>Start Time:</strong> <span id="submittedStartTime"></span></p>
             <p><strong>End Date:</strong> <span id="submittedEndDate"></span></p>
+            <p><strong>End Time:</strong> <span id="submittedEndTime"></span></p>
             <p><strong>Reason:</strong> <span id="submittedReason"></span></p>
         </div>
         <div id="previousRequests">
