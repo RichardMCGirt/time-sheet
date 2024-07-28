@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
-    const oldTableId = 'tbljmLpqXScwhiWTt'; // Old table ID for fetching employee name
-    const newTableId = 'tbl3PB88KkGdPlT5x'; // New table ID for saving time-off requests
+    const tableId = 'tbl3PB88KkGdPlT5x'; // New table ID for all operations
 
     const userEmail = localStorage.getItem('userEmail');
     let records = []; // Store the records locally for demonstration
@@ -51,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchEmployeeName(email) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${oldTableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
             const response = await fetch(url, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
@@ -59,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             if (data.records.length > 0) {
-                const employeeName = data.records[0].fields.name;
+                const employeeName = data.records[0].fields['Full Name'];
                 document.getElementById('employeeName').value = employeeName;
                 document.getElementById('employeeName').readOnly = true;
                 fetchPreviousRequests(email);
@@ -73,14 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchPreviousRequests(email) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${oldTableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
             const response = await fetch(url, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
                 }
             });
             const data = await response.json();
-            records = data.records;
+            records = data.records || []; // Initialize records as an empty array if undefined
             displayPreviousRequests(records);
         } catch (error) {
             console.error('Error fetching previous requests:', error);
@@ -89,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function sendToAirtable(formData) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${newTableId}`;
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -123,13 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getNextAvailableIndex() {
         let maxIndex = 0;
-        records.forEach(record => {
-            for (let i = 1; i <= 10; i++) {
-                if (record.fields[`Time off Start Date ${i}`]) {
-                    maxIndex = i;
+        if (records) {
+            records.forEach(record => {
+                for (let i = 1; i <= 10; i++) {
+                    if (record.fields[`Time off Start Date ${i}`]) {
+                        maxIndex = i;
+                    }
                 }
-            }
-        });
+            });
+        }
         return maxIndex + 1;
     }
 
@@ -147,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const formData = {
+            'Full Name': document.getElementById('employeeName').value,
             [`Time off Start Date ${nextIndex}`]: document.getElementById('startDate').value,
             [`Time off Start Time ${nextIndex}`]: document.getElementById('startTime').value,
             [`Time off End Date ${nextIndex}`]: document.getElementById('endDate').value,
@@ -180,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const approvedCheckbox = record.fields[`Time off Approved ${i}`] ? '<input type="checkbox" checked disabled>' : '<input type="checkbox" disabled>';
 
                     recordItem.innerHTML = `
-                        <p><strong>Employee Name:</strong> ${record.fields.name}</p>
+                        <p><strong>Employee Name:</strong> ${record.fields['Full Name']}</p>
                         <p><strong>Start Date:</strong> ${record.fields[`Time off Start Date ${i}`]}</p>
                         <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`]}</p>
                         <p><strong>End Date:</strong> ${record.fields[`Time off End Date ${i}`]}</p>
@@ -197,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displaySubmittedData(formData) {
         const index = getNextAvailableIndex() - 1;
-        submittedEmployeeName.textContent = formData.name;
+        submittedEmployeeName.textContent = formData['Full Name'];
         submittedStartDate.textContent = formData[`Time off Start Date ${index}`];
         submittedStartTime.textContent = formData[`Time off Start Time ${index}`];
         submittedEndDate.textContent = formData[`Time off End Date ${index}`];
