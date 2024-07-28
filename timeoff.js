@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchEmployeeName(email) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{Email}='${email}'`)}`;
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
             const response = await fetch(url, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchPreviousRequests(email) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{Email}='${email}'`)}`;
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
             const response = await fetch(url, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
@@ -104,9 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 submissionStatus.classList.remove('hidden');
                 submissionStatus.classList.add('success');
                 displaySubmittedData(formData); // Display the submitted data
-                fetchPreviousRequests(localStorage.getItem('userEmail')); // Refresh the records after saving
+                fetchPreviousRequests(localStorage.getItem('useremail')); // Refresh the records after saving
             } else {
-                throw new Error('Failed to save record');
+                const errorData = await response.json();
+                throw new Error(`Failed to save record: ${JSON.stringify(errorData)}`);
             }
         } catch (error) {
             console.error('Error saving to Airtable:', error);
@@ -152,6 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
             [`Time off Approved ${nextIndex}`]: false // Default approved status
         };
 
+        console.log('Form Data being sent:', formData); // Log the form data
+
         sendToAirtable(formData);
 
         // Clear only the necessary form fields, preserving the employee name
@@ -192,12 +195,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displaySubmittedData(formData) {
+        const index = getNextAvailableIndex() - 1;
         submittedEmployeeName.textContent = formData.name;
-        submittedStartDate.textContent = formData[`Time off Start Date ${getNextAvailableIndex() - 1}`];
-        submittedStartTime.textContent = formData[`Time off Start Time ${getNextAvailableIndex() - 1}`];
-        submittedEndDate.textContent = formData[`Time off End Date ${getNextAvailableIndex() - 1}`];
-        submittedEndTime.textContent = formData[`Time off End Time ${getNextAvailableIndex() - 1}`];
-        submittedReason.textContent = formData[`Reason ${getNextAvailableIndex() - 1}`];
+        submittedStartDate.textContent = formData[`Time off Start Date ${index}`];
+        submittedStartTime.textContent = formData[`Time off Start Time ${index}`];
+        submittedEndDate.textContent = formData[`Time off End Date ${index}`];
+        submittedEndTime.textContent = formData[`Time off End Time ${index}`];
+        submittedReason.textContent = formData[`Reason ${index}`];
 
         submittedData.classList.remove('hidden');
     }

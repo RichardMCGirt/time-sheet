@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         personalTimeDisplay: document.getElementById('personal-time-display'),
         resetButton: document.getElementById('reset-button'),
         submitButton: document.getElementById('submit-button'),
-        countdownElement: document.getElementById('countdown'), // Add this line
+        countdownElement: document.getElementById('countdown'),
     };
 
     let availablePTOHours = 0;
@@ -66,9 +66,12 @@ document.addEventListener("DOMContentLoaded", async function() {
     await fetchPersonalTime();
     await fetchPersonalEndDate(); // Fetch the personal end date
 
+    loadFormData();
+
     function handleHolidayHoursChange() {
         console.log('Handling Holiday hours change...');
         calculateTotalTimeWorked();
+        saveFormData();
     }
 
     async function handleWeekEndingChange() {
@@ -82,6 +85,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         date7.setDate(selectedDate.getDate() + 6);
         elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
         populateWeekDates(selectedDate);
+        saveFormData();
     }
 
     function adjustToWednesday(date) {
@@ -112,6 +116,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 console.log('Added checkbox for', day);
             }
         });
+        saveFormData();
     }
 
     async function fetchPersonalEndDate() {
@@ -130,6 +135,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             console.error('Error fetching Personal END Date:', error);
         }
     }
+    
     function startCountdown(endDate) {
         const endDateTime = new Date(endDate).getTime();
         const countdownElement = document.getElementById('countdown');
@@ -142,7 +148,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-       
     
             countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
     
@@ -153,10 +158,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         };
     
         updateCountdown();
-        const interval = setInterval(updateCountdown, 1);
+        const interval = setInterval(updateCountdown, 1000); // Set interval to 1 second
     }
-
-    // The rest of your existing code...
 
     async function fetchPtoHours() {
         console.log('Fetching PTO hours...');
@@ -176,6 +179,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
                 elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2); // Set initial remaining PTO hours
                 console.log('Available PTO hours:', availablePTOHours);
+                saveFormData();
             } else {
                 console.log('No PTO hours data found for user');
             }
@@ -203,6 +207,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
                 elements.remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2); // Set initial remaining Personal hours
                 console.log('Available Personal hours:', availablePersonalHours);
+                saveFormData();
             } else {
                 console.log('No Personal hours data found for user');
             }
@@ -230,6 +235,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         if (!didNotWork) {
             calculateTotalTimeWorked();
         }
+        saveFormData();
     }
 
     function calculateTotalTimeWorked() {
@@ -254,6 +260,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         console.log('Total hours with PTO:', totalHoursWithPto);
         validatePtoHours(totalHoursWorked, ptoTime, personalTime);
         updateTotalPtoAndHolidayHours();
+        saveFormData();
     }
 
     function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput) {
@@ -368,6 +375,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 }
                 updateTotalPtoAndHolidayHours();
                 checkPTOInput(input);
+                saveFormData();
             });
         });
     }
@@ -535,6 +543,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.totalTimeWithPtoSpan.textContent = '0.00';
         elements.remainingPtoHoursElement.textContent = '0.00';
         elements.remainingPersonalHoursElement.textContent = '0.00';
+        localStorage.removeItem('formData'); // Clear form data from localStorage
         window.location.reload(); // Refresh the screen
     }
 
@@ -650,6 +659,36 @@ document.addEventListener("DOMContentLoaded", async function() {
         inputs[index].focus();
     }
 
+    function manageBackgroundSound() {
+        const soundUrl = '9 to 5 - Dolly Parton'; // Replace 'your-folder/sound-file.mp3' with the actual path
+        let audio = new Audio(soundUrl);
+
+        function playSound() {
+            audio.loop = true;
+            audio.play().catch(error => console.log('Error playing audio:', error));
+        }
+
+        if (localStorage.getItem('soundPlaying') === 'true') {
+            playSound();
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (!audio.paused) {
+                localStorage.setItem('soundPlaying', 'true');
+            } else {
+                localStorage.removeItem('soundPlaying');
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('soundPlaying') === 'true') {
+                playSound();
+            }
+        });
+    }
+
+    manageBackgroundSound();
+
     function showPickerOnFocus() {
         const timeInputs = document.querySelectorAll('select.time-dropdown, input[type="number"]');
         timeInputs.forEach(input => {
@@ -660,4 +699,26 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     showPickerOnFocus();
+
+    function saveFormData() {
+        const formData = new FormData(elements.timeEntryForm);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        localStorage.setItem('formData', JSON.stringify(data));
+    }
+
+    function loadFormData() {
+        const data = JSON.parse(localStorage.getItem('formData'));
+        if (data) {
+            Object.keys(data).forEach(key => {
+                const input = elements.timeEntryForm.elements[key];
+                if (input) {
+                    input.value = data[key];
+                }
+            });
+            calculateTotalTimeWorked(); // Recalculate totals after loading data
+        }
+    }
 });
