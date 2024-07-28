@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
-    const tableId = 'tbljmLpqXScwhiWTt';
+    const oldTableId = 'tbljmLpqXScwhiWTt'; // Old table ID for fetching employee name
+    const newTableId = 'tbl3PB88KkGdPlT5x'; // New table ID for saving time-off requests
 
     const userEmail = localStorage.getItem('userEmail');
     let records = []; // Store the records locally for demonstration
@@ -19,6 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const submittedEndDate = document.getElementById('submittedEndDate');
     const submittedEndTime = document.getElementById('submittedEndTime');
     const submittedReason = document.getElementById('submittedReason');
+
+    // Debugging
+    console.log({ form, reasonDropdown, reasonInput, requestsList, submissionStatus, submittedData, submittedEmployeeName, submittedStartDate, submittedStartTime, submittedEndDate, submittedEndTime, submittedReason });
 
     // Redirect to login page if no user email is found
     if (!userEmail) {
@@ -47,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchEmployeeName(email) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
+            const url = `https://api.airtable.com/v0/${baseId}/${oldTableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
             const response = await fetch(url, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
@@ -69,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchPreviousRequests(email) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
+            const url = `https://api.airtable.com/v0/${baseId}/${oldTableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
             const response = await fetch(url, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
@@ -85,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function sendToAirtable(formData) {
         try {
-            let url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
+            const url = `https://api.airtable.com/v0/${baseId}/${newTableId}`;
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -104,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 submissionStatus.classList.remove('hidden');
                 submissionStatus.classList.add('success');
                 displaySubmittedData(formData); // Display the submitted data
-                fetchPreviousRequests(localStorage.getItem('useremail')); // Refresh the records after saving
+                fetchPreviousRequests(localStorage.getItem('userEmail')); // Refresh the records after saving
             } else {
                 const errorData = await response.json();
                 throw new Error(`Failed to save record: ${JSON.stringify(errorData)}`);
@@ -143,14 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const formData = {
-            Email: localStorage.getItem('userEmail'),
-            name: document.getElementById('employeeName').value,
             [`Time off Start Date ${nextIndex}`]: document.getElementById('startDate').value,
             [`Time off Start Time ${nextIndex}`]: document.getElementById('startTime').value,
             [`Time off End Date ${nextIndex}`]: document.getElementById('endDate').value,
             [`Time off End Time ${nextIndex}`]: document.getElementById('endTime').value,
-            [`Reason ${nextIndex}`]: reasonValue,
-            [`Time off Approved ${nextIndex}`]: false // Default approved status
+            [`Reason ${nextIndex}`]: reasonValue
         };
 
         console.log('Form Data being sent:', formData); // Log the form data
