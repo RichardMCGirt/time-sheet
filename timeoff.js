@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const form = document.getElementById('timeOffForm');
     const requestsList = document.getElementById('requestsList');
+    const previousRequestsContainer = document.getElementById('previousRequests');
     const submissionStatus = document.getElementById('submissionStatus');
     const submittedData = document.getElementById('submittedData');
     const submittedEmployeeName = document.getElementById('submittedEmployeeName');
@@ -27,15 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchEmployeeName(userEmail);
 
-    // Function to fill the email from local storage
     function fillEmailFromLocalStorage() {
-        var email = localStorage.getItem('userEmail');
+        const email = localStorage.getItem('userEmail');
         if (email) {
             document.getElementById('user-email').textContent = email;
         }
     }
 
-    // Call the function to fill the email when the page loads
     fillEmailFromLocalStorage();
 
     form.addEventListener('submit', (event) => {
@@ -108,12 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    submissionStatus.textContent = 'Submission successful!';
-                    submissionStatus.classList.remove('hidden');
-                    submissionStatus.classList.add('success');
+                    showSuccessMessage('Submission successful!');
                     displaySubmittedData(formData);
                     fetchPreviousRequests(localStorage.getItem('userEmail'));
-                    // Refresh the page after a successful submission
                     setTimeout(() => {
                         location.reload();
                     }, 1000);
@@ -134,12 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    submissionStatus.textContent = 'Submission successful!';
-                    submissionStatus.classList.remove('hidden');
-                    submissionStatus.classList.add('success');
+                    showSuccessMessage('Submission successful!');
                     displaySubmittedData(formData);
                     fetchPreviousRequests(localStorage.getItem('userEmail'));
-                    // Refresh the page after a successful submission
                     setTimeout(() => {
                         location.reload();
                     }, 1000);
@@ -150,9 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error saving to Airtable:', error);
-            submissionStatus.textContent = 'Submission failed. Please try again.';
-            submissionStatus.classList.remove('hidden');
-            submissionStatus.classList.add('error');
+            showError('Submission failed. Please try again.');
         }
     }
 
@@ -194,24 +185,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const endDate = document.getElementById('endDate').value;
 
         if (!startDate || !endDate) {
-            submissionStatus.textContent = 'Start Date and End Date are required.';
-            submissionStatus.classList.remove('hidden');
-            submissionStatus.classList.add('error');
+            showError('Start Date and End Date are required.');
             return;
         }
 
         if (new Date(startDate) > new Date(endDate)) {
-            submissionStatus.textContent = 'Start Date cannot be later than End Date.';
-            submissionStatus.classList.remove('hidden');
-            submissionStatus.classList.add('error');
+            showError('Start Date cannot be later than End Date.');
             return;
         }
 
         const nextIndex = currentEditingIndex !== null ? currentEditingIndex : getNextAvailableIndex();
         if (nextIndex > 10) {
-            submissionStatus.textContent = 'No available index to store the new time-off request.';
-            submissionStatus.classList.remove('hidden');
-            submissionStatus.classList.add('error');
+            showError('No available index to store the new time-off request.');
             return;
         }
 
@@ -238,6 +223,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayPreviousRequests(records) {
         requestsList.innerHTML = '';
+
+        if (records.length > 0) {
+            previousRequestsContainer.classList.remove('hidden');
+        } else {
+            previousRequestsContainer.classList.add('hidden');
+        }
 
         records.forEach(record => {
             for (let i = 1; i <= 10; i++) {
@@ -329,7 +320,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displaySubmittedData(formData) {
         const index = currentEditingIndex !== null ? currentEditingIndex : getNextAvailableIndex() - 1;
-        submittedEmployeeName.textContent = formData['Full Name'];
         submittedStartDate.textContent = formData[`Time off Start Date ${index}`];
         submittedStartTime.textContent = formData[`Time off Start Time ${index}`];
         submittedEndDate.textContent = formData[`Time off End Date ${index}`];
@@ -418,11 +408,10 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteExpiredRecords(records);
     });
 
-    // Function to convert time inputs to text inputs and auto-populate with "All Day"
     function convertTimeToTextInput(inputId) {
         const input = document.getElementById(inputId);
         let isTextInput = false;
-        input.addEventListener('dblclick', () => { // Double-click to toggle input type
+        input.addEventListener('dblclick', () => {
             if (!isTextInput) {
                 input.type = 'text';
                 input.value = 'All Day';
@@ -433,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 isTextInput = false;
             }
         });
-        input.addEventListener('click', () => { // Single-click to show dropdown
+        input.addEventListener('click', () => {
             if (input.type === 'time') {
                 input.showPicker();
             }
@@ -443,7 +432,6 @@ document.addEventListener('DOMContentLoaded', () => {
     convertTimeToTextInput('startTime');
     convertTimeToTextInput('endTime');
 
-    // Function to show the date picker on click
     function showDatePicker(inputId) {
         const input = document.getElementById(inputId);
         input.addEventListener('click', () => {
@@ -453,4 +441,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showDatePicker('startDate');
     showDatePicker('endDate');
+
+    function showSuccessMessage(message) {
+        submissionStatus.textContent = message;
+        submissionStatus.classList.remove('hidden');
+        submissionStatus.classList.add('success');
+    }
+
+    function showError(message) {
+        submissionStatus.textContent = message;
+        submissionStatus.classList.remove('hidden');
+        submissionStatus.classList.add('error');
+    }
 });

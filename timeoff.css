@@ -2,7 +2,7 @@
     --bg-color: #2c3e50;
     --text-color: #ecf0f1;
     --header-bg: #34495e;
-    --border-color: #ecf0f1;
+    --border-color: grey; /* Updated to grey */
     --button-bg: #e74c3c;
     --button-hover-bg: #c0392b;
     --input-bg: #34495e;
@@ -32,11 +32,12 @@ header {
     background-color: var(--header-bg);
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-bottom: 2px solid #ecf0f1;
+    border-bottom: 2px solid white
 }
 
 .header-left .logo {
     height: 50px;
+    cursor: pointer;
 }
 
 .header-right {
@@ -62,7 +63,6 @@ header {
     background-color: var(--header-bg);
     width: 100%;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  
 }
 
 .navbar ul {
@@ -93,18 +93,20 @@ header {
 }
 
 .container {
-    background-color: #fff;
+    background-color: var(--bg-color);
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 5px;
-    width: 400px;
+    width: 100%;
+    max-width: 600px;
     margin-top: 20px;
-    color: var(--bg-color);
+    border: 1px solid var(--border-color); /* Updated to grey */
 }
 
 h1, h2 {
     text-align: center;
     color: var(--header-bg);
+    color: white;
 }
 
 form {
@@ -114,13 +116,13 @@ form {
 
 label {
     margin: 10px 0 5px;
-    color: var(--header-bg);
+    color: white;
 }
 
 input, select, textarea {
     padding: 10px;
     margin-bottom: 10px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-color); /* Updated to grey */
     border-radius: 5px;
     background-color: var(--input-bg);
     color: var(--input-text-color);
@@ -140,6 +142,32 @@ button:hover {
     background-color: var(--button-hover-bg);
 }
 
+.hidden {
+    display: none;
+}
+
+.record {
+    background-color: var(--bg-color);
+    color: var(--input-text-color);
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color); /* Updated to grey */
+}
+
+.record p {
+    margin: 5px 0;
+}
+
+.record button {
+    background-color: var(--highlight-color);
+    color: var(--bg-color);
+}
+
+.record button:hover {
+    background-color: var(--highlight-hover-color);
+}
 .hidden {
     display: none;
 }

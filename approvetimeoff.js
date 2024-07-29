@@ -110,6 +110,11 @@ document.addEventListener("DOMContentLoaded", function() {
                             endTime.textContent = `End Time: ${record.fields[`Time off End Time ${i}`]}`;
                             requestDiv.appendChild(endTime);
 
+                            const businessDaysMissed = calculateBusinessDays(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`]);
+                            const businessDays = document.createElement('p');
+                            businessDays.textContent = `Business Days Missed: ${businessDaysMissed}`;
+                            requestDiv.appendChild(businessDays);
+
                             const approvedCheckbox = document.createElement('input');
                             approvedCheckbox.type = 'checkbox';
                             approvedCheckbox.checked = record.fields[`Time off Approved ${i}`] || false;
@@ -166,6 +171,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function refreshPage() {
         location.reload();
+    }
+
+    function calculateBusinessDays(startDate, endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        let count = 0;
+        let currentDate = start;
+
+        while (currentDate <= end) {
+            const dayOfWeek = currentDate.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                count++;
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        return count;
     }
 
     // Initialize on page load

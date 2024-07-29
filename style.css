@@ -22,6 +22,11 @@ body {
     font-weight: bolder;
 }
 
+.header-left .logo {
+    height: 50px;
+    cursor: pointer;
+}
+
 .navbar {
     background-color: var(--header-bg);
     overflow: hidden;
@@ -113,20 +118,7 @@ header {
     border-bottom: 2px solid #ecf0f1;
 }
 
-header.dark-mode {
-    background-color: #ecf0f1;
-    border-bottom: 2px solid #2c3e50;
-}
 
-.header-left .logo {
-    height: 50px;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 
 .user-info {
     margin-left: 20px;
@@ -251,6 +243,7 @@ input[type="date"]:-webkit-autofill {
 .form-label {
     color: #ecf0f1;
     font-weight: bold;
+    
 }
 
 input[type="number"] {
