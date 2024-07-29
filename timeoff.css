@@ -1,13 +1,94 @@
+:root {
+    --bg-color: #2c3e50;
+    --text-color: #ecf0f1;
+    --header-bg: #34495e;
+    --border-color: #ecf0f1;
+    --button-bg: #e74c3c;
+    --button-hover-bg: #c0392b;
+    --input-bg: #34495e;
+    --input-text-color: white;
+    --highlight-color: #1abc9c;
+    --highlight-hover-color: #16a085;
+}
+
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     margin: 0;
-    padding: 20px 0; /* Add padding-top to ensure the top is visible */
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--header-bg);
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-left .logo {
+    height: 50px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logout-button,
+.toggle-button {
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    padding: 5px 10px;
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+.navbar {
+    background-color: var(--header-bg);
+    width: 100%;
+    padding: 10px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Align items to the start to keep the top visible */
-    min-height: 100vh; /* Ensure the body covers the full viewport height */
-    box-sizing: border-box; /* Include padding in the element's total width and height */
+    gap: 20px;
+}
+
+.navbar ul li {
+    display: inline;
+}
+
+.navbar ul li a {
+    display: inline-block;
+    color: var(--text-color);
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.navbar ul li a:hover {
+    background-color: var(--highlight-color);
+    color: var(--text-color);
 }
 
 .container {
@@ -17,15 +98,12 @@ body {
     border-radius: 5px;
     width: 400px;
     margin-top: 20px;
+    color: var(--bg-color);
 }
 
-h1 {
+h1, h2 {
     text-align: center;
-    color: #333;
-}
-
-h2 {
-    color: #333;
+    color: var(--header-bg);
 }
 
 form {
@@ -35,29 +113,30 @@ form {
 
 label {
     margin: 10px 0 5px;
-    color: #555;
+    color: var(--header-bg);
 }
 
-input, select, textarea, button {
+input, select, textarea {
     padding: 10px;
     margin-bottom: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 5px;
+    background-color: var(--input-bg);
+    color: var(--input-text-color);
 }
 
 button {
-    background-color: #28a745;
-    color: #fff;
+    padding: 10px;
+    background-color: var(--button-bg);
+    color: var(--text-color);
     border: none;
+    border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
-    background-color: #218838;
-}
-
-#submittedData {
-    margin-top: 20px;
+    background-color: var(--button-hover-bg);
 }
 
 .hidden {

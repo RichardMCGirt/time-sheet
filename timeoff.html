@@ -7,6 +7,22 @@
     <link rel="stylesheet" href="timeoff.css">
 </head>
 <body>
+    <header>
+        <div class="header-left">
+            <img src="vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <span id="user-email" class="clickable">example@example.com</span>
+                <a href="#" id="logout-button" class="logout-button">Logout</a>
+            </div>
+        </div>
+    </header>
+    <nav class="navbar">
+        <ul>
+            <li><a href="timesheet.html">Timesheet</a></li>
+        </ul>
+    </nav>
     <div class="container">
         <h1>Time-Off Request Form</h1>
         <form id="timeOffForm">
@@ -36,13 +52,11 @@
 
             <button id="submitButton" type="submit">Submit</button>
         </form>
-  
-        <div id="previousRequests">
-            <h2>Previous Requests</h2>
-            <ul id="requestsList"></ul>
-        </div>
     </div>
-
+    <div id="previousRequests" class="container">
+        <h2>Previous Requests</h2>
+        <ul id="requestsList"></ul>
+    </div>
     <script src="timeoff.js"></script>
 </body>
 </html>

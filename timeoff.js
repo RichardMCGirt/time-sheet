@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const submittedReason = document.createElement('span'); // Create the element dynamically
     const daysOffMessage = document.createElement('span'); // Create the element dynamically
     const submitButton = document.getElementById('submitButton'); // Submit button
+    const logoutButton = document.getElementById('logout-button'); // Logout button
 
     // Append dynamically created elements to the body
     document.body.appendChild(submissionStatus);
@@ -35,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     submittedData.appendChild(daysOffMessage);
 
     // Debugging
-    console.log({ form, reasonDropdown, reasonInput, requestsList, submissionStatus, submittedData, submittedEmployeeName, submittedStartDate, submittedStartTime, submittedEndDate, submittedEndTime, submittedReason, daysOffMessage, submitButton });
+    console.log({ form, reasonDropdown, reasonInput, requestsList, submissionStatus, submittedData, submittedEmployeeName, submittedStartDate, submittedStartTime, submittedEndDate, submittedEndTime, submittedReason, daysOffMessage, submitButton, logoutButton });
 
     // Redirect to login page if no user email is found
     if (!userEmail) {
@@ -60,6 +61,11 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         handleFormSubmit();
+    });
+
+    // Handle logout
+    logoutButton.addEventListener('click', (event) => {
+        handleLogout(event);
     });
 
     async function fetchEmployeeName(email) {
@@ -394,6 +400,16 @@ document.addEventListener('DOMContentLoaded', () => {
         daysOffMessage.textContent = `Total days off (excluding weekends): ${daysOff}`;
 
         submittedData.classList.remove('hidden');
+    }
+
+    function handleLogout(event) {
+        event.preventDefault();
+        console.log('Logging out...');
+        localStorage.removeItem('userEmail');
+        sessionStorage.removeItem('user');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 100);
     }
 
     function calculateBusinessDays(startDate, endDate) {
