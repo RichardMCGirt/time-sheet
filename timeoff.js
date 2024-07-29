@@ -21,9 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const submittedEndTime = document.getElementById('submittedEndTime');
     const submittedReason = document.getElementById('submittedReason');
     const daysOffMessage = document.getElementById('daysOffMessage'); // New element for days off message
+    const submitButton = document.getElementById('submitButton'); // Submit button
 
     // Debugging
-    console.log({ form, reasonDropdown, reasonInput, requestsList, submissionStatus, submittedData, submittedEmployeeName, submittedStartDate, submittedStartTime, submittedEndDate, submittedEndTime, submittedReason, daysOffMessage });
+    console.log({ form, reasonDropdown, reasonInput, requestsList, submissionStatus, submittedData, submittedEmployeeName, submittedStartDate, submittedStartTime, submittedEndDate, submittedEndTime, submittedReason, daysOffMessage, submitButton });
 
     // Redirect to login page if no user email is found
     if (!userEmail) {
@@ -243,6 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Reset the editing index
         currentEditingIndex = null;
+
+        // Change button text back to 'Submit'
+        submitButton.textContent = 'Submit';
     }
 
     function displayPreviousRequests(records) {
@@ -310,6 +314,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Focus on the start date field for user convenience
             document.getElementById('startDate').focus();
+
+            // Change button text to 'Submit Edit'
+            submitButton.textContent = 'Submit Edit';
         }
     }
 
