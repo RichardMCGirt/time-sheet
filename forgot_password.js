@@ -36,7 +36,6 @@ async function handleEmailSubmit() {
 
         const data = await response.json();
         if (data.records.length > 0) {
-            alert('Email validated. Please enter your new password.');
             forgotPasswordForm.style.display = 'none';
             resetPasswordForm.style.display = 'block';
         } else {

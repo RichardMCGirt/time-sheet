@@ -709,6 +709,33 @@ document.addEventListener("DOMContentLoaded", async function() {
         localStorage.setItem('formData', JSON.stringify(data));
     }
 
+    function checkAndHideNumberInputs() {
+        const numberInputs = document.querySelectorAll('input[type="number"]');
+        
+        numberInputs.forEach(input => {
+          if (parseFloat(input.value) === 0) {
+            input.style.display = 'none';
+          } else {
+            input.style.display = 'inline-block';
+          }
+        });
+      }
+    
+      // Initial check when the page loads
+      checkAndHideNumberInputs();
+    
+      // Add event listeners to number inputs to check their value on change
+      document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', function() {
+          if (parseFloat(this.value) === 0) {
+            this.style.display = 'none';
+          } else {
+            this.style.display = 'inline-block';
+          }
+        });
+    });
+
+
     function loadFormData() {
         const data = JSON.parse(localStorage.getItem('formData'));
         if (data) {
