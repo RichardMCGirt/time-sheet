@@ -9,8 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Define variables
     const form = document.getElementById('timeOffForm');
-    const reasonDropdown = document.getElementById('reasonDropdown');
-    const reasonInput = document.getElementById('reasonInput');
     const requestsList = document.getElementById('requestsList');
     const submissionStatus = document.createElement('div'); // Create the element dynamically
     const submittedData = document.createElement('div'); // Create the element dynamically
@@ -19,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const submittedStartTime = document.createElement('span'); // Create the element dynamically
     const submittedEndDate = document.createElement('span'); // Create the element dynamically
     const submittedEndTime = document.createElement('span'); // Create the element dynamically
-    const submittedReason = document.createElement('span'); // Create the element dynamically
     const daysOffMessage = document.createElement('span'); // Create the element dynamically
     const submitButton = document.getElementById('submitButton'); // Submit button
     const logoutButton = document.getElementById('logout-button'); // Logout button
@@ -32,12 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
     submittedData.appendChild(submittedStartTime);
     submittedData.appendChild(submittedEndDate);
     submittedData.appendChild(submittedEndTime);
-    submittedData.appendChild(submittedReason);
     submittedData.appendChild(daysOffMessage);
 
     // Debugging
-    console.log({ form, reasonDropdown, reasonInput, requestsList, submissionStatus, submittedData, submittedEmployeeName, submittedStartDate, submittedStartTime, submittedEndDate, submittedEndTime, submittedReason, daysOffMessage, submitButton, logoutButton });
-
+    console.log({ form, requestsList, submissionStatus, submittedData, submittedEmployeeName, submittedStartDate, submittedStartTime, submittedEndDate, submittedEndTime, daysOffMessage, submitButton, logoutButton });
 
     // Redirect to login page if no user email is found
     if (!userEmail) {
@@ -46,17 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Fetch employee name using Airtable API
+    // Fetch employee name and previous requests
     fetchEmployeeName(userEmail);
-
-    // Toggle reason input visibility based on dropdown selection
-    reasonDropdown.addEventListener('change', () => {
-        if (reasonDropdown.value === 'other') {
-            reasonInput.classList.remove('hidden');
-        } else {
-            reasonInput.classList.add('hidden');
-        }
-    });
 
     // Handle form submission
     form.addEventListener('submit', (event) => {
@@ -101,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             records = data.records || []; // Initialize records as an empty array if undefined
+            deleteExpiredRecords(records); // Check and delete expired records
             displayPreviousRequests(records);
         } catch (error) {
             console.error('Error fetching previous requests:', error);
@@ -209,9 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleFormSubmit() {
-        const reasonElement = document.getElementById('reasonDropdown');
-        const reasonValue = reasonElement.value === 'other' ? document.getElementById('reasonInput').value : reasonElement.value;
-
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
 
@@ -244,7 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
             [`Time off Start Time ${nextIndex}`]: document.getElementById('startTime').value,
             [`Time off End Date ${nextIndex}`]: endDate,
             [`Time off End Time ${nextIndex}`]: document.getElementById('endTime').value,
-            [`Reason ${nextIndex}`]: reasonValue
         };
 
         console.log('Form Data being sent:', formData); // Log the form data
@@ -256,9 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('startTime').value = '';
         document.getElementById('endDate').value = '';
         document.getElementById('endTime').value = '';
-        document.getElementById('reasonDropdown').value = '';
-        document.getElementById('reasonInput').value = '';
-        document.getElementById('reasonInput').classList.add('hidden');
 
         // Reset the editing index
         currentEditingIndex = null;
@@ -282,18 +262,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const approvedCheckbox = record.fields[`Time off Approved ${i}`] ? '<input type="checkbox" checked disabled>' : '<input type="checkbox" disabled>';
                     const daysOff = calculateBusinessDays(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`]);
 
-                    recordItem.innerHTML = `
-                        <p><strong>Employee Name:</strong> ${record.fields['Full Name']}</p>
+                    recordItem.innerHTML = 
+                        `<p><strong>Employee Name:</strong> ${record.fields['Full Name']}</p>
                         <p><strong>Start Date:</strong> ${record.fields[`Time off Start Date ${i}`]}</p>
                         <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`]}</p>
                         <p><strong>End Date:</strong> ${record.fields[`Time off End Date ${i}`]}</p>
                         <p><strong>End Time:</strong> ${record.fields[`Time off End Time ${i}`]}</p>
-                        <p><strong>Reason:</strong> ${record.fields[`Reason ${i}`]}</p>
                         <p><strong>Days Off (excluding weekends):</strong> ${daysOff}</p>
                         <p><strong>Approved:</strong> ${approvedCheckbox}</p>
                         <button class="edit-button" data-index="${i}" data-id="${record.id}">Edit</button>
-                        <button class="delete-button" data-index="${i}" data-id="${record.id}">Delete</button>
-                    `;
+                        <button class="delete-button" data-index="${i}" data-id="${record.id}">Delete</button>`;
 
                     requestsList.appendChild(recordItem);
                 }
@@ -302,12 +280,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add event listeners for Edit and Delete buttons
         document.querySelectorAll('.edit-button').forEach(button => {
-            console.log('Adding event listener to edit button:', button);
             button.addEventListener('click', handleEditClick);
         });
 
         document.querySelectorAll('.delete-button').forEach(button => {
-            console.log('Adding event listener to delete button:', button);
             button.addEventListener('click', handleDeleteClick);
         });
     }
@@ -324,14 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('startTime').value = record.fields[`Time off Start Time ${index}`] || '';
             document.getElementById('endDate').value = record.fields[`Time off End Date ${index}`] || '';
             document.getElementById('endTime').value = record.fields[`Time off End Time ${index}`] || '';
-            document.getElementById('reasonDropdown').value = record.fields[`Reason ${index}`] || '';
-
-            if (document.getElementById('reasonDropdown').value === 'other') {
-                document.getElementById('reasonInput').value = record.fields[`Reason ${index}`] || '';
-                document.getElementById('reasonInput').classList.remove('hidden');
-            } else {
-                document.getElementById('reasonInput').classList.add('hidden');
-            }
 
             // Focus on the start date field for user convenience
             document.getElementById('startDate').focus();
@@ -357,8 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         [`Time off Start Time ${index}`]: null,
                         [`Time off End Date ${index}`]: null,
                         [`Time off End Time ${index}`]: null,
-                        [`Reason ${index}`]: null,
-                        [`Time off Approved ${index}`]: null
                     };
 
                     const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${id}`;
@@ -395,7 +361,6 @@ document.addEventListener('DOMContentLoaded', () => {
         submittedStartTime.textContent = formData[`Time off Start Time ${index}`];
         submittedEndDate.textContent = formData[`Time off End Date ${index}`];
         submittedEndTime.textContent = formData[`Time off End Time ${index}`];
-        submittedReason.textContent = formData[`Reason ${index}`];
 
         const daysOff = calculateBusinessDays(formData[`Time off Start Date ${index}`], formData[`Time off End Date ${index}`]);
         daysOffMessage.textContent = `Total days off (excluding weekends): ${daysOff}`;
@@ -428,4 +393,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return count;
     }
+
+    function deleteExpiredRecords(records) {
+        const now = new Date();
+        records.forEach(async (record) => {
+            for (let i = 1; i <= 10; i++) {
+                const endDate = record.fields[`Time off End Date ${i}`];
+                const endTime = record.fields[`Time off End Time ${i}`];
+                if (endDate && endTime) {
+                    const endDateTime = new Date(`${endDate}T${endTime}`);
+                    if (now > endDateTime) {
+                        console.log(`Deleting expired record with ID: ${record.id}`);
+                        try {
+                            const fieldsToDelete = {
+                                [`Time off Start Date ${i}`]: null,
+                                [`Time off Start Time ${i}`]: null,
+                                [`Time off End Date ${i}`]: null,
+                                [`Time off End Time ${i}`]: null,
+                            };
+
+                            const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${record.id}`;
+                            const response = await fetch(url, {
+                                method: 'PATCH',
+                                headers: {
+                                    Authorization: `Bearer ${apiKey}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    fields: fieldsToDelete
+                                })
+                            });
+
+                            if (response.ok) {
+                                console.log('Expired fields deleted successfully');
+                            } else {
+                                const errorData = await response.json();
+                                console.error('Error data from Airtable:', errorData); // Log error data
+                                throw new Error(`Failed to delete expired fields: ${JSON.stringify(errorData)}`);
+                            }
+                        } catch (error) {
+                            console.error('Error deleting expired fields from Airtable:', error);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Call deleteExpiredRecords function periodically or on demand
+    setInterval(() => {
+        fetchPreviousRequests(userEmail).then(() => {
+            deleteExpiredRecords(records);
+        });
+    }, 24 * 60 * 60 * 1000); // Run every 24 hours
+
+    // Initial call to delete expired records
+    fetchPreviousRequests(userEmail).then(() => {
+        deleteExpiredRecords(records);
+    });
+
 });
