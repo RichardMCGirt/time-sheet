@@ -1,0 +1,51 @@
+:root {
+    --bg-color: #2c3e50;
+    --text-color: #ecf0f1;
+    --header-bg: #34495e;
+    --border-color: #ecf0f1;
+    --button-bg: #e74c3c;
+    --button-hover-bg: #c0392b;
+    --input-bg: #34495e;
+    --input-text-color: white;
+    --highlight-color: #1abc9c;
+    --highlight-hover-color: #16a085;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+h1 {
+    text-align: center;
+    background-color: var(--header-bg);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#requests-container {
+    width: 80%;
+    margin: 20px auto;
+}
+
+.request {
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    margin: 10px 0;
+    background-color: var(--input-bg);
+    border-radius: 5px;
+}
+
+button {
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: var(--button-hover-bg);
+}

@@ -4,35 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supervisor Portal</title>
-    <link rel="stylesheet" href="timeoff.css">
+    <link rel="stylesheet" href="approvetimeoff.css">
 </head>
 <body>
-    <header>
-        <div class="header-left">
-            <img src="path_to_logo.png" alt="Vanir Installed Sales Logo" class="logo">
-        </div>
-        <div class="header-right">
-            <div class="user-info">
-                <span id="user-email">Supervisor Portal</span>
-                <a href="#" id="logout-button" class="logout-button">Logout</a>
-            </div>
-        </div>
-    </header>
-    <nav>
-        <ul class="navbar">
-            <li><a href="supervisor.html">Supervisor Portal</a></li>
-            <li><a href="timesheet.html">Timesheet</a></li>
-        </ul>
-    </nav>
-    <main>
-        <section id="requests-section" class="requests-section">
-            <h2>Time-Off Requests</h2>
-            <div id="requests-container" class="requests-container"></div>
-        </section>
-    </main>
-
-    <div id="loading-indicator" class="active">Loading...</div>
-
+    <h1>Supervisor Portal</h1>
+    <button id="refresh-button">Refresh</button>
+    <div id="requests-container">
+        <!-- Time-off requests will be dynamically loaded here -->
+    </div>
     <script src="approvetimeoff.js"></script>
 </body>
 </html>
