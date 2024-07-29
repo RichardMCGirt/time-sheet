@@ -226,7 +226,7 @@
                             const daysOff = calculateBusinessDays(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`]);
 
                             recordItem.innerHTML = 
-                                `<p><strong>Employee Name:</strong> ${record.fields['Full Name']}</p>
+                                `
                                 <p><strong>Start Date:</strong> ${record.fields[`Time off Start Date ${i}`]}</p>
                                 <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`]}</p>
                                 <p><strong>End Date:</strong> ${record.fields[`Time off End Date ${i}`]}</p>
