@@ -67,47 +67,69 @@ document.addEventListener("DOMContentLoaded", function() {
         const container = document.getElementById('requests-container');
         container.innerHTML = ''; // Clear existing content
 
-        records.forEach(record => {
-            const requestDiv = document.createElement('div');
-            requestDiv.className = 'request';
-
-            const name = document.createElement('p');
-            name.textContent = `${record.fields.Name}`;
-            requestDiv.appendChild(name);
-
-            for (let i = 1; i <= 10; i++) {
-                if (record.fields[`Time off Start Date ${i}`]) {
-                    const startDate = document.createElement('p');
-                    startDate.textContent = `Start Date: ${record.fields[`Time off Start Date ${i}`]}`;
-                    requestDiv.appendChild(startDate);
-
-                    const startTime = document.createElement('p');
-                    startTime.textContent = `Start Time: ${record.fields[`Time off Start Time ${i}`]}`;
-                    requestDiv.appendChild(startTime);
-
-                    const endDate = document.createElement('p');
-                    endDate.textContent = `End Date: ${record.fields[`Time off End Date ${i}`]}`;
-                    requestDiv.appendChild(endDate);
-
-                    const endTime = document.createElement('p');
-                    endTime.textContent = `End Time: ${record.fields[`Time off End Time ${i}`]}`;
-                    requestDiv.appendChild(endTime);
-
-                    const reason = document.createElement('p');
-                    reason.textContent = `Reason: ${record.fields[`Reason ${i}`]}`;
-                    requestDiv.appendChild(reason);
-
-                    const approvedCheckbox = document.createElement('input');
-                    approvedCheckbox.type = 'checkbox';
-                    approvedCheckbox.checked = record.fields[`Time off Approved ${i}`] || false;
-                    approvedCheckbox.dataset.recordId = record.id;
-                    approvedCheckbox.dataset.approvalIndex = i;
-                    approvedCheckbox.addEventListener('change', handleApprovalChange);
-                    requestDiv.appendChild(approvedCheckbox);
-                }
+        const groupedByEmployee = records.reduce((acc, record) => {
+            const employeeName = record.fields.Name;
+            if (!acc[employeeName]) {
+                acc[employeeName] = [];
             }
+            acc[employeeName].push(record);
+            return acc;
+        }, {});
 
-            container.appendChild(requestDiv);
+        Object.keys(groupedByEmployee).forEach(employeeName => {
+            const employeeRequests = groupedByEmployee[employeeName];
+            if (employeeRequests.length > 0) {
+                const employeeDiv = document.createElement('div');
+                employeeDiv.className = 'employee';
+
+                const name = document.createElement('h3');
+                name.textContent = employeeName;
+                employeeDiv.appendChild(name);
+
+                const requestsRow = document.createElement('div');
+                requestsRow.className = 'requests-row';
+                employeeRequests.forEach(record => {
+                    for (let i = 1; i <= 10; i++) {
+                        if (record.fields[`Time off Start Date ${i}`]) {
+                            const requestDiv = document.createElement('div');
+                            requestDiv.className = 'request';
+
+                            const startDate = document.createElement('p');
+                            startDate.textContent = `Start Date: ${record.fields[`Time off Start Date ${i}`]}`;
+                            requestDiv.appendChild(startDate);
+
+                            const startTime = document.createElement('p');
+                            startTime.textContent = `Start Time: ${record.fields[`Time off Start Time ${i}`]}`;
+                            requestDiv.appendChild(startTime);
+
+                            const endDate = document.createElement('p');
+                            endDate.textContent = `End Date: ${record.fields[`Time off End Date ${i}`]}`;
+                            requestDiv.appendChild(endDate);
+
+                            const endTime = document.createElement('p');
+                            endTime.textContent = `End Time: ${record.fields[`Time off End Time ${i}`]}`;
+                            requestDiv.appendChild(endTime);
+
+                            const reason = document.createElement('p');
+                            reason.textContent = `Reason: ${record.fields[`Reason ${i}`]}`;
+                            requestDiv.appendChild(reason);
+
+                            const approvedCheckbox = document.createElement('input');
+                            approvedCheckbox.type = 'checkbox';
+                            approvedCheckbox.checked = record.fields[`Time off Approved ${i}`] || false;
+                            approvedCheckbox.dataset.recordId = record.id;
+                            approvedCheckbox.dataset.approvalIndex = i;
+                            approvedCheckbox.addEventListener('change', handleApprovalChange);
+                            requestDiv.appendChild(approvedCheckbox);
+
+                            requestsRow.appendChild(requestDiv);
+                        }
+                    }
+                });
+
+                employeeDiv.appendChild(requestsRow);
+                container.appendChild(employeeDiv);
+            }
         });
     }
 

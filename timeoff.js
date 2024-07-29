@@ -28,6 +28,17 @@
 
             fetchEmployeeName(userEmail);
 
+              // Function to fill the email from local storage
+    function fillEmailFromLocalStorage() {
+        var email = localStorage.getItem('userEmail');
+        if (email) {
+            document.getElementById('user-email').textContent = email;
+        }
+    }
+
+    // Call the function to fill the email when the page loads
+    fillEmailFromLocalStorage();
+
             form.addEventListener('submit', (event) => {
                 event.preventDefault();
                 handleFormSubmit();

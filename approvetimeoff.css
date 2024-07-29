@@ -97,6 +97,20 @@ body {
     padding: 0;
 }
 
+.requests-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Adjust spacing as needed */
+}
+
+.request {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px;
+    width: 300px; /* Adjust width as needed */
+}
+
+
 h1 {
     text-align: center;
     background-color: var(--header-bg);
