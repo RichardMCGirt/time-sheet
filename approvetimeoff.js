@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         Object.keys(groupedByEmployee).forEach(employeeName => {
             const employeeRequests = groupedByEmployee[employeeName];
-            if (employeeRequests.length > 0) {
+            if (employeeRequests.some(record => record.fields[`Time off Start Date 1`] !== undefined)) {
                 const employeeDiv = document.createElement('div');
                 employeeDiv.className = 'employee';
 
