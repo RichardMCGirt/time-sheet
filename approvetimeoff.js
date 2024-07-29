@@ -4,10 +4,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const tableId = 'tbl3PB88KkGdPlT5x';
     const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
     const headers = {
-        Authorization: `Bearer ${apiKey}`
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
     };
 
     const userEmail = localStorage.getItem('userEmail');
+    const userEmailElement = document.getElementById('user-email');
 
     if (!userEmail) {
         console.log('No user email found, redirecting to index.html');
@@ -15,11 +17,14 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
     }
 
+    // Display the user email in the span element
+    userEmailElement.textContent = userEmail;
+
     // Fetch supervisor's full name using their email
     async function fetchSupervisorName(email) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
-            const response = await fetch(url, { headers });
+            const supervisorUrl = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
+            const response = await fetch(supervisorUrl, { headers });
             const data = await response.json();
             if (data.records.length > 0) {
                 return data.records[0].fields['Full Name'];
@@ -33,13 +38,22 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Fetch time-off requests for the supervisor
+    // Fetch all time-off requests with pagination handling
     async function fetchRequests(supervisorName) {
         console.log("Fetching requests...");
+        let allRecords = [];
+        let offset = '';
+
         try {
-            const response = await fetch(url, { headers });
-            const data = await response.json();
-            const supervisorRequests = data.records.filter(record => record.fields.Supervisor === supervisorName);
+            do {
+                const fetchUrl = offset ? `${url}?offset=${offset}` : url;
+                const response = await fetch(fetchUrl, { headers });
+                const data = await response.json();
+                allRecords = allRecords.concat(data.records);
+                offset = data.offset;
+            } while (offset);
+
+            const supervisorRequests = allRecords.filter(record => record.fields.Supervisor === supervisorName);
             console.log("Fetched requests:", supervisorRequests);
             displayRequests(supervisorRequests);
         } catch (error) {
@@ -64,35 +78,72 @@ document.addEventListener("DOMContentLoaded", function() {
             for (let i = 1; i <= 10; i++) {
                 if (record.fields[`Time off Start Date ${i}`]) {
                     const startDate = document.createElement('p');
-                    startDate.textContent = `Start Date ${i}: ${record.fields[`Time off Start Date ${i}`]}`;
+                    startDate.textContent = `Start Date: ${record.fields[`Time off Start Date ${i}`]}`;
                     requestDiv.appendChild(startDate);
 
                     const startTime = document.createElement('p');
-                    startTime.textContent = `Start Time ${i}: ${record.fields[`Time off Start Time ${i}`]}`;
+                    startTime.textContent = `Start Time: ${record.fields[`Time off Start Time ${i}`]}`;
                     requestDiv.appendChild(startTime);
 
                     const endDate = document.createElement('p');
-                    endDate.textContent = `End Date ${i}: ${record.fields[`Time off End Date ${i}`]}`;
+                    endDate.textContent = `End Date: ${record.fields[`Time off End Date ${i}`]}`;
                     requestDiv.appendChild(endDate);
 
                     const endTime = document.createElement('p');
-                    endTime.textContent = `End Time ${i}: ${record.fields[`Time off End Time ${i}`]}`;
+                    endTime.textContent = `End Time: ${record.fields[`Time off End Time ${i}`]}`;
                     requestDiv.appendChild(endTime);
 
                     const reason = document.createElement('p');
-                    reason.textContent = `Reason ${i}: ${record.fields[`Reason ${i}`]}`;
+                    reason.textContent = `Reason: ${record.fields[`Reason ${i}`]}`;
                     requestDiv.appendChild(reason);
 
-                    if (record.fields[`Time off Approved ${i}`] !== undefined) {
-                        const approval = document.createElement('p');
-                        approval.textContent = `Approval ${i}: ${record.fields[`Time off Approved ${i}`]}`;
-                        requestDiv.appendChild(approval);
-                    }
+                    const approvedCheckbox = document.createElement('input');
+                    approvedCheckbox.type = 'checkbox';
+                    approvedCheckbox.checked = record.fields[`Time off Approved ${i}`] || false;
+                    approvedCheckbox.dataset.recordId = record.id;
+                    approvedCheckbox.dataset.approvalIndex = i;
+                    approvedCheckbox.addEventListener('change', handleApprovalChange);
+                    requestDiv.appendChild(approvedCheckbox);
                 }
             }
 
             container.appendChild(requestDiv);
         });
+    }
+
+    // Handle checkbox change event to update Airtable
+    async function handleApprovalChange(event) {
+        const checkbox = event.target;
+        const recordId = checkbox.dataset.recordId;
+        const approvalIndex = checkbox.dataset.approvalIndex;
+        const approved = checkbox.checked;
+
+        const updateUrl = `${url}/${recordId}`;
+        const data = {
+            fields: {
+                [`Time off Approved ${approvalIndex}`]: approved
+            }
+        };
+
+        try {
+            const response = await fetch(updateUrl, {
+                method: 'PATCH',
+                headers: headers,
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update approval status');
+            }
+            console.log(`Updated approval status for record ${recordId}, index ${approvalIndex}: ${approved}`);
+        } catch (error) {
+            console.error('Error updating approval status:', error);
+        }
+    }
+
+    // Handle logout
+    function handleLogout() {
+        localStorage.removeItem('userEmail');
+        window.location.href = 'index.html';
     }
 
     // Check if user is a supervisor and fetch requests if they are
@@ -106,6 +157,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Initialize on page load
     initialize();
 
-    // Add event listener to refresh button
+    // Add event listeners
     document.getElementById('refresh-button').addEventListener('click', initialize);
+    document.getElementById('logout-button').addEventListener('click', handleLogout);
 });
