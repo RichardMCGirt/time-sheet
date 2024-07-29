@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Debugging
     console.log({ form, reasonDropdown, reasonInput, requestsList, submissionStatus, submittedData, submittedEmployeeName, submittedStartDate, submittedStartTime, submittedEndDate, submittedEndTime, submittedReason, daysOffMessage, submitButton, logoutButton });
 
+
     // Redirect to login page if no user email is found
     if (!userEmail) {
         console.log('No user email found, redirecting to index.html');
