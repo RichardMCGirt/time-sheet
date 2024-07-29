@@ -88,35 +88,88 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function sendToAirtable(formData) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    fields: formData
-                })
-            });
+            const employeeName = document.getElementById('employeeName').value;
+            const recordId = await getRecordIdByName(employeeName);
 
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Record saved successfully:', data);
-                submissionStatus.textContent = 'Submission successful!';
-                submissionStatus.classList.remove('hidden');
-                submissionStatus.classList.add('success');
-                displaySubmittedData(formData); // Display the submitted data
-                fetchPreviousRequests(localStorage.getItem('userEmail')); // Refresh the records after saving
+            if (recordId) {
+                // Update existing record
+                const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+                const response = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fields: formData
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Record updated successfully:', data);
+                    submissionStatus.textContent = 'Submission successful!';
+                    submissionStatus.classList.remove('hidden');
+                    submissionStatus.classList.add('success');
+                    displaySubmittedData(formData); // Display the submitted data
+                    fetchPreviousRequests(localStorage.getItem('userEmail')); // Refresh the records after saving
+                } else {
+                    const errorData = await response.json();
+                    console.error('Error data from Airtable:', errorData); // Log error data
+                    throw new Error(`Failed to update record: ${JSON.stringify(errorData)}`);
+                }
             } else {
-                const errorData = await response.json();
-                throw new Error(`Failed to save record: ${JSON.stringify(errorData)}`);
+                // Create new record
+                const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fields: formData
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Record saved successfully:', data);
+                    submissionStatus.textContent = 'Submission successful!';
+                    submissionStatus.classList.remove('hidden');
+                    submissionStatus.classList.add('success');
+                    displaySubmittedData(formData); // Display the submitted data
+                    fetchPreviousRequests(localStorage.getItem('userEmail')); // Refresh the records after saving
+                } else {
+                    const errorData = await response.json();
+                    console.error('Error data from Airtable:', errorData); // Log error data
+                    throw new Error(`Failed to save record: ${JSON.stringify(errorData)}`);
+                }
             }
         } catch (error) {
             console.error('Error saving to Airtable:', error);
             submissionStatus.textContent = 'Submission failed. Please try again.';
             submissionStatus.classList.remove('hidden');
             submissionStatus.classList.add('error');
+        }
+    }
+
+    async function getRecordIdByName(name) {
+        try {
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{Full Name}='${name}'`)}`;
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+            const data = await response.json();
+            if (data.records.length > 0) {
+                return data.records[0].id;
+            }
+            return null;
+        } catch (error) {
+            console.error('Error fetching record ID by name:', error);
+            return null;
         }
     }
 

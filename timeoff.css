@@ -2,11 +2,12 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
-    padding: 0;
+    padding: 20px 0; /* Add padding-top to ensure the top is visible */
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100vh;
+    align-items: flex-start; /* Align items to the start to keep the top visible */
+    min-height: 100vh; /* Ensure the body covers the full viewport height */
+    box-sizing: border-box; /* Include padding in the element's total width and height */
 }
 
 .container {
@@ -15,7 +16,7 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 5px;
     width: 400px;
-    margin-top: 20px; /* Add margin-top to ensure it is not cut off */
+    margin-top: 20px;
 }
 
 h1 {
