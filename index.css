@@ -37,7 +37,7 @@ header {
 }
 
 .logo {
-    width: 150px; /* Increased logo size */
+    width: 150px;
     height: auto;
 }
 
@@ -86,7 +86,7 @@ h1 {
 }
 
 .input-text {
-    width: 125%;
+    width: 100%;
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -105,26 +105,36 @@ h1 {
 }
 
 .submit-button {
-    width: 55%;
+    width: 100%;
     padding: 10px;
     border: none;
     border-radius: 5px;
-    background: linear-gradient(to right, #5a0db5, #2575fc); /* Matched gradient color */
+    background: linear-gradient(to right, #5a0db5, #2575fc);
     color: #fff;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-top: 10px;
-    margin: 0 auto; /* Center the button */
 }
 
 .submit-button:hover {
-    background: linear-gradient(to right, #4e0da5, #2064d8); /* Matched hover color */
+    background: linear-gradient(to right, #4e0da5, #2064d8);
 }
 
-.signup-link a:hover {
-    text-decoration: underline;
+.forgot-password-button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #e74c3c;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.forgot-password-button:hover {
+    background-color: #c0392b;
 }
 
 .play-pause-button {
@@ -160,11 +170,11 @@ h1 {
 .giphy-embed-wrapper {
     width: 100%;
     height: 0;
-    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    padding-bottom: 56.25%;
     position: relative;
-    overflow: hidden; /* Hide overflow */
-    border-radius: 10px; /* Add border radius */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow */
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-top: 20px;
 }
 
@@ -175,24 +185,17 @@ h1 {
     border: none;
 }
 
-.form-value {
-    color: #1abc9c;
-    font-weight: bold;
-    font-size: 20px;
-    text-align: left;
-}
-
-#dolly-parton {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    margin-top: 20px;
-}
-
 @media (max-width: 768px) {
     main {
+        max-width: 100%;
+        margin: 0;
         padding: 10px;
         box-shadow: none;
+    }
+    .submit-button {
+        width: 100%;
+    }
+    .input-text {
+        width: 100%;
     }
 }

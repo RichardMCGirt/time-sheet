@@ -413,24 +413,39 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteExpiredRecords(records);
     });
 
-// Function to convert time inputs to text inputs and auto-populate with "All Day"
-function convertTimeToTextInput(inputId) {
-    const input = document.getElementById(inputId);
-    let isTextInput = false;
-    input.addEventListener('dblclick', () => { // Change to 'dblclick' event
-        if (!isTextInput) {
-            input.type = 'text';
-            input.value = 'All Day';
-            isTextInput = true;
-        } else {
-            input.type = 'time';
-            input.value = '';
-            isTextInput = false;
-        }
-    });
-}
+    // Function to convert time inputs to text inputs and auto-populate with "All Day"
+    function convertTimeToTextInput(inputId) {
+        const input = document.getElementById(inputId);
+        let isTextInput = false;
+        input.addEventListener('dblclick', () => { // Double-click to toggle input type
+            if (!isTextInput) {
+                input.type = 'text';
+                input.value = 'All Day';
+                isTextInput = true;
+            } else {
+                input.type = 'time';
+                input.value = '';
+                isTextInput = false;
+            }
+        });
+        input.addEventListener('click', () => { // Single-click to show dropdown
+            if (input.type === 'time') {
+                input.showPicker();
+            }
+        });
+    }
 
-convertTimeToTextInput('startTime');
-convertTimeToTextInput('endTime');
+    convertTimeToTextInput('startTime');
+    convertTimeToTextInput('endTime');
 
+    // Function to show the date picker on click
+    function showDatePicker(inputId) {
+        const input = document.getElementById(inputId);
+        input.addEventListener('click', () => {
+            input.showPicker();
+        });
+    }
+
+    showDatePicker('startDate');
+    showDatePicker('endDate');
 });
