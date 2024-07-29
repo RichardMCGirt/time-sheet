@@ -12,16 +12,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const reasonDropdown = document.getElementById('reasonDropdown');
     const reasonInput = document.getElementById('reasonInput');
     const requestsList = document.getElementById('requestsList');
-    const submissionStatus = document.getElementById('submissionStatus');
-    const submittedData = document.getElementById('submittedData');
-    const submittedEmployeeName = document.getElementById('submittedEmployeeName');
-    const submittedStartDate = document.getElementById('submittedStartDate');
-    const submittedStartTime = document.getElementById('submittedStartTime');
-    const submittedEndDate = document.getElementById('submittedEndDate');
-    const submittedEndTime = document.getElementById('submittedEndTime');
-    const submittedReason = document.getElementById('submittedReason');
-    const daysOffMessage = document.getElementById('daysOffMessage'); // New element for days off message
+    const submissionStatus = document.createElement('div'); // Create the element dynamically
+    const submittedData = document.createElement('div'); // Create the element dynamically
+    const submittedEmployeeName = document.createElement('span'); // Create the element dynamically
+    const submittedStartDate = document.createElement('span'); // Create the element dynamically
+    const submittedStartTime = document.createElement('span'); // Create the element dynamically
+    const submittedEndDate = document.createElement('span'); // Create the element dynamically
+    const submittedEndTime = document.createElement('span'); // Create the element dynamically
+    const submittedReason = document.createElement('span'); // Create the element dynamically
+    const daysOffMessage = document.createElement('span'); // Create the element dynamically
     const submitButton = document.getElementById('submitButton'); // Submit button
+
+    // Append dynamically created elements to the body
+    document.body.appendChild(submissionStatus);
+    document.body.appendChild(submittedData);
+    submittedData.appendChild(submittedEmployeeName);
+    submittedData.appendChild(submittedStartDate);
+    submittedData.appendChild(submittedStartTime);
+    submittedData.appendChild(submittedEndDate);
+    submittedData.appendChild(submittedEndTime);
+    submittedData.appendChild(submittedReason);
+    submittedData.appendChild(daysOffMessage);
 
     // Debugging
     console.log({ form, reasonDropdown, reasonInput, requestsList, submissionStatus, submittedData, submittedEmployeeName, submittedStartDate, submittedStartTime, submittedEndDate, submittedEndTime, submittedReason, daysOffMessage, submitButton });
@@ -247,6 +258,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Change button text back to 'Submit'
         submitButton.textContent = 'Submit';
+
+        // Refresh the records list
+        fetchPreviousRequests(userEmail);
     }
 
     function displayPreviousRequests(records) {
