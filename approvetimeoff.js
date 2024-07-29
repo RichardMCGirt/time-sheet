@@ -164,7 +164,11 @@ document.addEventListener("DOMContentLoaded", function() {
         window.location.href = 'index.html';
     }
 
-    // Check if user is a supervisor and fetch requests if they are
+    function refreshPage() {
+        location.reload();
+    }
+
+    // Initialize on page load
     async function initialize() {
         const supervisorName = await fetchSupervisorName(userEmail);
         if (supervisorName) {
@@ -172,10 +176,10 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Initialize on page load
-    initialize();
-
     // Add event listeners
     document.getElementById('refresh-button').addEventListener('click', initialize);
     document.getElementById('logout-button').addEventListener('click', handleLogout);
+
+    // Run initialization
+    initialize();
 });
