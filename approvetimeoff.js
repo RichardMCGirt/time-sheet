@@ -110,10 +110,6 @@ document.addEventListener("DOMContentLoaded", function() {
                             endTime.textContent = `End Time: ${record.fields[`Time off End Time ${i}`]}`;
                             requestDiv.appendChild(endTime);
 
-                            const reason = document.createElement('p');
-                            reason.textContent = `Reason: ${record.fields[`Reason ${i}`]}`;
-                            requestDiv.appendChild(reason);
-
                             const approvedCheckbox = document.createElement('input');
                             approvedCheckbox.type = 'checkbox';
                             approvedCheckbox.checked = record.fields[`Time off Approved ${i}`] || false;

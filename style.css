@@ -91,36 +91,7 @@ h3 {
 }
 
 
-/* Light Mode Styles */
-body.light-mode {
-    background-color: #f0f0f0;
-    color: #000000;
-}
 
-body.light-mode .header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #cccccc;
-}
-
-body.light-mode .header-left .logo {
-    filter: invert(1);
-}
-
-body.light-mode .header-right .user-info {
-    color: #000000;
-}
-
-body.light-mode .header-right .logout-button {
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #cccccc;
-}
-
-body.light-mode .header-right .toggle-button {
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #cccccc;
-}
 
 .info-container {
     display: flex;
@@ -130,80 +101,6 @@ body.light-mode .header-right .toggle-button {
     gap: 15px;
 }
 
-
-body.light-mode .info-container {
-    background-color: #ffffff;
-    border: 1px solid #cccccc;
-    color: #000000;
-}
-
-body.light-mode .time-entry-form {
-    background-color: #ffffff;
-    border: 1px solid #cccccc;
-    color: #000000;
-}
-
-body.light-mode .time-entry-form input[type="time"],
-body.light-mode .time-entry-form input[type="date"],
-body.light-mode .time-entry-form input[type="number"] {
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #cccccc;
-}
-
-body.light-mode .time-entry-form label {
-    color: #000000;
-}
-
-body.light-mode .time-entry-table th,
-body.light-mode .time-entry-table td {
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #cccccc;
-}
-
-body.light-mode .summary-section {
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #cccccc;
-}
-
-body.light-mode .summary-form {
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #cccccc;
-}
-
-body.light-mode .summary-form .form-row {
-    background-color: #ffffff;
-    color: #000000;
-}
-
-body.light-mode .summary-form .form-label {
-    color: #000000;
-}
-
-body.light-mode .summary-form .form-value {
-    color: #000000;
-}
-
-body.light-mode .summary-form .submit-button {
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #cccccc;
-    cursor: pointer;
-}
-
-body.light-mode .validation-message {
-    color: #ff0000;
-}
-
-body.light-mode .play-pause-button {
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #cccccc;
-    cursor: pointer;
-}
 
 
 

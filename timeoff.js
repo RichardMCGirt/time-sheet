@@ -70,14 +70,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchPreviousRequests(email) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
-            const response = await fetch(url, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
-                }
-            });
-            const data = await response.json();
-            records = data.records || [];
+            let url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
+            let allRecords = [];
+            while (url) {
+                const response = await fetch(url, {
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`
+                    }
+                });
+                const data = await response.json();
+                allRecords = allRecords.concat(data.records);
+                url = data.offset ? `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}&offset=${data.offset}` : null;
+            }
+            records = allRecords || [];
             deleteExpiredRecords(records);
             displayPreviousRequests(records);
         } catch (error) {
