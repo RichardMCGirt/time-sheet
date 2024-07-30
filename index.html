@@ -23,6 +23,7 @@
                             <label for="password" class="form-label">Password</label>
                             <input type="password" id="password" name="password" class="input-text" required>
                         </div>
+
                     </div>
                     <button id="loginButton" class="submit-button" type="button">Login</button>
                 </form>
@@ -34,6 +35,11 @@
         <section id="joke-section">
             <h2>Today's Joke</h2>
             <p id="joke-text"></p>
+</section>
+            <div id="easter-egg" class="hidden">Company founded in 2016</div>
+            <div id="easter-egg-rm" class="hidden">Developed by Richard McGirt</div>
+
+
                
         <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
     </main>
@@ -48,6 +54,25 @@
     document.getElementById('forgotPasswordButton').addEventListener('click', function() {
         window.location.href = 'forgot_password.html';
     });
+
+       // Easter egg functionality
+       document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.shiftKey && event.key === 'E') {
+                const easterEgg = document.getElementById('easter-egg');
+                if (easterEgg) {
+                    easterEgg.classList.toggle('hidden');
+                }
+            }
+        });
+             // Easter egg functionality for developer credit
+             document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.shiftKey && event.key === 'R') {
+                const easterEggRM = document.getElementById('easter-egg-rm');
+                if (easterEggRM) {
+                    easterEggRM.classList.toggle('hidden');
+                }
+            }
+        });
     </script>
 </body>
 </html>

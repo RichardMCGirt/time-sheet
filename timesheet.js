@@ -56,11 +56,49 @@ document.addEventListener("DOMContentLoaded", async function() {
     elements.resetButton.addEventListener('click', resetForm);
     elements.submitButton.addEventListener('click', handleSubmit);
 
-    const timeInputs = document.querySelectorAll('select.time-dropdown');
+    const timeInputs = document.querySelectorAll('input[type="time"]');
+    const numberInputs = document.querySelectorAll('input[type="number"]');
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+    function checkInputs() {
+        let showResetButton = false;
+
+        timeInputs.forEach(input => {
+            if (input.value) {
+                showResetButton = true;
+            }
+        });
+
+        numberInputs.forEach(input => {
+            if (input.value) {
+                showResetButton = true;
+            }
+        });
+
+        checkboxes.forEach(input => {
+            if (input.checked) {
+                showResetButton = true;
+            }
+        });
+
+        elements.resetButton.style.display = showResetButton ? 'block' : 'none';
+    }
+
+    // Add event listeners to all time, number, and checkbox inputs
     timeInputs.forEach(input => {
-        input.addEventListener('focus', () => input.showPicker());
-        input.addEventListener('keydown', handleArrowKeys);
+        input.addEventListener('input', checkInputs);
     });
+
+    numberInputs.forEach(input => {
+        input.addEventListener('input', checkInputs);
+    });
+
+    checkboxes.forEach(input => {
+        input.addEventListener('change', checkInputs);
+    });
+
+    // Initial check to set the reset button state correctly on page load
+    checkInputs();
 
     await fetchPtoHours();
     await fetchPersonalTime();
@@ -360,36 +398,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(2);
         const totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
         elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
-    }
-
-    function preventExceedingPtoInputs() {
-        const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
-        ptoInputs.forEach(input => {
-            input.addEventListener('input', function() {
-                const currentValue = parseFloat(input.value) || 0;
-                if (currentValue > availablePTOHours) {
-                    input.value = availablePTOHours;
-                }
-                if (currentValue > availablePTOHours || (availablePTOHours - currentValue) < 0) {
-                    input.value = Math.max(availablePTOHours, currentValue);
-                }
-                updateTotalPtoAndHolidayHours();
-                checkPTOInput(input);
-                saveFormData();
-            });
-        });
-    }
-
-    function checkPTOInput(input) {
-        const ptoDisplay = document.getElementById('pto-display');
-        const value = parseFloat(input.value) || 0;
-        ptoDisplay.style.display = value > 0 ? 'none' : 'block';
-    }
-
-    function checkPersonalInput(input) {
-        const personalDisplay = document.getElementById('personal-display');
-        const value = parseFloat(input.value) || 0;
-        personalDisplay.style.display = value > 0 ? 'none' : 'block';
     }
 
     async function updatePtoHours() {
@@ -708,33 +716,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
         localStorage.setItem('formData', JSON.stringify(data));
     }
-
-    function checkAndHideNumberInputs() {
-        const numberInputs = document.querySelectorAll('input[type="number"]');
-        
-        numberInputs.forEach(input => {
-          if (parseFloat(input.value) === 0) {
-            input.style.display = 'none';
-          } else {
-            input.style.display = 'inline-block';
-          }
-        });
-      }
-    
-      // Initial check when the page loads
-      checkAndHideNumberInputs();
-    
-      // Add event listeners to number inputs to check their value on change
-      document.querySelectorAll('input[type="number"]').forEach(input => {
-        input.addEventListener('input', function() {
-          if (parseFloat(this.value) === 0) {
-            this.style.display = 'none';
-          } else {
-            this.style.display = 'inline-block';
-          }
-        });
-    });
-
 
     function loadFormData() {
         const data = JSON.parse(localStorage.getItem('formData'));

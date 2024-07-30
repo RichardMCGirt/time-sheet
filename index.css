@@ -124,6 +124,34 @@ h1 {
     transition: transform 1s ease, top 1s ease, left 1s ease;
 }
 
+.hidden {
+    display: none;
+}
+
+#easter-egg,
+#easter-egg-rm {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background-color: #1abc9c;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+    z-index: 1000; /* Ensure it appears above other content */
+}
+
+#easter-egg {
+    right: 10px;
+}
+
+#easter-egg-rm {
+    right: 250px; /* Offset to prevent overlap with the other Easter egg */
+}
+
+
+
 
 
 @keyframes slideIn {
