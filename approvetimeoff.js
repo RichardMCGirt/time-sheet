@@ -86,6 +86,11 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    // Check if two time-off periods overlap
+    function isOverlapping(startDate1, endDate1, startDate2, endDate2) {
+        return (startDate1 <= endDate2) && (startDate2 <= endDate1);
+    }
+
     // Display time-off requests
     async function displayRequests(records) {
         console.log("Displaying requests...");
@@ -122,26 +127,31 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 const requestsRow = document.createElement('div');
                 requestsRow.className = 'requests-row';
+
+                const requestElements = [];
                 employeeRequests.forEach(record => {
                     for (let i = 1; i <= 10; i++) {
                         if (record.fields[`Time off Start Date ${i}`]) {
+                            const startDate = new Date(record.fields[`Time off Start Date ${i}`]);
+                            const endDate = new Date(record.fields[`Time off End Date ${i}`]);
+
                             const requestDiv = document.createElement('div');
                             requestDiv.className = 'request';
 
-                            const startDate = document.createElement('p');
-                            startDate.textContent = `Start Date: ${record.fields[`Time off Start Date ${i}`]}`;
-                            requestDiv.appendChild(startDate);
+                            const startDateElement = document.createElement('p');
+                            startDateElement.textContent = `Start Date: ${record.fields[`Time off Start Date ${i}`]}`;
+                            requestDiv.appendChild(startDateElement);
 
                             const startTime = document.createElement('p');
-                            startTime.textContent = `Start Time: ${record.fields[`Time off Start Time ${i}`]}`;
+                            startTime.textContent = `Start Time: ${formatTime(record.fields[`Time off Start Time ${i}`])}`;
                             requestDiv.appendChild(startTime);
 
-                            const endDate = document.createElement('p');
-                            endDate.textContent = `End Date: ${record.fields[`Time off End Date ${i}`]}`;
-                            requestDiv.appendChild(endDate);
+                            const endDateElement = document.createElement('p');
+                            endDateElement.textContent = `End Date: ${record.fields[`Time off End Date ${i}`]}`;
+                            requestDiv.appendChild(endDateElement);
 
                             const endTime = document.createElement('p');
-                            endTime.textContent = `End Time: ${record.fields[`Time off End Time ${i}`]}`;
+                            endTime.textContent = `End Time: ${formatTime(record.fields[`Time off End Time ${i}`])}`;
                             requestDiv.appendChild(endTime);
 
                             const hoursMissed = calculateHoursMissed(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`], record.fields[`Time off Start Time ${i}`], record.fields[`Time off End Time ${i}`]);
@@ -157,9 +167,35 @@ document.addEventListener("DOMContentLoaded", function() {
                             approvedCheckbox.addEventListener('change', handleApprovalChange);
                             requestDiv.appendChild(approvedCheckbox);
 
+                            const denialReason = document.createElement('select');
+                            denialReason.dataset.recordId = record.id;
+                            denialReason.dataset.approvalIndex = i;
+                            denialReason.innerHTML = `
+                                <option value="">Select Denial Reason</option>
+                                <option value="Insufficient PTO">Insufficient PTO</option>
+                                <option value="Project Deadline">Project Deadline</option>
+                                <option value="Team Shortage">Team Shortage</option>
+                            `;
+                            requestDiv.appendChild(denialReason);
+
+                            requestElements.push({ requestDiv, startDate, endDate, denialReason });
                             requestsRow.appendChild(requestDiv);
+
+                            if (approvedCheckbox.checked) {
+                                denialReason.style.display = 'none';
+                            }
                         }
                     }
+                });
+
+                // Check for overlapping requests and style them in red
+                requestElements.forEach((request1, index1) => {
+                    requestElements.forEach((request2, index2) => {
+                        if (index1 !== index2 && isOverlapping(request1.startDate, request1.endDate, request2.startDate, request2.endDate)) {
+                            request1.requestDiv.style.color = 'red';
+                            request2.requestDiv.style.color = 'red';
+                        }
+                    });
                 });
 
                 employeeDiv.appendChild(requestsRow);
@@ -168,17 +204,27 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Handle checkbox change event to update Airtable
+    // Handle checkbox change event to update Airtable and hide/show denial reason dropdown
     async function handleApprovalChange(event) {
         const checkbox = event.target;
         const recordId = checkbox.dataset.recordId;
         const approvalIndex = checkbox.dataset.approvalIndex;
         const approved = checkbox.checked;
 
+        const denialReasonSelect = document.querySelector(`select[data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
+        const denialReason = denialReasonSelect ? denialReasonSelect.value : '';
+
+        if (approved) {
+            denialReasonSelect.style.display = 'none';
+        } else {
+            denialReasonSelect.style.display = 'block';
+        }
+
         const updateUrl = `${url}/${recordId}`;
         const data = {
             fields: {
-                [`Time off Approved ${approvalIndex}`]: approved
+                [`Time off Approved ${approvalIndex}`]: approved,
+                [`Denial Reason ${approvalIndex}`]: denialReason
             }
         };
 
@@ -253,7 +299,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     lunchEnd.setHours(lunchEndHour, 0, 0);
 
                     let actualStart = new Date(`${currentDate.toDateString()} ${startTime}`);
-                    let actualEnd = new Date(`${currentDate.toDateString()} ${endTime}`);
+                    let actualEnd = endTime.toLowerCase() === 'all day' ? new Date(`${currentDate.toDateString()} 16:00`) : new Date(`${currentDate.toDateString()} ${endTime}`);
 
                     if (actualStart < workStart) actualStart = workStart;
                     if (actualEnd > workEnd) actualEnd = workEnd;
@@ -269,6 +315,19 @@ document.addEventListener("DOMContentLoaded", function() {
             currentDate.setDate(currentDate.getDate() + 1);
         }
         return totalHours;
+    }
+
+    function formatTime(time) {
+        if (time.toLowerCase() === 'all day') {
+            return 'All Day';
+        }
+
+        const [hours, minutes] = time.split(':');
+        const date = new Date();
+        date.setHours(hours);
+        date.setMinutes(minutes);
+        const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+        return date.toLocaleTimeString([], options);
     }
 
     // Initialize on page load
