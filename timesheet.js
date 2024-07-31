@@ -14,12 +14,12 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     const elements = {
         ptoHoursElement: document.getElementById('pto-hours'),
-        holidayHoursInput: document.getElementById('holiday-hours'), // corrected ID
+        holidayHoursInput: document.getElementById('Holiday-hours'),
         weekEndingInput: document.getElementById('week-ending'),
         timeEntryForm: document.getElementById('time-entry-form'),
         ptoTimeSpan: document.getElementById('pto-time'),
         personalTimeSpan: document.getElementById('personal-time'),
-        holidayTimeSpan: document.getElementById('holiday-hours'), // corrected ID
+        holidayTimeSpan: document.getElementById('Holiday-hours'),
         totalTimeWorkedSpan: document.getElementById('total-time-worked'),
         totalTimeWithPtoSpan: document.getElementById('total-time-with-pto-value'),
         ptoValidationMessage: document.getElementById('pto-validation-message'),
@@ -343,6 +343,20 @@ document.addEventListener("DOMContentLoaded", async function() {
         return Math.round(hours * 4) / 4;
     }
 
+    const ptoTimeInput = document.getElementById('pto-time');
+    const ptoHoursDisplay = document.getElementById('pto-hours-display');
+
+    // Check if the PTO time input value is greater than the allowed PTO hours
+    function validatePtoTimeInput() {
+        const ptoTimeValue = parseFloat(ptoTimeInput.textContent) || 0;
+        const maxPtoHours = parseFloat(ptoHoursDisplay.textContent) || 0;
+        
+        if (ptoTimeValue > maxPtoHours) {
+            ptoTimeInput.textContent = maxPtoHours.toFixed(2);
+            alert(`PTO time cannot exceed ${maxPtoHours.toFixed(2)} hours`);
+        }
+    }
+
     function validatePtoHours(totalHoursWorked, ptoTime, personalTime) {
         const remainingPTO = Math.max(0, availablePTOHours - ptoTime);
         const totalHoursWithPto = totalHoursWorked + ptoTime + personalTime;
@@ -360,39 +374,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         } else {
             elements.ptoValidationMessage.textContent = '';
         }
-    }
-
-    function validateHours() {
-        const ptoInput = document.getElementById('pto-input');
-        const personalHoursInput = document.getElementById('personal-hours-input');
-        const holidayHoursInput = document.getElementById('holiday-hours'); // Assuming there's an input for holiday hours
-    
-        const availablePTO = parseFloat(document.getElementById('available-pto').textContent);
-        const availablePersonalHours = parseFloat(document.getElementById('available-personal-hours').textContent);
-    
-        ptoInput.addEventListener('input', function() {
-            if (parseFloat(ptoInput.value) > availablePTO) {
-                ptoInput.setCustomValidity('You cannot request more PTO than available.');
-            } else {
-                ptoInput.setCustomValidity('');
-            }
-        });
-    
-        personalHoursInput.addEventListener('input', function() {
-            if (parseFloat(personalHoursInput.value) > availablePersonalHours) {
-                personalHoursInput.setCustomValidity('You cannot request more personal hours than available.');
-            } else {
-                personalHoursInput.setCustomValidity('');
-            }
-        });
-    
-        holidayHoursInput.addEventListener('input', function() {
-            if (parseFloat(holidayHoursInput.value) > 40) {
-                holidayHoursInput.setCustomValidity('Holiday hours cannot be greater than 40.');
-            } else {
-                holidayHoursInput.setCustomValidity('');
-            }
-        });
     }
 
     function updateTotalPtoAndHolidayHours() {
@@ -701,7 +682,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     function manageBackgroundSound() {
-        const soundUrl = '9 to 5 - Dolly Parton.mp3'; // corrected file name
+        const soundUrl = '9 to 5 - Dolly Parton'; // Replace 'your-folder/sound-file.mp3' with the actual path
         let audio = new Audio(soundUrl);
 
         function playSound() {
@@ -762,6 +743,4 @@ document.addEventListener("DOMContentLoaded", async function() {
             calculateTotalTimeWorked(); // Recalculate totals after loading data
         }
     }
-
-    validateHours(); // Initialize validation logic
 });

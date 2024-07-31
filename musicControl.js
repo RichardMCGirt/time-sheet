@@ -1,37 +1,44 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const audio = new Audio('9 to 5 - Dolly Parton.mp3');
-    let isPlaying = false;
-    const playPauseButton = document.getElementById('play-pause-button');
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const playPauseButton = document.getElementById('playPauseButton');
 
-    // Check if the button element exists
-    if (!playPauseButton) {
-        console.error("Element with ID 'play-pause-button' not found.");
-        return;
-    }
-
-    // Check localStorage for saved state and time
-    if (localStorage.getItem('isPlaying') === 'true') {
-        const currentTime = localStorage.getItem('currentTime');
-        audio.currentTime = currentTime ? parseFloat(currentTime) : 0;
-        audio.play();
-        isPlaying = true;
-        playPauseButton.textContent = 'Pause';
-    }
-
-    playPauseButton.addEventListener('click', function() {
-        if (isPlaying) {
-            audio.pause();
-        } else {
-            audio.play();
+    // Function to update playPauseButton text content
+    function updateButtonText() {
+        if (playPauseButton.textContent === 'Pause') {
+            playPauseButton.textContent = 'Play';
         }
-        isPlaying = !isPlaying;
-        this.textContent = isPlaying ? 'Pause' : 'Play';
-        localStorage.setItem('isPlaying', isPlaying);
+    }
+
+    // Always play the audio when the page loads
+    if (sessionStorage.getItem('isMusicPlaying') === 'true') {
+        backgroundMusic.play();
+        playPauseButton.textContent = 'Pause';
+    } else {
+        backgroundMusic.play();
+        playPauseButton.textContent = 'Pause';
+        sessionStorage.setItem('isMusicPlaying', 'true');
+    }
+
+    // Handle play/pause button click
+    playPauseButton.addEventListener('click', function() {
+        if (backgroundMusic.paused) {
+            backgroundMusic.play();
+            playPauseButton.textContent = 'Pause';
+            sessionStorage.setItem('isMusicPlaying', 'true');
+        } else {
+            backgroundMusic.pause();
+            playPauseButton.textContent = 'Play';
+            sessionStorage.setItem('isMusicPlaying', 'false');
+        }
     });
 
-    // Save current time and state before the page is unloaded
-    window.addEventListener('beforeunload', function() {
-        localStorage.setItem('currentTime', audio.currentTime);
-        localStorage.setItem('isPlaying', isPlaying);
-    });
+    // Store the music state on play and pause
+    backgroundMusic.onplay = function() {
+        sessionStorage.setItem('isMusicPlaying', 'true');
+    };
+
+    backgroundMusic.onpause = function() {
+        sessionStorage.setItem('isMusicPlaying', 'false');
+        updateButtonText(); // Call the function to update the button text content
+    };
 });
