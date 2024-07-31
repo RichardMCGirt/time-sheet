@@ -453,4 +453,42 @@ document.addEventListener('DOMContentLoaded', () => {
         submissionStatus.classList.remove('hidden');
         submissionStatus.classList.add('error');
     }
+
+    // Validation logic for PTO, personal, and holiday hours
+
+function validateHours() {
+    const ptoInput = document.getElementById('pto-input');
+    const personalHoursInput = document.getElementById('personal-hours-input');
+    const holidayHoursInput = document.getElementById('holiday-hours-input'); // Assuming there's an input for holiday hours
+
+    const availablePTO = parseFloat(document.getElementById('available-pto').textContent);
+    const availablePersonalHours = parseFloat(document.getElementById('available-personal-hours').textContent);
+
+    ptoInput.addEventListener('input', function() {
+        if (parseFloat(ptoInput.value) > availablePTO) {
+            ptoInput.setCustomValidity('You cannot request more PTO than available.');
+        } else {
+            ptoInput.setCustomValidity('');
+        }
+    });
+
+    personalHoursInput.addEventListener('input', function() {
+        if (parseFloat(personalHoursInput.value) > availablePersonalHours) {
+            personalHoursInput.setCustomValidity('You cannot request more personal hours than available.');
+        } else {
+            personalHoursInput.setCustomValidity('');
+        }
+    });
+
+    holidayHoursInput.addEventListener('input', function() {
+        if (parseFloat(holidayHoursInput.value) > 40) {
+            holidayHoursInput.setCustomValidity('Holiday hours cannot be greater than 40.');
+        } else {
+            holidayHoursInput.setCustomValidity('');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', validateHours);
+
 });

@@ -310,6 +310,12 @@ input[type="date"]:-webkit-autofill {
     background-color: #16a085;
 }
 
+.reset-button {
+    float: right;
+    margin-right: 20px;
+}
+
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .header-right {

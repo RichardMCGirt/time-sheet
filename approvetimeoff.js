@@ -61,8 +61,19 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    // Fetch PTO and Personal hours from the timesheet.html
+    function fetchAvailableHoursFromTimesheet() {
+        const ptoHoursDisplay = document.getElementById('pto-hours-display');
+        const personalTimeDisplay = document.getElementById('personal-time-display');
+
+        const availablePTO = ptoHoursDisplay ? parseFloat(ptoHoursDisplay.textContent) || 0 : 0;
+        const availablePersonalHours = personalTimeDisplay ? parseFloat(personalTimeDisplay.textContent) || 0 : 0;
+
+        return { availablePTO, availablePersonalHours };
+    }
+
     // Display time-off requests
-    function displayRequests(records) {
+    async function displayRequests(records) {
         console.log("Displaying requests...");
         const container = document.getElementById('requests-container');
         container.innerHTML = ''; // Clear existing content
@@ -76,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return acc;
         }, {});
 
-        Object.keys(groupedByEmployee).forEach(employeeName => {
+        for (const employeeName in groupedByEmployee) {
             const employeeRequests = groupedByEmployee[employeeName];
             if (employeeRequests.some(record => record.fields[`Time off Start Date 1`] !== undefined)) {
                 const employeeDiv = document.createElement('div');
@@ -85,6 +96,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 const name = document.createElement('h3');
                 name.textContent = employeeName;
                 employeeDiv.appendChild(name);
+
+                const availableHours = fetchAvailableHoursFromTimesheet();
+                const availablePto = document.createElement('p');
+                availablePto.textContent = `Available PTO: ${availableHours.availablePTO}`;
+                employeeDiv.appendChild(availablePto);
+
+                const availablePersonalHours = document.createElement('p');
+                availablePersonalHours.textContent = `Available Personal Hours: ${availableHours.availablePersonalHours}`;
+                employeeDiv.appendChild(availablePersonalHours);
 
                 const requestsRow = document.createElement('div');
                 requestsRow.className = 'requests-row';
@@ -110,10 +130,10 @@ document.addEventListener("DOMContentLoaded", function() {
                             endTime.textContent = `End Time: ${record.fields[`Time off End Time ${i}`]}`;
                             requestDiv.appendChild(endTime);
 
-                            const businessDaysMissed = calculateBusinessDays(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`]);
-                            const businessDays = document.createElement('p');
-                            businessDays.textContent = `Business Days Missed: ${businessDaysMissed}`;
-                            requestDiv.appendChild(businessDays);
+                            const hoursMissed = calculateHoursMissed(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`], record.fields[`Time off Start Time ${i}`], record.fields[`Time off End Time ${i}`]);
+                            const missedHours = document.createElement('p');
+                            missedHours.textContent = `Hours Missed: ${hoursMissed}`;
+                            requestDiv.appendChild(missedHours);
 
                             const approvedCheckbox = document.createElement('input');
                             approvedCheckbox.type = 'checkbox';
@@ -131,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 employeeDiv.appendChild(requestsRow);
                 container.appendChild(employeeDiv);
             }
-        });
+        }
     }
 
     // Handle checkbox change event to update Airtable
@@ -187,6 +207,54 @@ document.addEventListener("DOMContentLoaded", function() {
             currentDate.setDate(currentDate.getDate() + 1);
         }
         return count;
+    }
+
+    function calculateHoursMissed(startDate, endDate, startTime, endTime) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const dailyWorkHours = 8;
+        const allDayHours = 8;
+        const workStartHour = 7;
+        const workEndHour = 16;
+        const lunchStartHour = 12;
+        const lunchEndHour = 13;
+
+        let totalHours = 0;
+        let currentDate = start;
+
+        while (currentDate <= end) {
+            const dayOfWeek = currentDate.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                if (startTime.toLowerCase() === 'all day') {
+                    totalHours += allDayHours;
+                } else {
+                    const workStart = new Date(currentDate);
+                    workStart.setHours(workStartHour, 0, 0);
+                    const workEnd = new Date(currentDate);
+                    workEnd.setHours(workEndHour, 0, 0);
+
+                    const lunchStart = new Date(currentDate);
+                    lunchStart.setHours(lunchStartHour, 0, 0);
+                    const lunchEnd = new Date(currentDate);
+                    lunchEnd.setHours(lunchEndHour, 0, 0);
+
+                    let actualStart = new Date(`${currentDate.toDateString()} ${startTime}`);
+                    let actualEnd = new Date(`${currentDate.toDateString()} ${endTime}`);
+
+                    if (actualStart < workStart) actualStart = workStart;
+                    if (actualEnd > workEnd) actualEnd = workEnd;
+
+                    let dailyHours = (actualEnd - actualStart) / (1000 * 60 * 60);
+                    if (actualStart < lunchEnd && actualEnd > lunchStart) {
+                        dailyHours -= 1; // Subtract lunch hour
+                    }
+
+                    totalHours += dailyHours;
+                }
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        return totalHours;
     }
 
     // Initialize on page load

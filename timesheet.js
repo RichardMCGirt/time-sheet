@@ -14,12 +14,12 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     const elements = {
         ptoHoursElement: document.getElementById('pto-hours'),
-        holidayHoursInput: document.getElementById('Holiday-hours'),
+        holidayHoursInput: document.getElementById('holiday-hours'), // corrected ID
         weekEndingInput: document.getElementById('week-ending'),
         timeEntryForm: document.getElementById('time-entry-form'),
         ptoTimeSpan: document.getElementById('pto-time'),
         personalTimeSpan: document.getElementById('personal-time'),
-        holidayTimeSpan: document.getElementById('Holiday-hours'),
+        holidayTimeSpan: document.getElementById('holiday-hours'), // corrected ID
         totalTimeWorkedSpan: document.getElementById('total-time-worked'),
         totalTimeWithPtoSpan: document.getElementById('total-time-with-pto-value'),
         ptoValidationMessage: document.getElementById('pto-validation-message'),
@@ -362,6 +362,39 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    function validateHours() {
+        const ptoInput = document.getElementById('pto-input');
+        const personalHoursInput = document.getElementById('personal-hours-input');
+        const holidayHoursInput = document.getElementById('holiday-hours'); // Assuming there's an input for holiday hours
+    
+        const availablePTO = parseFloat(document.getElementById('available-pto').textContent);
+        const availablePersonalHours = parseFloat(document.getElementById('available-personal-hours').textContent);
+    
+        ptoInput.addEventListener('input', function() {
+            if (parseFloat(ptoInput.value) > availablePTO) {
+                ptoInput.setCustomValidity('You cannot request more PTO than available.');
+            } else {
+                ptoInput.setCustomValidity('');
+            }
+        });
+    
+        personalHoursInput.addEventListener('input', function() {
+            if (parseFloat(personalHoursInput.value) > availablePersonalHours) {
+                personalHoursInput.setCustomValidity('You cannot request more personal hours than available.');
+            } else {
+                personalHoursInput.setCustomValidity('');
+            }
+        });
+    
+        holidayHoursInput.addEventListener('input', function() {
+            if (parseFloat(holidayHoursInput.value) > 40) {
+                holidayHoursInput.setCustomValidity('Holiday hours cannot be greater than 40.');
+            } else {
+                holidayHoursInput.setCustomValidity('');
+            }
+        });
+    }
+
     function updateTotalPtoAndHolidayHours() {
         let totalPtoHours = 0;
         let totalHolidayHours = 0;
@@ -668,7 +701,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     function manageBackgroundSound() {
-        const soundUrl = '9 to 5 - Dolly Parton'; // Replace 'your-folder/sound-file.mp3' with the actual path
+        const soundUrl = '9 to 5 - Dolly Parton.mp3'; // corrected file name
         let audio = new Audio(soundUrl);
 
         function playSound() {
@@ -729,4 +762,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             calculateTotalTimeWorked(); // Recalculate totals after loading data
         }
     }
+
+    validateHours(); // Initialize validation logic
 });

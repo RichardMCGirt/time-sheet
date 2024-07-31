@@ -5,8 +5,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     const supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
     const userEmailElement = document.getElementById('user-email');
     const timesheetsBody = document.getElementById('timesheets-body');
-    const searchInput = document.getElementById('search-input');
-    const dateFilter = document.getElementById('date-filter');
     const checkAllButton = document.getElementById('check-all-button');
     const refreshButton = document.getElementById('refresh-button');
 
@@ -97,6 +95,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                             <th class="narrow-column">Holiday Hours used</th>
                             <th class="narrow-column">Gifted Hours</th>
                             <th class="narrow-column">Total Hours</th>
+                            <th class="narrow-column">Available PTO Hours</th>
                             <th class="narrow-column">Approve</th>
                         </tr>
                     </thead>
@@ -129,6 +128,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const ptoHours = fields['PTO Time Used'] || 0;
         const personalHours = fields['Personal Time Used'] || 0;
         const holidayHours = fields['Holiday Hours Used'] || 0;
+        const availablePTO = fields['Available PTO Hours'] || 0;
 
         const giftedHours = hoursWorked > 0 ? Math.min(3, 40 - holidayHours) : 0;
         const totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours + giftedHours);
@@ -142,6 +142,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 <th><input type="number" name="holiday_hours" value="${holidayHours}" placeholder="0" readonly></th>
                 <th><input type="number" name="gifted_hours" value="${giftedHours}" placeholder="0" readonly></th>
                 <th><input type="number" name="total_hours" value="${totalHours}" placeholder="0" readonly></th>
+                <th><input type="number" name="available_pto" value="${availablePTO}" placeholder="0" readonly></th>
                 <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Approved'] ? 'checked' : ''}></th>
             </tr>
         `;
@@ -209,32 +210,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         messageContainer.style.marginBottom = '10px';
     }
 
-    function filterTimesheets() {
-        const nameFilter = searchInput.value.toLowerCase();
-        const dateFilterValue = dateFilter.value;
-
-        const tables = timesheetsBody.querySelectorAll('.time-entry-table');
-        tables.forEach(table => {
-            const nameContainer = table.previousElementSibling;
-            const employeeName = nameContainer.textContent.toLowerCase();
-            const rows = table.querySelectorAll('tbody tr');
-
-            const nameMatches = employeeName.includes(nameFilter);
-            const dateMatches = !dateFilterValue || Array.from(rows).some(row => {
-                const dateInput = row.querySelector('input[type="date"]');
-                return dateInput && dateInput.value === dateFilterValue;
-            });
-
-            if (nameMatches && dateMatches) {
-                nameContainer.style.display = '';
-                table.style.display = '';
-            } else {
-                nameContainer.style.display = 'none';
-                table.style.display = 'none';
-            }
-        });
-    }
-
     function exportToExcel() {
         // Collect data
         let data = [];
@@ -252,14 +227,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const holidayHours = row.querySelector('input[name="holiday_hours"]').value;
                 const giftedHours = row.querySelector('input[name="gifted_hours"]').value;
                 const totalHours = row.querySelector('input[name="total_hours"]').value;
+                const availablePTO = row.querySelector('input[name="available_pto"]').value;
 
-                data.push([employeeName, date, hoursWorked, ptoHours, personalHours, holidayHours, giftedHours, totalHours]);
+                data.push([employeeName, date, hoursWorked, ptoHours, personalHours, holidayHours, giftedHours, totalHours, availablePTO]);
             });
         });
 
         // Convert to CSV format
         let csvContent = "data:text/csv;charset=utf-8," 
-            + "Employee Name,Date Ending,Hours Worked,PTO Hours Used,Personal Hours Used,Holiday Hours Used,Gifted Hours,Total Hours,Approved\n";
+            + "Employee Name,Date Ending,Hours Worked,PTO Hours Used,Personal Hours Used,Holiday Hours Used,Gifted Hours,Total Hours,Available PTO Hours,Approved\n";
 
         data.forEach(row => {
             csvContent += row.join(",") + "\n";
