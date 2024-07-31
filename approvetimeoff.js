@@ -2,7 +2,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
     const tableId = 'tbl3PB88KkGdPlT5x';
+    const ptoBaseId = 'app9gw2qxhGCmtJvW';
+    const ptoTableId = 'tbljmLpqXScwhiWTt';
     const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
+    const ptoUrl = `https://api.airtable.com/v0/${ptoBaseId}/${ptoTableId}`;
     const headers = {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
@@ -61,15 +64,26 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Fetch PTO and Personal hours from the timesheet.html
-    function fetchAvailableHoursFromTimesheet() {
-        const ptoHoursDisplay = document.getElementById('pto-hours-display');
-        const personalTimeDisplay = document.getElementById('personal-time-display');
+    // Fetch PTO and Personal hours for an employee
+    async function fetchAvailableHours(employeeName) {
+        try {
+            const employeeUrl = `https://api.airtable.com/v0/${ptoBaseId}/${ptoTableId}?filterByFormula=${encodeURIComponent(`{Full Name}='${employeeName}'`)}`;
+            const response = await fetch(employeeUrl, { headers });
+            const data = await response.json();
 
-        const availablePTO = ptoHoursDisplay ? parseFloat(ptoHoursDisplay.textContent) || 0 : 0;
-        const availablePersonalHours = personalTimeDisplay ? parseFloat(personalTimeDisplay.textContent) || 0 : 0;
-
-        return { availablePTO, availablePersonalHours };
+            if (data.records.length > 0) {
+                const employee = data.records[0].fields;
+                const availablePTO = employee['PTO Hours'] || 0;
+                const availablePersonalHours = employee['Personaltime'] || 0;
+                return { availablePTO, availablePersonalHours };
+            } else {
+                console.error('No employee found with the given name.');
+                return { availablePTO: 0, availablePersonalHours: 0 };
+            }
+        } catch (error) {
+            console.error('Error fetching available hours:', error);
+            return { availablePTO: 0, availablePersonalHours: 0 };
+        }
     }
 
     // Display time-off requests
@@ -97,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 name.textContent = employeeName;
                 employeeDiv.appendChild(name);
 
-                const availableHours = fetchAvailableHoursFromTimesheet();
+                const availableHours = await fetchAvailableHours(employeeName);
                 const availablePto = document.createElement('p');
                 availablePto.textContent = `Available PTO: ${availableHours.availablePTO}`;
                 employeeDiv.appendChild(availablePto);
