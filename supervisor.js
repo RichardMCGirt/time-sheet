@@ -3,13 +3,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     const baseId = 'app9gw2qxhGCmtJvW';
     const tableId = 'tbljmLpqXScwhiWTt';
     const supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
-    
+ 
     const userEmailElement = document.getElementById('user-email');
     const timesheetsBody = document.getElementById('timesheets-body');
     const checkAllButton = document.getElementById('check-all-button');
     const refreshButton = document.getElementById('refresh-button');
     const exportButton = document.getElementById('export-button');
     const logoutButton = document.getElementById('logout-button');
+    const filterButton = document.getElementById('filter-approved'); // Button for filtering
+
+    let showApproved = false;
 
     if (userEmailElement) {
         userEmailElement.textContent = supervisorEmail;
@@ -21,6 +24,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     refreshButton.addEventListener('click', refreshData);
     logoutButton.addEventListener('click', handleLogout);
     timesheetsBody.addEventListener('change', handleCheckboxChange);
+    filterButton.addEventListener('click', toggleFilter); // Add event listener for button
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
@@ -53,7 +57,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                               '{Employee Number}!=BLANK()' : 
                               `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
 
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
+        const approvedFilter = showApproved ? `AND(${filterFormula}, {Approved}='Approved')` : filterFormula;
+
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${approvedFilter}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
 
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
@@ -161,6 +167,27 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    async function fetchAvailableHours(employeeName) {
+        try {
+            const employeeUrl = `https://api.airtable.com/v0/${ptoBaseId}/${ptoTableId}?filterByFormula=${encodeURIComponent(`{Full Name}='${employeeName}'`)}`;
+            const response = await fetch(employeeUrl, { headers });
+            const data = await response.json();
+
+            if (data.records.length > 0) {
+                const employee = data.records[0].fields;
+                const availablePTO = employee['PTO Hours'] || 0;
+                const availablePersonalHours = employee['Personaltime'] || 0;
+                return { availablePTO, availablePersonalHours };
+            } else {
+                console.error('No employee found with the given name.');
+                return { availablePTO: 0, availablePersonalHours: 0 };
+            }
+        } catch (error) {
+            console.error('Error fetching available hours:', error);
+            return { availablePTO: 0, availablePersonalHours: 0 };
+        }
+    }
+
     async function updateApprovalStatus(recordId, isApproved) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
         const body = JSON.stringify({
@@ -206,7 +233,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function handleLogout() {
         localStorage.removeItem('userEmail');
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     }
 
     async function refreshData() {
@@ -259,6 +286,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         link.click();
     }
 
+    function toggleFilter() {
+        showApproved = !showApproved;
+        filterButton.textContent = showApproved ? 'Show All' : 'Show Approved';
+        refreshData();
+    }
+
     async function initialize() {
         const supervisorName = await fetchSupervisorName(supervisorEmail);
         if (supervisorName) {
@@ -267,8 +300,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             console.error('Supervisor not found');
         }
 
-        // Refresh data every 120 seconds
-        setInterval(refreshData, 120000);
+        // Refresh data every 560000 milliseconds (approximately 9 minutes)
+        setInterval(refreshData, 560000);
     }
 
     initialize();

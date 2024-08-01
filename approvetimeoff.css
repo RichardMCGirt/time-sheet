@@ -50,9 +50,6 @@ header {
     background-color: var(--header-bg);
     overflow: hidden;
     transition: background-color 0.3s ease;
-    padding: 10px 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding-top: 10px;
 }
 
 .navbar ul {
@@ -75,6 +72,7 @@ header {
     padding: 14px 20px;
     text-decoration: none;
     transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: #16a085;
 }
 
 .navbar ul li a:hover {
