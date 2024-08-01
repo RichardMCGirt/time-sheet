@@ -7,15 +7,22 @@ document.addEventListener('DOMContentLoaded', function() {
         playPauseButton.textContent = backgroundMusic.paused ? 'Play' : 'Pause';
     }
 
-    // Function to check if Jason Smith is logged in
-    function isJasonLoggedIn() {
+    // Function to check if Jason Smith or Richard McGirt is logged in
+    function isExemptUserLoggedIn() {
         const userEmail = sessionStorage.getItem('userEmail');
-        return userEmail === 'jason.smith@vanirinstalledsales.com';
+        return userEmail === 'jason.smith@vanirinstalledsales.com' || userEmail === 'richard.mcgirt@vanirinstalledsales.com';
     }
 
-    // Play the audio when the page loads if Jason Smith is not logged in
-    if (!isJasonLoggedIn()) {
+    // Function to unmute the computer and set the volume to max
+    function unmuteAndSetVolumeMax() {
+        backgroundMusic.muted = false;
+        backgroundMusic.volume = 1.0;
+    }
+
+    // Play the audio when the page loads if neither Jason Smith nor Richard McGirt is logged in
+    if (!isExemptUserLoggedIn()) {
         backgroundMusic.currentTime = 9; // Start the song 9 seconds in
+        unmuteAndSetVolumeMax();
         backgroundMusic.play();
         sessionStorage.setItem('isMusicPlaying', 'true');
         updateButtonText();
@@ -25,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     playPauseButton.addEventListener('click', function(event) {
         event.preventDefault(); // Prevent default button behavior (like form submission)
         if (backgroundMusic.paused) {
+            unmuteAndSetVolumeMax();
             backgroundMusic.play();
         } else {
             backgroundMusic.pause();
@@ -44,8 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Continue playing if the page is refreshed
-    if (sessionStorage.getItem('isMusicPlaying') === 'true' && !isJasonLoggedIn()) {
+    if (sessionStorage.getItem('isMusicPlaying') === 'true' && !isExemptUserLoggedIn()) {
         backgroundMusic.currentTime = 9; // Start the song 9 seconds in
+        unmuteAndSetVolumeMax();
         backgroundMusic.play();
         updateButtonText();
     }

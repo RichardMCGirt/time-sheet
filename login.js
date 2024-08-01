@@ -7,12 +7,19 @@ const jokeText = document.getElementById('joke-text'); // Element to display the
 const loginButton = document.getElementById('loginButton');
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
+const playPauseButton = document.getElementById('playPauseButton');
+
+// Add input event listener to start/pause music based on input fields
+emailInput.addEventListener('input', handleInput);
+passwordInput.addEventListener('input', handleInput);
+playPauseButton.addEventListener('click', toggleMusic);
 
 loginButton.addEventListener('click', login);
 
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM fully loaded and parsed");
     debounce(fetchJoke, 300)(); // Fetch joke on page load with debounce
+    playPauseButton.style.display = 'none'; // Initially hide the play/pause button
 });
 
 function validateEmail(email) {
@@ -60,6 +67,8 @@ async function login() {
             if (backgroundMusic) {
                 backgroundMusic.play();
                 sessionStorage.setItem('isMusicPlaying', 'true');
+                updateButtonText();
+                playPauseButton.style.display = 'block'; // Show the play/pause button
             }
 
             window.location.href = 'timesheet.html';
@@ -97,4 +106,46 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), wait);
     };
+}
+
+function handleInput() {
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const email = emailInput.value;
+    const password = passwordInput.value;
+
+    const firstLetter = (email.charAt(0) || password.charAt(0)).toLowerCase();
+
+    if ((email || password) && firstLetter !== 'j' && firstLetter !== 'r') {
+        if (backgroundMusic && backgroundMusic.paused) {
+            backgroundMusic.muted = false;
+            backgroundMusic.volume = 1.0;
+            backgroundMusic.play();
+            sessionStorage.setItem('isMusicPlaying', 'true');
+            updateButtonText();
+            playPauseButton.style.display = 'block'; // Show the play/pause button
+        }
+    } else {
+        if (backgroundMusic && !backgroundMusic.paused) {
+            backgroundMusic.pause();
+            sessionStorage.setItem('isMusicPlaying', 'false');
+            playPauseButton.style.display = 'none'; // Hide the play/pause button
+        }
+    }
+}
+
+function toggleMusic() {
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    if (backgroundMusic.paused) {
+        backgroundMusic.play();
+        sessionStorage.setItem('isMusicPlaying', 'true');
+    } else {
+        backgroundMusic.pause();
+        sessionStorage.setItem('isMusicPlaying', 'false');
+    }
+    updateButtonText();
+}
+
+function updateButtonText() {
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    playPauseButton.textContent = backgroundMusic.paused ? 'Play' : 'Pause';
 }
