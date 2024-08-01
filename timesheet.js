@@ -157,22 +157,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         saveFormData();
     }
 
-    async function fetchPersonalEndDate() {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch Personal END Date: ${response.statusText}`);
-            const data = await response.json();
-            if (data.records.length > 0) {
-                const personalEndDate = data.records[0].fields['Personal END Date'];
-                startCountdown(personalEndDate);
-            } else {
-                console.log('No Personal END Date found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching Personal END Date:', error);
-        }
-    }
+
     
     function startCountdown(endDate) {
         const endDateTime = new Date(endDate).getTime();
