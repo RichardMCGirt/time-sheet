@@ -752,7 +752,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Function to update playPauseButton text content
     function updateButtonText() {
-        if (playPauseButton.textContent === 'Pause') {
+        if (backgroundMusic.paused) {
             playPauseButton.textContent = 'Play';
         } else {
             playPauseButton.textContent = 'Pause';
@@ -763,20 +763,17 @@ document.addEventListener("DOMContentLoaded", async function() {
     if (backgroundMusic && playPauseButton && shouldPlayMusic()) {
         backgroundMusic.currentTime = 9; // Start the song 9 seconds in
         backgroundMusic.play();
-        playPauseButton.textContent = 'Pause';
-        sessionStorage.setItem('isMusicPlaying', 'true');
+        updateButtonText();
 
         // Handle play/pause button click
         playPauseButton.addEventListener('click', function(event) {
             event.preventDefault(); // Prevent default button behavior (like form submission)
             if (backgroundMusic.paused) {
                 backgroundMusic.play();
-                playPauseButton.textContent = 'Pause';
-                sessionStorage.setItem('isMusicPlaying', 'true');
+                updateButtonText();
             } else {
                 backgroundMusic.pause();
-                playPauseButton.textContent = 'Play';
-                sessionStorage.setItem('isMusicPlaying', 'false');
+                updateButtonText();
             }
         });
 

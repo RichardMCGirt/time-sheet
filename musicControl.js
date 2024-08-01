@@ -4,52 +4,49 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to update playPauseButton text content
     function updateButtonText() {
-        if (playPauseButton.textContent === 'Pause') {
-            playPauseButton.textContent = 'Play';
-        }
+        playPauseButton.textContent = backgroundMusic.paused ? 'Play' : 'Pause';
     }
 
     // Function to check if Jason Smith is logged in
     function isJasonLoggedIn() {
-        // Replace this with the actual logic to check if Jason Smith is logged in
-        // For example, check the email stored in session or a variable
         const userEmail = sessionStorage.getItem('userEmail');
         return userEmail === 'jason.smith@vanirinstalledsales.com';
     }
 
-    // Always play the audio when the page loads if Jason Smith is not logged in
+    // Play the audio when the page loads if Jason Smith is not logged in
     if (!isJasonLoggedIn()) {
         backgroundMusic.currentTime = 9; // Start the song 9 seconds in
-        if (sessionStorage.getItem('isMusicPlaying') === 'true') {
-            backgroundMusic.play();
-            playPauseButton.textContent = 'Pause';
-        } else {
-            backgroundMusic.play();
-            playPauseButton.textContent = 'Pause';
-            sessionStorage.setItem('isMusicPlaying', 'true');
-        }
+        backgroundMusic.play();
+        sessionStorage.setItem('isMusicPlaying', 'true');
+        updateButtonText();
     }
 
     // Handle play/pause button click
-    playPauseButton.addEventListener('click', function() {
+    playPauseButton.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent default button behavior (like form submission)
         if (backgroundMusic.paused) {
             backgroundMusic.play();
-            playPauseButton.textContent = 'Pause';
-            sessionStorage.setItem('isMusicPlaying', 'true');
         } else {
             backgroundMusic.pause();
-            playPauseButton.textContent = 'Play';
-            sessionStorage.setItem('isMusicPlaying', 'false');
         }
+        updateButtonText();
     });
 
     // Store the music state on play and pause
     backgroundMusic.onplay = function() {
         sessionStorage.setItem('isMusicPlaying', 'true');
+        updateButtonText();
     };
 
     backgroundMusic.onpause = function() {
         sessionStorage.setItem('isMusicPlaying', 'false');
-        updateButtonText(); // Call the function to update the button text content
+        updateButtonText();
     };
+
+    // Continue playing if the page is refreshed
+    if (sessionStorage.getItem('isMusicPlaying') === 'true' && !isJasonLoggedIn()) {
+        backgroundMusic.currentTime = 9; // Start the song 9 seconds in
+        backgroundMusic.play();
+        updateButtonText();
+    }
 });
