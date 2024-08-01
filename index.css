@@ -17,7 +17,6 @@ body {
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(to right, var(--bg-gradient-start), var(--bg-gradient-end));
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -31,8 +30,8 @@ main {
     margin: 20px;
     padding: 30px;
     background-color: rgba(44, 62, 80, 0.9);
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -42,7 +41,7 @@ main {
 
 h1 {
     margin-bottom: 20px;
-    font-size: 28px;
+    font-size: 2rem;
     color: var(--text-color);
 }
 
@@ -51,8 +50,8 @@ h1 {
     justify-content: center;
     margin-bottom: 20px;
     background-color: #ecf0f1; /* Ensuring the logo has a contrasting background */
-    padding: 10px;
-    border-radius: 10px;
+    padding: 15px;
+    border-radius: 12px;
 }
 
 .logo {
@@ -72,16 +71,16 @@ h1 {
 
 .form-label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     color: var(--text-color);
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .input-text {
     width: 100%;
-    padding: 15px;
+    padding: 14px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #bdc3c7;
     font-size: 16px;
     color: var(--input-text-color);
     background-color: var(--input-bg);
@@ -100,17 +99,17 @@ h1 {
 
 .submit-button, .forgot-password-button, .play-pause-button {
     width: 80%;
-    max-width: 300px;
-    padding: 10px;
+    max-width: 320px;
+    padding: 12px;
     border: none;
     border-radius: 8px;
     background: linear-gradient(to right, var(--button-bg-start), var(--button-bg-end));
     color: #fff;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     margin-top: 15px;
     animation: slideIn 0.5s ease-in-out;
 }
@@ -118,10 +117,6 @@ h1 {
 .submit-button:hover, .forgot-password-button:hover, .play-pause-button:hover {
     background: linear-gradient(to right, var(--highlight-color), var(--highlight-hover-color));
     transform: translateY(-2px);
-}
-
-* {
-    transition: transform 1s ease, top 1s ease, left 1s ease;
 }
 
 .hidden {
@@ -132,12 +127,11 @@ h1 {
 #easter-egg-rm {
     position: fixed;
     bottom: 10px;
-    right: 10px;
     background-color: #1abc9c;
     color: #fff;
     padding: 10px;
     border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     font-size: 14px;
     z-index: 1000; /* Ensure it appears above other content */
 }
@@ -147,12 +141,8 @@ h1 {
 }
 
 #easter-egg-rm {
-    right: 250px; /* Offset to prevent overlap with the other Easter egg */
+    right: 150px; /* Offset to prevent overlap with the other Easter egg */
 }
-
-
-
-
 
 @keyframes slideIn {
     from {
@@ -172,11 +162,12 @@ h1 {
 
 #joke-section h2 {
     color: var(--joke-text-color);
+    font-size: 1.5rem;
 }
 
 #joke-section p {
     color: var(--joke-text-color);
-    font-size: 16px;
+    font-size: 18px;
 }
 
 @media (max-width: 768px) {

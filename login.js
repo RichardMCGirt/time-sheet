@@ -108,6 +108,25 @@ function debounce(func, wait) {
     };
 }
 
+emailInput.addEventListener('input', handleInput);
+emailInput.addEventListener('keydown', handleKeyDown);
+
+function handleKeyDown(event) {
+    if (event.key === '@') {
+        const emailValue = emailInput.value;
+        if (!emailValue.includes('@vanirinstalledsales.com')) {
+            // Prevent default '@' behavior
+            event.preventDefault();
+
+            // Append the domain
+            emailInput.value = `${emailValue}@vanirinstalledsales.com`;
+
+            // Move cursor to the end of the input
+            emailInput.setSelectionRange(emailInput.value.length, emailInput.value.length);
+        }
+    }
+}
+
 function handleInput() {
     const backgroundMusic = document.getElementById('backgroundMusic');
     const email = emailInput.value;
@@ -144,6 +163,8 @@ function toggleMusic() {
     }
     updateButtonText();
 }
+
+
 
 function updateButtonText() {
     const backgroundMusic = document.getElementById('backgroundMusic');
