@@ -53,6 +53,7 @@ body {
     padding: 14px 20px;
     text-decoration: none;
     transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: #1abc9c;
 }
 
 .navbar ul li a:hover {
@@ -174,7 +175,7 @@ body.dark-mode .toggle-button:hover {
     width: 70%;
     margin: 20px auto;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .time-entry-table th, .time-entry-table td {
@@ -203,7 +204,7 @@ input[type="text"] {
     border-radius: 4px;
     padding: 5px;
     text-align: center;
-    font-size: 14px;
+    font-size: 22px;
     font-weight: bold;
 }
 
@@ -228,7 +229,7 @@ input[type="date"]:-webkit-autofill {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 20px;
 }
 
 .time-entry-form {
