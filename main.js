@@ -1,12 +1,10 @@
+import { fetchPtoHours, fetchPersonalTime, fetchPersonalEndDate, fetchApprovedStatus, updatePtoHours, updatePersonalHours } from './airtableFunctions.js';
+
 document.addEventListener("DOMContentLoaded", async function() {
     console.log('DOM fully loaded and parsed');
 
     initializeTimeDropdowns();
     initializeKeyboardNavigation();
-
-    const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
-    const baseId = 'app9gw2qxhGCmtJvW';
-    const tableId = 'tbljmLpqXScwhiWTt';
 
     let userEmail = localStorage.getItem('userEmail') || '';
     let recordId = '';
@@ -32,6 +30,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         resetButton: document.getElementById('reset-button'),
         submitButton: document.getElementById('submit-button'),
         countdownElement: document.getElementById('countdown'),
+        approvedCheckbox: document.getElementById('approvedCheckbox')
     };
 
     let availablePTOHours = 0;
@@ -140,10 +139,25 @@ document.addEventListener("DOMContentLoaded", async function() {
         });
     });
 
-    await fetchPtoHours();
-    await fetchPersonalTime();
-    await fetchPersonalEndDate(); // Fetch the personal end date
-    await fetchApprovalStatus(); // Fetch the approval status
+    await fetchPtoHours().then(hours => {
+        availablePTOHours = hours;
+        elements.ptoHoursDisplay.textContent = hours.toFixed(2);
+        elements.remainingPtoHoursElement.textContent = hours.toFixed(2); // Set initial remaining PTO hours
+    });
+
+    await fetchPersonalTime().then(hours => {
+        availablePersonalHours = hours;
+        elements.personalTimeDisplay.textContent = hours.toFixed(2);
+        elements.remainingPersonalHoursElement.textContent = hours.toFixed(2); // Set initial remaining Personal hours
+    });
+
+    const personalEndDate = await fetchPersonalEndDate(); // Fetch the personal end date
+    if (personalEndDate) {
+        startCountdown(personalEndDate);
+    }
+
+    const approvedStatus = await fetchApprovedStatus(); // Fetch the approved status
+    elements.approvedCheckbox.checked = approvedStatus;
 
     loadFormData();
 
@@ -195,146 +209,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         });
         saveFormData();
-    }
-
-    async function fetchPersonalEndDate() {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch Personal END Date: ${response.statusText}`);
-            const data = await response.json();
-            if (data.records.length > 0) {
-                const personalEndDate = data.records[0].fields['Personal END Date'];
-                startCountdown(personalEndDate);
-            } else {
-                console.log('No Personal END Date found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching Personal END Date:', error);
-        }
-    }
-
-    async function fetchApprovalStatus() {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-       
-        try {
-            const response = await fetch(endpoint, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
-                }
-            });
-            if (!response.ok) throw new Error(`Failed to fetch approval status: ${response.statusText}`);
-            const data = await response.json();
-            if (data.records.length > 0) {
-                const record = data.records[0].fields;
-                const isApproved = record['Approve'] || false;
-                document.getElementById('approvedCheckbox').checked = isApproved;
-                console.log('Approval status:', isApproved);
-            } else {
-                console.log('No approval status data found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching approval status:', error);
-            alert('Failed to fetch approval status. Error: ' + error.message);
-        }
-    }
-
-    function startCountdown(endDate) {
-        const endDateTime = new Date(endDate).getTime();
-        const countdownElement = document.getElementById('countdown');
-
-        const updateCountdown = () => {
-            const now = new Date().getTime();
-            const distance = endDateTime - now;
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-            if (distance < 0) {
-                clearInterval(interval);
-                countdownElement.innerHTML = "EXPIRED";
-            }
-        };
-
-        updateCountdown();
-        const interval = setInterval(updateCountdown, 1000); // Set interval to 1 second
-    }
-
-    async function fetchPtoHours() {
-        console.log('Fetching PTO hours...');
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch PTO hours: ${response.statusText}`);
-
-            const data = await response.json();
-            console.log('Fetched PTO hours:', data);
-
-            if (data.records.length > 0) {
-                const record = data.records[0].fields;
-                availablePTOHours = record['PTO Hours'] || 0;
-                recordId = data.records[0].id; // Save the record ID
-                elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
-                elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2); // Set initial remaining PTO hours
-                console.log('Available PTO hours:', availablePTOHours);
-                saveFormData();
-            } else {
-                console.log('No PTO hours data found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching PTO hours:', error);
-            alert('Failed to fetch PTO hours. Error: ' + error.message);
-        }
-    }
-
-    async function fetchPersonalTime() {
-        console.log('Fetching Personal hours...');
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch Personal hours: ${response.statusText}`);
-
-            const data = await response.json();
-            console.log('Fetched Personal hours:', data);
-
-            if (data.records.length > 0) {
-                const record = data.records[0].fields;
-                availablePersonalHours = record['Personaltime'] || 0;
-                recordId = data.records[0].id; // Save the record ID
-                elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
-                elements.remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2); // Set initial remaining Personal hours
-                console.log('Available Personal hours:', availablePersonalHours);
-                saveFormData();
-            } else {
-                console.log('No Personal hours data found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching Personal hours:', error);
-            alert('Failed to fetch Personal hours. Error: ' + error.message);
-        }
-    }
-
-    async function fetchPersonalEndDate() {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch Personal END Date: ${response.statusText}`);
-            const data = await response.json();
-            if (data.records.length > 0) {
-                const personalEndDate = data.records[0].fields['Personal END Date'];
-                startCountdown(personalEndDate);
-            } else {
-                console.log('No Personal END Date found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching Personal END Date:', error);
-        }
     }
 
     function startCountdown(endDate) {
@@ -500,68 +374,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
     }
 
-    async function updatePtoHours() {
-        console.log('Updating PTO hours...');
-        const usedPtoHoursValue = parseFloat(elements.ptoTimeSpan.textContent) || 0;
-        const newPtoHoursValue = Math.max(0, availablePTOHours - usedPtoHoursValue);
-        console.log('Used PTO hours value:', usedPtoHoursValue);
-        console.log('New PTO hours value:', newPtoHoursValue);
-
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-        console.log('Endpoint for update:', endpoint);
-
-        try {
-            const updateResponse = await fetch(endpoint, {
-                method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ fields: { 'PTO Time Used': newPtoHoursValue } })
-            });
-
-            const updateResponseData = await updateResponse.json();
-            console.log('Update response data:', updateResponseData);
-
-            if (!updateResponse.ok) throw new Error(`Failed to update PTO hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
-            console.log('PTO hours updated successfully');
-        } catch (error) {
-            console.error('Error updating PTO hours:', error);
-            throw new Error('Failed to update PTO hours. Error: ' + error.message);
-        }
-    }
-
-    async function updatePersonalHours() {
-        console.log('Updating Personal hours...');
-        const usedPersonalHoursValue = parseFloat(elements.personalTimeSpan.textContent) || 0;
-        const newPersonalHoursValue = Math.max(0, availablePersonalHours - usedPersonalHoursValue);
-        console.log('Used Personal hours value:', usedPersonalHoursValue);
-        console.log('New Personal hours value:', newPersonalHoursValue);
-
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-        console.log('Endpoint for update:', endpoint);
-
-        try {
-            const updateResponse = await fetch(endpoint, {
-                method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ fields: { 'Personaltime': newPersonalHoursValue } })
-            });
-
-            const updateResponseData = await updateResponse.json();
-            console.log('Update response data:', updateResponseData);
-
-            if (!updateResponse.ok) throw new Error(`Failed to update Personal hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
-            console.log('Personal hours updated successfully');
-        } catch (error) {
-            console.error('Error updating Personal hours:', error);
-            throw new Error('Failed to update Personal hours. Error: ' + error.message);
-        }
-    }
-
     async function handleSubmit(event) {
         event.preventDefault();
         console.log('Submitting form...');
@@ -579,8 +391,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
 
         try {
-            await updatePtoHours();
-            await updatePersonalHours();
+            await updatePtoHours(totalPtoHours);
+            await updatePersonalHours(totalPersonalHours);
             await sendDataToAirtable();
             alert('Submission successful!');
             clearForm();
