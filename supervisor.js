@@ -3,28 +3,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     const baseId = 'app9gw2qxhGCmtJvW';
     const tableId = 'tbljmLpqXScwhiWTt';
     const supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
- 
     const userEmailElement = document.getElementById('user-email');
     const timesheetsBody = document.getElementById('timesheets-body');
     const checkAllButton = document.getElementById('check-all-button');
-    const refreshButton = document.getElementById('refresh-button');
-    const exportButton = document.getElementById('export-button');
-    const logoutButton = document.getElementById('logout-button');
-    const filterButton = document.getElementById('filter-approved'); // Button for filtering
 
-    let showApproved = false;
+    let allChecked = false;
 
     if (userEmailElement) {
         userEmailElement.textContent = supervisorEmail;
         userEmailElement.classList.add('clickable');
     }
 
-    exportButton.addEventListener('click', exportToExcel);
+    document.getElementById('export-button').addEventListener('click', exportToExcel);
     checkAllButton.addEventListener('click', handleCheckAll);
-    refreshButton.addEventListener('click', refreshData);
-    logoutButton.addEventListener('click', handleLogout);
-    timesheetsBody.addEventListener('change', handleCheckboxChange);
-    filterButton.addEventListener('click', toggleFilter); // Add event listener for button
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
@@ -57,66 +48,38 @@ document.addEventListener("DOMContentLoaded", async function () {
                               '{Employee Number}!=BLANK()' : 
                               `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
 
-        const approvedFilter = showApproved ? `AND(${filterFormula}, {Approved}='Approved')` : filterFormula;
-
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${approvedFilter}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
 
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
             if (!response.ok) throw new Error(`Failed to fetch timesheets: ${response.statusText}`);
             const data = await response.json();
-            populateTimesheets(data.records);
+            await populateTimesheets(data.records);
         } catch (error) {
             console.error(error);
         }
-    }
-
-    function generateRows(fields, recordId) {
-        const hoursWorked = fields['Total Hours Worked'] || 0;
-        const ptoHours = fields['PTO Time Used'] || 0;
-        const personalHours = fields['Personal Time Used'] || 0;
-        const holidayHours = fields['Holiday Hours Used'] || 0;
-        const availablePTO = fields['Available PTO Hours'] || 0;
-        const employeeNumber = fields['Employee Number'] || '';
-
-        const giftedHours = hoursWorked > 0 ? Math.min(3, 40 - holidayHours) : 0;
-        const totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours + giftedHours);
-
-        return `
-            <tr>
-                <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
-                <th>${employeeNumber}</th>
-                <th><input type="number" name="hours_worked" value="${hoursWorked}" placeholder="0" readonly></th>
-                <th><input type="number" name="pto_hours" value="${ptoHours}" placeholder="0" readonly></th>
-                <th><input type="number" name="personal_hours" value="${personalHours}" placeholder="0" readonly></th>
-                <th><input type="number" name="holiday_hours" value="${holidayHours}" placeholder="0" readonly></th>
-                <th><input type="number" name="gifted_hours" value="${giftedHours}" placeholder="0" readonly></th>
-                <th><input type="number" name="total_hours" value="${totalHours}" placeholder="0" readonly></th>
-                <th><input type="number" name="available_pto" value="${availablePTO}" placeholder="0" readonly></th>
-                <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Approved'] ? 'checked' : ''}></th>
-            </tr>
-        `;
     }
 
     async function populateTimesheets(records) {
         timesheetsBody.innerHTML = ''; // Clear any existing rows
 
         if (records.length > 0) {
-            let overHours = false;
             for (const record of records) {
                 const fields = record.fields;
                 const employeeNumber = fields['Employee Number'];
 
-                if (!employeeNumber) continue;
+                if (!employeeNumber) continue; // Skip records without Employee Number
 
                 const employeeName = await fetchEmployeeName(employeeNumber);
 
                 const nameContainer = document.createElement('div');
-                nameContainer.classList.add('name-container', 'clickable');
+                nameContainer.classList.add('name-container');
                 nameContainer.textContent = employeeName;
                 nameContainer.addEventListener('click', () => {
+                    // Redirect to the employee's record
                     window.location.href = `employee_record.html?employeeNumber=${employeeNumber}`;
                 });
+                nameContainer.classList.add('clickable');
                 timesheetsBody.appendChild(nameContainer);
 
                 const table = document.createElement('table');
@@ -125,14 +88,12 @@ document.addEventListener("DOMContentLoaded", async function () {
                     <thead>
                         <tr>
                             <th class="date-column">Date Ending</th>
-                            <th class="narrow-column">Employee #</th>
                             <th class="narrow-column">Hours Worked</th>
-                            <th class="narrow-column">PTO Hours Used</th>
-                            <th class="narrow-column">Personal Hours Used</th>
-                            <th class="narrow-column">Holiday Hours Used</th>
+                            <th class="narrow-column">PTO Hours used</th>
+                            <th class="narrow-column">Personal Hours used</th>
+                            <th class="narrow-column">Holiday Hours used</th>
                             <th class="narrow-column">Gifted Hours</th>
                             <th class="narrow-column">Total Hours</th>
-                            <th class="narrow-column">Available PTO Hours</th>
                             <th class="narrow-column">Approve</th>
                         </tr>
                     </thead>
@@ -142,14 +103,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 `;
 
                 timesheetsBody.appendChild(table);
-
-                const totalHours = fields['Total Hours Worked'] + fields['PTO Time Used'] + fields['Personal Time Used'] + fields['Holiday Hours Used'];
-                if (totalHours > 40) {
-                    overHours = true;
-                }
-            }
-            if (overHours) {
-                displayOverHoursMessage();
             }
         } else {
             const noRecordsRow = document.createElement('div');
@@ -159,40 +112,34 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    function handleCheckboxChange(event) {
-        if (event.target.classList.contains('approve-checkbox')) {
-            const checkbox = event.target;
-            const recordId = checkbox.getAttribute('data-record-id');
-            updateApprovalStatus(recordId, checkbox.checked);
-        }
-    }
+    function generateRows(fields, recordId) {
+        const hoursWorked = fields['Total Hours Worked'] || 0;
+        const ptoHours = fields['PTO Time Used'] || 0;
+        const personalHours = fields['Personal Time Used'] || 0;
+        const holidayHours = fields['Holiday Hours Used'] || 0;
 
-    async function fetchAvailableHours(employeeName) {
-        try {
-            const employeeUrl = `https://api.airtable.com/v0/${ptoBaseId}/${ptoTableId}?filterByFormula=${encodeURIComponent(`{Full Name}='${employeeName}'`)}`;
-            const response = await fetch(employeeUrl, { headers });
-            const data = await response.json();
+        const giftedHours = hoursWorked > 0 ? Math.min(3, 40 - holidayHours) : 0;
+        const totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours + giftedHours);
 
-            if (data.records.length > 0) {
-                const employee = data.records[0].fields;
-                const availablePTO = employee['PTO Hours'] || 0;
-                const availablePersonalHours = employee['Personaltime'] || 0;
-                return { availablePTO, availablePersonalHours };
-            } else {
-                console.error('No employee found with the given name.');
-                return { availablePTO: 0, availablePersonalHours: 0 };
-            }
-        } catch (error) {
-            console.error('Error fetching available hours:', error);
-            return { availablePTO: 0, availablePersonalHours: 0 };
-        }
+        return `
+            <tr>
+                <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
+                <th><input type="number" name="hours_worked" value="${hoursWorked}" placeholder="0" readonly></th>
+                <th><input type="number" name="pto_hours" value="${ptoHours}" placeholder="0" readonly></th>
+                <th><input type="number" name="personal_hours" value="${personalHours}" placeholder="0" readonly></th>
+                <th><input type="number" name="holiday_hours" value="${holidayHours}" placeholder="0" readonly></th>
+                <th><input type="number" name="gifted_hours" value="${giftedHours}" placeholder="0" readonly></th>
+                <th><input type="number" name="total_hours" value="${totalHours}" placeholder="0" readonly></th>
+                <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Approved'] ? 'checked' : ''}></th>
+            </tr>
+        `;
     }
 
     async function updateApprovalStatus(recordId, isApproved) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
         const body = JSON.stringify({
             fields: {
-                Approved: isApproved ? 'Approved' : 'Approve'
+                Approved: isApproved
             }
         });
 
@@ -206,53 +153,38 @@ document.addEventListener("DOMContentLoaded", async function () {
                 body
             });
             if (!response.ok) throw new Error(`Failed to update approval status: ${response.statusText}`);
-            console.log('Approval status updated:', await response.json());
+            const data = await response.json();
+            console.log('Approval status updated:', data);
         } catch (error) {
             console.error('Error updating approval status:', error);
         }
     }
 
+    function handleCheckboxChange(event) {
+        const checkbox = event.target;
+        const recordId = checkbox.getAttribute('data-record-id');
+        updateApprovalStatus(recordId, checkbox.checked);
+    }
+
+    timesheetsBody.addEventListener('change', handleCheckboxChange);
+
     function handleCheckAll() {
-        const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
-        const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
-
-        if (allChecked) {
+      
+            const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
             checkboxes.forEach(checkbox => {
-                checkbox.checked = false;
-                updateApprovalStatus(checkbox.getAttribute('data-record-id'), false);
+                checkbox.checked = !allChecked;
+                const recordId = checkbox.getAttribute('data-record-id');
+                updateApprovalStatus(recordId, !allChecked);
             });
-            checkAllButton.textContent = 'Check All';
-        } else {
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = true;
-                updateApprovalStatus(checkbox.getAttribute('data-record-id'), true);
-            });
-            checkAllButton.textContent = 'Uncheck All';
-        }
-    }
-
-    function handleLogout() {
-        localStorage.removeItem('userEmail');
-        window.location.href = 'index.html';
-    }
-
-    async function refreshData() {
-        const supervisorName = await fetchSupervisorName(supervisorEmail);
-        if (supervisorName) {
-            fetchTimesheets(supervisorName);
-        } else {
-            console.error('Supervisor not found');
-        }
+            allChecked = !allChecked;
+            checkAllButton.textContent = allChecked ? "Deselect All" : "Select All";
+      
     }
 
     function exportToExcel() {
+        // Collect data
+        let data = [];
         const tables = timesheetsBody.querySelectorAll('.time-entry-table');
-        const wsData = [];
-
-        // Add header row
-        const header = ["Employee Name", "Employee Number", "Date Ending", "Hours Worked", "PTO Hours Used", "Personal Hours Used", "Holiday Hours Used", "Gifted Hours", "Total Hours", "Available PTO Hours"];
-        wsData.push(header);
-
         tables.forEach(table => {
             const nameContainer = table.previousElementSibling;
             const employeeName = nameContainer.textContent;
@@ -260,22 +192,24 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             rows.forEach(row => {
                 const date = row.querySelector('input[name="dateEnding"]').value;
-                const employeeNumber = row.querySelector('th:nth-child(2)').textContent;
                 const hoursWorked = row.querySelector('input[name="hours_worked"]').value;
                 const ptoHours = row.querySelector('input[name="pto_hours"]').value;
                 const personalHours = row.querySelector('input[name="personal_hours"]').value;
                 const holidayHours = row.querySelector('input[name="holiday_hours"]').value;
                 const giftedHours = row.querySelector('input[name="gifted_hours"]').value;
                 const totalHours = row.querySelector('input[name="total_hours"]').value;
-                const availablePTO = row.querySelector('input[name="available_pto"]').value;
 
-                wsData.push([employeeName, employeeNumber, date, hoursWorked, ptoHours, personalHours, holidayHours, giftedHours, totalHours, availablePTO]);
+                data.push([employeeName, date, hoursWorked, ptoHours, personalHours, holidayHours, giftedHours, totalHours]);
             });
         });
 
         // Convert to CSV format
         let csvContent = "data:text/csv;charset=utf-8," 
-            + wsData.map(row => row.join(",")).join("\n");
+            + "Employee Name,Date Ending,Hours Worked,PTO Hours Used,Personal Hours Used,Holiday Hours Used,Gifted Hours,Total Hours,Approved\n";
+
+        data.forEach(row => {
+            csvContent += row.join(",") + "\n";
+        });
 
         // Create a link and trigger download
         const encodedUri = encodeURI(csvContent);
@@ -286,23 +220,30 @@ document.addEventListener("DOMContentLoaded", async function () {
         link.click();
     }
 
-    function toggleFilter() {
-        showApproved = !showApproved;
-        filterButton.textContent = showApproved ? 'Show All' : 'Show Approved';
-        refreshData();
-    }
-
-    async function initialize() {
+    async function refreshData() {
         const supervisorName = await fetchSupervisorName(supervisorEmail);
         if (supervisorName) {
-            fetchTimesheets(supervisorName);
+            await fetchTimesheets(supervisorName);
         } else {
-            console.error('Supervisor not found');
+            console.error('No supervisor found with email:', supervisorEmail);
         }
-
-        // Refresh data every 560000 milliseconds (approximately 9 minutes)
-        setInterval(refreshData, 560000);
     }
 
-    initialize();
+    // Initial fetch
+    await refreshData();
+
+    document.getElementById('logout-button').addEventListener('click', function (event) {
+        event.preventDefault();
+        localStorage.removeItem('userEmail');
+        window.location.href = 'index.html';
+    });
+
+    if (userEmailElement) {
+        userEmailElement.addEventListener('click', function () {
+            window.location.href = 'timesheet.html';
+        });
+    }
+
+    // Refresh data every 60 seconds
+    setInterval(refreshData, 120000);
 });

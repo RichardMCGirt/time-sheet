@@ -228,7 +228,14 @@ document.addEventListener("DOMContentLoaded", async function() {
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
                 const isApproved = record['Approve'] || false;
-                document.getElementById('approvedCheckbox').checked = isApproved;
+                const approvalStatusElement = document.getElementById('approval-status');
+                if (isApproved) {
+                    approvalStatusElement.textContent = 'Approved';
+                    approvalStatusElement.style.color = 'green';
+                } else {
+                    approvalStatusElement.textContent = 'Not Approved';
+                    approvalStatusElement.style.color = 'red';
+                }
                 console.log('Approval status:', isApproved);
             } else {
                 console.log('No approval status data found for user');
@@ -238,6 +245,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             alert('Failed to fetch approval status. Error: ' + error.message);
         }
     }
+    
 
     function startCountdown(endDate) {
         const endDateTime = new Date(endDate).getTime();
