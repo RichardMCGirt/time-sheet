@@ -53,6 +53,7 @@ body {
     padding: 14px 20px;
     text-decoration: none;
     transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: #16a085;
 }
 
 .navbar ul li a:hover {
@@ -243,7 +244,7 @@ input[type="date"]:-webkit-autofill {
 .form-label {
     color: #ecf0f1;
     font-weight: bold;
-    
+    background-color: #34495e;
 }
 
 input[type="number"] {
@@ -308,7 +309,7 @@ input[type="date"]:-webkit-autofill {
 }
 
 .reset-button {
-    background-color: ;
+    background-color: #e74c3c; /* Set a default color */
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
@@ -317,11 +318,14 @@ input[type="date"]:-webkit-autofill {
     font-weight: bold;
     cursor: pointer;
     margin-top: 20px;
-    transition: background-color 0.3s ease;
-    margin-left: 1600px;
-    border: #ecf0f1;
-    border-color: #ecf0f1;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Add color transition */
 }
+
+.reset-button:hover {
+    background-color: black;
+    color: white;
+}
+
 
 .reset-button:hover {
     background-color: black;
