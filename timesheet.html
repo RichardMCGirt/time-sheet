@@ -48,11 +48,15 @@
         <section id="time-entry" class="time-entry">
             <form id="time-entry-form" class="time-entry-form">
                 <div class="form-group">
-                    <label for="week-ending" class="Week-Ending">Week Ending (Wednesday):</label>
-                    <input type="date" id="week-ending" name="week_ending" required style="font-size: 20px;" width="20px">
+                    <label for="week-ending" class="week-ending" style="display: block;">Week Ending (Wednesday):</label>
+                    <input type="date" id="week-ending" name="week_ending" required style="font-size: 20px; width: 100%; box-sizing: border-box;">
                     
-                <label for="approved" class="approved-label">Approved:</label>
-                <input type="checkbox" id="approvedCheckbox" name="approved">
+                    <label for="approved" class="approved-label" style="display: block; margin-left: 190px;">Approved:</label>
+                    <input type="checkbox" id="approvedCheckbox" name="approved" style="margin-left: 5px;">
+                </div>
+            </form>
+        </section>
+        
             </div>
             <button id="playPauseButton" class="play-pause-button">Play</button>
 
@@ -173,9 +177,11 @@
             <td class="narrow-column"><input type="number" name="Holiday_hours7" min="0" step="1" class="form-control time-input narrow-input"></td>
                             <td style="text-align: center;"><input type="checkbox" id="did-not-work-7" name="did_not_work7" ></td>
                         </tr>
+                     
                     </tbody>
+                  
                 </table>
-                <button id="reset-button" class="submit-button">Reset</button>
+                <button id="reset-button" class="reset-button">Reset</button>
             </form>
             <br>
             <br>
