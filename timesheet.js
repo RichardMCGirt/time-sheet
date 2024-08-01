@@ -741,35 +741,60 @@ document.addEventListener("DOMContentLoaded", async function() {
         inputs[index].focus();
     }
 
-    function manageBackgroundSound() {
-        const soundUrl = '9 to 5 - Dolly Parton'; // Replace 'your-folder/sound-file.mp3' with the actual path
-        let audio = new Audio(soundUrl);
+    function shouldPlayMusic() {
+        const userEmailElement = document.getElementById('user-email');
+        return userEmailElement && userEmailElement.textContent.trim() !== 'jason.smith@vanirinstalledsales.com';
+    }
+    
+    // Usage example:
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const playPauseButton = document.getElementById('playPauseButton');
 
-        function playSound() {
-            audio.loop = true;
-            audio.play().catch(error => console.log('Error playing audio:', error));
+    // Function to update playPauseButton text content
+    function updateButtonText() {
+        if (playPauseButton.textContent === 'Pause') {
+            playPauseButton.textContent = 'Play';
+        } else {
+            playPauseButton.textContent = 'Pause';
         }
-
-        if (localStorage.getItem('soundPlaying') === 'true') {
-            playSound();
-        }
-
-        window.addEventListener('beforeunload', () => {
-            if (!audio.paused) {
-                localStorage.setItem('soundPlaying', 'true');
-            } else {
-                localStorage.removeItem('soundPlaying');
-            }
-        });
-
-        window.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('soundPlaying') === 'true') {
-                playSound();
-            }
-        });
     }
 
-    manageBackgroundSound();
+    // Always play the audio when the page loads if Jason Smith is not logged in
+    if (backgroundMusic && playPauseButton && shouldPlayMusic()) {
+        backgroundMusic.currentTime = 9; // Start the song 9 seconds in
+        backgroundMusic.play();
+        playPauseButton.textContent = 'Pause';
+        sessionStorage.setItem('isMusicPlaying', 'true');
+
+        // Handle play/pause button click
+        playPauseButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default button behavior (like form submission)
+            if (backgroundMusic.paused) {
+                backgroundMusic.play();
+                playPauseButton.textContent = 'Pause';
+                sessionStorage.setItem('isMusicPlaying', 'true');
+            } else {
+                backgroundMusic.pause();
+                playPauseButton.textContent = 'Play';
+                sessionStorage.setItem('isMusicPlaying', 'false');
+            }
+        });
+
+        // Store the music state on play and pause
+        backgroundMusic.onplay = function() {
+            sessionStorage.setItem('isMusicPlaying', 'true');
+        };
+
+        backgroundMusic.onpause = function() {
+            sessionStorage.setItem('isMusicPlaying', 'false');
+            updateButtonText(); // Call the function to update the button text content
+        };
+    } else {
+        // Hide the play/pause button if music should not be played
+        if (playPauseButton) {
+            playPauseButton.style.display = 'none';
+        }
+    }
 
     function showPickerOnFocus() {
         const timeInputs = document.querySelectorAll('select.time-dropdown, input[type="number"]');

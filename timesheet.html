@@ -6,7 +6,7 @@
     <title>Dashboard - Time Tracking Software</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="text-align: center;">
+<body>
     <main>
         <header>
             <div class="header-left">
@@ -17,18 +17,18 @@
                 <label for="personal-time">Personal time used (hours):</label>
                 <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input">
             </div>
-            <div id="countdown-container" style="font-size: 18px; color: white; margin-top: 10px;">
+            <div id="countdown-container">
                 <h3>Personal Hours expire in</h3>
-                <div id="countdown" style="font-size: 18px; color: white;"></div>
+                <div id="countdown"></div>
             </div>
             <div class="info-container">
                 <div id="pto-display">
                     <p>PTO Hours Available</p>
-                    <div id="pto-hours-display" min="0">Loading...</div>
+                    <div id="pto-hours-display">Loading...</div>
                 </div>
                 <div id="personal-display">
                     <p>Personal Time Available</p>
-                    <div id="personal-time-display" min="0"></div>
+                    <div id="personal-time-display"></div>
                 </div>
             </div>
             <div class="header-right">
@@ -36,26 +36,24 @@
                     <span id="user-email" class="clickable">example@example.com</span>
                     <a href="#" id="logout-button" class="logout-button">Logout</a>
                     <button id="convert-to-csv-button">Convert to CSV</button>
-
                 </div>
+            </div>
         </header>
         <nav class="navbar">
             <ul>
                 <li><a href="timeoff.html">Request Time Off</a></li>
             </ul>
         </nav>
-
         <section id="time-entry" class="time-entry">
             <form id="time-entry-form" class="time-entry-form">
                 <div class="form-group">
-                    <label for="week-ending" class="Week-Ending">Week Ending (Wednesday):</label>
-                    <input type="date" id="week-ending" name="week_ending" required style="font-size: 20px;" width="20px">
-                    
-                <label for="approved" class="approved-label">Approved:</label>
-                <input type="checkbox" id="approvedCheckbox" name="approved">
-            </div>
+                    <label for="week-ending">Week Ending (Wednesday):</label>
+                    <input type="date" id="week-ending" name="week_ending" required>
+                    <label for="approved">Approved:</label>
+                    <input type="checkbox" id="approvedCheckbox" name="approved">
+                </div>
                 <button id="playPauseButton" class="play-pause-button">Play</button>
-
+                <button id="reset-button" class="reset-button">Reset</button>
                 <table id="time-entry-table" class="time-entry-table">
                     <thead>
                         <tr>
@@ -221,7 +219,6 @@
     <script src="timesheet.js"></script>
     <div id="script-placeholder"></div>
     <script src="disable-script.js"></script>
-    <script src="musicControl.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
