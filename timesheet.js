@@ -255,26 +255,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    function toggleWorkInputs(index, didNotWork) {
-        console.log(`Toggling work inputs for index ${index}:`, didNotWork);
-        const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'];
-        timeFields.forEach(field => {
-            const input = elements.timeEntryForm.elements[`${field}${index + 1}`];
-            if (didNotWork && !input.dataset.originalValue) {
-                input.dataset.originalValue = input.value;
-            }
-            input.disabled = didNotWork;
-            input.value = didNotWork ? '--:--' : input.dataset.originalValue || '';
-            if (!didNotWork) {
-                delete input.dataset.originalValue;
-            }
-        });
-        document.getElementById(`hours-worked-today${index + 1}`).textContent = didNotWork ? '0.00' : document.getElementById(`hours-worked-today${index + 1}`).textContent;
-        if (!didNotWork) {
-            calculateTotalTimeWorked();
-        }
-        saveFormData();
-    }
+    
 
     function calculateTotalTimeWorked() {
         console.log('Calculating total time worked...');
