@@ -80,6 +80,7 @@ header {
     color: var(--text-color);
 }
 
+
 .logout-button,
 .toggle-button {
     font-size: 16px;

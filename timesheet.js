@@ -215,6 +215,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     async function fetchApprovalStatus() {
+
+    
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
        
         try {
@@ -227,13 +229,13 @@ document.addEventListener("DOMContentLoaded", async function() {
             const data = await response.json();
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
-                const isApproved = record['Approve'] || false;
+                const isApproved = record['Approved'] === true;
                 const approvalStatusElement = document.getElementById('approval-status');
                 if (isApproved) {
-                    approvalStatusElement.textContent = 'Approved';
+                    approvalStatusElement.textContent = 'Time sheet approved';
                     approvalStatusElement.style.color = 'green';
                 } else {
-                    approvalStatusElement.textContent = 'Not Approved';
+                    approvalStatusElement.textContent = 'Time sheet not approved';
                     approvalStatusElement.style.color = 'red';
                 }
                 console.log('Approval status:', isApproved);
@@ -245,6 +247,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             alert('Failed to fetch approval status. Error: ' + error.message);
         }
     }
+    
     
 
     function startCountdown(endDate) {
