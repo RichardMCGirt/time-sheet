@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const timeInputs = document.querySelectorAll('input[type="time"]');
     const numberInputs = document.querySelectorAll('input[type="number"]');
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const rowCheckboxes = document.querySelectorAll('input[id^="did-not-work"]');
 
     function checkInputs() {
         let showResetButton = false;
@@ -99,6 +100,45 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Initial check to set the reset button state correctly on page load
     checkInputs();
+
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function(event) {
+            const row = event.target.closest('tr');
+            const timeInputsInRow = row.querySelectorAll('input[type="time"]');
+            const numberInputsInRow = row.querySelectorAll('input[type="number"]');
+
+            if (event.target.checked) {
+                // Save current values to local storage
+                const rowIndex = row.getAttribute('data-day');
+                const rowData = {};
+                timeInputsInRow.forEach(input => {
+                    rowData[input.name] = input.value;
+                    input.value = '';
+                    input.disabled = true;
+                });
+                numberInputsInRow.forEach(input => {
+                    rowData[input.name] = input.value;
+                    input.value = '';
+                    input.disabled = true;
+                });
+                localStorage.setItem(`rowData${rowIndex}`, JSON.stringify(rowData));
+            } else {
+                // Restore values from local storage
+                const rowIndex = row.getAttribute('data-day');
+                const rowData = JSON.parse(localStorage.getItem(`rowData${rowIndex}`)) || {};
+                timeInputsInRow.forEach(input => {
+                    input.value = rowData[input.name] || '';
+                    input.disabled = false;
+                });
+                numberInputsInRow.forEach(input => {
+                    input.value = rowData[input.name] || '';
+                    input.disabled = false;
+                });
+                localStorage.removeItem(`rowData${rowIndex}`);
+            }
+            calculateTotalTimeWorked();
+        });
+    });
 
     await fetchPtoHours();
     await fetchPersonalTime();
@@ -147,7 +187,6 @@ document.addEventListener("DOMContentLoaded", async function() {
                 checkbox.type = 'checkbox';
                 checkbox.id = checkboxId;
                 checkbox.name = `did_not_work${index + 1}`;
-                checkbox.addEventListener('change', (event) => toggleWorkInputs(index, event.target.checked));
                 const cell = document.createElement('td');
                 cell.appendChild(checkbox);
                 inputField.parentElement.parentElement.appendChild(cell);
@@ -173,28 +212,28 @@ document.addEventListener("DOMContentLoaded", async function() {
             console.error('Error fetching Personal END Date:', error);
         }
     }
-    
+
     function startCountdown(endDate) {
         const endDateTime = new Date(endDate).getTime();
         const countdownElement = document.getElementById('countdown');
-    
+
         const updateCountdown = () => {
             const now = new Date().getTime();
             const distance = endDateTime - now;
-    
+
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-    
+
             countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    
+
             if (distance < 0) {
                 clearInterval(interval);
                 countdownElement.innerHTML = "EXPIRED";
             }
         };
-    
+
         updateCountdown();
         const interval = setInterval(updateCountdown, 1000); // Set interval to 1 second
     }
@@ -255,7 +294,47 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    
+    async function fetchPersonalEndDate() {
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch Personal END Date: ${response.statusText}`);
+            const data = await response.json();
+            if (data.records.length > 0) {
+                const personalEndDate = data.records[0].fields['Personal END Date'];
+                startCountdown(personalEndDate);
+            } else {
+                console.log('No Personal END Date found for user');
+            }
+        } catch (error) {
+            console.error('Error fetching Personal END Date:', error);
+        }
+    }
+
+    function startCountdown(endDate) {
+        const endDateTime = new Date(endDate).getTime();
+        const countdownElement = document.getElementById('countdown');
+
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const distance = endDateTime - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            if (distance < 0) {
+                clearInterval(interval);
+                countdownElement.innerHTML = "EXPIRED";
+            }
+        };
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000); // Set interval to 1 second
+    }
 
     function calculateTotalTimeWorked() {
         console.log('Calculating total time worked...');
@@ -331,7 +410,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     function validatePtoTimeInput() {
         const ptoTimeValue = parseFloat(ptoTimeInput.textContent) || 0;
         const maxPtoHours = parseFloat(ptoHoursDisplay.textContent) || 0;
-        
+
         if (ptoTimeValue > maxPtoHours) {
             ptoTimeInput.textContent = maxPtoHours.toFixed(2);
             alert(`PTO time cannot exceed ${maxPtoHours.toFixed(2)} hours`);

@@ -179,6 +179,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return maxIndex + 1;
     }
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"][id^="did-not-work-"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const row = this.closest('tr');
+                if (this.checked) {
+                    clearTimeInputs(row);
+                    setHoursWorkedToZero(row);
+                }
+            });
+        });
+    
+        function clearTimeInputs(row) {
+            const timeInputs = row.querySelectorAll('input[type="time"]');
+            timeInputs.forEach(input => {
+                input.value = '';
+            });
+        }
+    
+        function setHoursWorkedToZero(row) {
+            const hoursWorked = row.querySelector('span[id^="hours-worked-today"]');
+            hoursWorked.textContent = '0';
+        }
+    });
+    
 
     function handleFormSubmit() {
         const startDate = document.getElementById('startDate').value;
