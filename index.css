@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap');
 
 :root {
     --bg-gradient-start: #283E51;
@@ -10,11 +10,12 @@
     --input-text-color: #ecf0f1;
     --highlight-color: #e67e22;
     --highlight-hover-color: #d35400;
-    --joke-text-color: #f5f5f5; /* New variable for joke text color */
+    --joke-text-color: #f5f5f5;
+    --success-text-color: #2ecc71;
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Playfair Display', serif;
     background: linear-gradient(to right, var(--bg-gradient-start), var(--bg-gradient-end));
     display: flex;
     justify-content: center;
@@ -49,7 +50,7 @@ h1 {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
-    background-color: #ecf0f1; /* Ensuring the logo has a contrasting background */
+    background-color: #ecf0f1;
     padding: 15px;
     border-radius: 12px;
 }
@@ -123,6 +124,12 @@ h1 {
     display: none;
 }
 
+#login-success {
+    color: var(--success-text-color);
+    margin-top: 20px;
+    font-weight: 600;
+}
+
 #easter-egg,
 #easter-egg-rm {
     position: fixed;
@@ -133,7 +140,7 @@ h1 {
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     font-size: 14px;
-    z-index: 1000; /* Ensure it appears above other content */
+    z-index: 1000;
 }
 
 #easter-egg {
@@ -141,7 +148,7 @@ h1 {
 }
 
 #easter-egg-rm {
-    right: 150px; /* Offset to prevent overlap with the other Easter egg */
+    right: 150px;
 }
 
 @keyframes slideIn {

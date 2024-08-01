@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <main>
@@ -23,13 +24,12 @@
                             <label for="password" class="form-label">Password</label>
                             <input type="password" id="password" name="password" class="input-text" required>
                         </div>
-
                     </div>
                 </form>
                 <button id="loginButton" class="submit-button" type="button">Login</button>
-
                 <br>
                 <button id="forgotPasswordButton" class="forgot-password-button">Forgot Password?</button>
+                <p id="login-success" class="hidden">Login successful!</p>
             </div>
         </section>
         <br>
@@ -38,27 +38,21 @@
         <section id="joke-section">
             <h2>Today's Joke</h2>
             <p id="joke-text"></p>
-</section>
-            <div id="easter-egg" class="hidden">Company founded in 2016</div>
-            <div id="easter-egg-rm" class="hidden">Developed by Richard McGirt</div>
-
-
-               
+        </section>
+        <div id="easter-egg" class="hidden">Company founded in 2016</div>
+        <div id="easter-egg-rm" class="hidden">Developed by Richard McGirt</div>
         <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
     </main>
-
     <script src="login.js"></script>
     <div id="script-placeholder"></div>
     <script src="disable-script.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/airtable/bundles/airtable.browser.js"></script>
     <script>
-    document.getElementById('forgotPasswordButton').addEventListener('click', function() {
-        window.location.href = 'forgot_password.html';
-    });
+        document.getElementById('forgotPasswordButton').addEventListener('click', function() {
+            window.location.href = 'forgot_password.html';
+        });
 
-       // Easter egg functionality
-       document.addEventListener('keydown', function(event) {
+        document.addEventListener('keydown', function(event) {
             if (event.ctrlKey && event.shiftKey && event.key === 'E') {
                 const easterEgg = document.getElementById('easter-egg');
                 if (easterEgg) {
@@ -66,8 +60,8 @@
                 }
             }
         });
-             // Easter egg functionality for developer credit
-             document.addEventListener('keydown', function(event) {
+
+        document.addEventListener('keydown', function(event) {
             if (event.ctrlKey && event.shiftKey && event.key === 'R') {
                 const easterEggRM = document.getElementById('easter-egg-rm');
                 if (easterEggRM) {

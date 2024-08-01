@@ -3,11 +3,12 @@ const baseId = 'app9gw2qxhGCmtJvW';
 const tableId = 'tbljmLpqXScwhiWTt/';
 
 // DOM elements
-const jokeText = document.getElementById('joke-text'); // Element to display the joke
+const jokeText = document.getElementById('joke-text');
 const loginButton = document.getElementById('loginButton');
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const playPauseButton = document.getElementById('playPauseButton');
+const loginSuccessMessage = document.getElementById('login-success');
 
 // Add input event listener to start/pause music based on input fields
 emailInput.addEventListener('input', handleInput);
@@ -71,6 +72,7 @@ async function login() {
                 playPauseButton.style.display = 'block'; // Show the play/pause button
             }
 
+            loginSuccessMessage.classList.remove('hidden'); // Show success message
             window.location.href = 'timesheet.html';
         } else {
             alert('Invalid email or password');
@@ -115,13 +117,8 @@ function handleKeyDown(event) {
     if (event.key === '@') {
         const emailValue = emailInput.value;
         if (!emailValue.includes('@vanirinstalledsales.com')) {
-            // Prevent default '@' behavior
             event.preventDefault();
-
-            // Append the domain
             emailInput.value = `${emailValue}@vanirinstalledsales.com`;
-
-            // Move cursor to the end of the input
             emailInput.setSelectionRange(emailInput.value.length, emailInput.value.length);
         }
     }
@@ -163,8 +160,6 @@ function toggleMusic() {
     }
     updateButtonText();
 }
-
-
 
 function updateButtonText() {
     const backgroundMusic = document.getElementById('backgroundMusic');
