@@ -20,7 +20,7 @@
                 <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input">
             </div>
             <div id="countdown-container" style="font-size: 18px; color: white; margin-top: 10px;">
-                <h3>Personal Hours expire in</h3>
+                <h3 id="countdown-header">Personal Hours expire in</h3>
                 <div id="countdown" style="font-size: 18px; color: white;"></div>
             </div>
             <div class="info-container">
@@ -289,6 +289,25 @@ function initializeTimeDropdowns() {
     // Initial check to set the correct visibility of the summary section on page load
     checkInputsAndToggleSummary();
 }
+
+function updateHeaderText() {
+    const personalTime = parseFloat(document.getElementById('personal-time').value) || 0;
+    const header = document.getElementById('countdown-header');
+
+    // Update the header text based on the available personal hours
+    if (personalTime = 0) {
+        header.textContent = 'Personal Hours reset in';
+    } else {
+        header.textContent = 'Personal Hours expire in';
+    }
+}
+
+// Add event listener to the personal time input to call the function on input
+document.getElementById('personal-time').addEventListener('input', updateHeaderText);
+
+// Initial check when the page loads
+updateHeaderText();
+
 
        
     </script>
