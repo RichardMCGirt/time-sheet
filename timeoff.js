@@ -179,31 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return maxIndex + 1;
     }
-    document.addEventListener('DOMContentLoaded', function() {
-        const checkboxes = document.querySelectorAll('input[type="checkbox"][id^="did-not-work-"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const row = this.closest('tr');
-                if (this.checked) {
-                    clearTimeInputs(row);
-                    setHoursWorkedToZero(row);
-                }
-            });
-        });
-    
-        function clearTimeInputs(row) {
-            const timeInputs = row.querySelectorAll('input[type="time"]');
-            timeInputs.forEach(input => {
-                input.value = '';
-            });
-        }
-    
-        function setHoursWorkedToZero(row) {
-            const hoursWorked = row.querySelector('span[id^="hours-worked-today"]');
-            hoursWorked.textContent = '0';
-        }
-    });
-    
 
     function handleFormSubmit() {
         const startDate = document.getElementById('startDate').value;
@@ -261,16 +236,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const recordItem = document.createElement('li');
                     recordItem.className = 'record';
 
-                    const approvedCheckbox = record.fields[`Time off Approved ${i}`] ? '<input type="checkbox" checked disabled>' : '<input type="checkbox" disabled>';
+                    const approved = record.fields[`Time off Approved ${i}`];
+                    const approvedCheckbox = approved ? '<input type="checkbox" checked disabled>' : '<input type="checkbox" disabled>';
                     const daysOff = calculateBusinessDays(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`]);
+                    const reason = record.fields[`Reason ${i}`] || 'N/A';
 
-                    recordItem.innerHTML = 
-                        `
+                    recordItem.innerHTML = `
                         <p><strong>Start Date:</strong> ${record.fields[`Time off Start Date ${i}`]}</p>
                         <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`]}</p>
                         <p><strong>End Date:</strong> ${record.fields[`Time off End Date ${i}`]}</p>
                         <p><strong>End Time:</strong> ${record.fields[`Time off End Time ${i}`]}</p>
                         <p><strong>Days Off (excluding weekends):</strong> ${daysOff}</p>
+                        <p class="reason" style="display: ${approved ? 'none' : 'block'};"><strong>Reason:</strong> ${reason}</p>
                         <p><strong>Approved:</strong> ${approvedCheckbox}</p>
                         <button class="edit-button" data-index="${i}" data-id="${record.id}">Edit</button>
                         <button class="delete-button" data-index="${i}" data-id="${record.id}">Delete</button>`;
@@ -318,6 +295,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         [`Time off Start Time ${index}`]: null,
                         [`Time off End Date ${index}`]: null,
                         [`Time off End Time ${index}`]: null,
+                        [`Reason ${index}`]: null,
+                        [`Time off Approved ${index}`]: null
                     };
 
                     const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${id}`;
@@ -396,6 +375,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 [`Time off Start Time ${i}`]: null,
                                 [`Time off End Date ${i}`]: null,
                                 [`Time off End Time ${i}`]: null,
+                                [`Reason ${i}`]: null,
+                                [`Time off Approved ${i}`]: null
                             };
 
                             const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${record.id}`;
@@ -481,39 +462,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Validation logic for PTO, personal, and holiday hours
 
-function validateHours() {
-    const ptoInput = document.getElementById('pto-input');
-    const personalHoursInput = document.getElementById('personal-hours-input');
-    const holidayHoursInput = document.getElementById('holiday-hours-input'); // Assuming there's an input for holiday hours
+    function validateHours() {
+        const ptoInput = document.getElementById('pto-input');
+        const personalHoursInput = document.getElementById('personal-hours-input');
+        const holidayHoursInput = document.getElementById('holiday-hours-input'); // Assuming there's an input for holiday hours
 
-    const availablePTO = parseFloat(document.getElementById('available-pto').textContent);
-    const availablePersonalHours = parseFloat(document.getElementById('available-personal-hours').textContent);
+        const availablePTO = parseFloat(document.getElementById('available-pto').textContent);
+        const availablePersonalHours = parseFloat(document.getElementById('available-personal-hours').textContent);
 
-    ptoInput.addEventListener('input', function() {
-        if (parseFloat(ptoInput.value) > availablePTO) {
-            ptoInput.setCustomValidity('You cannot request more PTO than available.');
-        } else {
-            ptoInput.setCustomValidity('');
-        }
-    });
+        ptoInput.addEventListener('input', function() {
+            if (parseFloat(ptoInput.value) > availablePTO) {
+                ptoInput.setCustomValidity('You cannot request more PTO than available.');
+            } else {
+                ptoInput.setCustomValidity('');
+            }
+        });
 
-    personalHoursInput.addEventListener('input', function() {
-        if (parseFloat(personalHoursInput.value) > availablePersonalHours) {
-            personalHoursInput.setCustomValidity('You cannot request more personal hours than available.');
-        } else {
-            personalHoursInput.setCustomValidity('');
-        }
-    });
+        personalHoursInput.addEventListener('input', function() {
+            if (parseFloat(personalHoursInput.value) > availablePersonalHours) {
+                personalHoursInput.setCustomValidity('You cannot request more personal hours than available.');
+            } else {
+                personalHoursInput.setCustomValidity('');
+            }
+        });
 
-    holidayHoursInput.addEventListener('input', function() {
-        if (parseFloat(holidayHoursInput.value) > 40) {
-            holidayHoursInput.setCustomValidity('Holiday hours cannot be greater than 40.');
-        } else {
-            holidayHoursInput.setCustomValidity('');
-        }
-    });
-}
+        holidayHoursInput.addEventListener('input', function() {
+            if (parseFloat(holidayHoursInput.value) > 40) {
+                holidayHoursInput.setCustomValidity('Holiday hours cannot be greater than 40.');
+            } else {
+                holidayHoursInput.setCustomValidity('');
+            }
+        });
+    }
 
-document.addEventListener('DOMContentLoaded', validateHours);
-
+    document.addEventListener('DOMContentLoaded', validateHours);
 });

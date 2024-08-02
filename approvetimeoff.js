@@ -161,28 +161,40 @@ document.addEventListener("DOMContentLoaded", function() {
 
                             const approvedCheckbox = document.createElement('input');
                             approvedCheckbox.type = 'checkbox';
-                            approvedCheckbox.checked = record.fields[`Time off Approval Checkbox ${i}`] || false;
+                            approvedCheckbox.checked = record.fields[`Time off Approved ${i}`] || false;
                             approvedCheckbox.dataset.recordId = record.id;
                             approvedCheckbox.dataset.approvalIndex = i;
                             approvedCheckbox.addEventListener('change', handleApprovalChange);
                             requestDiv.appendChild(approvedCheckbox);
 
-                            const denialReason = document.createElement('select');
-                            denialReason.dataset.recordId = record.id;
-                            denialReason.dataset.approvalIndex = i;
-                            denialReason.innerHTML = `
+                            const denialReasonSelect = document.createElement('select');
+                            denialReasonSelect.dataset.recordId = record.id;
+                            denialReasonSelect.dataset.approvalIndex = i;
+                            denialReasonSelect.innerHTML = `
                                 <option value="">Select Denial Reason</option>
                                 <option value="Insufficient PTO">Insufficient PTO</option>
                                 <option value="Project Deadline">Project Deadline</option>
                                 <option value="Team Shortage">Team Shortage</option>
+                                <option value="Other">Other</option>
                             `;
-                            requestDiv.appendChild(denialReason);
+                            denialReasonSelect.addEventListener('change', handleReasonChange);
+                            requestDiv.appendChild(denialReasonSelect);
 
-                            requestElements.push({ requestDiv, startDate, endDate, denialReason });
+                            const denialReasonInput = document.createElement('input');
+                            denialReasonInput.type = 'text';
+                            denialReasonInput.placeholder = 'Enter reason';
+                            denialReasonInput.className = 'denial-reason-input hidden';
+                            denialReasonInput.dataset.recordId = record.id;
+                            denialReasonInput.dataset.approvalIndex = i;
+                            denialReasonInput.addEventListener('blur', handleReasonInputBlur);
+                            requestDiv.appendChild(denialReasonInput);
+
+                            requestElements.push({ requestDiv, startDate, endDate, denialReasonSelect, denialReasonInput });
                             requestsRow.appendChild(requestDiv);
 
                             if (approvedCheckbox.checked) {
-                                denialReason.style.display = 'none';
+                                denialReasonSelect.style.display = 'none';
+                                denialReasonInput.style.display = 'none';
                             }
                         }
                     }
@@ -204,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Handle checkbox change event to update Airtable and hide/show denial reason dropdown
+    // Handle checkbox change event to update Airtable and hide/show denial reason dropdown and input box
     async function handleApprovalChange(event) {
         const checkbox = event.target;
         const recordId = checkbox.dataset.recordId;
@@ -212,19 +224,25 @@ document.addEventListener("DOMContentLoaded", function() {
         const approved = checkbox.checked;
 
         const denialReasonSelect = document.querySelector(`select[data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
+        const denialReasonInput = document.querySelector(`input.denial-reason-input[data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
         const denialReason = denialReasonSelect ? denialReasonSelect.value : '';
 
         if (approved) {
             denialReasonSelect.style.display = 'none';
+            denialReasonInput.style.display = 'none';
         } else {
             denialReasonSelect.style.display = 'block';
+            if (denialReason === 'Other') {
+                denialReasonInput.classList.remove('hidden');
+                denialReasonInput.focus();
+            }
         }
 
         const updateUrl = `${url}/${recordId}`;
         const data = {
             fields: {
-                [`Request Approve ${approvalIndex}`]: denialReason,
-                [`Time off Approval Checkbox ${approvalIndex}`]: approved
+                [`Reason ${approvalIndex}`]: denialReason,
+                [`Time off Approved ${approvalIndex}`]: approved
             }
         };
 
@@ -240,6 +258,56 @@ document.addEventListener("DOMContentLoaded", function() {
             console.log(`Updated approval status for record ${recordId}, index ${approvalIndex}: ${approved}`);
         } catch (error) {
             console.error('Error updating approval status:', error);
+        }
+    }
+
+    // Handle reason dropdown change event
+    function handleReasonChange(event) {
+        const select = event.target;
+        const recordId = select.dataset.recordId;
+        const approvalIndex = select.dataset.approvalIndex;
+        const reason = select.value;
+
+        const input = document.querySelector(`input.denial-reason-input[data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
+        if (reason === 'Other') {
+            input.classList.remove('hidden');
+            input.focus();
+        } else {
+            input.classList.add('hidden');
+            updateReason(recordId, approvalIndex, reason);
+        }
+    }
+
+    // Handle reason input blur event
+    async function handleReasonInputBlur(event) {
+        const input = event.target;
+        const recordId = input.dataset.recordId;
+        const approvalIndex = input.dataset.approvalIndex;
+        const reason = input.value;
+
+        updateReason(recordId, approvalIndex, reason);
+    }
+
+    async function updateReason(recordId, approvalIndex, reason) {
+        const updateUrl = `${url}/${recordId}`;
+        const data = {
+            fields: {
+                [`Reason ${approvalIndex}`]: reason
+            }
+        };
+
+        try {
+            const response = await fetch(updateUrl, {
+                method: 'PATCH',
+                headers: headers,
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update reason');
+            }
+            console.log(`Updated reason for record ${recordId}, index ${approvalIndex}: ${reason}`);
+        } catch (error) {
+            console.error('Error updating reason:', error);
         }
     }
 
