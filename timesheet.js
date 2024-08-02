@@ -215,10 +215,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     async function fetchApprovalStatus() {
-
-    
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-    
         try {
             const response = await fetch(endpoint, {
                 headers: {
@@ -253,9 +250,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             alert('Failed to fetch approval status. Error: ' + error.message);
         }
     }
-    
-    
-    
 
     function startCountdown(endDate) {
         const endDateTime = new Date(endDate).getTime();
@@ -441,6 +435,24 @@ document.addEventListener("DOMContentLoaded", async function() {
             totalHoursWorked += (additionalTimeOutDateTime - additionalTimeInDateTime) / (1000 * 60 * 60);
         }
         return Math.max(0, totalHoursWorked);
+    }
+
+    const form = document.getElementById('summary-form');
+
+    form.addEventListener('submit', function (event) {
+        if (!validatePTOandPersonalHours()) {
+            event.preventDefault();
+            alert('PTO and Personal Hours in the summary exceed the allowed values.');
+        }
+    });
+
+    function validatePTOandPersonalHours() {
+        const ptoHeader = parseFloat(document.getElementById('pto-hours-display').textContent) || 0;
+        const personalHeader = parseFloat(document.getElementById('personal-time-display').textContent) || 0;
+        const ptoSummary = parseFloat(document.getElementById('pto-time').textContent) || 0;
+        const personalSummary = parseFloat(document.getElementById('total-personal-time-display').textContent) || 0;
+
+        return ptoSummary <= ptoHeader && personalSummary <= personalHeader;
     }
 
     function roundToClosestQuarterHour(hours) {
@@ -795,8 +807,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         ];
         return !excludedEmails.includes(email);
     }
-    
-    
+
     // Usage example:
     const backgroundMusic = document.getElementById('backgroundMusic');
     const playPauseButton = document.getElementById('playPauseButton');
