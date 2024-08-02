@@ -134,7 +134,7 @@ function handleInput() {
 
     const firstLetter = (email.charAt(0) || password.charAt(0)).toLowerCase();
 
-    if ((email || password) && firstLetter !== 'j' && firstLetter !== 'r') {
+    if ((email || password) && firstLetter !== 'j' && firstLetter !== 'r' && firstLetter !== 'h' ){
         if (backgroundMusic && backgroundMusic.paused) {
             backgroundMusic.muted = false;
             backgroundMusic.volume = 1.0;

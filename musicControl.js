@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to check if Jason Smith or Richard McGirt is logged in
     function isExemptUserLoggedIn() {
         const userEmail = sessionStorage.getItem('userEmail');
-        return userEmail === 'jason.smith@vanirinstalledsales.com' || userEmail === 'richard.mcgirt@vanirinstalledsales.com';
+        return userEmail === 'jason.smith@vanirinstalledsales.com'  || userEmail === 'Hunter@vanirinstalledsales.com';
     }
 
     // Function to unmute the computer and set the volume to max
