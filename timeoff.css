@@ -166,6 +166,25 @@ input, select, textarea {
     color: var(--input-text-color);
 }
 
+.approved-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+.reason-red {
+    color: red;
+    font-weight: bold;
+}
+.hidden {
+    display: none;
+}
+.success {
+    color: green;
+}
+.error {
+    color: red;
+}
+
 button {
     padding: 10px;
     background-color: var(--button-bg);
