@@ -232,25 +232,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayPreviousRequests(records) {
         requestsList.innerHTML = '';
-
+    
         if (records.length > 0) {
             previousRequestsContainer.classList.remove('hidden');
         } else {
             previousRequestsContainer.classList.add('hidden');
         }
-
+    
         records.forEach(record => {
             for (let i = 1; i <= 10; i++) {
                 if (record.fields[`Time off Start Date ${i}`]) {
                     const recordItem = document.createElement('li');
                     recordItem.className = 'record';
-
+    
                     const approved = record.fields[`Time off Approved ${i}`];
-                    const approvedCheckbox = approved ? '<input type="checkbox" class="approved-checkbox" checked disabled>' : '<input type="checkbox" class="approved-checkbox" disabled>';
+                    const approvedCheckbox = approved ? '<input type="checkbox" class="approved-checkbox" checked disabled>' : '';
+                    const approvedText = approved ? '<p><strong>Approved:</strong>' : '';
                     const daysOff = calculateBusinessDays(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`]);
                     const reason = record.fields[`Reason ${i}`] || 'N/A';
                     const reasonClass = reason !== 'N/A' ? 'reason-red' : '';
-
+    
                     recordItem.innerHTML = `
                         <p><strong>Start Date:</strong> ${record.fields[`Time off Start Date ${i}`]}</p>
                         <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`]}</p>
@@ -258,24 +259,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>End Time:</strong> ${record.fields[`Time off End Time ${i}`]}</p>
                         <p><strong>Days Off (excluding weekends):</strong> ${daysOff}</p>
                         <p class="reason ${reasonClass}" style="display: ${approved ? 'none' : 'block'};"><strong>Reason:</strong> ${reason}</p>
-                        <p><strong>Approved:</strong> ${approvedCheckbox}</p>
+                        ${approvedText}${approvedCheckbox}</p>
                         <button class="edit-button" data-index="${i}" data-id="${record.id}">Edit</button>
                         <button class="delete-button" data-index="${i}" data-id="${record.id}">Delete</button>`;
-
+    
                     requestsList.appendChild(recordItem);
                 }
             }
         });
-
+    
         document.querySelectorAll('.edit-button').forEach(button => {
             button.addEventListener('click', handleEditClick);
         });
-
+    
         document.querySelectorAll('.delete-button').forEach(button => {
             button.addEventListener('click', handleDeleteClick);
         });
     }
-
+    
     function handleEditClick(event) {
         const index = event.target.dataset.index;
         const id = event.target.dataset.id;
