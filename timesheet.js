@@ -787,8 +787,14 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     function shouldPlayMusic() {
         const userEmailElement = document.getElementById('user-email');
-        return userEmailElement && userEmailElement.textContent.trim() !== 'jason.smith@vanirinstalledsales.com';
+        const email = userEmailElement ? userEmailElement.textContent.trim() : '';
+        const excludedEmails = [
+            'jason.smith@vanirinstalledsales.com',
+            'richard.mcgirt@vanirinstalledsales.com'
+        ];
+        return !excludedEmails.includes(email);
     }
+    
     
     // Usage example:
     const backgroundMusic = document.getElementById('backgroundMusic');

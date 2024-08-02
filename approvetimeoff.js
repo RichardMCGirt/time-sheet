@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
                             const approvedCheckbox = document.createElement('input');
                             approvedCheckbox.type = 'checkbox';
-                            approvedCheckbox.checked = record.fields[`Time off Approved ${i}`] || false;
+                            approvedCheckbox.checked = record.fields[`Time off Approval Checkbox ${i}`] || false;
                             approvedCheckbox.dataset.recordId = record.id;
                             approvedCheckbox.dataset.approvalIndex = i;
                             approvedCheckbox.addEventListener('change', handleApprovalChange);
@@ -223,8 +223,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const updateUrl = `${url}/${recordId}`;
         const data = {
             fields: {
-                [`Time off Approved ${approvalIndex}`]: approved,
-                [`Denial Reason ${approvalIndex}`]: denialReason
+                [`Request Approve ${approvalIndex}`]: denialReason,
+                [`Time off Approval Checkbox ${approvalIndex}`]: approved
             }
         };
 

@@ -32,7 +32,7 @@ header {
     background-color: var(--header-bg);
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-bottom: 2px solid white
+    border-bottom: 2px solid var(--border-color); /* Updated to grey */
 }
 
 .header-left .logo {
@@ -72,14 +72,13 @@ header {
     padding: 14px 20px;
     text-decoration: none;
     transition: background-color 0.3s ease, color 0.3s ease;
-    background-color: #16a085;
+    background-color: var(--highlight-color);
 }
 
 .navbar ul li a:hover {
-    background-color: var(--highlight-color);
+    background-color: var(--highlight-hover-color);
     color: var(--text-color);
 }
-
 
 .logout-button,
 .toggle-button {
@@ -92,6 +91,11 @@ header {
     text-decoration: none;
     display: inline-block;
     transition: background-color 0.3s ease;
+}
+
+.logout-button:hover,
+.toggle-button:hover {
+    background-color: var(--button-hover-bg);
 }
 
 .navbar {
@@ -140,7 +144,6 @@ header {
 
 h1, h2 {
     text-align: center;
-    color: var(--header-bg);
     color: white;
 }
 
@@ -203,6 +206,85 @@ button:hover {
 .record button:hover {
     background-color: var(--highlight-hover-color);
 }
+
 .hidden {
     display: none;
+}
+
+/* Media Queries for Mobile Responsiveness */
+@media (max-width: 768px) {
+    .header-right {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .navbar ul {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .navbar ul li a {
+        padding: 10px;
+    }
+
+    .container {
+        width: 90%;
+        padding: 10px;
+    }
+
+    input, select, textarea {
+        padding: 8px;
+    }
+
+    button {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .header-left .logo {
+        height: 40px;
+    }
+
+    .header-right {
+        margin-left: 0;
+        gap: 5px;
+    }
+
+    .navbar ul {
+        gap: 0;
+    }
+
+    .navbar ul li a {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .container {
+        width: 95%;
+    }
+
+    input, select, textarea {
+        padding: 6px;
+    }
+
+    button,
+    .record button {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .record {
+        padding: 5px;
+    }
+
+    .record p {
+        margin: 3px 0;
+    }
 }
