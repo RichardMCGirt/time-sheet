@@ -820,7 +820,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         const excludedEmails = [
             'jason.smith@vanirinstalledsales.com',
             'richard.mcgirt@vanirinstalledsales.com',
-            'hunter@vanirinstalledsales.com'
+            'hunter@vanirinstalledsales.com',
+            'katy@vanirinstalledsales.com'
         ];
         return !excludedEmails.includes(email);
     }

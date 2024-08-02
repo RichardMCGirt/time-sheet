@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
     console.log("User email from local storage:", userEmail);
 
     // If the email is 'hunter@vanirinstalledsales.com', play the audio
-    if (userEmail === 'hunter@vanirinstalledsales.com') {
+    if (userEmail === 'hunter@vanirinstalledsales.com' || userEmail === 'dallas.hudson@vanirinstalledsales.com') {
         console.log("Email matches. Playing audio...");
         const audio = new Audio('old-zildjian-gong-quite-natural-34294.mp3');
         audio.loop = false; // Ensure looping is disabled
