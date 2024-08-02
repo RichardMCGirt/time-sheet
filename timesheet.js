@@ -671,6 +671,23 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    function formatNumber(element) {
+        const value = parseInt(element.innerText, 10) || 0;
+        element.innerText = value.toString();
+    }
+    
+    function formatAllNumbers() {
+        formatNumber(document.getElementById('pto-time'));
+        formatNumber(document.getElementById('total-personal-time-display'));
+        formatNumber(document.getElementById('Holiday-hours'));
+    }
+    
+    // Initial formatting
+    formatAllNumbers();
+    
+    // Automatically reformat values every second
+    setInterval(formatAllNumbers, 1);
+
     function clearForm() {
         console.log('Clearing form...');
         elements.timeEntryForm.reset();
