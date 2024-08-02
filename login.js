@@ -122,6 +122,9 @@ function handleKeyDown(event) {
             emailInput.setSelectionRange(emailInput.value.length, emailInput.value.length);
         }
     }
+    if (event.key === 'p') {
+        handleKeyPPress();
+    }
 }
 
 function handleInput() {
@@ -164,4 +167,20 @@ function toggleMusic() {
 function updateButtonText() {
     const backgroundMusic = document.getElementById('backgroundMusic');
     playPauseButton.textContent = backgroundMusic.paused ? 'Play' : 'Pause';
+}
+
+let pPressCount = 0;
+
+function handleKeyPPress() {
+    pPressCount++;
+    if (pPressCount === 2) {
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        if (!backgroundMusic.paused) {
+            backgroundMusic.pause();
+            sessionStorage.setItem('isMusicPlaying', 'false');
+            updateButtonText();
+        }
+        pPressCount = 0; // Reset counter after pausing
+    }
+    setTimeout(() => { pPressCount = 0; }, 300); // Reset counter if 'p' is not pressed again within 300ms
 }
