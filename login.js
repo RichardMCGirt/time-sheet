@@ -152,6 +152,26 @@ function handleInput() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+    var inputs = document.querySelectorAll('.input-text');
+    
+    inputs.forEach(function (input) {
+        var minWidth = input.style.minWidth;
+        var minWidthValue = parseInt(minWidth, 10);
+
+        function adjustWidth() {
+            var newWidth = ((input.value.length + 1) * 8) + 'px';
+            input.style.width = (parseInt(newWidth, 10) < minWidthValue) ? minWidth : newWidth;
+        }
+
+        adjustWidth(); // Initial width based on default value
+
+        input.addEventListener('input', adjustWidth);
+    });
+});
+
+
+
 function toggleMusic() {
     const backgroundMusic = document.getElementById('backgroundMusic');
     if (backgroundMusic.paused) {

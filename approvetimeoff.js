@@ -413,7 +413,7 @@ document.addEventListener("DOMContentLoaded", function() {
         notificationElement.style.display = 'block';
         setTimeout(() => {
             notificationElement.style.display = 'none';
-        }, 3000);
+        }, 3500);
     }
 
     // Initialize on page load
