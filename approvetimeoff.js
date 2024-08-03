@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const userEmail = localStorage.getItem('userEmail');
     const userEmailElement = document.getElementById('user-email');
+    const notificationElement = document.getElementById('notification');
 
     if (!userEmail) {
         console.log('No user email found, redirecting to index.html');
@@ -180,21 +181,11 @@ document.addEventListener("DOMContentLoaded", function() {
                             denialReasonSelect.addEventListener('change', handleReasonChange);
                             requestDiv.appendChild(denialReasonSelect);
 
-                            const denialReasonInput = document.createElement('input');
-                            denialReasonInput.type = 'text';
-                            denialReasonInput.placeholder = 'Enter reason';
-                            denialReasonInput.className = 'denial-reason-input hidden';
-                            denialReasonInput.dataset.recordId = record.id;
-                            denialReasonInput.dataset.approvalIndex = i;
-                            denialReasonInput.addEventListener('blur', handleReasonInputBlur);
-                            requestDiv.appendChild(denialReasonInput);
-
-                            requestElements.push({ requestDiv, startDate, endDate, denialReasonSelect, denialReasonInput });
+                            requestElements.push({ requestDiv, startDate, endDate, denialReasonSelect });
                             requestsRow.appendChild(requestDiv);
 
                             if (approvedCheckbox.checked) {
                                 denialReasonSelect.style.display = 'none';
-                                denialReasonInput.style.display = 'none';
                             }
                         }
                     }
@@ -216,7 +207,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Handle checkbox change event to update Airtable and hide/show denial reason dropdown and input box
+    // Handle checkbox change event to update Airtable and hide/show denial reason dropdown
     async function handleApprovalChange(event) {
         const checkbox = event.target;
         const recordId = checkbox.dataset.recordId;
@@ -224,24 +215,17 @@ document.addEventListener("DOMContentLoaded", function() {
         const approved = checkbox.checked;
 
         const denialReasonSelect = document.querySelector(`select[data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
-        const denialReasonInput = document.querySelector(`input.denial-reason-input[data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
-        const denialReason = denialReasonSelect ? denialReasonSelect.value : '';
 
         if (approved) {
             denialReasonSelect.style.display = 'none';
-            denialReasonInput.style.display = 'none';
         } else {
             denialReasonSelect.style.display = 'block';
-            if (denialReason === 'Other') {
-                denialReasonInput.classList.remove('hidden');
-                denialReasonInput.focus();
-            }
         }
 
         const updateUrl = `${url}/${recordId}`;
         const data = {
             fields: {
-                [`Reason ${approvalIndex}`]: denialReason,
+                [`Reason ${approvalIndex}`]: '',
                 [`Time off Approved ${approvalIndex}`]: approved
             }
         };
@@ -256,6 +240,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 throw new Error('Failed to update approval status');
             }
             console.log(`Updated approval status for record ${recordId}, index ${approvalIndex}: ${approved}`);
+            showNotification('Record saved successfully!');
         } catch (error) {
             console.error('Error updating approval status:', error);
         }
@@ -268,12 +253,18 @@ document.addEventListener("DOMContentLoaded", function() {
         const approvalIndex = select.dataset.approvalIndex;
         const reason = select.value;
 
-        const input = document.querySelector(`input.denial-reason-input[data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
         if (reason === 'Other') {
-            input.classList.remove('hidden');
+            // Replace the dropdown with an input field
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Enter reason';
+            input.dataset.recordId = recordId;
+            input.dataset.approvalIndex = approvalIndex;
+            input.className = 'denial-reason-input';
+            input.addEventListener('blur', handleReasonInputBlur);
+            select.parentNode.replaceChild(input, select);
             input.focus();
         } else {
-            input.classList.add('hidden');
             updateReason(recordId, approvalIndex, reason);
         }
     }
@@ -285,7 +276,24 @@ document.addEventListener("DOMContentLoaded", function() {
         const approvalIndex = input.dataset.approvalIndex;
         const reason = input.value;
 
-        updateReason(recordId, approvalIndex, reason);
+        // Replace the input field back with the dropdown
+        const select = document.createElement('select');
+        select.dataset.recordId = recordId;
+        select.dataset.approvalIndex = approvalIndex;
+        select.innerHTML = `
+            <option value="">Select Denial Reason</option>
+            <option value="Insufficient PTO">Insufficient PTO</option>
+            <option value="Project Deadline">Project Deadline</option>
+            <option value="Team Shortage">Team Shortage</option>
+            <option value="Other">Other</option>
+        `;
+        select.value = reason === '' ? '' : 'Other';
+        select.addEventListener('change', handleReasonChange);
+        input.parentNode.replaceChild(select, input);
+
+        if (reason !== '') {
+            updateReason(recordId, approvalIndex, reason);
+        }
     }
 
     async function updateReason(recordId, approvalIndex, reason) {
@@ -306,6 +314,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 throw new Error('Failed to update reason');
             }
             console.log(`Updated reason for record ${recordId}, index ${approvalIndex}: ${reason}`);
+            showNotification('Record saved successfully!');
         } catch (error) {
             console.error('Error updating reason:', error);
         }
@@ -396,6 +405,15 @@ document.addEventListener("DOMContentLoaded", function() {
         date.setMinutes(minutes);
         const options = { hour: 'numeric', minute: 'numeric', hour12: true };
         return date.toLocaleTimeString([], options);
+    }
+
+    // Show notification
+    function showNotification(message) {
+        notificationElement.textContent = message;
+        notificationElement.style.display = 'block';
+        setTimeout(() => {
+            notificationElement.style.display = 'none';
+        }, 3000);
     }
 
     // Initialize on page load
