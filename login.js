@@ -153,15 +153,15 @@ function handleInput() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    var emailInput = document.querySelector('.email-input');
-    var passwordInput = document.getElementById('password');
-    var togglePasswordButton = document.getElementById('togglePassword');
+    const emailInput = document.querySelector('.email-input');
+    const passwordInput = document.getElementById('password');
+    const togglePasswordButton = document.getElementById('togglePassword');
 
-    var minWidth = emailInput.style.minWidth;
-    var minWidthValue = parseInt(minWidth, 10);
+    const minWidth = emailInput.style.minWidth;
+    const minWidthValue = parseInt(minWidth, 10);
 
     function adjustWidth() {
-        var newWidth = ((emailInput.value.length + 1) * 8) + 'px';
+        const newWidth = ((emailInput.value.length + 1) * 8) + 'px';
         emailInput.style.width = (parseInt(newWidth, 10) < minWidthValue) ? minWidth : newWidth;
     }
 
@@ -179,9 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
-
-
-
 
 function toggleMusic() {
     const backgroundMusic = document.getElementById('backgroundMusic');

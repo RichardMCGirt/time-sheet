@@ -9,12 +9,14 @@
 </head>
 <body>
     <main>
-        <section id="login-section">
+        <section id="login-section" aria-labelledby="login-heading">
             <div class="login-container">
                 <div class="logo-box">
                     <img src="VANIR-transparent.png" alt="Vanir Installed Sales Logo" class="logo" style="width: 100px;">
                 </div>
-                <form id="login-form" class="login-form">
+                <h1 id="login-heading">Login to Your Account</h1>
+                <form id="login-form" class="login-form" aria-describedby="login-instructions">
+                    <p id="login-instructions">Please enter your email and password to login.</p>
                     <div class="form-fields">
                         <div class="form-group">
                             <label for="email" class="form-label">Email</label>
@@ -33,15 +35,9 @@
                 <br>
                 <button id="forgotPasswordButton" class="forgot-password-button">Forgot Password?</button>
             </div>
+            <p id="login-success" class="hidden">Login successful!</p>
         </section>
-        
-        
-        
-                <p id="login-success" class="hidden">Login successful!</p>
-            </div>
-        </section>
-        <br>
-        <br>
+        <br><br>
         <button id="playPauseButton" class="play-pause-button">Play</button>
         <section id="joke-section">
             <h2>Today's Joke</h2>
@@ -52,9 +48,6 @@
         <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
     </main>
     <script src="login.js"></script>
-    <div id="script-placeholder"></div>
-    <script src="disable-script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/airtable/bundles/airtable.browser.js"></script>
     <script>
         document.getElementById('forgotPasswordButton').addEventListener('click', function() {
             window.location.href = 'forgot_password.html';

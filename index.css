@@ -76,9 +76,10 @@ h1 {
     color: var(--text-color);
     font-weight: 600;
 }
+
 .input-text {
-    max-width: 100%; /* Ensure it doesn't exceed container width */
-    min-width: 200px; /* Set a minimum width */
+    max-width: 100%;
+    min-width: 200px;
     padding: 14px;
     border-radius: 8px;
     border: 1px solid #bdc3c7;
@@ -86,22 +87,11 @@ h1 {
     color: var(--input-text-color);
     background-color: var(--input-bg);
     box-sizing: border-box;
-    display: inline-block; /* Ensure it takes only the necessary width */
+    display: inline-block;
 }
 
 .email-input {
-    width: auto; /* Change to auto to fit text width */
-}
-
-.form-group {
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: bold;
+    width: auto;
 }
 
 .input-container {
@@ -129,10 +119,6 @@ h1 {
     background: #0056b3;
 }
 
-
-
-
-
 .input-text::placeholder {
     color: #bdc3c7;
 }
@@ -144,7 +130,7 @@ h1 {
 }
 
 .submit-button, .forgot-password-button, .play-pause-button {
-    width: 100%; /* Changed to 100% for responsiveness */
+    width: 100%;
     padding: 12px;
     border: none;
     border-radius: 8px;
