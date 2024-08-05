@@ -77,7 +77,6 @@ h1 {
     font-weight: 600;
 }
 .input-text {
-    width: auto; /* Change to auto to fit text width */
     max-width: 100%; /* Ensure it doesn't exceed container width */
     min-width: 200px; /* Set a minimum width */
     padding: 14px;
@@ -89,6 +88,47 @@ h1 {
     box-sizing: border-box;
     display: inline-block; /* Ensure it takes only the necessary width */
 }
+
+.email-input {
+    width: auto; /* Change to auto to fit text width */
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.input-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.toggle-password-button {
+    position: absolute;
+    top: 50%;
+    right: 0px;
+    transform: translateY(-50%);
+    background: #007BFF;
+    border: none;
+    color: white;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.toggle-password-button:hover {
+    background: #0056b3;
+}
+
 
 
 

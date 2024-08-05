@@ -153,22 +153,33 @@ function handleInput() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    var inputs = document.querySelectorAll('.input-text');
-    
-    inputs.forEach(function (input) {
-        var minWidth = input.style.minWidth;
-        var minWidthValue = parseInt(minWidth, 10);
+    var emailInput = document.querySelector('.email-input');
+    var passwordInput = document.getElementById('password');
+    var togglePasswordButton = document.getElementById('togglePassword');
 
-        function adjustWidth() {
-            var newWidth = ((input.value.length + 1) * 8) + 'px';
-            input.style.width = (parseInt(newWidth, 10) < minWidthValue) ? minWidth : newWidth;
+    var minWidth = emailInput.style.minWidth;
+    var minWidthValue = parseInt(minWidth, 10);
+
+    function adjustWidth() {
+        var newWidth = ((emailInput.value.length + 1) * 8) + 'px';
+        emailInput.style.width = (parseInt(newWidth, 10) < minWidthValue) ? minWidth : newWidth;
+    }
+
+    adjustWidth(); // Initial width based on default value
+
+    emailInput.addEventListener('input', adjustWidth);
+
+    togglePasswordButton.addEventListener('click', function () {
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            togglePasswordButton.textContent = 'Hide';
+        } else {
+            passwordInput.type = 'password';
+            togglePasswordButton.textContent = 'Show';
         }
-
-        adjustWidth(); // Initial width based on default value
-
-        input.addEventListener('input', adjustWidth);
     });
 });
+
 
 
 
