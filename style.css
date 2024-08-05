@@ -129,6 +129,7 @@ header {
 
 #summary {
     display: none; /* Initially hidden */
+    font-size: 14px;
 }
 
 .logout-button,
