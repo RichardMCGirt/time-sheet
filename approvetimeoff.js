@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             if (data.records.length > 0) {
                 const employee = data.records[0].fields;
-                const availablePTO = employee['PTO Hours'] || 0;
+                const availablePTO = employee['PTO #'] || 0;
                 const availablePersonalHours = employee['Personaltime'] || 0;
                 return { availablePTO, availablePersonalHours };
             } else {

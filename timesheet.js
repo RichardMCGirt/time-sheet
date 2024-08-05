@@ -289,7 +289,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
-                let availablePTOHours = parseFloat(record['PTOHours']) || 0;
+                let availablePTOHours = parseFloat(record['PTO #']) || 0;
                 recordId = data.records[0].id; // Save the record ID
                 
                 elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
@@ -451,7 +451,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     function validatePTOandPersonalHours() {
         const ptoHeader = parseFloat(document.getElementById('pto-hours-display').textContent) || 0;
         const personalHeader = parseFloat(document.getElementById('personal-time-display').textContent) || 0;
-        const ptoSummary = parseFloat(document.getElementById('pto-time').textContent) || 0;
+        const ptoSummary = parseFloat(document.getElementById('Available-PTO-hours').textContent) || 0;
         const personalSummary = parseFloat(document.getElementById('total-personal-time-display').textContent) || 0;
 
         return ptoSummary <= ptoHeader && personalSummary <= personalHeader;
