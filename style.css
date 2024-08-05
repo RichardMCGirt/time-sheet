@@ -67,6 +67,26 @@ body {
     margin: 20px 0; 
 }
 
+.sticky-submit {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 1000;
+    width: 100%;
+    max-width: 400px;
+}
+
+.sticky-submit:hover {
+    background-color: var(--button-hover-bg);
+}
+
 h3 {
     color: white;
 }
