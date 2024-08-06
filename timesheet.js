@@ -56,7 +56,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     elements.logoutButton.addEventListener('click', handleLogout);
     elements.resetButton.addEventListener('click', resetForm);
     elements.submitButton.addEventListener('click', handleSubmit);
-    elements.loadDataButton.addEventListener('click', loadFormData); // Add event listener to the load data button
 
     const timeInputs = document.querySelectorAll('input[type="time"]');
     const numberInputs = document.querySelectorAll('input[type="number"]');
