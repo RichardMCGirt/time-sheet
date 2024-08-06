@@ -26,14 +26,42 @@ document.addEventListener("DOMContentLoaded", function() {
     function gatherFormData() {
         const formData = {};
         for (let i = 1; i <= 7; i++) {
-            formData[`start${i}`] = document.querySelector(`input[name="start_time${i}"]`).value || '';
-            formData[`lunchs${i}`] = document.querySelector(`input[name="lunch_start${i}"]`).value || '';
-            formData[`lunche${i}`] = document.querySelector(`input[name="lunch_end${i}"]`).value || '';
-            formData[`end${i}`] = document.querySelector(`input[name="end_time${i}"]`).value || '';
-            formData[`additionali${i}`] = document.querySelector(`input[name="Additional_Time_In${i}"]`).value || '';
-            formData[`additionalo${i}`] = document.querySelector(`input[name="Additional_Time_Out${i}"]`).value || '';
+            formData[`start${i}`] = getValue(`input[name="start_time${i}"]`);
+            formData[`lunchs${i}`] = getValue(`input[name="lunch_start${i}"]`);
+            formData[`lunche${i}`] = getValue(`input[name="lunch_end${i}"]`);
+            formData[`end${i}`] = getValue(`input[name="end_time${i}"]`);
+            formData[`additionali${i}`] = getValue(`input[name="Additional_Time_In${i}"]`);
+            formData[`additionalo${i}`] = getValue(`input[name="Additional_Time_Out${i}"]`);
+            formData[`PTO Hours ${i}`] = parseFloat(getValue(`input[name="pto_hours${i}"]`)) || 0;
+            formData[`Personal Hours ${i}`] = parseFloat(getValue(`input[name="personal_hours${i}"]`)) || 0;
+            formData[`Holiday Hours ${i}`] = parseFloat(getValue(`input[name="holiday_hours${i}"]`)) || 0;
+            formData[`Did not work ${i}`] = getCheckboxValue(`input[name="did_not_work${i}"]`);
+    
+            console.log(`Data for day ${i}:`, {
+                start: formData[`start${i}`],
+                lunchs: formData[`lunchs${i}`],
+                lunche: formData[`lunche${i}`],
+                end: formData[`end${i}`],
+                additionali: formData[`additionali${i}`],
+                additionalo: formData[`additionalo${i}`],
+                ptoHours: formData[`PTO Hours ${i}`],
+                personalHours: formData[`Personal Hours ${i}`],
+                holidayHours: formData[`Holiday Hours ${i}`],
+                didNotWork: formData[`Did not work ${i}`]
+            });
         }
         return formData;
+    }
+    
+
+    function getValue(selector) {
+        const element = document.querySelector(selector);
+        return element ? element.value : '';
+    }
+
+    function getCheckboxValue(selector) {
+        const element = document.querySelector(selector);
+        return element ? element.checked : false;
     }
 
     async function sendDataToAirtable(data) {
@@ -111,15 +139,33 @@ document.addEventListener("DOMContentLoaded", function() {
             console.log('Existing record found:', record);
 
             for (let i = 1; i <= 7; i++) {
-                document.querySelector(`input[name="start_time${i}"]`).value = record[`start${i}`] || '';
-                document.querySelector(`input[name="lunch_start${i}"]`).value = record[`lunchs${i}`] || '';
-                document.querySelector(`input[name="lunch_end${i}"]`).value = record[`lunche${i}`] || '';
-                document.querySelector(`input[name="end_time${i}"]`).value = record[`end${i}`] || '';
-                document.querySelector(`input[name="Additional_Time_In${i}"]`).value = record[`additionali${i}`] || '';
-                document.querySelector(`input[name="Additional_Time_Out${i}"]`).value = record[`additionalo${i}`] || '';
+                setValue(`input[name="start_time${i}"]`, record[`start${i}`]);
+                setValue(`input[name="lunch_start${i}"]`, record[`lunchs${i}`]);
+                setValue(`input[name="lunch_end${i}"]`, record[`lunche${i}`]);
+                setValue(`input[name="end_time${i}"]`, record[`end${i}`]);
+                setValue(`input[name="Additional_Time_In${i}"]`, record[`additionali${i}`]);
+                setValue(`input[name="Additional_Time_Out${i}"]`, record[`additionalo${i}`]);
+                setValue(`input[name="pto_hours${i}"]`, record[`PTO Hours${i}`]);
+                setValue(`input[name="personal_hours${i}"]`, record[`Personal Hours${i}`]);
+                setValue(`input[name="holiday_hours${i}"]`, record[`Holiday Hours${i}`]);
+                setCheckboxValue(`input[name="did_not_work${i}"]`, record[`Did not work${i}`]);
             }
         } catch (error) {
             console.error('Error populating form data:', error);
+        }
+    }
+
+    function setValue(selector, value) {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.value = value || '';
+        }
+    }
+
+    function setCheckboxValue(selector, value) {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.checked = value || false;
         }
     }
 
