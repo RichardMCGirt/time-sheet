@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     async function handleWeekEndingChange() {
         console.log('Handling week-ending date change...');
         const selectedDate = new Date(elements.weekEndingInput.value);
-        adjustToTuesday(selectedDate); // Updated function call
+        adjustToWednesday(selectedDate); // Updated function call
         elements.weekEndingInput.value = selectedDate.toISOString().split('T')[0];
         console.log('Adjusted week-ending date:', selectedDate);
     
@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
     
 
-    function adjustToTuesday(date) {
+    function adjustToWednesday(date) {
         const dayOfWeek = date.getDay();
         const offset = (1 - dayOfWeek + 7) % 7;
         date.setDate(date.getDate() + offset);
