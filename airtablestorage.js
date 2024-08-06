@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", function() {
             formData[`end${i}`] = document.querySelector(`input[name="end_time${i}"]`).value || '';
             formData[`additionali${i}`] = document.querySelector(`input[name="Additional_Time_In${i}"]`).value || '';
             formData[`additionalo${i}`] = document.querySelector(`input[name="Additional_Time_Out${i}"]`).value || '';
-          
         }
         return formData;
     }
@@ -89,4 +88,40 @@ document.addEventListener("DOMContentLoaded", function() {
             throw error;
         }
     }
+
+    async function populateFormData() {
+        console.log('Populating form data...');
+        const searchEndpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}?filterByFormula=AND({Email}="${userEmail}")`;
+
+        try {
+            const searchResponse = await fetch(searchEndpoint, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+            const searchData = await searchResponse.json();
+            console.log('Search data:', searchData);
+
+            if (!searchData.records || searchData.records.length === 0) {
+                console.log('No matching record found to populate.');
+                return;
+            }
+
+            const record = searchData.records[0].fields;
+            console.log('Existing record found:', record);
+
+            for (let i = 1; i <= 7; i++) {
+                document.querySelector(`input[name="start_time${i}"]`).value = record[`start${i}`] || '';
+                document.querySelector(`input[name="lunch_start${i}"]`).value = record[`lunchs${i}`] || '';
+                document.querySelector(`input[name="lunch_end${i}"]`).value = record[`lunche${i}`] || '';
+                document.querySelector(`input[name="end_time${i}"]`).value = record[`end${i}`] || '';
+                document.querySelector(`input[name="Additional_Time_In${i}"]`).value = record[`additionali${i}`] || '';
+                document.querySelector(`input[name="Additional_Time_Out${i}"]`).value = record[`additionalo${i}`] || '';
+            }
+        } catch (error) {
+            console.error('Error populating form data:', error);
+        }
+    }
+
+    populateFormData();
 });
