@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                             <th class="narrow-column">Gifted Hours</th>
                             <th class="narrow-column">Total Hours</th>
                             <th class="narrow-column">Approved</th>
-                             <th class="narrow-column">Not Approved</th>
+                            <th class="narrow-column">Not Approved</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -118,10 +118,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         const ptoHours = fields['PTO Time Used'] || 0;
         const personalHours = fields['Personal Time Used'] || 0;
         const holidayHours = fields['Holiday Hours Used'] || 0;
-    
+
         const giftedHours = hoursWorked > 0 ? Math.min(3, 40 - holidayHours) : 0;
         const totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours + giftedHours);
-    
+
         return `
             <tr>
                 <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
@@ -136,14 +136,19 @@ document.addEventListener("DOMContentLoaded", async function () {
             </tr>
         `;
     }
-    
 
     async function updateApprovalStatus(recordId, isApproved, isNotApproved) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
         const bodyFields = {};
     
+        // Ensure that both values are not set simultaneously
+        if (isApproved !== null && isNotApproved !== null) {
+            alert("You cannot have both the 'Approved' checkbox checked and a 'Not Approved' reason filled out.");
+            return;
+        }
+    
         if (isApproved !== null) bodyFields.Approved = isApproved;
-        if (isNotApproved !== null) bodyFields['Timesheet Not Approved Reason'] = isNotApproved;
+        if (isNotApproved !== null) bodyFields['Timesheet Not Approved Reason'] = isNotApproved === '' ? '' : isNotApproved;
     
         if (Object.keys(bodyFields).length === 0) return; // No updates to make
     
@@ -172,10 +177,35 @@ document.addEventListener("DOMContentLoaded", async function () {
         const recordId = checkbox.getAttribute('data-record-id');
         const isApproved = checkbox.classList.contains('approve-checkbox') ? checkbox.checked : null;
 
-        updateApprovalStatus(recordId, isApproved, isNotApproved);
+        // Validate against conflicting "Not Approved" text input
+        const notApprovedInput = timesheetsBody.querySelector(`.not-approved-checkbox[data-record-id="${recordId}"]`);
+        if (notApprovedInput && isApproved && notApprovedInput.value.trim()) {
+            alert("Please clear the 'Not Approved' text input if you check the 'Approved' checkbox.");
+            checkbox.checked = !isApproved; // Revert checkbox state
+            return;
+        }
+
+        updateApprovalStatus(recordId, isApproved, null);
     }
 
-    timesheetsBody.addEventListener('change', handleCheckboxChange);
+    function handleBlur(event) {
+        const input = event.target;
+        if (input.classList.contains('not-approved-checkbox')) {
+            const recordId = input.getAttribute('data-record-id');
+            const isNotApproved = input.value.trim() || ''; // Save the text value, or empty string if empty
+    
+            // Validate against conflicting checkbox
+            const checkbox = timesheetsBody.querySelector(`.approve-checkbox[data-record-id="${recordId}"]`);
+            if (checkbox && checkbox.checked && isNotApproved) {
+                alert("Please uncheck the 'Approved' checkbox if you enter a reason in the 'Not Approved' text input.");
+                input.value = ''; // Clear the text input
+                return;
+            }
+    
+            updateApprovalStatus(recordId, null, isNotApproved);
+        }
+    }
+    
 
     function handleCheckAll() {
         const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
@@ -183,88 +213,50 @@ document.addEventListener("DOMContentLoaded", async function () {
             checkbox.checked = !allChecked;
             const recordId = checkbox.getAttribute('data-record-id');
             const isApproved = checkbox.checked;
-            // Update approval status without changing `not-approved` text input
-            updateApprovalStatus(recordId, isApproved, null);
+            
+            // Ensure that no conflicting text input exists
+            const notApprovedInput = timesheetsBody.querySelector(`.not-approved-checkbox[data-record-id="${recordId}"]`);
+            if (notApprovedInput && isApproved && notApprovedInput.value.trim()) {
+                alert("Please clear the 'Not Approved' text input for all records before checking 'Approved'.");
+                checkbox.checked = !isApproved; // Revert checkbox state
+            } else {
+                updateApprovalStatus(recordId, isApproved, null);
+            }
         });
         allChecked = !allChecked;
         checkAllButton.textContent = allChecked ? "Deselect All" : "Select All";
     }
-    
-    function handleBlur(event) {
-        const input = event.target;
-        if (input.classList.contains('not-approved-checkbox')) {
-            const recordId = input.getAttribute('data-record-id');
-            const isNotApproved = input.value.trim() || null; // Save the text value, or null if empty
-            updateApprovalStatus(recordId, null, isNotApproved);
-        }
-    }
-    
-    document.addEventListener('blur', handleBlur, true);
-    
 
     function exportToExcel() {
-        // Collect data
-        let data = [];
+        const rows = [];
         const tables = timesheetsBody.querySelectorAll('.time-entry-table');
+
         tables.forEach(table => {
-            const nameContainer = table.previousElementSibling;
-            const employeeName = nameContainer.textContent;
-            const rows = table.querySelectorAll('tbody tr');
-
-            rows.forEach(row => {
-                const date = row.querySelector('input[name="dateEnding"]').value;
-                const hoursWorked = row.querySelector('input[name="hours_worked"]').value;
-                const ptoHours = row.querySelector('input[name="pto_hours"]').value;
-                const personalHours = row.querySelector('input[name="personal_hours"]').value;
-                const holidayHours = row.querySelector('input[name="holiday_hours"]').value;
-                const giftedHours = row.querySelector('input[name="gifted_hours"]').value;
-                const totalHours = row.querySelector('input[name="total_hours"]').value;
-
-                data.push([employeeName, date, hoursWorked, ptoHours, personalHours, holidayHours, giftedHours, totalHours]);
+            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText);
+            const data = Array.from(table.querySelectorAll('tbody tr')).map(tr => {
+                return Array.from(tr.querySelectorAll('td')).map(td => td.innerText);
             });
+
+            rows.push(headers.join(','));
+            data.forEach(row => rows.push(row.join(',')));
         });
 
-        // Convert to CSV format
-        let csvContent = "data:text/csv;charset=utf-8," 
-            + "Employee Name,Date Ending,Hours Worked,PTO Hours Used,Personal Hours Used,Holiday Hours Used,Gifted Hours,Total Hours,Approved,Timesheet Not Approved Reason\n";
-
-        data.forEach(row => {
-            csvContent += row.join(",") + "\n";
-        });
-
-        // Create a link and trigger download
+        const csvContent = 'data:text/csv;charset=utf-8,' + rows.join('\n');
         const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "timesheets_data.csv");
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'timesheets.csv');
         document.body.appendChild(link);
         link.click();
     }
 
-    async function refreshData() {
-        const supervisorName = await fetchSupervisorName(supervisorEmail);
-        if (supervisorName) {
-            await fetchTimesheets(supervisorName);
-        } else {
-            console.error('No supervisor found with email:', supervisorEmail);
-        }
+    timesheetsBody.addEventListener('change', handleCheckboxChange);
+    timesheetsBody.addEventListener('blur', handleBlur, true);
+
+    const supervisorName = await fetchSupervisorName(supervisorEmail);
+    if (supervisorName) {
+        await fetchTimesheets(supervisorName);
+    } else {
+        console.error(`Supervisor not found for email: ${supervisorEmail}`);
     }
-
-    // Initial fetch
-    await refreshData();
-
-    document.getElementById('logout-button').addEventListener('click', function (event) {
-        event.preventDefault();
-        localStorage.removeItem('userEmail');
-        window.location.href = 'index.html';
-    });
-
-    if (userEmailElement) {
-        userEmailElement.addEventListener('click', function () {
-            window.location.href = 'timesheet.html';
-        });
-    }
-
-    // Refresh data every 60 seconds
-    setInterval(refreshData, 120000);
 });
