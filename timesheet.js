@@ -93,7 +93,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.resetButton.style.display = showResetButton ? 'block' : 'none';
     }
 
-    // Add event listeners to all time, number, date, and checkbox inputs
     timeInputs.forEach(input => {
         input.addEventListener('input', saveFormData);
     });
@@ -110,7 +109,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         input.addEventListener('change', saveFormData);
     });
 
-    // Initial check to set the reset button state correctly on page load
     checkInputs();
 
     rowCheckboxes.forEach(checkbox => {
@@ -118,35 +116,32 @@ document.addEventListener("DOMContentLoaded", async function() {
             const row = event.target.closest('tr');
             const timeInputsInRow = row.querySelectorAll('input[type="time"]');
             const numberInputsInRow = row.querySelectorAll('input[type="number"]');
+            const ptoInput = row.querySelector('input[name^="PTO_hours"]');
+            const personalInput = row.querySelector('input[name^="Personal_hours"]');
+            const holidayInput = row.querySelector('input[name^="Holiday_hours"]');
 
             if (event.target.checked) {
-                // Save current values to local storage
-                const rowIndex = row.getAttribute('data-day');
-                const rowData = {};
                 timeInputsInRow.forEach(input => {
-                    rowData[input.name] = input.value;
                     input.value = '';
                     input.disabled = true;
                 });
                 numberInputsInRow.forEach(input => {
-                    rowData[input.name] = input.value;
                     input.value = '';
                     input.disabled = true;
                 });
-                localStorage.setItem(`rowData${rowIndex}`, JSON.stringify(rowData));
+                if (ptoInput) ptoInput.disabled = false;
+                if (personalInput) personalInput.disabled = false;
+                if (holidayInput) holidayInput.disabled = false;
             } else {
-                // Restore values from local storage
-                const rowIndex = row.getAttribute('data-day');
-                const rowData = JSON.parse(localStorage.getItem(`rowData${rowIndex}`)) || {};
                 timeInputsInRow.forEach(input => {
-                    input.value = rowData[input.name] || '';
                     input.disabled = false;
                 });
                 numberInputsInRow.forEach(input => {
-                    input.value = rowData[input.name] || '';
                     input.disabled = false;
                 });
-                localStorage.removeItem(`rowData${rowIndex}`);
+                if (ptoInput) ptoInput.disabled = true;
+                if (personalInput) personalInput.disabled = true;
+                if (holidayInput) holidayInput.disabled = true;
             }
             calculateTotalTimeWorked();
         });
@@ -154,10 +149,8 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     await fetchPtoHours();
     await fetchPersonalTime();
-    await fetchPersonalEndDate(); // Fetch the personal end date
-    await fetchApprovalStatus(); // Fetch the approval status
-
-    loadFormData();
+    await fetchPersonalEndDate();
+    await fetchApprovalStatus();
 
     function handleHolidayHoursChange() {
         console.log('Handling Holiday hours change...');
@@ -168,7 +161,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     async function handleWeekEndingChange() {
         console.log('Handling week-ending date change...');
         const selectedDate = new Date(elements.weekEndingInput.value);
-        adjustToWednesday(selectedDate); // Updated function call
+        adjustToWednesday(selectedDate);
         elements.weekEndingInput.value = selectedDate.toISOString().split('T')[0];
         console.log('Adjusted week-ending date:', selectedDate);
     
@@ -285,7 +278,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         };
 
         updateCountdown();
-        const interval = setInterval(updateCountdown, 1000); // Set interval to 1 second
+        const interval = setInterval(updateCountdown, 1000);
     }
 
     async function fetchPtoHours() {
@@ -302,11 +295,10 @@ document.addEventListener("DOMContentLoaded", async function() {
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
                 availablePTOHours = record['PTO Hours'] || 0;
-                recordId = data.records[0].id; // Save the record ID
+                recordId = data.records[0].id;
                 elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
-                elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2); // Set initial remaining PTO hours
+                elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2);
                 console.log('Available PTO hours:', availablePTOHours);
-                saveFormData();
             } else {
                 console.log('No PTO hours data found for user');
             }
@@ -330,11 +322,10 @@ document.addEventListener("DOMContentLoaded", async function() {
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
                 availablePersonalHours = record['Personaltime'] || 0;
-                recordId = data.records[0].id; // Save the record ID
+                recordId = data.records[0].id;
                 elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
-                elements.remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2); // Set initial remaining Personal hours
+                elements.remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2);
                 console.log('Available Personal hours:', availablePersonalHours);
-                saveFormData();
             } else {
                 console.log('No Personal hours data found for user');
             }
@@ -367,7 +358,6 @@ document.addEventListener("DOMContentLoaded", async function() {
         console.log('Total hours with PTO:', totalHoursWithPto);
         validatePtoHours(totalHoursWorked, ptoTime, personalTime);
         updateTotalPtoAndHolidayHours();
-        saveFormData();
     }
 
     function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput) {
@@ -375,7 +365,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         const times = [startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput].map(input => parseTime(input.value));
         const [startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut] = times;
         let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut);
-        return hoursWorked; // Return the calculated hours worked without rounding
+        return hoursWorked;
     }
 
     function parseTime(timeString) {
@@ -430,14 +420,9 @@ document.addEventListener("DOMContentLoaded", async function() {
         return ptoSummary <= ptoHeader && personalSummary <= personalHeader;
     }
 
-    function roundToClosestQuarterHour(hours) {
-        return Math.round(hours * 4) / 4;
-    }
-
     const ptoTimeInput = document.getElementById('pto-time');
     const ptoHoursDisplay = document.getElementById('pto-hours-display');
 
-    // Check if the PTO time input value is greater than the allowed PTO hours
     function validatePtoTimeInput() {
         const ptoTimeValue = parseFloat(ptoTimeInput.textContent) || 0;
         const maxPtoHours = parseFloat(ptoHoursDisplay.textContent) || 0;
@@ -657,10 +642,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         formatNumber(document.getElementById('Holiday-hours'));
     }
     
-    // Initial formatting
     formatAllNumbers();
     
-    // Automatically reformat values every second
     setInterval(formatAllNumbers, 1);
 
     function clearForm() {
@@ -673,8 +656,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.totalTimeWithPtoSpan.textContent = '0.00';
         elements.remainingPtoHoursElement.textContent = '0.00';
         elements.remainingPersonalHoursElement.textContent = '0.00';
-        localStorage.removeItem('formData'); // Clear form data from localStorage
-        window.location.reload(); // Refresh the screen
+        window.location.reload();
     }
 
     function resetForm(event) {
@@ -796,17 +778,14 @@ document.addEventListener("DOMContentLoaded", async function() {
             'jason.smith@vanirinstalledsales.com',
             'richard.mcgirt@vanirinstalledsales.com',
             'hunter@vanirinstalledsales.com',
-            'katy@vanirinstalledsales.com',
-            'heath.kornegay@vanirinstalledsales.com'
+            'katy@vanirinstalledsales.com'
         ];
         return !excludedEmails.includes(email);
     }
 
-    // Usage example:
     const backgroundMusic = document.getElementById('backgroundMusic');
     const playPauseButton = document.getElementById('playPauseButton');
 
-    // Function to update playPauseButton text content
     function updateButtonText() {
         if (backgroundMusic.paused) {
             playPauseButton.textContent = 'Play';
@@ -815,15 +794,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    // Always play the audio when the page loads if Jason Smith is not logged in
     if (backgroundMusic && playPauseButton && shouldPlayMusic()) {
-        backgroundMusic.currentTime = 9; // Start the song 9 seconds in
+        backgroundMusic.currentTime = 9;
         backgroundMusic.play();
         updateButtonText();
 
-        // Handle play/pause button click
         playPauseButton.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default button behavior (like form submission)
+            event.preventDefault();
             if (backgroundMusic.paused) {
                 backgroundMusic.play();
                 updateButtonText();
@@ -833,17 +810,15 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         });
 
-        // Store the music state on play and pause
         backgroundMusic.onplay = function() {
             sessionStorage.setItem('isMusicPlaying', 'true');
         };
 
         backgroundMusic.onpause = function() {
             sessionStorage.setItem('isMusicPlaying', 'false');
-            updateButtonText(); // Call the function to update the button text content
+            updateButtonText();
         };
     } else {
-        // Hide the play/pause button if music should not be played
         if (playPauseButton) {
             playPauseButton.style.display = 'none';
         }
@@ -926,16 +901,5 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    // Save form data on input change
-    numberInputs.forEach(input => {
-        input.addEventListener('input', saveFormData);
-    });
-
-    dateInputs.forEach(input => {
-        input.addEventListener('change', saveFormData);
-    });
-
-    timeInputs.forEach(input => {
-        input.addEventListener('input', saveFormData);
-    });
+    loadFormData(); // Load form data on page load
 });
