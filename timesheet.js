@@ -56,10 +56,96 @@ document.addEventListener("DOMContentLoaded", async function() {
     elements.resetButton.addEventListener('click', resetForm);
     elements.submitButton.addEventListener('click', handleSubmit);
 
-    addEventListenersToInputs();
+    const timeInputs = document.querySelectorAll('input[type="time"]');
+    const numberInputs = document.querySelectorAll('input[type="number"]');
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const rowCheckboxes = document.querySelectorAll('input[id^="did-not-work"]');
+
+    function checkInputs() {
+        let showResetButton = false;
+
+        timeInputs.forEach(input => {
+            if (input.value) {
+                showResetButton = true;
+            }
+        });
+
+        numberInputs.forEach(input => {
+            if (input.value) {
+                showResetButton = true;
+            }
+        });
+
+        checkboxes.forEach(input => {
+            if (input.checked) {
+                showResetButton = true;
+            }
+        });
+
+        elements.resetButton.style.display = showResetButton ? 'block' : 'none';
+    }
+
+    // Add event listeners to all time, number, and checkbox inputs
+    timeInputs.forEach(input => {
+        input.addEventListener('input', checkInputs);
+    });
+
+    numberInputs.forEach(input => {
+        input.addEventListener('input', checkInputs);
+    });
+
+    checkboxes.forEach(input => {
+        input.addEventListener('change', checkInputs);
+    });
+
+    // Initial check to set the reset button state correctly on page load
     checkInputs();
-    initializeForm();
-    await loadInitialData();
+
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function(event) {
+            const row = event.target.closest('tr');
+            const timeInputsInRow = row.querySelectorAll('input[type="time"]');
+            const numberInputsInRow = row.querySelectorAll('input[type="number"]');
+
+            if (event.target.checked) {
+                // Save current values to local storage
+                const rowIndex = row.getAttribute('data-day');
+                const rowData = {};
+                timeInputsInRow.forEach(input => {
+                    rowData[input.name] = input.value;
+                    input.value = '';
+                    input.disabled = true;
+                });
+                numberInputsInRow.forEach(input => {
+                    rowData[input.name] = input.value;
+                    input.value = '';
+                    input.disabled = true;
+                });
+                localStorage.setItem(`rowData${rowIndex}`, JSON.stringify(rowData));
+            } else {
+                // Restore values from local storage
+                const rowIndex = row.getAttribute('data-day');
+                const rowData = JSON.parse(localStorage.getItem(`rowData${rowIndex}`)) || {};
+                timeInputsInRow.forEach(input => {
+                    input.value = rowData[input.name] || '';
+                    input.disabled = false;
+                });
+                numberInputsInRow.forEach(input => {
+                    input.value = rowData[input.name] || '';
+                    input.disabled = false;
+                });
+                localStorage.removeItem(`rowData${rowIndex}`);
+            }
+            calculateTotalTimeWorked();
+        });
+    });
+
+    await fetchPtoHours();
+    await fetchPersonalTime();
+    await fetchPersonalEndDate(); // Fetch the personal end date
+    await fetchApprovalStatus(); // Fetch the approval status
+
+    loadFormData();
 
     function handleHolidayHoursChange() {
         console.log('Handling Holiday hours change...');
@@ -141,7 +227,20 @@ document.addEventListener("DOMContentLoaded", async function() {
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
                 const isApproved = record['Approved'] === true;
-                updateApprovalStatus(isApproved);
+                const approvalStatusElement = document.getElementById('approval-status');
+                if (isApproved) {
+                    approvalStatusElement.textContent = 'Time sheet approved';
+                    approvalStatusElement.style.color = 'green';
+                    approvalStatusElement.style.fontSize = '30px';
+                    approvalStatusElement.style.fontWeight = 'bold';
+                    approvalStatusElement.style.textDecoration = 'underline';
+                } else {
+                    approvalStatusElement.textContent = 'Time sheet not approved';
+                    approvalStatusElement.style.color = 'red';
+                    approvalStatusElement.style.fontSize = '20px';
+                    approvalStatusElement.style.fontWeight = 'normal';
+                    approvalStatusElement.style.textDecoration = 'none';
+                }
                 console.log('Approval status:', isApproved);
             } else {
                 console.log('No approval status data found for user');
@@ -233,6 +332,48 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    async function fetchPersonalEndDate() {
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch Personal END Date: ${response.statusText}`);
+            const data = await response.json();
+            if (data.records.length > 0) {
+                const personalEndDate = data.records[0].fields['Personal END Date'];
+                startCountdown(personalEndDate);
+            } else {
+                console.log('No Personal END Date found for user');
+            }
+        } catch (error) {
+            console.error('Error fetching Personal END Date:', error);
+        }
+    }
+
+    function startCountdown(endDate) {
+        const endDateTime = new Date(endDate).getTime();
+        const countdownElement = document.getElementById('countdown');
+
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const distance = endDateTime - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            if (distance < 0) {
+                clearInterval(interval);
+                countdownElement.innerHTML = "EXPIRED";
+            }
+        };
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000); // Set interval to 1 second
+    }
+
     function calculateTotalTimeWorked() {
         console.log('Calculating total time worked...');
         let totalHoursWorked = 0;
@@ -258,9 +399,9 @@ document.addEventListener("DOMContentLoaded", async function() {
         saveFormData();
     }
 
-    function calculateDailyHoursWorked(dateInput, ...timeInputs) {
+    function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput) {
         const startDate = new Date(dateInput.value);
-        const times = timeInputs.map(input => parseTime(input.value));
+        const times = [startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput].map(input => parseTime(input.value));
         const [startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut] = times;
         let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut);
         return roundToClosestQuarterHour(hoursWorked);
@@ -296,36 +437,32 @@ document.addEventListener("DOMContentLoaded", async function() {
         return Math.max(0, totalHoursWorked);
     }
 
+    const form = document.getElementById('summary-form');
+
+    form.addEventListener('submit', function (event) {
+        if (!validatePTOandPersonalHours()) {
+            event.preventDefault();
+            alert('PTO and Personal Hours in the summary exceed the allowed values.');
+        }
+    });
+
+    function validatePTOandPersonalHours() {
+        const ptoHeader = parseFloat(document.getElementById('pto-hours-display').textContent) || 0;
+        const personalHeader = parseFloat(document.getElementById('personal-time-display').textContent) || 0;
+        const ptoSummary = parseFloat(document.getElementById('pto-time').textContent) || 0;
+        const personalSummary = parseFloat(document.getElementById('total-personal-time-display').textContent) || 0;
+
+        return ptoSummary <= ptoHeader && personalSummary <= personalHeader;
+    }
+
     function roundToClosestQuarterHour(hours) {
         return Math.round(hours * 4) / 4;
     }
 
-    function validatePtoHours() {
-        const personalTimeDisplay = document.getElementById('personal-time-display');
-        const remainingPersonalHours = document.getElementById('remaining-personal-hours');
-        const personalTimeError = document.getElementById('personal-time-error');
-        
-        const ptoHoursDisplay = document.getElementById('pto-hours-display');
-        const remainingPtoHours = document.getElementById('remaining-pto-hours');
-        const ptoHoursError = document.getElementById('pto-hours-error');
-        
-        if (parseInt(personalTimeDisplay.textContent) < parseInt(remainingPersonalHours.textContent)) {
-          personalTimeDisplay.textContent = remainingPersonalHours.textContent;
-        } else if (parseInt(personalTimeDisplay.textContent) > parseInt(remainingPersonalHours.textContent)) {
-          personalTimeError.style.display = 'block';
-        } else {
-          personalTimeError.style.display = 'none';
-        }
-        
-        if (parseInt(ptoHoursDisplay.textContent) < parseInt(remainingPtoHours.textContent)) {
-          ptoHoursDisplay.textContent = remainingPtoHours.textContent;
-        } else if (parseInt(ptoHoursDisplay.textContent) > parseInt(remainingPtoHours.textContent)) {
-          ptoHoursError.style.display = 'block';
-        } else {
-          ptoHoursError.style.display = 'none';
-        }
-    }
-    
+    const ptoTimeInput = document.getElementById('pto-time');
+    const ptoHoursDisplay = document.getElementById('pto-hours-display');
+
+    // Check if the PTO time input value is greater than the allowed PTO hours
     function validatePtoTimeInput() {
         const ptoTimeValue = parseFloat(ptoTimeInput.textContent) || 0;
         const maxPtoHours = parseFloat(ptoHoursDisplay.textContent) || 0;
@@ -333,6 +470,25 @@ document.addEventListener("DOMContentLoaded", async function() {
         if (ptoTimeValue > maxPtoHours) {
             ptoTimeInput.textContent = maxPtoHours.toFixed(2);
             alert(`PTO time cannot exceed ${maxPtoHours.toFixed(2)} hours`);
+        }
+    }
+
+    function validatePtoHours(totalHoursWorked, ptoTime, personalTime) {
+        const remainingPTO = Math.max(0, availablePTOHours - ptoTime);
+        const totalHoursWithPto = totalHoursWorked + ptoTime + personalTime;
+        console.log('PTO used:', ptoTime);
+
+        if (totalHoursWithPto > 40 && (ptoTime > 0 || personalTime > 0)) {
+            elements.ptoValidationMessage.textContent = 'Total hours including PTO and Personal time cannot exceed 40 hours';
+            elements.ptoValidationMessage.style.color = 'red';
+        } else if (ptoTime > availablePTOHours) {
+            elements.ptoValidationMessage.textContent = 'PTO time used cannot exceed available PTO hours';
+            elements.ptoValidationMessage.style.color = 'red';
+        } else if (personalTime > availablePersonalHours) {
+            elements.ptoValidationMessage.textContent = 'Personal time used cannot exceed available Personal hours';
+            elements.ptoValidationMessage.style.color = 'red';
+        } else {
+            elements.ptoValidationMessage.textContent = '';
         }
     }
 
@@ -515,6 +671,23 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    function formatNumber(element) {
+        const value = parseInt(element.innerText, 10) || 0;
+        element.innerText = value.toString();
+    }
+    
+    function formatAllNumbers() {
+        formatNumber(document.getElementById('pto-time'));
+        formatNumber(document.getElementById('total-personal-time-display'));
+        formatNumber(document.getElementById('Holiday-hours'));
+    }
+    
+    // Initial formatting
+    formatAllNumbers();
+    
+    // Automatically reformat values every second
+    setInterval(formatAllNumbers, 1);
+
     function clearForm() {
         console.log('Clearing form...');
         elements.timeEntryForm.reset();
@@ -581,6 +754,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     const convertToCsvButton = document.getElementById('convert-to-csv-button');
+
     convertToCsvButton.addEventListener('click', convertToCsv);
 
     function convertToCsv() {
@@ -616,36 +790,47 @@ document.addEventListener("DOMContentLoaded", async function() {
         document.body.removeChild(link);
     }
 
-    function updateApprovalStatus(isApproved) {
-        const approvalStatusElement = document.getElementById('approval-status');
-        if (isApproved) {
-            approvalStatusElement.textContent = 'Time sheet approved';
-            approvalStatusElement.style.color = 'green';
-            approvalStatusElement.style.fontSize = '30px';
-            approvalStatusElement.style.fontWeight = 'bold';
-            approvalStatusElement.style.textDecoration = 'underline';
-        } else {
-            approvalStatusElement.textContent = 'Time sheet not approved';
-            approvalStatusElement.style.color = 'red';
-            approvalStatusElement.style.fontSize = '20px';
-            approvalStatusElement.style.fontWeight = 'normal';
-            approvalStatusElement.style.textDecoration = 'none';
+    initializeForm();
+    initializeTimeDropdowns();
+    initializeKeyboardNavigation();
+
+    function handleArrowKeys(event) {
+        const key = event.key;
+        const currentInput = event.target;
+        const inputs = Array.from(document.querySelectorAll('select.time-dropdown'));
+
+        let index = inputs.indexOf(currentInput);
+
+        if (key === 'ArrowRight') {
+            index = (index + 1) % inputs.length;
+        } else if (key === 'ArrowLeft') {
+            index = (index - 1 + inputs.length) % inputs.length;
+        } else if (key === 'ArrowDown') {
+            index = (index + 6) % inputs.length;
+        } else if (key === 'ArrowUp') {
+            index = (index - 6 + inputs.length) % inputs.length;
         }
+
+        inputs[index].focus();
     }
 
     function shouldPlayMusic() {
+        const userEmailElement = document.getElementById('user-email');
+        const email = userEmailElement ? userEmailElement.textContent.trim() : '';
         const excludedEmails = [
             'jason.smith@vanirinstalledsales.com',
             'richard.mcgirt@vanirinstalledsales.com',
             'hunter@vanirinstalledsales.com',
             'katy@vanirinstalledsales.com'
         ];
-        return !excludedEmails.includes(userEmail);
+        return !excludedEmails.includes(email);
     }
 
+    // Usage example:
     const backgroundMusic = document.getElementById('backgroundMusic');
     const playPauseButton = document.getElementById('playPauseButton');
 
+    // Function to update playPauseButton text content
     function updateButtonText() {
         if (backgroundMusic.paused) {
             playPauseButton.textContent = 'Play';
@@ -654,11 +839,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    // Always play the audio when the page loads if Jason Smith is not logged in
     if (backgroundMusic && playPauseButton && shouldPlayMusic()) {
         backgroundMusic.currentTime = 9; // Start the song 9 seconds in
         backgroundMusic.play();
         updateButtonText();
 
+        // Handle play/pause button click
         playPauseButton.addEventListener('click', function(event) {
             event.preventDefault(); // Prevent default button behavior (like form submission)
             if (backgroundMusic.paused) {
@@ -670,6 +857,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         });
 
+        // Store the music state on play and pause
         backgroundMusic.onplay = function() {
             sessionStorage.setItem('isMusicPlaying', 'true');
         };
@@ -679,6 +867,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             updateButtonText(); // Call the function to update the button text content
         };
     } else {
+        // Hide the play/pause button if music should not be played
         if (playPauseButton) {
             playPauseButton.style.display = 'none';
         }
@@ -715,93 +904,5 @@ document.addEventListener("DOMContentLoaded", async function() {
             });
             calculateTotalTimeWorked(); // Recalculate totals after loading data
         }
-    }
-
-    async function loadInitialData() {
-        await fetchPtoHours();
-        await fetchPersonalTime();
-        await fetchPersonalEndDate();
-        await fetchApprovalStatus();
-        loadFormData();
-    }
-
-    function addEventListenersToInputs() {
-        const timeInputs = document.querySelectorAll('input[type="time"]');
-        const numberInputs = document.querySelectorAll('input[type="number"]');
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        const rowCheckboxes = document.querySelectorAll('input[id^="did-not-work"]');
-
-        function checkInputs() {
-            let showResetButton = false;
-
-            timeInputs.forEach(input => {
-                if (input.value) {
-                    showResetButton = true;
-                }
-            });
-
-            numberInputs.forEach(input => {
-                if (input.value) {
-                    showResetButton = true;
-                }
-            });
-
-            checkboxes.forEach(input => {
-                if (input.checked) {
-                    showResetButton = true;
-                }
-            });
-
-            elements.resetButton.style.display = showResetButton ? 'block' : 'none';
-        }
-
-        timeInputs.forEach(input => {
-            input.addEventListener('input', checkInputs);
-        });
-
-        numberInputs.forEach(input => {
-            input.addEventListener('input', checkInputs);
-        });
-
-        checkboxes.forEach(input => {
-            input.addEventListener('change', checkInputs);
-        });
-
-        rowCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function(event) {
-                const row = event.target.closest('tr');
-                const timeInputsInRow = row.querySelectorAll('input[type="time"]');
-                const numberInputsInRow = row.querySelectorAll('input[type="number"]');
-
-                if (event.target.checked) {
-                    const rowIndex = row.getAttribute('data-day');
-                    const rowData = {};
-                    timeInputsInRow.forEach(input => {
-                        rowData[input.name] = input.value;
-                        input.value = '';
-                        input.disabled = true;
-                    });
-                    numberInputsInRow.forEach(input => {
-                        rowData[input.name] = input.value;
-                        input.value = '';
-                        input.disabled = true;
-                    });
-                    localStorage.setItem(`rowData${rowIndex}`, JSON.stringify(rowData));
-                } else {
-                    const rowIndex = row.getAttribute('data-day');
-                    const rowData = JSON.parse(localStorage.getItem(`rowData${rowIndex}`)) || {};
-                    timeInputsInRow.forEach(input => {
-                        input.value = rowData[input.name] || '';
-                        input.disabled = false;
-                    });
-                    numberInputsInRow.forEach(input => {
-                        input.value = rowData[input.name] || '';
-                        input.disabled = false;
-                    });
-                    localStorage.removeItem(`rowData${rowIndex}`);
-                }
-                calculateTotalTimeWorked();
-            });
-        });
     }
 });
