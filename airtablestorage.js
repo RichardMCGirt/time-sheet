@@ -1,17 +1,17 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const saveButton = document.getElementById('save-button');
-
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
     const newTableId = 'tbl8znXria2leJfUd'; // Replace with your new table ID
 
     let userEmail = localStorage.getItem('userEmail') || '';
 
-    saveButton.addEventListener('click', handleSave);
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('blur', handleSave);
+    });
 
     async function handleSave(event) {
         event.preventDefault();
-        console.log('Save button clicked. Gathering form data...');
+        console.log('Input field lost focus. Gathering form data...');
         const formData = gatherFormData();
         console.log('Form data gathered:', formData);
         try {
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
             formData[`Personal Hours ${i}`] = parseFloat(getValue(`input[name="personal_hours${i}"]`)) || 0;
             formData[`Holiday Hours ${i}`] = parseFloat(getValue(`input[name="holiday_hours${i}"]`)) || 0;
             formData[`Did not work ${i}`] = getCheckboxValue(`input[name="did_not_work${i}"]`);
-    
+
             console.log(`Data for day ${i}:`, {
                 start: formData[`start${i}`],
                 lunchs: formData[`lunchs${i}`],
@@ -52,7 +52,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         return formData;
     }
-    
 
     function getValue(selector) {
         const element = document.querySelector(selector);
