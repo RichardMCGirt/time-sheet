@@ -118,10 +118,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         const ptoHours = fields['PTO Time Used'] || 0;
         const personalHours = fields['Personal Time Used'] || 0;
         const holidayHours = fields['Holiday Hours Used'] || 0;
-
+    
         const giftedHours = hoursWorked > 0 ? Math.min(3, 40 - holidayHours) : 0;
         const totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours + giftedHours);
-
+    
         return `
             <tr>
                 <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
@@ -132,19 +132,23 @@ document.addEventListener("DOMContentLoaded", async function () {
                 <th><input type="number" name="gifted_hours" value="${giftedHours}" placeholder="0" readonly></th>
                 <th><input type="number" name="total_hours" value="${totalHours}" placeholder="0" readonly></th>
                 <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Approved'] ? 'checked' : ''}></th>
-                  <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Timesheet Not Approved Reason'] ? 'checked' : ''}></th>
+                <th><input type="text" class="not-approved-checkbox" data-record-id="${recordId}" value="${fields['Timesheet Not Approved Reason'] || ''}"></th>
             </tr>
         `;
     }
+    
 
-    async function updateApprovalStatus(recordId, isApproved) {
+    async function updateApprovalStatus(recordId, isApproved, isNotApproved) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-        const body = JSON.stringify({
-            fields: {
-                Approved: isApproved
-            }
-        });
-
+        const bodyFields = {};
+    
+        if (isApproved !== null) bodyFields.Approved = isApproved;
+        if (isNotApproved !== null) bodyFields['Timesheet Not Approved Reason'] = isNotApproved;
+    
+        if (Object.keys(bodyFields).length === 0) return; // No updates to make
+    
+        const body = JSON.stringify({ fields: bodyFields });
+    
         try {
             const response = await fetch(endpoint, {
                 method: 'PATCH',
@@ -161,27 +165,42 @@ document.addEventListener("DOMContentLoaded", async function () {
             console.error('Error updating approval status:', error);
         }
     }
+    
 
     function handleCheckboxChange(event) {
         const checkbox = event.target;
         const recordId = checkbox.getAttribute('data-record-id');
-        updateApprovalStatus(recordId, checkbox.checked);
+        const isApproved = checkbox.classList.contains('approve-checkbox') ? checkbox.checked : null;
+
+        updateApprovalStatus(recordId, isApproved, isNotApproved);
     }
 
     timesheetsBody.addEventListener('change', handleCheckboxChange);
 
     function handleCheckAll() {
-      
-            const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = !allChecked;
-                const recordId = checkbox.getAttribute('data-record-id');
-                updateApprovalStatus(recordId, !allChecked);
-            });
-            allChecked = !allChecked;
-            checkAllButton.textContent = allChecked ? "Deselect All" : "Select All";
-      
+        const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = !allChecked;
+            const recordId = checkbox.getAttribute('data-record-id');
+            const isApproved = checkbox.checked;
+            // Update approval status without changing `not-approved` text input
+            updateApprovalStatus(recordId, isApproved, null);
+        });
+        allChecked = !allChecked;
+        checkAllButton.textContent = allChecked ? "Deselect All" : "Select All";
     }
+    
+    function handleBlur(event) {
+        const input = event.target;
+        if (input.classList.contains('not-approved-checkbox')) {
+            const recordId = input.getAttribute('data-record-id');
+            const isNotApproved = input.value.trim() || null; // Save the text value, or null if empty
+            updateApprovalStatus(recordId, null, isNotApproved);
+        }
+    }
+    
+    document.addEventListener('blur', handleBlur, true);
+    
 
     function exportToExcel() {
         // Collect data
@@ -207,7 +226,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         // Convert to CSV format
         let csvContent = "data:text/csv;charset=utf-8," 
-            + "Employee Name,Date Ending,Hours Worked,PTO Hours Used,Personal Hours Used,Holiday Hours Used,Gifted Hours,Total Hours,Approved\n";
+            + "Employee Name,Date Ending,Hours Worked,PTO Hours Used,Personal Hours Used,Holiday Hours Used,Gifted Hours,Total Hours,Approved,Timesheet Not Approved Reason\n";
 
         data.forEach(row => {
             csvContent += row.join(",") + "\n";
