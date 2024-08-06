@@ -352,7 +352,8 @@ document.addEventListener("DOMContentLoaded", async function() {
             const dateInput = elements.timeEntryForm.elements[day];
             const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'].map(field => elements.timeEntryForm.elements[`${field}${index + 1}`]);
             const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
-            const hoursWorked = calculateDailyHoursWorked(dateInput, ...timeFields);
+            let hoursWorked = calculateDailyHoursWorked(dateInput, ...timeFields);
+            hoursWorked = roundToClosestQuarterHour(hoursWorked);
             totalHoursWorked += hoursWorked;
             hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
         });
@@ -369,14 +370,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         saveFormData();
     }
 
-function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput) {
-    const startDate = new Date(dateInput.value);
-    const times = [startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput].map(input => parseTime(input.value));
-    const [startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut] = times;
-    let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut);
-    return hoursWorked; // Return the calculated hours worked without rounding
-}
-
+    function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput) {
+        const startDate = new Date(dateInput.value);
+        const times = [startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput].map(input => parseTime(input.value));
+        const [startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut] = times;
+        let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut);
+        return hoursWorked; // Return the calculated hours worked without rounding
+    }
 
     function parseTime(timeString) {
         if (!timeString || timeString === "--:--") return null;
@@ -406,6 +406,10 @@ function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, l
             totalHoursWorked += (additionalTimeOutDateTime - additionalTimeInDateTime) / (1000 * 60 * 60);
         }
         return Math.max(0, totalHoursWorked);
+    }
+
+    function roundToClosestQuarterHour(hours) {
+        return Math.round(hours * 4) / 4;
     }
 
     const form = document.getElementById('summary-form');
@@ -792,7 +796,8 @@ function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, l
             'jason.smith@vanirinstalledsales.com',
             'richard.mcgirt@vanirinstalledsales.com',
             'hunter@vanirinstalledsales.com',
-            'katy@vanirinstalledsales.com'
+            'katy@vanirinstalledsales.com',
+            'heath.kornegay@vanirinstalledsales.com'
         ];
         return !excludedEmails.includes(email);
     }
