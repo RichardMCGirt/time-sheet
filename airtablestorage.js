@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
         messageContainer.textContent = message;
         setTimeout(() => {
             messageContainer.textContent = '';
-        }, 1000); // Clear the message after 2 seconds
+        }, 3500); // Clear the message after 2 seconds
     }
     
 

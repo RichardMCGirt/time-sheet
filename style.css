@@ -71,6 +71,11 @@ body {
     margin: 20px 0; 
 }
 
+.right-70 {
+    float: right;
+}
+
+
 .sticky-submit {
     position: fixed;
     bottom: 2%;
