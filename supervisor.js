@@ -6,12 +6,22 @@ document.addEventListener("DOMContentLoaded", async function () {
     const userEmailElement = document.getElementById('user-email');
     const timesheetsBody = document.getElementById('timesheets-body');
     const checkAllButton = document.getElementById('check-all-button');
+    const logoutButton = document.getElementById('logout-button'); // Add the logout button
 
     let allChecked = false;
 
     if (userEmailElement) {
         userEmailElement.textContent = supervisorEmail;
         userEmailElement.classList.add('clickable');
+        userEmailElement.addEventListener('click', () => {
+            window.location.href = 'timesheet.html';
+        });
+    }
+
+    if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
     }
 
     document.getElementById('export-button').addEventListener('click', exportToExcel);
@@ -140,20 +150,20 @@ document.addEventListener("DOMContentLoaded", async function () {
     async function updateApprovalStatus(recordId, isApproved, isNotApproved) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
         const bodyFields = {};
-    
+
         // Ensure that both values are not set simultaneously
         if (isApproved !== null && isNotApproved !== null) {
             alert("You cannot have both the 'Approved' checkbox checked and a 'Not Approved' reason filled out.");
             return;
         }
-    
+
         if (isApproved !== null) bodyFields.Approved = isApproved;
         if (isNotApproved !== null) bodyFields['Timesheet Not Approved Reason'] = isNotApproved === '' ? '' : isNotApproved;
-    
+
         if (Object.keys(bodyFields).length === 0) return; // No updates to make
-    
+
         const body = JSON.stringify({ fields: bodyFields });
-    
+
         try {
             const response = await fetch(endpoint, {
                 method: 'PATCH',
@@ -170,7 +180,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             console.error('Error updating approval status:', error);
         }
     }
-    
 
     function handleCheckboxChange(event) {
         const checkbox = event.target;
@@ -193,7 +202,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (input.classList.contains('not-approved-checkbox')) {
             const recordId = input.getAttribute('data-record-id');
             const isNotApproved = input.value.trim() || ''; // Save the text value, or empty string if empty
-    
+
             // Validate against conflicting checkbox
             const checkbox = timesheetsBody.querySelector(`.approve-checkbox[data-record-id="${recordId}"]`);
             if (checkbox && checkbox.checked && isNotApproved) {
@@ -201,11 +210,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 input.value = ''; // Clear the text input
                 return;
             }
-    
+
             updateApprovalStatus(recordId, null, isNotApproved);
         }
     }
-    
 
     function handleCheckAll() {
         const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');

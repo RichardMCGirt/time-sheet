@@ -156,22 +156,24 @@ document.addEventListener("DOMContentLoaded", async function() {
     async function handleWeekEndingChange() {
         console.log('Handling week-ending date change...');
         const selectedDate = new Date(elements.weekEndingInput.value);
-        adjustToWednesday(selectedDate);
+        adjustToTuesday(selectedDate); // Updated function call
         elements.weekEndingInput.value = selectedDate.toISOString().split('T')[0];
         console.log('Adjusted week-ending date:', selectedDate);
-
+    
         const date7 = new Date(selectedDate);
         date7.setDate(selectedDate.getDate() + 6);
         elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
         populateWeekDates(selectedDate);
         saveFormData();
     }
+    
 
-    function adjustToWednesday(date) {
+    function adjustToTuesday(date) {
         const dayOfWeek = date.getDay();
-        const offset = (2 - dayOfWeek + 7) % 7;
+        const offset = (1 - dayOfWeek + 7) % 7;
         date.setDate(date.getDate() + offset);
     }
+    
 
     function populateWeekDates(weekEndingDate) {
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
