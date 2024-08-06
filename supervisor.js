@@ -131,6 +131,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 <th><input type="number" name="gifted_hours" value="${giftedHours}" placeholder="0" readonly></th>
                 <th><input type="number" name="total_hours" value="${totalHours}" placeholder="0" readonly></th>
                 <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Approved'] ? 'checked' : ''}></th>
+                  <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Timesheet Not Approved Reason'] ? 'checked' : ''}></th>
             </tr>
         `;
     }
