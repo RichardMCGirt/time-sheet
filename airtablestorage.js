@@ -16,12 +16,21 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log('Form data gathered:', formData);
         try {
             await sendDataToAirtable(formData);
-            alert('Data saved successfully!');
+            showMessage('Data saved successfully!');
         } catch (error) {
-            alert(`Failed to save data: ${error.message}`);
-            console.error('Error in handleSave:', error);
+            showMessage('Failed to save data. Please try again.');
+            console.error('Error saving data:', error);
         }
     }
+    
+    function showMessage(message) {
+        const messageContainer = document.getElementById('message-container');
+        messageContainer.textContent = message;
+        setTimeout(() => {
+            messageContainer.textContent = '';
+        }, 1000); // Clear the message after 2 seconds
+    }
+    
 
     function gatherFormData() {
         const formData = {};
