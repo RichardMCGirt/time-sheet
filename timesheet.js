@@ -374,8 +374,9 @@ document.addEventListener("DOMContentLoaded", async function() {
         const times = [startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput].map(input => parseTime(input.value));
         const [startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut] = times;
         let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut);
-        return roundToClosestQuarterHour(hoursWorked);
+        return hoursWorked; // Return the calculated hours worked without rounding
     }
+    
 
     function parseTime(timeString) {
         if (!timeString || timeString === "--:--") return null;

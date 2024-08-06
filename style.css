@@ -351,6 +351,10 @@ input[type="date"]:-webkit-autofill {
     background-color: #16a085;
 }
 
+.hidden {
+    display: none;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .header-right {
