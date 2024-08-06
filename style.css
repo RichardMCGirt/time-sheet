@@ -55,6 +55,10 @@ body {
     background-color: #16a085;
 }
 
+.error {
+    color: red;
+  }
+
 .navbar ul li a:hover {
     background-color: var(--highlight-color);
     color: var(--text-color);

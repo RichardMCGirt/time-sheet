@@ -214,10 +214,14 @@
                     <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
                         <label for="remaining-pto-hours" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Remaining PTO Hours:</label>
                         <span id="remaining-pto-hours" class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
+                        <div id="pto-hours-error" class="error" style="display: none;">Not enough PTO hours</div>
+
                     </div>
                     <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
                         <label for="remaining-personal-hours" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Remaining Personal Hours:</label>
                         <span id="remaining-personal-hours"  class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
+                        <div id="personal-time-error" class="error" style="display: none;">Not enough personal hours</div>
+
                     </div>
                     <span id="pto-validation-message" class="validation-message" style="color: red; text-align: center;"></span><br>
                     <button id="submit-button" class="sticky-submit" min="0" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #1abc9c; color: #ecf0f1; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px;">Submit</button>
