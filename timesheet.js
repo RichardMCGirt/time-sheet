@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         resetButton: document.getElementById('reset-button'),
         submitButton: document.getElementById('submit-button'),
         countdownElement: document.getElementById('countdown'),
+        loadDataButton: document.getElementById('load-data-button'),
     };
 
     let availablePTOHours = 0;
@@ -55,9 +56,11 @@ document.addEventListener("DOMContentLoaded", async function() {
     elements.logoutButton.addEventListener('click', handleLogout);
     elements.resetButton.addEventListener('click', resetForm);
     elements.submitButton.addEventListener('click', handleSubmit);
+    elements.loadDataButton.addEventListener('click', loadFormData); // Add event listener to the load data button
 
     const timeInputs = document.querySelectorAll('input[type="time"]');
     const numberInputs = document.querySelectorAll('input[type="number"]');
+    const dateInputs = document.querySelectorAll('input[type="date"]');
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     const rowCheckboxes = document.querySelectorAll('input[id^="did-not-work"]');
 
@@ -76,6 +79,12 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         });
 
+        dateInputs.forEach(input => {
+            if (input.value) {
+                showResetButton = true;
+            }
+        });
+
         checkboxes.forEach(input => {
             if (input.checked) {
                 showResetButton = true;
@@ -85,17 +94,21 @@ document.addEventListener("DOMContentLoaded", async function() {
         elements.resetButton.style.display = showResetButton ? 'block' : 'none';
     }
 
-    // Add event listeners to all time, number, and checkbox inputs
+    // Add event listeners to all time, number, date, and checkbox inputs
     timeInputs.forEach(input => {
-        input.addEventListener('input', checkInputs);
+        input.addEventListener('input', saveFormData);
     });
 
     numberInputs.forEach(input => {
-        input.addEventListener('input', checkInputs);
+        input.addEventListener('input', saveFormData);
+    });
+
+    dateInputs.forEach(input => {
+        input.addEventListener('input', saveFormData);
     });
 
     checkboxes.forEach(input => {
-        input.addEventListener('change', checkInputs);
+        input.addEventListener('change', saveFormData);
     });
 
     // Initial check to set the reset button state correctly on page load
@@ -167,14 +180,12 @@ document.addEventListener("DOMContentLoaded", async function() {
         saveFormData();
     }
     
-
     function adjustToWednesday(date) {
         const dayOfWeek = date.getDay();
         const offset = (1 - dayOfWeek + 7) % 7;
         date.setDate(date.getDate() + offset);
     }
     
-
     function populateWeekDates(weekEndingDate) {
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
         daysOfWeek.forEach((day, index) => {
@@ -332,48 +343,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             console.error('Error fetching Personal hours:', error);
             alert('Failed to fetch Personal hours. Error: ' + error.message);
         }
-    }
-
-    async function fetchPersonalEndDate() {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch Personal END Date: ${response.statusText}`);
-            const data = await response.json();
-            if (data.records.length > 0) {
-                const personalEndDate = data.records[0].fields['Personal END Date'];
-                startCountdown(personalEndDate);
-            } else {
-                console.log('No Personal END Date found for user');
-            }
-        } catch (error) {
-            console.error('Error fetching Personal END Date:', error);
-        }
-    }
-
-    function startCountdown(endDate) {
-        const endDateTime = new Date(endDate).getTime();
-        const countdownElement = document.getElementById('countdown');
-
-        const updateCountdown = () => {
-            const now = new Date().getTime();
-            const distance = endDateTime - now;
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-            if (distance < 0) {
-                clearInterval(interval);
-                countdownElement.innerHTML = "EXPIRED";
-            }
-        };
-
-        updateCountdown();
-        const interval = setInterval(updateCountdown, 1000); // Set interval to 1 second
     }
 
     function calculateTotalTimeWorked() {
@@ -892,6 +861,25 @@ document.addEventListener("DOMContentLoaded", async function() {
         formData.forEach((value, key) => {
             data[key] = value;
         });
+
+        // Save number inputs
+        const numberInputs = document.querySelectorAll('input[type="number"]');
+        numberInputs.forEach(input => {
+            data[input.name] = input.value;
+        });
+
+        // Save date inputs
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        dateInputs.forEach(input => {
+            data[input.name] = input.value;
+        });
+
+        // Save time inputs
+        const timeInputs = document.querySelectorAll('input[type="time"]');
+        timeInputs.forEach(input => {
+            data[input.name] = input.value;
+        });
+
         localStorage.setItem('formData', JSON.stringify(data));
     }
 
@@ -904,7 +892,45 @@ document.addEventListener("DOMContentLoaded", async function() {
                     input.value = data[key];
                 }
             });
+
+            // Load number inputs
+            const numberInputs = document.querySelectorAll('input[type="number"]');
+            numberInputs.forEach(input => {
+                if (data[input.name]) {
+                    input.value = data[input.name];
+                }
+            });
+
+            // Load date inputs
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(input => {
+                if (data[input.name]) {
+                    input.value = data[input.name];
+                }
+            });
+
+            // Load time inputs
+            const timeInputs = document.querySelectorAll('input[type="time"]');
+            timeInputs.forEach(input => {
+                if (data[input.name]) {
+                    input.value = data[input.name];
+                }
+            });
+
             calculateTotalTimeWorked(); // Recalculate totals after loading data
         }
     }
+
+    // Save form data on input change
+    numberInputs.forEach(input => {
+        input.addEventListener('input', saveFormData);
+    });
+
+    dateInputs.forEach(input => {
+        input.addEventListener('change', saveFormData);
+    });
+
+    timeInputs.forEach(input => {
+        input.addEventListener('input', saveFormData);
+    });
 });
