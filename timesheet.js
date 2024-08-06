@@ -279,19 +279,18 @@ document.addEventListener("DOMContentLoaded", async function() {
     async function fetchPtoHours() {
         console.log('Fetching PTO hours...');
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-    
+
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
             if (!response.ok) throw new Error(`Failed to fetch PTO hours: ${response.statusText}`);
-    
+
             const data = await response.json();
             console.log('Fetched PTO hours:', data);
-    
+
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
-                let availablePTOHours = parseFloat(record['PTO #']) || 0;
+                availablePTOHours = record['PTO Hours'] || 0;
                 recordId = data.records[0].id; // Save the record ID
-                
                 elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
                 elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2); // Set initial remaining PTO hours
                 console.log('Available PTO hours:', availablePTOHours);
@@ -304,7 +303,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             alert('Failed to fetch PTO hours. Error: ' + error.message);
         }
     }
-    
 
     async function fetchPersonalTime() {
         console.log('Fetching Personal hours...');
@@ -451,7 +449,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     function validatePTOandPersonalHours() {
         const ptoHeader = parseFloat(document.getElementById('pto-hours-display').textContent) || 0;
         const personalHeader = parseFloat(document.getElementById('personal-time-display').textContent) || 0;
-        const ptoSummary = parseFloat(document.getElementById('Available-PTO-hours').textContent) || 0;
+        const ptoSummary = parseFloat(document.getElementById('pto-time').textContent) || 0;
         const personalSummary = parseFloat(document.getElementById('total-personal-time-display').textContent) || 0;
 
         return ptoSummary <= ptoHeader && personalSummary <= personalHeader;
