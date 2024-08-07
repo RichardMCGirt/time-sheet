@@ -244,7 +244,7 @@ button:hover {
 }
 
 .record {
-    background-color: var(--bg-color);
+    background-color: #34495e;
     color: var(--input-text-color);
     padding: 10px;
     margin: 5px 0;
