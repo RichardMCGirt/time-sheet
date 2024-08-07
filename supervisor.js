@@ -257,27 +257,45 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     function exportToExcel() {
-        const rows = [];
+        // Collect data
+        let data = [];
         const tables = timesheetsBody.querySelectorAll('.time-entry-table');
-
         tables.forEach(table => {
-            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText);
-            const data = Array.from(table.querySelectorAll('tbody tr')).map(tr => {
-                return Array.from(tr.querySelectorAll('td')).map(td => td.innerText);
-            });
+            const nameContainer = table.previousElementSibling;
+            const employeeName = nameContainer.textContent;
+            const rows = table.querySelectorAll('tbody tr');
 
-            rows.push(headers.join(','));
-            data.forEach(row => rows.push(row.join(',')));
+            rows.forEach(row => {
+                const date = row.querySelector('input[name="dateEnding"]').value;
+                const hoursWorked = row.querySelector('input[name="hours_worked"]').value;
+                const ptoHours = row.querySelector('input[name="pto_hours"]').value;
+                const personalHours = row.querySelector('input[name="personal_hours"]').value;
+                const holidayHours = row.querySelector('input[name="holiday_hours"]').value;
+                const giftedHours = row.querySelector('input[name="gifted_hours"]').value;
+                const totalHours = row.querySelector('input[name="total_hours"]').value;
+
+                data.push([employeeName, date, hoursWorked, ptoHours, personalHours, holidayHours, giftedHours, totalHours]);
+            });
         });
 
-        const csvContent = 'data:text/csv;charset=utf-8,' + rows.join('\n');
+        // Convert to CSV format
+        let csvContent = "data:text/csv;charset=utf-8," 
+            + "Employee Name,Date Ending,Hours Worked,PTO Hours Used,Personal Hours Used,Holiday Hours Used,Gifted Hours,Total Hours,Approved\n";
+
+        data.forEach(row => {
+            csvContent += row.join(",") + "\n";
+        });
+
+        // Create a link and trigger download
         const encodedUri = encodeURI(csvContent);
-        const link = document.createElement('a');
-        link.setAttribute('href', encodedUri);
-        link.setAttribute('download', 'timesheets.csv');
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "timesheets_data.csv");
         document.body.appendChild(link);
         link.click();
     }
+    
+    
 
     timesheetsBody.addEventListener('change', handleCheckboxChange);
     timesheetsBody.addEventListener('blur', handleBlur, true);
