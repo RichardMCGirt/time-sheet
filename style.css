@@ -429,7 +429,6 @@ input[type="date"] {
     cursor: pointer; /* Changes cursor to pointer */
     transition: transform 0.3s ease; /* Smooth transition for the transform effect */
     float:right;
-padding-right: 36%;
   }
   
   /* 3D hover effect */
