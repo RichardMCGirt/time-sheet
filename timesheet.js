@@ -54,7 +54,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     elements.weekEndingInput.addEventListener('change', handleWeekEndingChange);
     elements.timeEntryForm.addEventListener('input', debounce(calculateTotalTimeWorked, 300));
     elements.logoutButton.addEventListener('click', handleLogout);
-    elements.resetButton.addEventListener('click', resetForm);
     elements.submitButton.addEventListener('click', handleSubmit);
 
     const timeInputs = document.querySelectorAll('input[type="time"]');
@@ -90,7 +89,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             }
         });
 
-        elements.resetButton.style.display = showResetButton ? 'block' : 'none';
     }
 
     timeInputs.forEach(input => {
