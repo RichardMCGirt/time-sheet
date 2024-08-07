@@ -149,7 +149,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     
         // Round totalHours to the nearest quarter
-        totalHours = Math.min(40, Math.round(totalHours * 4) / 4);
     
         return `
             <tr>
