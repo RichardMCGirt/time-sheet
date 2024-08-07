@@ -400,6 +400,18 @@ input[type="date"]:-webkit-autofill {
     -webkit-text-fill-color: white !important;
 }
 
+/* Style the cursor to a pointer for checkboxes */
+input[type="checkbox"] {
+    cursor: pointer;
+    transition: transform 0.6s ease; /* Transition for smooth rotation */
+  }
+  
+  /* Rotate the checkbox when it is checked */
+  input[type="checkbox"]:checked {
+    transform: rotate(360deg);
+  }
+  
+
 /* Button Styling */
 .submit-button,
 .play-pause-button {
