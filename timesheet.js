@@ -268,6 +268,8 @@ document.addEventListener("DOMContentLoaded", async function() {
                     approvalStatusElement.style.textDecoration = 'none';
                 }
                 console.log('Approval status:', isApproved);
+                // Setup event listeners to hide the approval status when user edits their time sheet
+                hideApprovalOnEdit();
             } else {
                 console.log('No approval status data found for user');
             }
@@ -276,6 +278,18 @@ document.addEventListener("DOMContentLoaded", async function() {
             alert('Failed to fetch approval status. Error: ' + error.message);
         }
     }
+    
+    function hideApprovalOnEdit() {
+        // Assume there are multiple input fields for the time sheet
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.addEventListener('change', () => {
+                const approvalStatusElement = document.getElementById('approval-status');
+                approvalStatusElement.style.display = 'none'; // Hide the approval status element
+            });
+        });
+    }
+    
 
     function startCountdown(endDate) {
         const endDateTime = new Date(endDate).getTime();
