@@ -197,10 +197,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (startTime === 'All Day') {
-            startTime = '07:00';
+            startTime = '07:00 AM';
+        } else {
+            startTime = convertToAMPM(startTime);
         }
         if (endTime === 'All Day') {
-            endTime = '16:00';
+            endTime = '04:00 PM';
+        } else {
+            endTime = convertToAMPM(endTime);
         }
 
         const nextIndex = currentEditingIndex !== null ? currentEditingIndex : getNextAvailableIndex();
@@ -230,6 +234,14 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchPreviousRequests(userEmail);
     }
 
+    function convertToAMPM(time) {
+        const [hourString, minute] = time.split(':');
+        let hour = parseInt(hourString, 10);
+        const period = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12 || 12;
+        return `${hour}:${minute} ${period}`;
+    }
+
     function displayPreviousRequests(records) {
         requestsList.innerHTML = '';
     
@@ -257,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`]}</p>
                         <p><strong>End Date:</strong> ${record.fields[`Time off End Date ${i}`]}</p>
                         <p><strong>End Time:</strong> ${record.fields[`Time off End Time ${i}`]}</p>
-                        <p><strong>Days Off (excluding weekends):</strong> ${daysOff}</p>
+                        <p><strong>Days Off:</strong> ${daysOff} days</p>
                         <p class="reason ${reasonClass}" style="display: ${approved ? 'none' : 'block'};"><strong>Reason:</strong> ${reason}</p>
                         ${approvedText}${approvedCheckbox}</p>
                         <button class="edit-button" data-index="${i}" data-id="${record.id}">Edit</button>
@@ -284,9 +296,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (record) {
             currentEditingIndex = index;
             document.getElementById('startDate').value = record.fields[`Time off Start Date ${index}`] || '';
-            document.getElementById('startTime').value = record.fields[`Time off Start Time ${index}`] || '';
+            document.getElementById('startTime').value = convertTo24HourFormat(record.fields[`Time off Start Time ${index}`]) || '';
             document.getElementById('endDate').value = record.fields[`Time off End Date ${index}`] || '';
-            document.getElementById('endTime').value = record.fields[`Time off End Time ${index}`] || '';
+            document.getElementById('endTime').value = convertTo24HourFormat(record.fields[`Time off End Time ${index}`]) || '';
 
             document.getElementById('startDate').focus();
             submitButton.textContent = 'Submit Edit';
@@ -331,6 +343,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+    }
+
+    function convertTo24HourFormat(time) {
+        const [timePart, period] = time.split(' ');
+        let [hours, minutes] = timePart.split(':');
+        hours = parseInt(hours, 10);
+        if (period === 'PM' && hours < 12) {
+            hours += 12;
+        } else if (period === 'AM' && hours === 12) {
+            hours = 0;
+        }
+        return `${hours.toString().padStart(2, '0')}:${minutes}`;
     }
 
     function displaySubmittedData(formData) {
@@ -518,5 +542,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.addEventListener('DOMContentLoaded', validateHours);
+    validateHours();
 });

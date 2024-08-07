@@ -15,6 +15,14 @@ const goBackButton = document.getElementById('goBackButton');
 submitEmailButton.addEventListener('click', handleEmailSubmit);
 resetPasswordButton.addEventListener('click', handlePasswordReset);
 goBackButton.addEventListener('click', handleGoBack);
+emailInput.addEventListener('input', handleEmailInput);
+
+function handleEmailInput() {
+    const email = emailInput.value;
+    if (!email.includes('@')) {
+        emailInput.value = `${email}@vanirinstalledsales.com`;
+    }
+}
 
 async function handleEmailSubmit() {
     const email = emailInput.value;
