@@ -285,15 +285,32 @@ function collectTimesheetData() {
     return data;
 }
 
-// Function to export data to Excel
 function exportToExcel() {
     const data = collectTimesheetData();
     
-    const ws = XLSX.utils.aoa_to_sheet([
+    // Define header row and data
+    const wsData = [
         ["Employee Name", "Date Ending", "Hours Worked", "PTO Hours Used", "Personal Hours Used", "Holiday Hours Used", "Gifted Hours", "Total Hours"],
         ...data
-    ]);
+    ];
 
+    // Create a new worksheet
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Define styles
+    const headerStyle = {
+        font: { bold: true, color: "FFFFFF" }, // Bold font and white text
+        fill: { fgColor: { rgb: "000000" } }   // Black background
+    };
+
+    // Apply styles to header row (row index 0)
+    for (let col = 0; col < wsData[0].length; col++) {
+        const cellAddress = { c: col, r: 0 }; // { c: column index, r: row index }
+        const cellRef = XLSX.utils.encode_cell(cellAddress);
+        ws[cellRef].s = headerStyle; // Apply the style
+    }
+
+    // Define column widths
     ws['!cols'] = [
         { wpx: 150 },
         { wpx: 120 },
@@ -305,11 +322,14 @@ function exportToExcel() {
         { wpx: 120 }
     ];
 
+    // Create a new workbook and add the worksheet
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Timesheets Data');
 
+    // Write workbook to file
     XLSX.writeFile(wb, 'timesheets_data.xlsx');
 }
+
 
 
 
