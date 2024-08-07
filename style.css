@@ -82,7 +82,6 @@ body {
 }
 
 /* Modal styles */
-/* Modal styles */
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -96,21 +95,19 @@ body {
 }
 
 .modal-content {
-    background-color: #fefefe;
+    background-color: white;
     margin: 15% auto; /* 15% from the top and centered */
     padding: 20px;
-    border: 1px solid #888;
+    border: 1px solid black;
     width: 80%; /* Could be more or less, depending on screen size */
     max-width: 500px; /* Optional: Limit the maximum width */
     border-radius: 10px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Basic shadow for 3D effect */
-    transform: perspective(1000px) rotateX(0deg); /* 3D transformation */
-    transition: transform 0.3s, box-shadow 0.3s; /* Smooth transitions */
+    box-shadow: 0 4px 8px rgba(251, 250, 250, 0.961); /* Basic shadow for 3D effect */
+   
 }
 
 .modal-content:hover {
-    transform: perspective(1000px) rotateX(10deg); /* Slight rotation on hover */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+    background-color: whitesmoke;
 }
 
 .modal-content p {
@@ -123,35 +120,39 @@ body {
     margin: 5px;
     padding: 10px 20px;
     border: none;
-    border-radius: 5px; /* Rounded button corners */
+    border-radius: 50px; /* Rounded button corners */
     cursor: pointer;
     font-size: 16px; /* Consistent font size */
-    transition: background-color 0.3s, color 0.3s; /* Smooth color transitions */
+    transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s; /* Smooth transitions including 3D effect */
+    transform-style: preserve-3d; /* Enable 3D transformations */
 }
 
-#confirm-yes {
-    background-color: #4CAF50; /* Green */
+#confirm-yes, #confirm-no {
+    background-color: #4CAF50; /* Green for yes, Red for no */
     color: white;
 }
 
-#confirm-yes:hover {
-    background-color: #45a049; /* Darker green */
-    color: black; /* Text color changes to black */
-    transform: translateY(-3px); /* Lift the button */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Add shadow to create 3D effect */
+#confirm-yes:hover, #confirm-no:hover {
+    animation: spin infinite 1s linear; /* Continuous spin animation */
+    transform: translateY(-3px) rotateY(360deg); /* Lift and spin the button */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced shadow for 3D effect */
 }
 
-/* Confirm No button styles */
 #confirm-no {
     background-color: #f44336; /* Red */
-    color: white;
 }
 
 #confirm-no:hover {
     background-color: #e53935; /* Darker red */
-    color: black; /* Text color changes to black */
-    transform: translateY(-3px); /* Lift the button */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Add shadow to create 3D effect */
+}
+
+@keyframes spin {
+    from {
+        transform: rotateX(0deg);
+    }
+    to {
+        transform: rotateX(360deg);
+    }
 }
 
 
