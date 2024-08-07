@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", function() {
         input.addEventListener('blur', handleSave);
     });
 
-    document.getElementById('reset-button').addEventListener('click', handleReset);
     document.getElementById('clear-button').addEventListener('click', handleClear);
 
     async function handleSave(event) {
@@ -143,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log('Clearing data in Airtable...');
         const endpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}`;
         const searchEndpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}?filterByFormula=AND({Email}="${userEmail}")`;
-
+    
         try {
             const searchResponse = await fetch(searchEndpoint, {
                 headers: {
@@ -152,25 +151,25 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             const searchData = await searchResponse.json();
             console.log('Search data:', searchData);
-
+    
             if (!searchData.records || searchData.records.length === 0) {
                 throw new Error('No matching record found to clear.');
             }
-
+    
             const recordId = searchData.records[0].id;
             console.log('Existing record found with ID:', recordId);
-
+    
             const record = {
                 fields: {
                     ...Object.fromEntries(
-                        Object.keys(gatherFormData()).map(key => [key, ''])
+                        Object.keys(gatherFormData()).map(key => [key, null])
                     ),
                     "email": userEmail
                 }
             };
-
+    
             console.log('Payload being sent to Airtable:', JSON.stringify(record));
-
+    
             const response = await fetch(`${endpoint}/${recordId}`, {
                 method: 'PATCH',
                 headers: {
@@ -179,7 +178,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 },
                 body: JSON.stringify(record)
             });
-
+    
             if (!response.ok) {
                 const errorResponse = await response.json();
                 console.error('Error response from Airtable:', errorResponse);
@@ -187,13 +186,31 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 const responseData = await response.json();
                 console.log('Data successfully cleared in Airtable:', responseData);
+                resetFormFields();  // Reset the form fields after clearing data
+                showMessage('Data cleared and form reset successfully!');
             }
         } catch (error) {
             console.error('Error clearing data:', error);
-            throw error;
+            showMessage('Failed to clear data. Please try again.');
         }
     }
-
+    
+    function resetFormFields() {
+        for (let i = 1; i <= 7; i++) {
+            setValue(`input[name="start_time${i}"]`, '');
+            setValue(`input[name="lunch_start${i}"]`, '');
+            setValue(`input[name="lunch_end${i}"]`, '');
+            setValue(`input[name="end_time${i}"]`, '');
+            setValue(`input[name="Additional_Time_In${i}"]`, '');
+            setValue(`input[name="Additional_Time_Out${i}"]`, '');
+            setValue(`input[name="pto_hours${i}"]`, '');
+            setValue(`input[name="personal_hours${i}"]`, '');
+            setValue(`input[name="holiday_hours${i}"]`, '');
+            setCheckboxValue(`input[name="did_not_work${i}"]`, false);
+        }
+    }
+    
+    
     async function populateFormData() {
         console.log('Populating form data...');
         const searchEndpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}?filterByFormula=AND({Email}="${userEmail}")`;
