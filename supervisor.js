@@ -137,13 +137,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         giftedHours = Math.round(giftedHours * 100) / 100;
     
         // Calculate totalHours
-        let totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours + giftedHours);
-    
-        // Set giftedHours to 0 if totalHours exceeds 40
+        let totalHours = hoursWorked + ptoHours + personalHours + holidayHours + giftedHours;
+        
+        // Set giftedHours to 0 if totalHours exceeds 40 and recalculate totalHours
         if (totalHours > 40) {
             giftedHours = 0;
-            totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours);
+            totalHours = hoursWorked + ptoHours + personalHours + holidayHours;
         }
+    
+        // Round totalHours to the nearest quarter
+        totalHours = Math.min(40, Math.round(totalHours * 4) / 4);
     
         return `
             <tr>
@@ -159,6 +162,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             </tr>
         `;
     }
+    
     
     
 
