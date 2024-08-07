@@ -124,10 +124,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     function generateRows(fields, recordId) {
-        const hoursWorked = fields['Total Hours Worked'] || 0;
+        let hoursWorked = fields['Total Hours Worked'] || 0;
         const ptoHours = fields['PTO Time Used'] || 0;
         const personalHours = fields['Personal Time Used'] || 0;
         const holidayHours = fields['Holiday Hours Used'] || 0;
+    
+        // Round hoursWorked to the nearest quarter
+        hoursWorked = Math.round(hoursWorked * 4) / 4;
     
         // Calculate giftedHours
         let giftedHours = hoursWorked > 0 ? Math.min(3, 40 - (hoursWorked + ptoHours + personalHours + holidayHours)) : 0;
