@@ -113,6 +113,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                     </tbody>
                 `;
 
+                if (supervisorEmail !== 'katy@vanirinstalledsales.com' && fields['Approved']) {
+                    table.style.display = 'none'; // Hide approved rows for non-Katy users
+                }
+
                 timesheetsBody.appendChild(table);
             }
         } else {
@@ -122,6 +126,30 @@ document.addEventListener("DOMContentLoaded", async function () {
             timesheetsBody.appendChild(noRecordsRow);
         }
     }
+
+    function handleCheckboxChange(event) {
+        const checkbox = event.target;
+        const recordId = checkbox.getAttribute('data-record-id');
+        const isApproved = checkbox.classList.contains('approve-checkbox') ? checkbox.checked : null;
+
+        // Validate against conflicting "Not Approved" text input
+        const notApprovedInput = timesheetsBody.querySelector(`.not-approved-checkbox[data-record-id="${recordId}"]`);
+        if (notApprovedInput && isApproved && notApprovedInput.value.trim()) {
+            alert("Please clear the 'Not Approved' text input if you check the 'Approved' checkbox.");
+            checkbox.checked = !isApproved; // Revert checkbox state
+            return;
+        }
+
+        updateApprovalStatus(recordId, isApproved, null);
+
+  // Adjust visibility of name and table rows based on the checkbox state
+  const row = checkbox.closest('tr');
+  const nameContainer = document.querySelector(`.employee-name-container[data-record-id="${recordId}"]`);
+  if (supervisorEmail !== 'katy@vanirinstalledsales.com') {
+      if (nameContainer) nameContainer.style.display = isApproved ? 'none' : ''; // Hide employee name if approved
+      if (row) row.style.display = isApproved ? 'none' : ''; // Hide row if approved
+  }
+}
 
     function generateRows(fields, recordId) {
         let hoursWorked = fields['Total Hours Worked'] || 0;
