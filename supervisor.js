@@ -72,28 +72,29 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     async function populateTimesheets(records) {
         timesheetsBody.innerHTML = ''; // Clear any existing rows
-
+    
         if (records.length > 0) {
             for (const record of records) {
                 const fields = record.fields;
                 const employeeNumber = fields['Employee Number'];
-
+    
                 if (!employeeNumber) continue; // Skip records without Employee Number
-
+    
                 const employeeName = await fetchEmployeeName(employeeNumber);
-
+    
                 const nameContainer = document.createElement('div');
                 nameContainer.classList.add('name-container');
                 nameContainer.textContent = employeeName;
+                nameContainer.setAttribute('data-record-id', record.id); // Set the record ID
                 nameContainer.addEventListener('click', () => {
-                    // Redirect to the employee's record
-                    window.location.href = `employee_record.html?employeeNumber=${employeeNumber}`;
+                    toggleVisibility(record.id);
                 });
                 nameContainer.classList.add('clickable');
                 timesheetsBody.appendChild(nameContainer);
-
+    
                 const table = document.createElement('table');
                 table.classList.add('time-entry-table');
+                table.setAttribute('data-record-id', record.id); // Set the record ID
                 table.innerHTML = `
                     <thead>
                         <tr>
@@ -112,11 +113,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                         ${generateRows(fields, record.id)}
                     </tbody>
                 `;
-
+    
                 if (supervisorEmail !== 'katy@vanirinstalledsales.com' && fields['Approved']) {
                     table.style.display = 'none'; // Hide approved rows for non-Katy users
                 }
-
+    
                 timesheetsBody.appendChild(table);
             }
         } else {
@@ -126,12 +127,23 @@ document.addEventListener("DOMContentLoaded", async function () {
             timesheetsBody.appendChild(noRecordsRow);
         }
     }
-
+    
+    function toggleVisibility(recordId) {
+        const nameContainer = timesheetsBody.querySelector(`.name-container[data-record-id="${recordId}"]`);
+        const table = timesheetsBody.querySelector(`.time-entry-table[data-record-id="${recordId}"]`);
+    
+        if (nameContainer && table) {
+            // Toggle the display of the table
+            table.style.display = table.style.display === 'none' ? '' : 'none';
+        }
+    }
+    
+    
     function handleCheckboxChange(event) {
         const checkbox = event.target;
         const recordId = checkbox.getAttribute('data-record-id');
         const isApproved = checkbox.classList.contains('approve-checkbox') ? checkbox.checked : null;
-
+    
         // Validate against conflicting "Not Approved" text input
         const notApprovedInput = timesheetsBody.querySelector(`.not-approved-checkbox[data-record-id="${recordId}"]`);
         if (notApprovedInput && isApproved && notApprovedInput.value.trim()) {
@@ -139,17 +151,25 @@ document.addEventListener("DOMContentLoaded", async function () {
             checkbox.checked = !isApproved; // Revert checkbox state
             return;
         }
-
+    
         updateApprovalStatus(recordId, isApproved, null);
-
-  // Adjust visibility of name and table rows based on the checkbox state
-  const row = checkbox.closest('tr');
-  const nameContainer = document.querySelector(`.employee-name-container[data-record-id="${recordId}"]`);
-  if (supervisorEmail !== 'katy@vanirinstalledsales.com') {
-      if (nameContainer) nameContainer.style.display = isApproved ? 'none' : ''; // Hide employee name if approved
-      if (row) row.style.display = isApproved ? 'none' : ''; // Hide row if approved
-  }
-}
+    
+        // Adjust visibility of the table based on the checkbox state
+        const table = timesheetsBody.querySelector(`.time-entry-table[data-record-id="${recordId}"]`);
+    
+        if (table) {
+            if (supervisorEmail !== 'katy@vanirinstalledsales.com') {
+                // Hide the table if the checkbox is checked and the supervisor is not Katy
+                table.style.display = isApproved ? 'none' : '';
+            } else {
+                // For Katy, do not hide the table based on checkbox state
+                table.style.display = '';
+            }
+        }
+    }
+    
+    
+    
 
     function generateRows(fields, recordId) {
         let hoursWorked = fields['Total Hours Worked'] || 0;
