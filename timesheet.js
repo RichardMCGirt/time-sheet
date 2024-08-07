@@ -117,33 +117,56 @@ document.addEventListener("DOMContentLoaded", async function() {
             const ptoInput = row.querySelector('input[name^="PTO_hours"]');
             const personalInput = row.querySelector('input[name^="Personal_hours"]');
             const holidayInput = row.querySelector('input[name^="Holiday_hours"]');
-
+    
             if (event.target.checked) {
                 timeInputsInRow.forEach(input => {
+                    input.setAttribute('data-previous-value', input.value);
                     input.value = '';
                     input.disabled = true;
                 });
                 numberInputsInRow.forEach(input => {
+                    input.setAttribute('data-previous-value', input.value);
                     input.value = '';
                     input.disabled = true;
                 });
-                if (ptoInput) ptoInput.disabled = false;
-                if (personalInput) personalInput.disabled = false;
-                if (holidayInput) holidayInput.disabled = false;
+                if (ptoInput) {
+                    ptoInput.setAttribute('data-previous-value', ptoInput.value);
+                    ptoInput.disabled = false;
+                }
+                if (personalInput) {
+                    personalInput.setAttribute('data-previous-value', personalInput.value);
+                    personalInput.disabled = false;
+                }
+                if (holidayInput) {
+                    holidayInput.setAttribute('data-previous-value', holidayInput.value);
+                    holidayInput.disabled = false;
+                }
             } else {
                 timeInputsInRow.forEach(input => {
+                    input.value = input.getAttribute('data-previous-value') || '';
                     input.disabled = false;
                 });
                 numberInputsInRow.forEach(input => {
+                    input.value = input.getAttribute('data-previous-value') || '';
                     input.disabled = false;
                 });
-                if (ptoInput) ptoInput.disabled = true;
-                if (personalInput) personalInput.disabled = true;
-                if (holidayInput) holidayInput.disabled = true;
+                if (ptoInput) {
+                    ptoInput.disabled = true;
+                    ptoInput.value = ptoInput.getAttribute('data-previous-value') || '';
+                }
+                if (personalInput) {
+                    personalInput.disabled = true;
+                    personalInput.value = personalInput.getAttribute('data-previous-value') || '';
+                }
+                if (holidayInput) {
+                    holidayInput.disabled = true;
+                    holidayInput.value = holidayInput.getAttribute('data-previous-value') || '';
+                }
             }
             calculateTotalTimeWorked();
         });
     });
+    
 
     await fetchPtoHours();
     await fetchPersonalTime();
