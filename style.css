@@ -400,6 +400,19 @@ input[type="date"]:-webkit-autofill {
     -webkit-text-fill-color: white !important;
 }
 
+/* Style for clickable span elements */
+.clickable {
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: transform 0.3s ease; /* Smooth transition for the transform effect */
+  }
+  
+  /* 3D hover effect */
+  .clickable:hover {
+    transform: perspective(1000px) translateZ(10px); /* Moves the element towards the viewer */
+    color: #16a085;
+  }
+  
+
 /* Style the cursor to a pointer for checkboxes */
 input[type="checkbox"] {
     cursor: pointer;
@@ -410,6 +423,17 @@ input[type="checkbox"] {
   input[type="checkbox"]:checked {
     transform: rotate(360deg);
   }
+
+  /* Style the date input field */
+input[type="date"] {
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: transform 0.3s ease; /* Smooth transition for the transform effect */
+  }
+  
+  /* 3D hover effect */
+  input[type="date"]:hover {
+color: #16a085;  }
+  
   
 
 /* Button Styling */

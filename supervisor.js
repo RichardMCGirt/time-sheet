@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                             <th class="narrow-column">Gifted Hours</th>
                             <th class="narrow-column">Total Hours</th>
                             <th class="narrow-column">Approved</th>
-                            <th class="narrow-column">Not Approved</th>
+                            <th class="narrow-column">Not Approved Reason</th>
                         </tr>
                     </thead>
                     <tbody>
