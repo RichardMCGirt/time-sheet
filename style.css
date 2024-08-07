@@ -411,6 +411,8 @@ input[type="date"]:-webkit-autofill {
     transform: perspective(1000px) translateZ(10px); /* Moves the element towards the viewer */
     color: #16a085;
   }
+
+  
   
 
 /* Style the cursor to a pointer for checkboxes */
