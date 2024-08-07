@@ -138,6 +138,38 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    document.getElementById('clear-button').addEventListener('click', async () => {
+        const userConfirmed = await showModal();
+        if (userConfirmed) {
+            await clearDataInAirtable();
+            resetFormFields();
+            showMessage('Data cleared and form reset successfully!');
+        } else {
+            showMessage('Data clearing canceled.');
+        }
+    });
+    
+    function showModal() {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('confirm-modal');
+            modal.style.display = 'block';
+    
+            document.getElementById('confirm-yes').addEventListener('click', () => {
+                closeModal();
+                resolve(true);
+            });
+    
+            document.getElementById('confirm-no').addEventListener('click', () => {
+                closeModal();
+                resolve(false);
+            });
+        });
+    }
+    
+    function closeModal() {
+        document.getElementById('confirm-modal').style.display = 'none';
+    }
+    
     async function clearDataInAirtable() {
         console.log('Clearing data in Airtable...');
         const endpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}`;
@@ -186,12 +218,10 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 const responseData = await response.json();
                 console.log('Data successfully cleared in Airtable:', responseData);
-                resetFormFields();  // Reset the form fields after clearing data
-                showMessage('Data cleared and form reset successfully!');
             }
         } catch (error) {
             console.error('Error clearing data:', error);
-            showMessage('Failed to clear data. Please try again.');
+            throw error;
         }
     }
     
@@ -209,6 +239,8 @@ document.addEventListener("DOMContentLoaded", function() {
             setCheckboxValue(`input[name="did_not_work${i}"]`, false);
         }
     }
+    
+    
     
     
     async function populateFormData() {

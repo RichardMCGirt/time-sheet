@@ -81,6 +81,81 @@ body {
     padding-right: 10%;
 }
 
+/* Modal styles */
+/* Modal styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 500px; /* Optional: Limit the maximum width */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Basic shadow for 3D effect */
+    transform: perspective(1000px) rotateX(0deg); /* 3D transformation */
+    transition: transform 0.3s, box-shadow 0.3s; /* Smooth transitions */
+}
+
+.modal-content:hover {
+    transform: perspective(1000px) rotateX(10deg); /* Slight rotation on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+}
+
+.modal-content p {
+    font-size: 16px;
+    color: #333; /* Text color */
+    margin-bottom: 20px; /* Space between text and buttons */
+}
+
+.modal-content button {
+    margin: 5px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px; /* Rounded button corners */
+    cursor: pointer;
+    font-size: 16px; /* Consistent font size */
+    transition: background-color 0.3s, color 0.3s; /* Smooth color transitions */
+}
+
+#confirm-yes {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+#confirm-yes:hover {
+    background-color: #45a049; /* Darker green */
+    color: black; /* Text color changes to black */
+    transform: translateY(-3px); /* Lift the button */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Add shadow to create 3D effect */
+}
+
+/* Confirm No button styles */
+#confirm-no {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+#confirm-no:hover {
+    background-color: #e53935; /* Darker red */
+    color: black; /* Text color changes to black */
+    transform: translateY(-3px); /* Lift the button */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Add shadow to create 3D effect */
+}
+
+
+
 
 .sticky-submit {
     position: fixed;
