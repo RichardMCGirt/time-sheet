@@ -6,7 +6,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     const userEmailElement = document.getElementById('user-email');
     const timesheetsBody = document.getElementById('timesheets-body');
     const checkAllButton = document.getElementById('check-all-button');
-    const logoutButton = document.getElementById('logout-button'); // Add the logout button
+    const logoutButton = document.getElementById('logout-button');
+    const loadingIndicator = document.getElementById('loading-indicator');
 
     let allChecked = false;
 
@@ -36,6 +37,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             return data.records.length > 0 ? data.records[0].fields['Full Name'] : null;
         } catch (error) {
             console.error(error);
+            alert("Error fetching supervisor data. Please try again later.");
             return null;
         }
     }
@@ -49,6 +51,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             return data.records.length > 0 ? data.records[0].fields['Full Name'] : 'Unknown';
         } catch (error) {
             console.error(error);
+            alert("Error fetching employee data. Please try again later.");
             return 'Unknown';
         }
     }
@@ -61,12 +64,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
 
         try {
+            loadingIndicator.style.display = 'block'; // Show loading indicator
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
             if (!response.ok) throw new Error(`Failed to fetch timesheets: ${response.statusText}`);
             const data = await response.json();
             await populateTimesheets(data.records);
         } catch (error) {
             console.error(error);
+            alert("Error fetching timesheet data. Please try again later.");
+        } finally {
+            loadingIndicator.style.display = 'none'; // Hide loading indicator
         }
     }
 
@@ -81,6 +88,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (!employeeNumber) continue; // Skip records without Employee Number
     
                 const employeeName = await fetchEmployeeName(employeeNumber);
+                const hasValues = checkTimesheetValues(fields);
     
                 const nameContainer = document.createElement('div');
                 nameContainer.classList.add('name-container');
@@ -90,6 +98,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                     toggleVisibility(record.id);
                 });
                 nameContainer.classList.add('clickable');
+                if (!hasValues) {
+                    nameContainer.style.color = 'red'; // Set the name color to red if no values
+                }
                 timesheetsBody.appendChild(nameContainer);
     
                 const table = document.createElement('table');
@@ -127,6 +138,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             timesheetsBody.appendChild(noRecordsRow);
         }
     }
+
+    function checkTimesheetValues(fields) {
+        return fields['Total Hours Worked'] || fields['PTO Time Used'] || fields['Personal Time Used'] || fields['Holiday Hours Used'];
+    }
     
     function toggleVisibility(recordId) {
         const nameContainer = timesheetsBody.querySelector(`.name-container[data-record-id="${recordId}"]`);
@@ -135,15 +150,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (nameContainer && table) {
             // Toggle the display of the table
             table.style.display = table.style.display === 'none' ? '' : 'none';
+            nameContainer.classList.toggle('hidden', table.style.display === 'none');
         }
     }
-    
-    
+
     function handleCheckboxChange(event) {
         const checkbox = event.target;
         const recordId = checkbox.getAttribute('data-record-id');
         const isApproved = checkbox.classList.contains('approve-checkbox') ? checkbox.checked : null;
-    
+
         // Validate against conflicting "Not Approved" text input
         const notApprovedInput = timesheetsBody.querySelector(`.not-approved-checkbox[data-record-id="${recordId}"]`);
         if (notApprovedInput && isApproved && notApprovedInput.value.trim()) {
@@ -151,9 +166,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             checkbox.checked = !isApproved; // Revert checkbox state
             return;
         }
-    
+
         updateApprovalStatus(recordId, isApproved, null);
-    
+
         // Adjust visibility of the table based on the checkbox state
         const table = timesheetsBody.querySelector(`.time-entry-table[data-record-id="${recordId}"]`);
     
@@ -167,9 +182,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         }
     }
-    
-    
-    
 
     function generateRows(fields, recordId) {
         let hoursWorked = fields['Total Hours Worked'] || 0;
@@ -212,9 +224,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             </tr>
         `;
     }
-    
-    
-    
 
     async function updateApprovalStatus(recordId, isApproved, isNotApproved) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
@@ -250,23 +259,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    function handleCheckboxChange(event) {
-        const checkbox = event.target;
-        const recordId = checkbox.getAttribute('data-record-id');
-        const isApproved = checkbox.classList.contains('approve-checkbox') ? checkbox.checked : null;
-
-        // Validate against conflicting "Not Approved" text input
-        const notApprovedInput = timesheetsBody.querySelector(`.not-approved-checkbox[data-record-id="${recordId}"]`);
-        if (notApprovedInput && isApproved && notApprovedInput.value.trim()) {
-            alert("Please clear the 'Not Approved' text input if you check the 'Approved' checkbox.");
-            checkbox.checked = !isApproved; // Revert checkbox state
-            return;
-        }
-
-        updateApprovalStatus(recordId, isApproved, null);
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
     }
 
-    function handleBlur(event) {
+    const handleBlurDebounced = debounce(async function (event) {
         const input = event.target;
         if (input.classList.contains('not-approved-checkbox')) {
             const recordId = input.getAttribute('data-record-id');
@@ -282,7 +283,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             updateApprovalStatus(recordId, null, isNotApproved);
         }
-    }
+    }, 300);
 
     function handleCheckAll() {
         const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
@@ -303,94 +304,108 @@ document.addEventListener("DOMContentLoaded", async function () {
         allChecked = !allChecked;
         checkAllButton.textContent = allChecked ? "Deselect All" : "Select All";
     }
-// supervisor.js
 
-// Function to collect timesheet data
-function collectTimesheetData() {
-    const data = [];
-    const tables = document.querySelectorAll('.time-entry-table');
-
-    tables.forEach(table => {
-        const employeeName = table.previousElementSibling.textContent;
-        const rows = table.querySelectorAll('tbody tr');
-
-        rows.forEach(row => {
-            const date = row.querySelector('input[name="dateEnding"]').value;
-            const hoursWorked = row.querySelector('input[name="hours_worked"]').value;
-            const ptoHours = row.querySelector('input[name="pto_hours"]').value;
-            const personalHours = row.querySelector('input[name="personal_hours"]').value;
-            const holidayHours = row.querySelector('input[name="holiday_hours"]').value;
-            const giftedHours = row.querySelector('input[name="gifted_hours"]').value;
-            const totalHours = row.querySelector('input[name="total_hours"]').value;
-
-            data.push([
-                employeeName, date, hoursWorked, ptoHours,
-                personalHours, holidayHours, giftedHours, totalHours
-            ]);
+    function resetAllCheckboxes() {
+        const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            const recordId = checkbox.getAttribute('data-record-id');
+            updateApprovalStatus(recordId, false, null);
         });
-    });
-
-    return data;
-}
-
-function exportToExcel() {
-    const data = collectTimesheetData();
-    
-    // Define header row and data
-    const wsData = [
-        ["Employee Name", "Date Ending", "Hours Worked", "PTO Hours Used", "Personal Hours Used", "Holiday Hours Used", "Gifted Hours", "Total Hours"],
-        ...data
-    ];
-
-    // Create a new worksheet
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-    // Define styles
-    const headerStyle = {
-        font: { bold: true, color: "FFFFFF" }, // Bold font and white text
-        fill: { fgColor: { rgb: "000000" } }   // Black background
-    };
-
-    // Apply styles to header row (row index 0)
-    for (let col = 0; col < wsData[0].length; col++) {
-        const cellAddress = { c: col, r: 0 }; // { c: column index, r: row index }
-        const cellRef = XLSX.utils.encode_cell(cellAddress);
-        ws[cellRef].s = headerStyle; // Apply the style
     }
 
-    // Define column widths
-    ws['!cols'] = [
-        { wpx: 150 },
-        { wpx: 120 },
-        { wpx: 120 },
-        { wpx: 120 },
-        { wpx: 120 },
-        { wpx: 120 },
-        { wpx: 120 },
-        { wpx: 120 }
-    ];
+    function collectTimesheetData() {
+        const data = [];
+        const tables = document.querySelectorAll('.time-entry-table');
 
-    // Create a new workbook and add the worksheet
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Timesheets Data');
+        tables.forEach(table => {
+            const employeeName = table.previousElementSibling.textContent;
+            const rows = table.querySelectorAll('tbody tr');
 
-    // Write workbook to file
-    XLSX.writeFile(wb, 'timesheets_data.xlsx');
-}
+            rows.forEach(row => {
+                const date = row.querySelector('input[name="dateEnding"]').value;
+                const hoursWorked = row.querySelector('input[name="hours_worked"]').value;
+                const ptoHours = row.querySelector('input[name="pto_hours"]').value;
+                const personalHours = row.querySelector('input[name="personal_hours"]').value;
+                const holidayHours = row.querySelector('input[name="holiday_hours"]').value;
+                const giftedHours = row.querySelector('input[name="gifted_hours"]').value;
+                const totalHours = row.querySelector('input[name="total_hours"]').value;
 
+                data.push([
+                    employeeName, date, hoursWorked, ptoHours,
+                    personalHours, holidayHours, giftedHours, totalHours
+                ]);
+            });
+        });
 
+        return data;
+    }
 
+    function exportToExcel() {
+        const data = collectTimesheetData();
+        
+        // Define header row and data
+        const wsData = [
+            ["Employee Name", "Date Ending", "Hours Worked", "PTO Hours Used", "Personal Hours Used", "Holiday Hours Used", "Gifted Hours", "Total Hours"],
+            ...data
+        ];
 
-    
-    
+        // Create a new worksheet
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+        // Define styles
+        const headerStyle = {
+            font: { bold: true, color: "FFFFFF" }, // Bold font and white text
+            fill: { fgColor: { rgb: "000000" } }   // Black background
+        };
+
+        // Apply styles to header row (row index 0)
+        for (let col = 0; col < wsData[0].length; col++) {
+            const cellAddress = { c: col, r: 0 }; // { c: column index, r: row index }
+            const cellRef = XLSX.utils.encode_cell(cellAddress);
+            ws[cellRef].s = headerStyle; // Apply the style
+        }
+
+        // Define column widths
+        ws['!cols'] = [
+            { wpx: 150 },
+            { wpx: 120 },
+            { wpx: 120 },
+            { wpx: 120 },
+            { wpx: 120 },
+            { wpx: 120 },
+            { wpx: 120 },
+            { wpx: 120 }
+        ];
+
+        // Create a new workbook and add the worksheet
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Timesheets Data');
+
+        // Write workbook to file
+        XLSX.writeFile(wb, 'timesheets_data.xlsx');
+    }
 
     timesheetsBody.addEventListener('change', handleCheckboxChange);
-    timesheetsBody.addEventListener('blur', handleBlur, true);
+    timesheetsBody.addEventListener('blur', handleBlurDebounced, true);
 
     const supervisorName = await fetchSupervisorName(supervisorEmail);
     if (supervisorName) {
         await fetchTimesheets(supervisorName);
     } else {
         console.error(`Supervisor not found for email: ${supervisorEmail}`);
+        alert("Supervisor not found. Please check your email and try again.");
     }
+
+    // Schedule checkbox reset for every Thursday
+    const now = new Date();
+    const nextThursday = new Date();
+    nextThursday.setDate(now.getDate() + ((4 + 7 - now.getDay()) % 7));
+    nextThursday.setHours(0, 0, 0, 0);
+
+    const timeUntilNextThursday = nextThursday - now;
+    setTimeout(function() {
+        resetAllCheckboxes();
+        setInterval(resetAllCheckboxes, 7 * 24 * 60 * 60 * 1000); // Every 7 days
+    }, timeUntilNextThursday);
 });

@@ -6,9 +6,101 @@
     <title>Dashboard - Time Tracking Software</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-
+    <style>
+        body {
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .header-left, .header-right, .info-container {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .info-container {
+            margin: 10px 0;
+        }
+        .form-group, .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        .form-label {
+            flex: 1;
+            text-align: right;
+            color: #ecf0f1;
+            font-weight: bold;
+            padding-right: 10px;
+        }
+        .form-value {
+            flex: 1;
+            color: #1abc9c;
+            font-weight: bold;
+            font-size: 20px;
+            text-align: left;
+        }
+        .error {
+            color: red;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+        }
+        .sticky-submit {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1abc9c;
+            color: #ecf0f1;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .form-control {
+            max-width: 100px;
+            text-align: center;
+        }
+        .narrow-column {
+            text-align: center;
+        }
+        .time-entry-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .time-entry-table th, .time-entry-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .time-entry-table th {
+            background-color: #34495e;
+            color: white;
+        }
+        .clickable {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
+        }
+    </style>
 </head>
-<body style="text-align: center;">
+<body>
     <main>
         <header>
             <div class="header-left">
@@ -17,7 +109,7 @@
             <div id="pto-info" style="display: none;">
                 <h1>PTO Hours Available: <span id="pto-hours">Loading...</span></h1>
                 <label for="personal-time">Personal time used (hours):</label>
-                <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input">
+                <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input" placeholder="Enter hours">
             </div>
             <div id="countdown-container" style="font-size: 18px; color: white; margin-top: 10px;">
                 <h3 id="countdown-header">Personal Hours expire in</h3>
@@ -38,8 +130,8 @@
                     <span id="user-email" class="clickable">example@example.com</span>
                     <a href="#" id="logout-button" class="logout-button">Logout</a>
                     <button id="convert-to-csv-button">Convert to CSV</button>
-
                 </div>
+            </div>
         </header>
         <nav class="navbar">
             <ul>
@@ -50,20 +142,12 @@
         <section id="time-entry" class="time-entry">
             <form id="time-entry-form" class="time-entry-form">
                 <div class="form-group">
-                    <label for="week-ending" class="Week-Ending" style="margin-right: 0px;">Week Ending (Wednesday):</label>
-                    <input type="date" id="week-ending" name="week_ending" required style="font-size: 20px; margin-right: 0px; max-width: fit-content;"  width="20px">
-                    
-                    <label for="approval-status" class="approved-label"  style="font-size: 20px; margin-right: 50px;"></label>
-                    <span id="approval-status" style="color: red;"  style="font-size: 250px; margin-right: 50px;"></span>
-                    
-                    
-            </div>
+                    <label for="week-ending" class="Week-Ending">Week Ending (Wednesday):</label>
+                    <input type="date" id="week-ending" name="week_ending" required>
+                    <label for="approval-status" class="approved-label"></label>
+                    <span id="approval-status" style="color: red;"></span>
+                </div>
                 <button id="playPauseButton" class="play-pause-button">Play</button>
-               
-
-
-
-
                 <table id="time-entry-table" class="time-entry-table">
                     <thead>
                         <tr>
@@ -82,7 +166,6 @@
                         </tr>
                     </thead>
                     <tbody id="time-entry-body">
-                        <!-- Rows for time entries -->
                         <tr data-day="1">
                             <td style="text-align: center;"><input type="date" name="date1" readonly></td>
                             <td style="text-align: center;"><input type="time" name="start_time1"></td>
@@ -188,76 +271,68 @@
 
             </form>
         <!-- Modal HTML -->
-<div id="confirm-modal" class="modal">
-    <div class="modal-content">
-        <p>Are you sure you want to clear all data? </p>
-        <button id="confirm-yes">Yes</button>
-        <button id="confirm-no">No</button>
-    </div>
-</div>
-
-            <section id="summary" class="summary-section" style="display: flex; justify-content: center; align-items: center; padding: 20px;">
-                <form id="summary-form" class="summary-form" style="display: flex; flex-direction: column; align-items: center; background-color: #34495e; padding: 20px; border-radius: 10px; width: 100%; max-width: 600px;">
-                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
-                        <label for="pto-time" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">PTO time used (hours):</label>
-                        <span type="number" id="pto-time" name="pto_time" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0</span>
-                    </div>
-                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
-                        <label for="personal-time" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Personal time used (hours):</label>
-                        <div id="total-personal-time-display" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0</div>
-                    </div>
-                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
-                        <label for="Holiday-hours" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Holiday (hours):</label>
-                        <span type="number" id="Holiday-hours" name="Holiday_hours" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0</span>
-                    </div>
-                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
-                        <label for="total-time-worked" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Total Hours Worked:</label>
-                        <span id="total-time-worked" class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
-                    </div>
-                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
-
-                           <label for="overtime" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">overtime hours:</label>
-                        <span id="overtimehours" class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
-                    </div>
-                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
-                        <label for="total-time-with-pto" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Total Time:</label>
-                        <span id="total-time-with-pto-value" class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
-                    </div>
-                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
-                        <label for="remaining-pto-hours" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Remaining PTO Hours:</label>
-                        <span id="remaining-pto-hours" class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
-                        <div id="pto-hours-error" class="error" style="display: none;">Not enough PTO hours</div>
-
-                    </div>
-                    <div class="form-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0; gap: 10px;">
-                        <label for="remaining-personal-hours" class="form-label" style="flex: 1; text-align: right; color: #ecf0f1; font-weight: bold; padding-right: 10px;">Remaining Personal Hours:</label>
-                        <span id="remaining-personal-hours"  class="form-value" min="0" style="flex: 1; color: #1abc9c; font-weight: bold; font-size: 20px; text-align: left;">0.00</span>
-                        <div id="personal-time-error" class="error" style="display: none;">Not enough personal hours</div>
-
-                    </div>
-                    <span id="pto-validation-message" class="validation-message" style="color: red; text-align: center;"></span><br>
-
-                    <button id="submit-button" class="sticky-submit" min="0" style="padding: 10px 20px; border: none; border-radius: 5px; background-color: #1abc9c; color: #ecf0f1; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px;">Submit</button>
-                </form>
-            </section>
-            
+        <div id="confirm-modal" class="modal">
+            <div class="modal-content">
+                <p>Are you sure you want to clear all data?</p>
+                <button id="confirm-yes">Yes</button>
+                <button id="confirm-no">No</button>
+            </div>
+        </div>
+        <section id="summary" class="summary-section" style="display: flex; justify-content: center; align-items: center; padding: 20px;">
+            <form id="summary-form" class="summary-form" style="display: flex; flex-direction: column; align-items: center; background-color: #34495e; padding: 20px; border-radius: 10px; width: 100%; max-width: 600px;">
+                <div class="form-row">
+                    <label for="pto-time" class="form-label">PTO time used (hours):</label>
+                    <span type="number" id="pto-time" name="pto_time">0</span>
+                </div>
+                <div class="form-row">
+                    <label for="personal-time" class="form-label">Personal time used (hours):</label>
+                    <div id="total-personal-time-display">0</div>
+                </div>
+                <div class="form-row">
+                    <label for="Holiday-hours" class="form-label">Holiday (hours):</label>
+                    <span type="number" id="Holiday-hours" name="Holiday_hours">0</span>
+                </div>
+                <div class="form-row">
+                    <label for="total-time-worked" class="form-label">Total Hours Worked:</label>
+                    <span id="total-time-worked" class="form-value">0.00</span>
+                </div>
+                <div class="form-row">
+                    <label for="overtime" class="form-label">Overtime hours:</label>
+                    <span id="overtimehours" class="form-value">0.00</span>
+                </div>
+                <div class="form-row">
+                    <label for="total-time-with-pto" class="form-label">Total Time:</label>
+                    <span id="total-time-with-pto-value" class="form-value">0.00</span>
+                </div>
+                <div class="form-row">
+                    <label for="remaining-pto-hours" class="form-label">Remaining PTO Hours:</label>
+                    <span id="remaining-pto-hours" class="form-value">0.00</span>
+                    <div id="pto-hours-error" class="error" style="display: none;">Not enough PTO hours</div>
+                </div>
+                <div class="form-row">
+                    <label for="remaining-personal-hours" class="form-label">Remaining Personal Hours:</label>
+                    <span id="remaining-personal-hours" class="form-value">0.00</span>
+                    <div id="personal-time-error" class="error" style="display: none;">Not enough personal hours</div>
+                </div>
+                <span id="pto-validation-message" class="validation-message" style="color: red; text-align: center;"></span><br>
+                <button id="submit-button" class="sticky-submit">Submit</button>
+            </form>
         </section>
-        <br>
-    </main>
-    <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
-    <script src="timesheet.js"></script>
-    <div id="script-placeholder"></div>
-    <script src="disable-script.js"></script>
-    <script src="huntergong.js"></script>
-    <script src="airtablestorage.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            initializeTimeDropdowns();
-            initializeKeyboardNavigation();
-        });
+    </section>
+</main>
+<audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
+<script src="timesheet.js"></script>
+<div id="script-placeholder"></div>
+<script src="disable-script.js"></script>
+<script src="huntergong.js"></script>
+<script src="airtablestorage.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        initializeTimeDropdowns();
+        initializeKeyboardNavigation();
+    });
 
         function initializeTimeDropdowns() {
             // Your logic to initialize time dropdowns

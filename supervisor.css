@@ -8,7 +8,7 @@
     --input-bg: #34495e;
     --input-text-color: white;
     --highlight-color: #1abc9c;
-    --highlight-hover-color: #16a085;
+    --highlight-hover-color: #f39c12; /* Changed to a more contrasting color */
 }
 
 body {
@@ -89,16 +89,6 @@ header {
     gap: 20px;
 }
 
-
-
-#employee-name-filter {
-    margin: 10px;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-
 .navbar ul li {
     display: inline;
 }
@@ -118,17 +108,50 @@ header {
     color: var(--text-color);
 }
 
+#employee-name-filter {
+    margin: 10px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
 .name-container {
     text-align: left; /* Ensures text is left-aligned */
     font-size: 18px;
     margin: 10px 0;
     color: var(--text-color);
     font-weight: bold;
-    padding-left: 20px;
+    padding: 20px;
     transition: color 0.3s ease;
     width: 70%; /* Match the width of the table */
     margin: 0 auto; /* Center the container */
     cursor: pointer;
+}
+
+.name-container.hidden {
+    padding-bottom: 40px; /* Additional space when table is hidden */
+}
+
+#check-all-button {
+    cursor: pointer;  /* Changes cursor to pointer */
+    transition: transform 0.5s ease; /* Smooth transition for the transform effect */
+}
+
+#check-all-button:hover {
+    animation: randomEffect 1s infinite;
+}
+
+@keyframes randomEffect {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(5deg); }
+    50% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+}
+
+#loading-indicator {
+    text-align: center;
+    font-size: 18px;
+    padding: 10px;
 }
 
 .time-entry-table {
@@ -137,6 +160,7 @@ header {
     border-collapse: collapse;
     font-size: 14px;
     margin-bottom: 30px;
+    transition: background-color 0.3s ease;
 }
 
 .time-entry-table th,
@@ -271,39 +295,6 @@ input[type="date"]:-webkit-autofill {
 .submit-button:hover,
 .play-pause-button:hover {
     background-color: var(--highlight-hover-color);
-}
-
-.navbar {
-    background-color: var(--header-bg);
-    overflow: hidden;
-    transition: background-color 0.3s ease;
-}
-
-.navbar ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.navbar ul li {
-    display: inline;
-}
-
-.navbar ul li a {
-    display: inline-block;
-    color: var(--text-color);
-    text-align: center;
-    padding: 14px 20px;
-    text-decoration: none;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.navbar ul li a:hover {
-    background-color: var(--highlight-color);
-    color: var(--text-color);
 }
 
 @media (max-width: 768px) {

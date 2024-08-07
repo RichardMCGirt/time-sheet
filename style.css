@@ -342,7 +342,7 @@ input[type="date"]:-webkit-autofill {
 }
 
 .time-entry-form {
-    width: 96%;
+    width: 80%;
     max-width: 2550px;
     margin: 0 auto;
     background-color: #34495e;
@@ -486,7 +486,7 @@ color: #16a085;  }
     }
 
     .time-entry-table {
-        width: 100%;
+        width: 90%;
         overflow-x: auto;
         display: block;
     }
