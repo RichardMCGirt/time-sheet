@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", function() {
         input.addEventListener('blur', handleSave);
     });
 
+    document.getElementById('reset-button').addEventListener('click', handleReset);
+
     async function handleSave(event) {
         event.preventDefault();
         console.log('Input field lost focus. Gathering form data...');
@@ -22,15 +24,14 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error('Error saving data:', error);
         }
     }
-    
+
     function showMessage(message) {
         const messageContainer = document.getElementById('message-container');
         messageContainer.textContent = message;
         setTimeout(() => {
             messageContainer.textContent = '';
-        }, 3500); // Clear the message after 2 seconds
+        }, 3500); // Clear the message after 3.5 seconds
     }
-    
 
     function gatherFormData() {
         const formData = {};
@@ -125,6 +126,69 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    async function clearAirtableData() {
+        console.log('Clearing data in Airtable...');
+        const searchEndpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}?filterByFormula=AND({Email}="${userEmail}")`;
+
+        try {
+            const searchResponse = await fetch(searchEndpoint, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+            const searchData = await searchResponse.json();
+            console.log('Search data:', searchData);
+
+            if (!searchData.records || searchData.records.length === 0) {
+                console.log('No matching record found to clear.');
+                return;
+            }
+
+            const recordId = searchData.records[0].id;
+            console.log('Existing record found with ID:', recordId);
+
+            const record = {
+                fields: {}
+            };
+
+            for (let i = 1; i <= 7; i++) {
+                record.fields[`start${i}`] = '';
+                record.fields[`lunchs${i}`] = '';
+                record.fields[`lunche${i}`] = '';
+                record.fields[`end${i}`] = '';
+                record.fields[`additionali${i}`] = '';
+                record.fields[`additionalo${i}`] = '';
+                record.fields[`PTO Hours ${i}`] = 0;
+                record.fields[`Personal Hours ${i}`] = 0;
+                record.fields[`Holiday Hours ${i}`] = 0;
+                record.fields[`Did not work ${i}`] = false;
+            }
+
+            console.log('Payload being sent to Airtable to clear data:', JSON.stringify(record));
+
+            const response = await fetch(`${endpoint}/${recordId}`, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(record)
+            });
+
+            if (!response.ok) {
+                const errorResponse = await response.json();
+                console.error('Error response from Airtable:', errorResponse);
+                throw new Error(`Failed to clear data: ${response.statusText}`);
+            } else {
+                const responseData = await response.json();
+                console.log('Data successfully cleared in Airtable:', responseData);
+            }
+        } catch (error) {
+            console.error('Error clearing data in Airtable:', error);
+            throw error;
+        }
+    }
+
     async function populateFormData() {
         console.log('Populating form data...');
         const searchEndpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}?filterByFormula=AND({Email}="${userEmail}")`;
@@ -174,6 +238,30 @@ document.addEventListener("DOMContentLoaded", function() {
         const element = document.querySelector(selector);
         if (element) {
             element.checked = value || false;
+        }
+    }
+
+    async function handleReset() {
+        console.log('Reset button clicked. Clearing form data...');
+        for (let i = 1; i <= 7; i++) {
+            setValue(`input[name="start_time${i}"]`, '');
+            setValue(`input[name="lunch_start${i}"]`, '');
+            setValue(`input[name="lunch_end${i}"]`, '');
+            setValue(`input[name="end_time${i}"]`, '');
+            setValue(`input[name="Additional_Time_In${i}"]`, '');
+            setValue(`input[name="Additional_Time_Out${i}"]`, '');
+            setValue(`input[name="pto_hours${i}"]`, '');
+            setValue(`input[name="personal_hours${i}"]`, '');
+            setValue(`input[name="holiday_hours${i}"]`, '');
+            setCheckboxValue(`input[name="did_not_work${i}"]`, false);
+        }
+        showMessage('Form reset successfully!');
+        try {
+            await clearAirtableData();
+            showMessage('Airtable data cleared successfully!');
+        } catch (error) {
+            showMessage('Failed to clear Airtable data. Please try again.');
+            console.error('Error clearing Airtable data:', error);
         }
     }
 

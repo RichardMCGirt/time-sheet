@@ -128,10 +128,23 @@ document.addEventListener("DOMContentLoaded", async function () {
         const ptoHours = fields['PTO Time Used'] || 0;
         const personalHours = fields['Personal Time Used'] || 0;
         const holidayHours = fields['Holiday Hours Used'] || 0;
-
-        const giftedHours = hoursWorked > 0 ? Math.min(3, 40 - holidayHours) : 0;
-        const totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours + giftedHours);
-
+    
+        // Calculate giftedHours
+        let giftedHours = hoursWorked > 0 ? Math.min(3, 40 - (hoursWorked + ptoHours + personalHours + holidayHours)) : 0;
+        // Ensure giftedHours is not negative
+        if (giftedHours < 0) giftedHours = 0;
+        // Round giftedHours to two decimal points
+        giftedHours = Math.round(giftedHours * 100) / 100;
+    
+        // Calculate totalHours
+        let totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours + giftedHours);
+    
+        // Set giftedHours to 0 if totalHours exceeds 40
+        if (totalHours > 40) {
+            giftedHours = 0;
+            totalHours = Math.min(40, hoursWorked + ptoHours + personalHours + holidayHours);
+        }
+    
         return `
             <tr>
                 <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
@@ -146,6 +159,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             </tr>
         `;
     }
+    
+    
 
     async function updateApprovalStatus(recordId, isApproved, isNotApproved) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
