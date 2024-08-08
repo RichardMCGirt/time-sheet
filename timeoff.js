@@ -185,17 +185,25 @@ document.addEventListener('DOMContentLoaded', () => {
         let startTime = document.getElementById('startTime').value;
         const endDate = document.getElementById('endDate').value;
         let endTime = document.getElementById('endTime').value;
-
+    
         if (!startDate || !endDate) {
             showError('Start Date and End Date are required.');
             return;
         }
-
-        if (new Date(startDate) > new Date(endDate)) {
+    
+        const startDateTime = new Date(`${startDate}T${startTime || '00:00'}`);
+        const endDateTime = new Date(`${endDate}T${endTime || '23:59'}`);
+    
+        if (startDateTime > endDateTime) {
             showError('Start Date cannot be later than End Date.');
             return;
         }
-
+    
+        const now = new Date();
+        if (now >= startDateTime && now <= endDateTime) {
+            showSuccessMessage('The requested time-off is happening now.');
+        }
+    
         if (startTime === 'All Day') {
             startTime = '07:00 AM';
         } else {
@@ -206,13 +214,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             endTime = convertToAMPM(endTime);
         }
-
+    
         const nextIndex = currentEditingIndex !== null ? currentEditingIndex : getNextAvailableIndex();
         if (nextIndex > 10) {
             showError('No available index to store the new time-off request.');
             return;
         }
-
+    
         const formData = {
             'Full Name': document.getElementById('employeeName').value,
             [`Time off Start Date ${nextIndex}`]: startDate,
@@ -220,20 +228,20 @@ document.addEventListener('DOMContentLoaded', () => {
             [`Time off End Date ${nextIndex}`]: endDate,
             [`Time off End Time ${nextIndex}`]: endTime,
         };
-
+    
         sendToAirtable(formData);
-
+    
         document.getElementById('startDate').value = '';
         document.getElementById('startTime').value = '';
         document.getElementById('endDate').value = '';
         document.getElementById('endTime').value = '';
-
+    
         currentEditingIndex = null;
         submitButton.textContent = 'Submit';
-
+    
         fetchPreviousRequests(userEmail);
     }
-
+    
     function convertToAMPM(time) {
         const [hourString, minute] = time.split(':');
         let hour = parseInt(hourString, 10);

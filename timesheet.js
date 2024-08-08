@@ -252,6 +252,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             const data = await response.json();
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
+                recordId = data.records[0].id; // Assign recordId dynamically
                 const isApproved = record['Approved'] === true;
                 const approvalStatusElement = document.getElementById('approval-status');
                 if (isApproved) {
@@ -268,8 +269,8 @@ document.addEventListener("DOMContentLoaded", async function() {
                     approvalStatusElement.style.textDecoration = 'none';
                 }
                 console.log('Approval status:', isApproved);
-                // Setup event listeners to hide the approval status when user edits their time sheet
-                hideApprovalOnEdit();
+                // Setup event listeners to hide the approval status when user edits their time sheet, except when approved
+                hideApprovalOnEdit(isApproved);
             } else {
                 console.log('No approval status data found for user');
             }
@@ -279,18 +280,18 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
     
-    function hideApprovalOnEdit() {
-        // Assume there are multiple input fields for the time sheet
+    function hideApprovalOnEdit(isApproved) {
         const inputs = document.querySelectorAll('input, textarea, select');
         inputs.forEach(input => {
             input.addEventListener('change', () => {
                 const approvalStatusElement = document.getElementById('approval-status');
-                approvalStatusElement.style.display = 'none'; // Hide the approval status element
+                if (approvalStatusElement.style.color !== 'green') {
+                    approvalStatusElement.style.display = 'none'; // Hide the approval status element if not green
+                }
             });
         });
     }
     
-
     function startCountdown(endDate) {
         const endDateTime = new Date(endDate).getTime();
         const countdownElement = document.getElementById('countdown');
@@ -329,7 +330,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
-                availablePTOHours = record['PTO Hours'] || 0;
+                availablePTOHours = parseFloat(record['PTO Total']) || 0;
                 recordId = data.records[0].id;
                 elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
                 elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2);
@@ -356,7 +357,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
-                availablePersonalHours = record['Personaltime'] || 0;
+                availablePersonalHours = parseFloat(record['Personaltime']) || 0;
                 recordId = data.records[0].id;
                 elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
                 elements.remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2);
@@ -542,7 +543,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                     Authorization: `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ fields: { 'PTO Time Used': newPtoHoursValue } })
+                body: JSON.stringify({ fields: { 'PTO Time Used': usedPtoHoursValue, 'PTO Total': availablePTOHours } }) // Updated line
             });
 
             const updateResponseData = await updateResponse.json();
@@ -619,7 +620,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         const totalPtoHours = calculateColumnSum('PTO_hours');
         const totalPersonalHours = calculateColumnSum('Personal_hours');
         const totalHolidayHours = calculateColumnSum('Holiday_hours');
-
+    
         console.log('Preparing to send data to Airtable:', {
             date7,
             totalPtoHours,
@@ -628,43 +629,47 @@ document.addEventListener("DOMContentLoaded", async function() {
             totalTimeWorked: elements.totalTimeWorkedSpan.textContent,
             totalTimeWithPto: elements.totalTimeWithPtoSpan.textContent
         });
-
-        const data = {
-            "date7": date7 || '0',
-            "PTO Time Used": parseFloat(totalPtoHours) || 0,
-            "Personal Time Used": parseFloat(totalPersonalHours) || 0,
-            "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
-            "Total Hours Worked": parseFloat(elements.totalTimeWorkedSpan.textContent) || 0,
-            "Total Time with PTO": parseFloat(elements.totalTimeWithPtoSpan.textContent) || 0
-        };
-
-        console.log('Data to be sent:', data);
-
+    
         try {
             const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                },
+            });
+            const record = await response.json();
+            
+            const currentPtoTimeUsed = parseFloat(record.fields["PTO Time Used"]) || 0;
+            const updatedPtoTimeUsed = currentPtoTimeUsed + (parseFloat(totalPtoHours) || 0);
+    
+            const data = {
+                "date7": date7 || '0',
+                "PTO Time Used": updatedPtoTimeUsed,
+                "Personal Time Used": parseFloat(totalPersonalHours) || 0,
+                "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
+                "Total Hours Worked": parseFloat(elements.totalTimeWorkedSpan.textContent) || 0,
+                "Total Time with PTO": parseFloat(elements.totalTimeWithPtoSpan.textContent) || 0,
+                "PTO Total": availablePTOHours // Updated line
+            };
+    
+            const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
                 method: 'PATCH',
                 headers: {
-                    'Authorization': `Bearer ${apiKey}`,
+                    Authorization: `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ fields: data })
             });
-
-            const result = await response.json();
-
-            console.log('Fetch response:', response);
-            console.log('Result:', result);
-
-            if (!response.ok) {
-                throw new Error(result.error?.message || 'Failed to update Airtable');
+    
+            if (updateResponse.ok) {
+                console.log('Data successfully updated in Airtable');
+            } else {
+                console.error('Failed to update data in Airtable');
             }
-
-            console.log('Success:', result);
         } catch (error) {
-            console.error('Error:', error);
-            throw new Error(`Error: ${error.message}`);
+            console.error('Error updating Airtable:', error);
         }
     }
+    
 
     function formatNumber(element) {
         const value = parseInt(element.innerText, 10) || 0;
