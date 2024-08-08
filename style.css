@@ -561,6 +561,12 @@ color: #16a085;  }
     transition: background-color 0.3s ease, color 0.3s ease; /* Add color transition */
 }
 
+.time-entry-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+
 .reset-button:hover {
     background-color: black;
     color: white;
@@ -615,5 +621,87 @@ color: #16a085;  }
     /* Make the table scrollable */
     .time-entry-table-wrapper {
         overflow-x: auto;
+    }
+}
+
+/* Add these styles at the end of your style.css file */
+
+@media (max-width: 1024px) {
+    .time-entry-table {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .time-entry-table th,
+    .time-entry-table td {
+        min-width: 100px; /* Adjust as needed */
+        padding: 5px;
+        font-size: 14px;
+    }
+
+    .form-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-label {
+        text-align: left;
+        padding-right: 0;
+    }
+
+    .form-value {
+        text-align: right;
+    }
+
+    .header-left, .header-right {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .info-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-left, .header-right {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .info-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .time-entry-table {
+        width: 100%;
+        overflow-x: auto;
+        display: block;
+    }
+
+    .time-entry-table th,
+    .time-entry-table td {
+        min-width: 80px; /* Adjust based on your preference */
+        box-sizing: border-box;
+    }
+
+    .time-entry-form {
+        padding: 10px;
+    }
+
+    .form-group label {
+        font-size: 12px;
+    }
+
+    .submit-button {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+    .play-pause-button {
+        padding: 8px 16px;
+        font-size: 14px;
     }
 }

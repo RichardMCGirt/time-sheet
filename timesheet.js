@@ -818,7 +818,8 @@ document.addEventListener("DOMContentLoaded", async function() {
             'jason.smith@vanirinstalledsales.com',
             'richard.mcgirt@vanirinstalledsales.com',
             'hunter@vanirinstalledsales.com',
-            'katy@vanirinstalledsales.com'
+            'katy@vanirinstalledsales.com',
+            'diana.smith@vanirinstalledsales.com'
         ];
         return !excludedEmails.includes(email);
     }
