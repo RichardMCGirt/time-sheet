@@ -414,6 +414,14 @@ body.dark-mode .toggle-button:hover {
     padding: 10px; /* Add padding for visual comfort */
 }
 
+#main-content {
+    display: none; /* Hide the main content initially */
+}
+
+#main-content.visible {
+    display: block; /* Show the main content after loading */
+}
+
 .time-entry-table input[type="date"],
 .time-entry-table input[type="time"],
 .time-entry-table input[type="number"],
@@ -428,6 +436,7 @@ input[type="text"] {
     text-align: center;
     font-size: 14px;
     font-weight: bold;
+    width: fit-content;
 }
 
 .time-entry-table input[type="date"]::placeholder,
@@ -469,9 +478,8 @@ input[type="date"]:-webkit-autofill {
     background-color: #34495e;
 }
 
-input[type="number"] {
-    width: 50%;
-}
+
+
 
 .input-time {
     font-size: medium;
@@ -598,6 +606,12 @@ color: #16a085;  }
 
 .hidden {
     display: none;
+}
+
+input[type="number"] {
+    width: calc((1ch * 6) + 10px); /* Adjust width based on the number of characters */
+    padding: 0px; /* Add padding if needed */
+    box-sizing: content-box; /* Ensure padding doesn't affect width */
 }
 
 /* Responsive Adjustments */

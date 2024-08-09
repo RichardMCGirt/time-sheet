@@ -8,6 +8,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     const checkAllButton = document.getElementById('check-all-button');
     const logoutButton = document.getElementById('logout-button');
     const loadingIndicator = document.getElementById('loading-indicator');
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingLogo = document.getElementById('loading-logo');
+    const mainContent = document.getElementById('main-content');
 
     let allChecked = false;
 
@@ -27,6 +30,32 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     document.getElementById('export-button').addEventListener('click', exportToExcel);
     checkAllButton.addEventListener('click', handleCheckAll);
+
+    // Handle the loading screen
+    setTimeout(() => {
+        // Trigger the transition to full color
+        loadingLogo.classList.add('full-color');
+
+        setTimeout(() => {
+            loadingScreen.classList.add('fade-out');
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                // Now load the data and show the main content
+                mainContent.classList.add('visible');
+                loadDataAndInitializePage(); 
+            }, 700); // Wait 1 second for the fade-out transition before hiding
+        }, 1000); // Wait 1 second for the full color transition before starting fade-out
+    }, 1000); // Display the loading screen for 1 second before starting the color transition
+
+    async function loadDataAndInitializePage() {
+        const supervisorName = await fetchSupervisorName(supervisorEmail);
+        if (supervisorName) {
+            await fetchTimesheets(supervisorName);
+        } else {
+            console.error(`Supervisor not found for email: ${supervisorEmail}`);
+            alert("Supervisor not found. Please check your email and try again.");
+        }
+    }
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
@@ -92,7 +121,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     
                 const nameContainer = document.createElement('div');
                 nameContainer.classList.add('name-container');
-                nameContainer.textContent = `${employeeName} (${employeeNumber})`; // Include employee number
+                nameContainer.textContent = `${employeeName}`; // Employee name only, number hidden
                 nameContainer.setAttribute('data-record-id', record.id); // Set the record ID
                 nameContainer.setAttribute('data-employee-number', employeeNumber); // Store employee number for CSV generation
                 nameContainer.addEventListener('click', () => {
@@ -110,9 +139,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <th class="employee-number-column">Employee Number</th>
+                            <!-- Employee Number column removed from the table header -->
                             <th class="date-column">Date Ending</th>
                             <th class="narrow-column">Hours Worked</th>
+
                             <th class="narrow-column">PTO Hours used</th>
                             <th class="narrow-column">Personal Hours used</th>
                             <th class="narrow-column">Holiday Hours used</th>
@@ -140,8 +170,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             timesheetsBody.appendChild(noRecordsRow);
         }
     }
-    
-    
 
     function checkTimesheetValues(fields) {
         return fields['Total Hours Worked'] || fields['PTO Time Used'] || fields['Personal Time Used'] || fields['Holiday Hours Used'];
@@ -212,11 +240,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             totalHours = hoursWorked + ptoHours + personalHours + holidayHours;
         }
     
-        // Round totalHours to the nearest quarter
-    
         return `
             <tr>
-                <th><input type="text" name="employeeNumber" value="${employeeNumber}" readonly></th> <!-- Employee Number Row -->
+                <!-- Removed Employee Number Row -->
                 <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
                 <th><input type="number" name="hours_worked" value="${hoursWorked}" placeholder="0" readonly></th>
                 <th><input type="number" name="pto_hours" value="${ptoHours}" placeholder="0" readonly></th>
@@ -229,7 +255,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             </tr>
         `;
     }
-    
 
     async function updateApprovalStatus(recordId, isApproved, isNotApproved) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
@@ -395,19 +420,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     timesheetsBody.addEventListener('change', handleCheckboxChange);
     timesheetsBody.addEventListener('blur', handleBlurDebounced, true);
 
-    const supervisorName = await fetchSupervisorName(supervisorEmail);
-    if (supervisorName) {
-        await fetchTimesheets(supervisorName);
-    } else {
-        console.error(`Supervisor not found for email: ${supervisorEmail}`);
-        alert("Supervisor not found. Please check your email and try again.");
-    }
-
     document.getElementById('customCsvButton').addEventListener('click', generateCustomCsv);
 
     function generateCustomCsv() {
         let csvContent = generateCsvHeader();
-    
+        
         const tables = document.querySelectorAll('.time-entry-table');
         
         tables.forEach(table => {
@@ -417,12 +434,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (employeeNumber) {
                 const formattedEmployeeNumber = formatEmployeeNumber(employeeNumber);
                 const rows = table.querySelectorAll('tbody tr');
-    
+        
                 let lineNumber = 1; // Start the line number at 1 for each employee
-    
+        
                 rows.forEach(row => {
                     const formattedDate = formatDate(row.querySelector('input[name="dateEnding"]').value);
-    
+        
                     if (formattedDate) {
                         const csvRows = generateCsvRows(row, formattedEmployeeNumber, formattedDate, lineNumber);
                         csvContent += csvRows;
@@ -433,17 +450,20 @@ document.addEventListener("DOMContentLoaded", async function () {
                 console.warn(`Employee number element not found for record ID: ${recordId}`);
             }
         });
-    
+        
         downloadCsv(csvContent, 'custom_timesheets.csv');
     }
     
     function generateCsvHeader() {
-        return "TimeCard,R\nRECTYPE,EMPLOYEE,PEREND,TIMECARD,LINENUM,CATEGORY,EARNDED,HOURS\n";
+        return "RECTYPE,EMPLOYEE,PEREND,TIMECARD\nRECTYPE,EMPLOYEE,PEREND,TIMECARD,LINENUM,CATEGORY,EARNDED,HOURS\n";
     }
     
+    // Other functions remain unchanged
+    
+    
     function getEmployeeNumber(recordId) {
-        const employeeNumberElement = document.querySelector(`.name-container[data-record-id="${recordId}"]`);
-        return employeeNumberElement ? employeeNumberElement.getAttribute('data-employee-number').trim() : null;
+        const nameContainer = document.querySelector(`.name-container[data-record-id="${recordId}"]`);
+        return nameContainer ? nameContainer.getAttribute('data-employee-number').trim() : null;
     }
     
     function formatEmployeeNumber(employeeNumber) {
@@ -475,12 +495,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Regular hours (capped at 40) and category 2
         if (totalHours > 0) {
             const regularHours = Math.min(totalHours, 40);
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '00001', regularHours, lineNumber++);
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0001', regularHours, lineNumber++);
         }
     
         // Overtime hours and category 2
         if (overtimeHours > 0) {
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '00002', overtimeHours, lineNumber++);
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0002', overtimeHours, lineNumber++);
         }
     
         // Gifted hours and category 2
@@ -491,17 +511,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     
         // PTO hours and category 2
         if (ptoHours > 0) {
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '00004', ptoHours, lineNumber++);
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0004', ptoHours, lineNumber++);
         }
     
         // Personal hours and category 2
         if (personalHours > 0) {
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '00005', personalHours, lineNumber++);
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0005', personalHours, lineNumber++);
         }
     
         // Holiday hours and category 2
         if (holidayHours > 0) {
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '00007', holidayHours, lineNumber++);
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0007', holidayHours, lineNumber++);
         }
     
         return csvRows;
@@ -524,8 +544,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             document.body.removeChild(link);
         }
     }
-    
-
 
     // Schedule checkbox reset for every Thursday
     const now = new Date();

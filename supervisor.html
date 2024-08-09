@@ -8,51 +8,51 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
 </head>
 <body>
-    <main>
-        <header>
-            <div class="header-left">
-                <a href="timesheet.html">
-                    <img src="vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
-                </a>
-            </div>
-            <h3>Supervisor Portal</h3>
-            <div class="header-right">
-                <div class="user-info">
-                    <span id="user-email" class="clickable">supervisor@example.com</span>
-                    <a href="#" id="logout-button" class="logout-button">Logout</a>
+    <div id="loading-screen">
+        <img id="loading-logo" src="VANIR-transparent.png" alt="Vanir Installed Sales Logo">
+    </div>
+
+    <div id="main-content">
+        <main>
+            <header>
+                <div class="header-left">
+                    <a href="timesheet.html">
+                        <img src="vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
+                    </a>
+                    <div id="loading-indicator"></div>
+
                 </div>
-                <button id="export-button" class="toggle-button">Export to CSV</button>
-                <button id="customCsvButton">Download Custom CSV</button>
-            </div>
-        </header>
-        <nav class="navbar">
-            <ul>
-                <li><a href="approvetimeoff.html">Approve Timeoff requests</a></li>
-            </ul>
-        </nav>
-        <br>
-        <h1>Approve Timesheets</h1>
-        <br><br>
-        <div id="message-container"></div>
-        <div id="loading-indicator" style="display: none;">Loading...</div>
+                <h3>Supervisor Portal</h3>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span id="user-email" class="clickable">supervisor@example.com</span>
+                        <a href="#" id="logout-button" class="logout-button">Logout</a>
+                    </div>
+                    <button id="export-button" class="toggle-button">Export to CSV</button>
+                    <button id="customCsvButton">Download Custom CSV</button>
+                </div>
+            </header>
+            <nav class="navbar">
+                <ul>
+                    <li><a href="approvetimeoff.html">Approve Timeoff requests</a></li>
+                </ul>
+            </nav>
+            <h1>Approve Timesheets</h1>
+            <div id="message-container"></div>
+            <button id="check-all-button" class="toggle-button">Check All</button>
+            <p>key enter twice to refresh</p>
+            <div id="timesheets-body"></div>
+            <section id="timesheets-section" class="timesheets-section">
+                <div id="timesheets-body">
+                    <!-- Timesheets will be populated here -->
+                </div>
+            </section>
+        </main>
+    </div>
 
-
-        <button id="check-all-button" class="toggle-button">Check All</button>
-<p>key enter twice to refresh</p>
-        
-
-        <div id="timesheets-body"></div>
-        <section id="timesheets-section" class="timesheets-section">
-            <div id="timesheets-body">
-                <!-- Timesheets will be populated here -->
-            </div>
-        </section>
-    </main>
     <script src="supervisor.js"></script>
-    <div id="script-placeholder"></div>
     <script src="huntergong.js"></script>
     <script src="hrweirldcsv.js"></script>
-
     <script src="disable-script.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
 </body>
