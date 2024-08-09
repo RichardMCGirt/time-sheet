@@ -407,7 +407,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function generateCustomCsv() {
         let csvContent = "TimeCard,R\n";  // Hardcoded TimeCard header with value R
-        csvContent += "EMPLOYEE,RECTYPE,PEREND,HOURS,CATEGORY\n";  // The headers for your CSV file
+        csvContent += "RECTYPE,EMPLOYEE,PEREND,TIMECARD,LINENUM,CATEGORY,EARNDED,HOURS\n";  // The headers for your CSV file
     
         const tables = document.querySelectorAll('.time-entry-table');
         
@@ -422,6 +422,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const formattedEmployeeNumber = employeeNumber.padStart(6, '0');  // Ensure employee number is 6 digits
                 
                 const rows = table.querySelectorAll('tbody tr');
+                let lineNum = 1; // Initialize line number
+    
                 rows.forEach(row => {
                     const dateEnding = row.querySelector('input[name="dateEnding"]').value || '';
     
@@ -448,38 +450,38 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
                     const overtimeHours = totalHours > 40 ? totalHours - 40 : 0; // Calculate overtime
     
-                    // Create rows for each type of hour with the correct CATEGORY value
+                    // Create rows for each type of hour with the correct EARNDED and CATEGORY values
     
-                    // Regular hours (capped at 40) and category 0001
+                    // Regular hours (capped at 40) and category 2
                     const regularHours = Math.min(totalHours, 40);
                     if (regularHours > 0) {
-                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${regularHours},0001\n`;
+                        csvContent += `2,${formattedEmployeeNumber},${formattedDate},R,${lineNum++},2,00001,${regularHours}\n`;
                     }
     
-                    // Overtime hours and category 0002
+                    // Overtime hours and category 2
                     if (overtimeHours > 0) {
-                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${overtimeHours},0002\n`;
+                        csvContent += `2,${formattedEmployeeNumber},${formattedDate},R,${lineNum++},2,00002,${overtimeHours}\n`;
                     }
     
-                    // Gifted hours and category 0011
+                    // Gifted hours and category 2
                     if (giftedHours > 0) {
                         const cappedGiftedHours = Math.min(giftedHours, 3);
-                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${cappedGiftedHours},0011\n`;
+                        csvContent += `2,${formattedEmployeeNumber},${formattedDate},R,${lineNum++},2,0011,${cappedGiftedHours}\n`;
                     }
     
-                    // PTO hours and category 0004
+                    // PTO hours and category 2
                     if (ptoHours > 0) {
-                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${ptoHours},0004\n`;
+                        csvContent += `2,${formattedEmployeeNumber},${formattedDate},R,${lineNum++},2,00004,${ptoHours}\n`;
                     }
     
-                    // Personal hours and category 0005
+                    // Personal hours and category 2
                     if (personalHours > 0) {
-                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${personalHours},0005\n`;
+                        csvContent += `2,${formattedEmployeeNumber},${formattedDate},R,${lineNum++},2,00005,${personalHours}\n`;
                     }
     
-                    // Holiday hours and category 0007
+                    // Holiday hours and category 2
                     if (holidayHours > 0) {
-                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${holidayHours},0007\n`;
+                        csvContent += `2,${formattedEmployeeNumber},${formattedDate},R,${lineNum++},2,00007,${holidayHours}\n`;
                     }
                 });
             } else {
@@ -500,7 +502,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             document.body.removeChild(link);
         }
     }
-    
     
     
 
