@@ -397,6 +397,98 @@ document.addEventListener("DOMContentLoaded", async function () {
         alert("Supervisor not found. Please check your email and try again.");
     }
 
+    document.getElementById('customCsvButton').addEventListener('click', generateCustomCsv);
+
+    function generateCustomCsv() {
+        let csvContent = "TimeCard,R\n";  // Hardcoded TimeCard header with value R
+        csvContent += "EMPLOYEE,RECTYPE,PEREND,HOURS,CATEGORY\n";  // The headers for your CSV file
+    
+        const tables = document.querySelectorAll('.time-entry-table');
+        
+        tables.forEach(table => {
+            const employeeNumber = table.previousElementSibling.textContent.trim();
+            const formattedEmployeeNumber = employeeNumber.padStart(6, '0');  // Ensure employee number is 6 digits
+            
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const dateEnding = row.querySelector('input[name="dateEnding"]').value || '';
+    
+                // Check if dateEnding is a valid date
+                let formattedDate = '';
+                if (dateEnding) {
+                    const dateObj = new Date(dateEnding);
+                    if (!isNaN(dateObj.getTime())) {
+                        formattedDate = dateObj.toISOString().split('T')[0].replace(/-/g, ''); // Format date as yyyymmdd
+                    } else {
+                        console.warn(`Invalid date: ${dateEnding}`);
+                        return;  // Skip this row if the date is invalid
+                    }
+                } else {
+                    console.warn('Empty date field detected, skipping row.');
+                    return;  // Skip this row if the date is empty
+                }
+    
+                // Get various hours from the row
+                const totalHours = parseFloat(row.querySelector('input[name="total_hours"]').value || 0);
+                const giftedHours = parseFloat(row.querySelector('input[name="gifted_hours"]').value || 0);
+                const ptoHours = parseFloat(row.querySelector('input[name="pto_hours"]').value || 0);
+                const personalHours = parseFloat(row.querySelector('input[name="personal_hours"]').value || 0);
+                const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
+                const overtimeHours = totalHours > 40 ? totalHours - 40 : 0; // Calculate overtime
+    
+                // Create rows for each type of hour with the correct CATEGORY value
+    
+                // Regular hours (capped at 40) and category 0001
+                const regularHours = Math.min(totalHours, 40);
+                if (regularHours > 0) {
+                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${regularHours},0001\n`;
+                }
+    
+                // Overtime hours and category 0002
+                if (overtimeHours > 0) {
+                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${overtimeHours},0002\n`;
+                }
+    
+                // Gifted hours and category 0011
+                if (giftedHours > 0) {
+                    const cappedGiftedHours = Math.min(giftedHours, 3);
+                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${cappedGiftedHours},0011\n`;
+                }
+    
+                // PTO hours and category 0004
+                if (ptoHours > 0) {
+                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${ptoHours},0004\n`;
+                }
+    
+                // Personal hours and category 0005
+                if (personalHours > 0) {
+                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${personalHours},0005\n`;
+                }
+    
+                // Holiday hours and category 0007
+                if (holidayHours > 0) {
+                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${holidayHours},0007\n`;
+                }
+            });
+        });
+    
+        // Create a blob of the CSV content and trigger a download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'custom_timesheets.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+    
+    
+
+
     // Schedule checkbox reset for every Thursday
     const now = new Date();
     const nextThursday = new Date();
