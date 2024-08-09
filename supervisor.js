@@ -406,7 +406,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         const tables = document.querySelectorAll('.time-entry-table');
         
         tables.forEach(table => {
-            const employeeNumber = table.previousElementSibling.textContent.trim();
+            const employeeNumberElement = table.previousElementSibling; // Get the element before the table
+            const employeeNumber = employeeNumberElement.textContent.trim(); // Extract the employee number
             const formattedEmployeeNumber = employeeNumber.padStart(6, '0');  // Ensure employee number is 6 digits
             
             const rows = table.querySelectorAll('tbody tr');
@@ -485,6 +486,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             document.body.removeChild(link);
         }
     }
+    
     
     
 
