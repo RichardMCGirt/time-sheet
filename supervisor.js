@@ -92,8 +92,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     
                 const nameContainer = document.createElement('div');
                 nameContainer.classList.add('name-container');
-                nameContainer.textContent = employeeName;
+                nameContainer.textContent = `${employeeName} (${employeeNumber})`; // Include employee number
                 nameContainer.setAttribute('data-record-id', record.id); // Set the record ID
+                nameContainer.setAttribute('data-employee-number', employeeNumber); // Store employee number for CSV generation
                 nameContainer.addEventListener('click', () => {
                     toggleVisibility(record.id);
                 });
@@ -109,6 +110,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 table.innerHTML = `
                     <thead>
                         <tr>
+                            <th class="employee-number-column">Employee Number</th>
                             <th class="date-column">Date Ending</th>
                             <th class="narrow-column">Hours Worked</th>
                             <th class="narrow-column">PTO Hours used</th>
@@ -121,7 +123,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         </tr>
                     </thead>
                     <tbody>
-                        ${generateRows(fields, record.id)}
+                        ${generateRows(fields, record.id, employeeNumber)} <!-- Pass employeeNumber -->
                     </tbody>
                 `;
     
@@ -138,6 +140,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             timesheetsBody.appendChild(noRecordsRow);
         }
     }
+    
+    
 
     function checkTimesheetValues(fields) {
         return fields['Total Hours Worked'] || fields['PTO Time Used'] || fields['Personal Time Used'] || fields['Holiday Hours Used'];
@@ -183,7 +187,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    function generateRows(fields, recordId) {
+    function generateRows(fields, recordId, employeeNumber) {
         let hoursWorked = fields['Total Hours Worked'] || 0;
         const ptoHours = fields['PTO Time Used'] || 0;
         const personalHours = fields['Personal Time Used'] || 0;
@@ -212,6 +216,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     
         return `
             <tr>
+                <th><input type="text" name="employeeNumber" value="${employeeNumber}" readonly></th> <!-- Employee Number Row -->
                 <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
                 <th><input type="number" name="hours_worked" value="${hoursWorked}" placeholder="0" readonly></th>
                 <th><input type="number" name="pto_hours" value="${ptoHours}" placeholder="0" readonly></th>
@@ -224,6 +229,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             </tr>
         `;
     }
+    
 
     async function updateApprovalStatus(recordId, isApproved, isNotApproved) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
@@ -406,71 +412,79 @@ document.addEventListener("DOMContentLoaded", async function () {
         const tables = document.querySelectorAll('.time-entry-table');
         
         tables.forEach(table => {
-            const employeeNumberElement = table.previousElementSibling; // Get the element before the table
-            const employeeNumber = employeeNumberElement.textContent.trim(); // Extract the employee number
-            const formattedEmployeeNumber = employeeNumber.padStart(6, '0');  // Ensure employee number is 6 digits
+            const recordId = table.getAttribute('data-record-id'); // Get the record ID associated with the table
             
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const dateEnding = row.querySelector('input[name="dateEnding"]').value || '';
+            // Safely get the employee number element
+            const employeeNumberElement = document.querySelector(`.name-container[data-record-id="${recordId}"]`);
+            
+            if (employeeNumberElement) {  // Check if the element exists
+                const employeeNumber = employeeNumberElement.getAttribute('data-employee-number').trim(); // Use the stored employee number attribute
+                const formattedEmployeeNumber = employeeNumber.padStart(6, '0');  // Ensure employee number is 6 digits
+                
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const dateEnding = row.querySelector('input[name="dateEnding"]').value || '';
     
-                // Check if dateEnding is a valid date
-                let formattedDate = '';
-                if (dateEnding) {
-                    const dateObj = new Date(dateEnding);
-                    if (!isNaN(dateObj.getTime())) {
-                        formattedDate = dateObj.toISOString().split('T')[0].replace(/-/g, ''); // Format date as yyyymmdd
+                    // Check if dateEnding is a valid date
+                    let formattedDate = '';
+                    if (dateEnding) {
+                        const dateObj = new Date(dateEnding);
+                        if (!isNaN(dateObj.getTime())) {
+                            formattedDate = dateObj.toISOString().split('T')[0].replace(/-/g, ''); // Format date as yyyymmdd
+                        } else {
+                            console.warn(`Invalid date: ${dateEnding}`);
+                            return;  // Skip this row if the date is invalid
+                        }
                     } else {
-                        console.warn(`Invalid date: ${dateEnding}`);
-                        return;  // Skip this row if the date is invalid
+                        console.warn('Empty date field detected, skipping row.');
+                        return;  // Skip this row if the date is empty
                     }
-                } else {
-                    console.warn('Empty date field detected, skipping row.');
-                    return;  // Skip this row if the date is empty
-                }
     
-                // Get various hours from the row
-                const totalHours = parseFloat(row.querySelector('input[name="total_hours"]').value || 0);
-                const giftedHours = parseFloat(row.querySelector('input[name="gifted_hours"]').value || 0);
-                const ptoHours = parseFloat(row.querySelector('input[name="pto_hours"]').value || 0);
-                const personalHours = parseFloat(row.querySelector('input[name="personal_hours"]').value || 0);
-                const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
-                const overtimeHours = totalHours > 40 ? totalHours - 40 : 0; // Calculate overtime
+                    // Get various hours from the row
+                    const totalHours = parseFloat(row.querySelector('input[name="total_hours"]').value || 0);
+                    const giftedHours = parseFloat(row.querySelector('input[name="gifted_hours"]').value || 0);
+                    const ptoHours = parseFloat(row.querySelector('input[name="pto_hours"]').value || 0);
+                    const personalHours = parseFloat(row.querySelector('input[name="personal_hours"]').value || 0);
+                    const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
+                    const overtimeHours = totalHours > 40 ? totalHours - 40 : 0; // Calculate overtime
     
-                // Create rows for each type of hour with the correct CATEGORY value
+                    // Create rows for each type of hour with the correct CATEGORY value
     
-                // Regular hours (capped at 40) and category 0001
-                const regularHours = Math.min(totalHours, 40);
-                if (regularHours > 0) {
-                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${regularHours},0001\n`;
-                }
+                    // Regular hours (capped at 40) and category 0001
+                    const regularHours = Math.min(totalHours, 40);
+                    if (regularHours > 0) {
+                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${regularHours},0001\n`;
+                    }
     
-                // Overtime hours and category 0002
-                if (overtimeHours > 0) {
-                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${overtimeHours},0002\n`;
-                }
+                    // Overtime hours and category 0002
+                    if (overtimeHours > 0) {
+                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${overtimeHours},0002\n`;
+                    }
     
-                // Gifted hours and category 0011
-                if (giftedHours > 0) {
-                    const cappedGiftedHours = Math.min(giftedHours, 3);
-                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${cappedGiftedHours},0011\n`;
-                }
+                    // Gifted hours and category 0011
+                    if (giftedHours > 0) {
+                        const cappedGiftedHours = Math.min(giftedHours, 3);
+                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${cappedGiftedHours},0011\n`;
+                    }
     
-                // PTO hours and category 0004
-                if (ptoHours > 0) {
-                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${ptoHours},0004\n`;
-                }
+                    // PTO hours and category 0004
+                    if (ptoHours > 0) {
+                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${ptoHours},0004\n`;
+                    }
     
-                // Personal hours and category 0005
-                if (personalHours > 0) {
-                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${personalHours},0005\n`;
-                }
+                    // Personal hours and category 0005
+                    if (personalHours > 0) {
+                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${personalHours},0005\n`;
+                    }
     
-                // Holiday hours and category 0007
-                if (holidayHours > 0) {
-                    csvContent += `${formattedEmployeeNumber},R,${formattedDate},${holidayHours},0007\n`;
-                }
-            });
+                    // Holiday hours and category 0007
+                    if (holidayHours > 0) {
+                        csvContent += `${formattedEmployeeNumber},R,${formattedDate},${holidayHours},0007\n`;
+                    }
+                });
+            } else {
+                console.warn(`Employee number element not found for record ID: ${recordId}`);
+            }
         });
     
         // Create a blob of the CSV content and trigger a download
