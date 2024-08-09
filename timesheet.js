@@ -261,13 +261,13 @@ document.addEventListener("DOMContentLoaded", async function() {
                     approvalStatusElement.style.fontSize = '30px';
                     approvalStatusElement.style.fontWeight = 'bold';
                     approvalStatusElement.style.textDecoration = 'underline';
-                } else {
-                    approvalStatusElement.textContent = 'Time sheet not approved';
-                    approvalStatusElement.style.color = 'red';
-                    approvalStatusElement.style.fontSize = '20px';
-                    approvalStatusElement.style.fontWeight = 'normal';
-                    approvalStatusElement.style.textDecoration = 'none';
-                }
+                //} else {
+                    //approvalStatusElement.textContent = 'Time sheet not approved';
+                    //approvalStatusElement.style.color = 'red';
+                    //approvalStatusElement.style.fontSize = '20px';
+                    //approvalStatusElement.style.fontWeight = 'normal';
+                    //approvalStatusElement.style.textDecoration = 'none';
+                } 
                 console.log('Approval status:', isApproved);
                 // Setup event listeners to hide the approval status when user edits their time sheet, except when approved
                 hideApprovalOnEdit(isApproved);
@@ -669,6 +669,27 @@ document.addEventListener("DOMContentLoaded", async function() {
             console.error('Error updating Airtable:', error);
         }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const timeEntryWrapper = document.querySelector('.time-entry-table-wrapper');
+    
+        let isScrolling;
+    
+        timeEntryWrapper.addEventListener('scroll', function() {
+            timeEntryWrapper.style.scrollbarWidth = 'auto'; // Show scrollbar while scrolling
+            timeEntryWrapper.style.setProperty('--scrollbar-width', 'auto'); // For custom properties
+    
+            window.clearTimeout(isScrolling);
+    
+            // Hide scrollbar after 1 second of no scrolling
+            isScrolling = setTimeout(function() {
+                timeEntryWrapper.style.scrollbarWidth = 'none'; // Hide scrollbar
+                timeEntryWrapper.style.setProperty('--scrollbar-width', 'none'); // For custom properties
+            }, 1000);
+        });
+    });
+    
+  
     
 
     function formatNumber(element) {

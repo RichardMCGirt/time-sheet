@@ -374,17 +374,31 @@ body.dark-mode .toggle-button:hover {
     padding-left: 20px;
 }
 
+/* Hide scrollbar, but still scrollable */
+.time-entry-table-wrapper {
+    overflow-y: scroll; /* Ensure the element is scrollable */
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none; /* For Internet Explorer and Edge */
+}
+
+.time-entry-table-wrapper::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, and Opera */
+}
+
+
 .time-entry-table {
-    width: 70%;
-    margin: 20px auto;
+    width: 100%; /* Use full width of the container */
+    max-width: 95%; /* Prevent overflow */
     border-collapse: collapse;
-    font-size: 16px;
+    font-size: 14px; /* Reduce font size */
+    margin: 20px auto;
 }
 
 .time-entry-table th, .time-entry-table td {
     text-align: center;
-    padding: 10px;
+    padding: 5px; /* Reduce padding */
     border: 1px solid #ecf0f1;
+    width: auto; /* Adjust column width to fit content */
 }
 
 .time-entry-table th {
@@ -393,6 +407,11 @@ body.dark-mode .toggle-button:hover {
 
 .time-entry-table td {
     background-color: #34495e;
+}
+
+.time-entry-wrapper {
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    padding: 10px; /* Add padding for visual comfort */
 }
 
 .time-entry-table input[type="date"],
