@@ -403,132 +403,128 @@ document.addEventListener("DOMContentLoaded", async function () {
         alert("Supervisor not found. Please check your email and try again.");
     }
 
-    document.getElementById('customXlsxButton').addEventListener('click', generateCustomXlsx);
+    document.getElementById('customCsvButton').addEventListener('click', generateCustomCsv);
 
-function generateCustomXlsx() {
-    // Initialize the workbook and add a sheet
-    const wb = XLSX.utils.book_new();
-    const wsData = [["RECTYPE", "EMPLOYEE", "PEREND", "TIMECARD", "LINENUM", "CATEGORY", "EARNDED", "HOURS"]];
-
-    // Initialize lineNumber variable to keep track of line numbers
-    let lineNumber = 1;
-
-    const tables = document.querySelectorAll('.time-entry-table');
+    function generateCustomCsv() {
+        let csvContent = generateCsvHeader();
     
-    tables.forEach(table => {
-        const recordId = table.getAttribute('data-record-id');
-        const employeeNumber = getEmployeeNumber(recordId);
+        const tables = document.querySelectorAll('.time-entry-table');
         
-        if (employeeNumber) {
-            const formattedEmployeeNumber = formatEmployeeNumber(employeeNumber);
-            const rows = table.querySelectorAll('tbody tr');
-
-            rows.forEach(row => {
-                const formattedDate = formatDate(row.querySelector('input[name="dateEnding"]').value);
-
-                if (formattedDate) {
-                    const xlsxRows = generateXlsxRows(row, formattedEmployeeNumber, formattedDate, lineNumber);
-                    wsData.push(...xlsxRows);
-                    lineNumber += xlsxRows.length; // Increment lineNumber by the number of rows added
-                }
-            });
-        } else {
-            console.warn(`Employee number element not found for record ID: ${recordId}`);
+        tables.forEach(table => {
+            const recordId = table.getAttribute('data-record-id');
+            const employeeNumber = getEmployeeNumber(recordId);
+            
+            if (employeeNumber) {
+                const formattedEmployeeNumber = formatEmployeeNumber(employeeNumber);
+                const rows = table.querySelectorAll('tbody tr');
+    
+                let lineNumber = 1; // Start the line number at 1 for each employee
+    
+                rows.forEach(row => {
+                    const formattedDate = formatDate(row.querySelector('input[name="dateEnding"]').value);
+    
+                    if (formattedDate) {
+                        const csvRows = generateCsvRows(row, formattedEmployeeNumber, formattedDate, lineNumber);
+                        csvContent += csvRows;
+                        lineNumber = (lineNumber % 8) + 1; // Increment and reset line number after reaching 8
+                    }
+                });
+            } else {
+                console.warn(`Employee number element not found for record ID: ${recordId}`);
+            }
+        });
+    
+        downloadCsv(csvContent, 'custom_timesheets.csv');
+    }
+    
+    function generateCsvHeader() {
+        return "TimeCard,R\nRECTYPE,EMPLOYEE,PEREND,TIMECARD,LINENUM,CATEGORY,EARNDED,HOURS\n";
+    }
+    
+    function getEmployeeNumber(recordId) {
+        const employeeNumberElement = document.querySelector(`.name-container[data-record-id="${recordId}"]`);
+        return employeeNumberElement ? employeeNumberElement.getAttribute('data-employee-number').trim() : null;
+    }
+    
+    function formatEmployeeNumber(employeeNumber) {
+        return employeeNumber.padStart(6, '0');
+    }
+    
+    function formatDate(dateEnding) {
+        if (!dateEnding) {
+            console.warn('Empty date field detected, skipping row.');
+            return null;
         }
-    });
-
-    // Convert the data to a worksheet and add it to the workbook
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-    // Define column widths (optional)
-    ws['!cols'] = [
-        { wpx: 100 }, // RECTYPE
-        { wpx: 100 }, // EMPLOYEE
-        { wpx: 100 }, // PEREND
-        { wpx: 100 }, // TIMECARD
-        { wpx: 100 }, // LINENUM
-        { wpx: 100 }, // CATEGORY
-        { wpx: 100 }, // EARNDED
-        { wpx: 100 }  // HOURS
-    ];
-
-    XLSX.utils.book_append_sheet(wb, ws, 'Timesheets Data');
-
-    // Trigger download
-    XLSX.writeFile(wb, 'custom_timesheets.xlsx');
-}
-
-function getEmployeeNumber(recordId) {
-    const employeeNumberElement = document.querySelector(`.name-container[data-record-id="${recordId}"]`);
-    return employeeNumberElement ? employeeNumberElement.getAttribute('data-employee-number').trim() : null;
-}
-
-function formatEmployeeNumber(employeeNumber) {
-    return employeeNumber.padStart(6, '0');
-}
-
-function formatDate(dateEnding) {
-    if (!dateEnding) {
-        console.warn('Empty date field detected, skipping row.');
-        return null;
+        const dateObj = new Date(dateEnding);
+        if (isNaN(dateObj.getTime())) {
+            console.warn(`Invalid date: ${dateEnding}`);
+            return null;
+        }
+        return dateObj.toISOString().split('T')[0].replace(/-/g, '');
     }
-    const dateObj = new Date(dateEnding);
-    if (isNaN(dateObj.getTime())) {
-        console.warn(`Invalid date: ${dateEnding}`);
-        return null;
+    
+    function generateCsvRows(row, formattedEmployeeNumber, formattedDate, lineNumber) {
+        const totalHours = parseFloat(row.querySelector('input[name="total_hours"]').value || 0);
+        const giftedHours = parseFloat(row.querySelector('input[name="gifted_hours"]').value || 0);
+        const ptoHours = parseFloat(row.querySelector('input[name="pto_hours"]').value || 0);
+        const personalHours = parseFloat(row.querySelector('input[name="personal_hours"]').value || 0);
+        const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
+        const overtimeHours = Math.max(totalHours - 40, 0);
+        let csvRows = '';
+    
+        // Regular hours (capped at 40) and category 2
+        if (totalHours > 0) {
+            const regularHours = Math.min(totalHours, 40);
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '00001', regularHours, lineNumber++);
+        }
+    
+        // Overtime hours and category 2
+        if (overtimeHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '00002', overtimeHours, lineNumber++);
+        }
+    
+        // Gifted hours and category 2
+        if (giftedHours > 0) {
+            const cappedGiftedHours = Math.min(giftedHours, 3);
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0011', cappedGiftedHours, lineNumber++);
+        }
+    
+        // PTO hours and category 2
+        if (ptoHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '00004', ptoHours, lineNumber++);
+        }
+    
+        // Personal hours and category 2
+        if (personalHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '00005', personalHours, lineNumber++);
+        }
+    
+        // Holiday hours and category 2
+        if (holidayHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '00007', holidayHours, lineNumber++);
+        }
+    
+        return csvRows;
     }
-    return dateObj.toISOString().split('T')[0].replace(/-/g, '');
-}
-
-function generateXlsxRows(row, formattedEmployeeNumber, formattedDate, lineNumber) {
-    const totalHours = parseFloat(row.querySelector('input[name="total_hours"]').value || 0);
-    const giftedHours = parseFloat(row.querySelector('input[name="gifted_hours"]').value || 0);
-    const ptoHours = parseFloat(row.querySelector('input[name="pto_hours"]').value || 0);
-    const personalHours = parseFloat(row.querySelector('input[name="personal_hours"]').value || 0);
-    const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
-    const overtimeHours = Math.max(totalHours - 40, 0);
-    let xlsxRows = [];
-
-    // Regular hours (capped at 40) and category 2
-    if (totalHours > 0) {
-        const regularHours = Math.min(totalHours, 40);
-        xlsxRows.push(generateXlsxLine(formattedEmployeeNumber, formattedDate, 2, '00001', regularHours, lineNumber++));
+    
+    function generateCsvLine(employeeNumber, date, category, earnDed, hours, lineNumber) {
+        return `2,${employeeNumber},${date},R,${lineNumber},${category},${earnDed},${hours}\n`;
     }
-
-    // Overtime hours and category 2
-    if (overtimeHours > 0) {
-        xlsxRows.push(generateXlsxLine(formattedEmployeeNumber, formattedDate, 2, '00002', overtimeHours, lineNumber++));
+    
+    function downloadCsv(csvContent, filename) {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     }
-
-    // Gifted hours and category 2
-    if (giftedHours > 0) {
-        const cappedGiftedHours = Math.min(giftedHours, 3);
-        xlsxRows.push(generateXlsxLine(formattedEmployeeNumber, formattedDate, 2, '0011', cappedGiftedHours, lineNumber++));
-    }
-
-    // PTO hours and category 2
-    if (ptoHours > 0) {
-        xlsxRows.push(generateXlsxLine(formattedEmployeeNumber, formattedDate, 2, '00004', ptoHours, lineNumber++));
-    }
-
-    // Personal hours and category 2
-    if (personalHours > 0) {
-        xlsxRows.push(generateXlsxLine(formattedEmployeeNumber, formattedDate, 2, '00005', personalHours, lineNumber++));
-    }
-
-    // Holiday hours and category 2
-    if (holidayHours > 0) {
-        xlsxRows.push(generateXlsxLine(formattedEmployeeNumber, formattedDate, 2, '00007', holidayHours, lineNumber++));
-    }
-
-    return xlsxRows;
-}
-
-function generateXlsxLine(employeeNumber, date, category, earnDed, hours, lineNumber) {
-    return [2, employeeNumber, date, 'R', lineNumber, category, earnDed, hours];
-}
-
-
+    
 
 
     // Schedule checkbox reset for every Thursday
