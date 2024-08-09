@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", async function () {
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
@@ -12,6 +11,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingScreen = document.getElementById('loading-screen');
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
+
+    // Elements to hide during data fetching
+    const titleElement = document.querySelector('h1');
+    const messageContainer = document.getElementById('message-container');
+    const keyEnterHint = document.querySelector('p');
 
     let allChecked = false;
 
@@ -31,6 +35,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     document.getElementById('export-button').addEventListener('click', exportToExcel);
     checkAllButton.addEventListener('click', handleCheckAll);
+
+    // Hide elements during data fetching
+    titleElement.style.display = 'none';
+    messageContainer.style.display = 'none';
+    checkAllButton.style.display = 'none';
+    keyEnterHint.style.display = 'none';
 
     // Handle the loading screen
     setTimeout(() => {
@@ -104,6 +114,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             alert("Error fetching timesheet data. Please try again later.");
         } finally {
             loadingIndicator.style.display = 'none'; // Hide loading indicator
+            // Show elements after data has been fetched
+            titleElement.style.display = '';
+            messageContainer.style.display = '';
+            checkAllButton.style.display = '';
+            keyEnterHint.style.display = '';
         }
     }
 
@@ -418,9 +433,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         XLSX.writeFile(wb, 'timesheets_data.xlsx');
     }
 
-    timesheetsBody.addEventListener('change', handleCheckboxChange);
-    timesheetsBody.addEventListener('blur', handleBlurDebounced, true);
-
     document.getElementById('customCsvButton').addEventListener('click', generateCustomCsv);
 
     function generateCustomCsv() {
@@ -458,9 +470,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     function generateCsvHeader() {
         return "RECTYPE,EMPLOYEE,PEREND,TIMECARD\nRECTYPE,EMPLOYEE,PEREND,TIMECARD,LINENUM,CATEGORY,EARNDED,HOURS\n";
     }
-    
-    // Other functions remain unchanged
-    
     
     function getEmployeeNumber(recordId) {
         const nameContainer = document.querySelector(`.name-container[data-record-id="${recordId}"]`);
