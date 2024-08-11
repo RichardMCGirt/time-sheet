@@ -152,6 +152,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             const holidayInput = row.querySelector('input[name^="Holiday_hours"]');
     
             if (event.target.checked) {
+                // When "Did Not Work" is checked, disable the time and number inputs
                 timeInputsInRow.forEach(input => {
                     input.setAttribute('data-previous-value', input.value);
                     input.value = '';
@@ -162,19 +163,21 @@ document.addEventListener("DOMContentLoaded", async function () {
                     input.value = '';
                     input.disabled = true;
                 });
+                // Enable PTO, Personal, and Holiday inputs when the checkbox is checked
                 if (ptoInput) {
-                    ptoInput.setAttribute('data-previous-value', ptoInput.value);
+                    ptoInput.removeAttribute('data-previous-value');
                     ptoInput.disabled = false;
                 }
                 if (personalInput) {
-                    personalInput.setAttribute('data-previous-value', personalInput.value);
+                    personalInput.removeAttribute('data-previous-value');
                     personalInput.disabled = false;
                 }
                 if (holidayInput) {
-                    holidayInput.setAttribute('data-previous-value', holidayInput.value);
+                    holidayInput.removeAttribute('data-previous-value');
                     holidayInput.disabled = false;
                 }
             } else {
+                // When "Did Not Work" is unchecked, restore the previous values and enable all inputs
                 timeInputsInRow.forEach(input => {
                     input.value = input.getAttribute('data-previous-value') || '';
                     input.disabled = false;
@@ -184,21 +187,22 @@ document.addEventListener("DOMContentLoaded", async function () {
                     input.disabled = false;
                 });
                 if (ptoInput) {
-                    ptoInput.disabled = true;
                     ptoInput.value = ptoInput.getAttribute('data-previous-value') || '';
+                    ptoInput.disabled = false; // Ensure it's not disabled
                 }
                 if (personalInput) {
-                    personalInput.disabled = true;
                     personalInput.value = personalInput.getAttribute('data-previous-value') || '';
+                    personalInput.disabled = false; // Ensure it's not disabled
                 }
                 if (holidayInput) {
-                    holidayInput.disabled = true;
                     holidayInput.value = holidayInput.getAttribute('data-previous-value') || '';
+                    holidayInput.disabled = false; // Ensure it's not disabled
                 }
             }
             calculateTotalTimeWorked();
         });
     });
+    
 
     // Fetch PTO Hours
     async function fetchPtoHours() {
