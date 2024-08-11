@@ -559,6 +559,45 @@ input[type="date"] {
 color: #16a085;  }
   
   
+#loading-bar-container {
+    position: fixed;
+    top: 60px; /* Adjust this if your navbar has a different height */
+    left: 0;
+    width: 100%;
+    height: 4px; /* Match the height of your navigation bar */
+    background-color: #34495e; /* Same as your navbar background */
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+}
+
+#loading-bar {
+    height: 100%;
+    width: 0;
+    background-color: #1abc9c; /* Loading bar color */
+    transition: width 0.3s ease;
+}
+
+
+#content {
+    visibility: hidden;
+}
+
+#notification-area {
+    position: fixed;
+    top: 50; /* Adjust this if you want it higher or lower */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: black;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    z-index: 10000;
+    display: none; /* Initially hidden */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
 
 /* Button Styling */
 .submit-button,
