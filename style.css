@@ -561,7 +561,7 @@ color: #16a085;  }
   
 #loading-bar-container {
     position: fixed;
-    top: 60px; /* Adjust this if your navbar has a different height */
+    top: 17%; /* Adjust this if your navbar has a different height */
     left: 0;
     width: 100%;
     height: 4px; /* Match the height of your navigation bar */
@@ -574,7 +574,7 @@ color: #16a085;  }
 #loading-bar {
     height: 100%;
     width: 0;
-    background-color: #1abc9c; /* Loading bar color */
+    background-color: white; /* Loading bar color */
     transition: width 0.3s ease;
 }
 
@@ -585,14 +585,15 @@ color: #16a085;  }
 
 #notification-area {
     position: fixed;
-    top: 50; /* Adjust this if you want it higher or lower */
+    top: 30%; /* Adjust this if you want it higher or lower */
     left: 50%;
     transform: translateX(-50%);
-    background-color: black;
-    color: white;
+    color: red;
     padding: 10px 20px;
+    border: #000;
+    border-radius: 2px;
     border-radius: 5px;
-    font-size: 16px;
+    font-size: 1px;
     z-index: 10000;
     display: none; /* Initially hidden */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);

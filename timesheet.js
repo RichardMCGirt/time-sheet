@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     function showNotification(message) {
         notificationArea.textContent = message;
         notificationArea.style.display = 'block';
-        setTimeout(hideNotification, 3000); // Hide the notification after 3 seconds
+        setTimeout(hideNotification, 1500); // Hide the notification after 3 seconds
     }
 
     function hideNotification() {
