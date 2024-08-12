@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             loadingBar.style.width = progress + '%';
             loadingBar.textContent = `Loading... ${Math.round(progress)}%`;
         }
-        showNotification(message);
 
         if (progress >= 100) {
             setTimeout(() => {
@@ -37,7 +36,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             notificationArea.style.display = 'block';
             setTimeout(hideNotification, 1500); // Hide the notification after 1.5 seconds
         } else {
-            console.error('Notification area not found');
         }
     }
 
@@ -271,7 +269,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             updateLoadingBar('Personal hours have been downloaded.');
         } catch (error) {
-            console.error('Error fetching Personal hours:', error);
         }
     }
 
@@ -737,13 +734,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 - Record ID: ${recordId}
                 - API Key: ${apiKey ? 'Provided' : 'Not Provided'}
                 
-                Please check the following:
-                1. Ensure your network connection is stable.
-                2. Verify that your Airtable API Key, Base ID, and Table ID are correct.
-                3. Confirm that the Airtable record ID exists and is correct.
-                4. Review the console logs for more detailed error information.
-                
-                If the problem persists, contact support with the above details.`);
+               `);
                         }
     }
     
@@ -826,6 +817,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     timeInputs.forEach(input => {
         input.addEventListener('focus', () => scrollToElement(input));
     });
+
 
     function handleLogout(event) {
         event.preventDefault();

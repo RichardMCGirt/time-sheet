@@ -54,9 +54,9 @@ document.addEventListener("DOMContentLoaded", function() {
             formData[`end${i}`] = getValue(`input[name="end_time${i}"]`);
             formData[`additionali${i}`] = getValue(`input[name="Additional_Time_In${i}"]`);
             formData[`additionalo${i}`] = getValue(`input[name="Additional_Time_Out${i}"]`);
-            formData[`PTO Hours ${i}`] = parseFloat(getValue(`input[name="pto_hours${i}"]`)) || 0;
-            formData[`Personal Hours ${i}`] = parseFloat(getValue(`input[name="personal_hours${i}"]`)) || 0;
-            formData[`Holiday Hours ${i}`] = parseFloat(getValue(`input[name="holiday_hours${i}"]`)) || 0;
+            formData[`PTO Hours ${i}`] = parseFloat(getValue(`input[name="Pto_hours${i}"]`)) || 0;
+            formData[`Personal Hours ${i}`] = parseFloat(getValue(`input[name="Personal_hours${i}"]`)) || 0;
+            formData[`Holiday Hours ${i}`] = parseFloat(getValue(`input[name="Holiday_hours${i}"]`)) || 0;
             formData[`Did not work ${i}`] = getCheckboxValue(`input[name="did_not_work${i}"]`);
 
             console.log(`Data for day ${i}:`, {
@@ -233,10 +233,10 @@ document.addEventListener("DOMContentLoaded", function() {
             setValue(`input[name="end_time${i}"]`, '');
             setValue(`input[name="Additional_Time_In${i}"]`, '');
             setValue(`input[name="Additional_Time_Out${i}"]`, '');
-            setValue(`input[name="pto_hours${i}"]`, '');
-            setValue(`input[name="personal_hours${i}"]`, '');
-            setValue(`input[name="holiday_hours${i}"]`, '');
-            setCheckboxValue(`input[name="did_not_work${i}"]`, false);
+            setValue(`input[name="PTO_hours${i}"]`, '');
+            setValue(`input[name="Personal_hours${i}"]`, '');
+            setValue(`input[name="Holiday_hours${i}"]`, '');
+            setCheckboxValue(`input[name="did_not_work_${i}"]`, false);
         }
     }
     
@@ -271,10 +271,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 setValue(`input[name="end_time${i}"]`, record[`end${i}`]);
                 setValue(`input[name="Additional_Time_In${i}"]`, record[`additionali${i}`]);
                 setValue(`input[name="Additional_Time_Out${i}"]`, record[`additionalo${i}`]);
-                setValue(`input[name="pto_hours${i}"]`, record[`PTO Hours${i}`]);
-                setValue(`input[name="personal_hours${i}"]`, record[`Personal Hours${i}`]);
-                setValue(`input[name="holiday_hours${i}"]`, record[`Holiday Hours${i}`]);
-                setCheckboxValue(`input[name="did_not_work${i}"]`, record[`Did not work${i}`]);
+                setValue(`input[name="PTO_hours${i}"]`, record[`PTO Hours ${i}`]);
+                setValue(`input[name="Personal_hours${i}"]`, record[`Personal Hours ${i}`]);
+                setValue(`input[name="Holiday_hours${i}"]`, record[`Holiday Hours ${i}`]);
+                setCheckboxValue(`input[name="did_not_work_${i}"]`, record[`Did not work ${i}`]);
             }
         } catch (error) {
             console.error('Error populating form data:', error);
