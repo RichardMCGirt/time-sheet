@@ -44,6 +44,7 @@
                 <li><a href="timeoff.html">Request Time Off</a></li>
             </ul>
         </nav>
+        <div id="message-container" class="right-70"></div>
 
         <div id="loading-bar-container">
             <div id="loading-bar">
@@ -57,15 +58,16 @@
                     <label for="week-ending" class="Week-Ending" style="margin-right: 0px;">Week Ending (Wednesday):</label>
                     <input type="date" id="week-ending" name="week_ending" required style="font-size: 20px; margin-right: 0px; max-width: fit-content;"  width="20px">
                     
-                    <label for="approval-status" class="approved-label"  style="font-size: 20px; margin-right: 50px;"></label>
-                    <span id="approval-status" style="color: red;"  style="font-size: 250px; margin-right: 50px;"></span>
-            </div>
+                    <label for="approval-status" class="approved-label" style="font-size: 20px; margin-right: 50px;"></label>
+                    <span id="approval-status" style="color: red; font-size: 250px; margin-right: 50px;"></span>
+                </div>
                 <button id="playPauseButton" class="play-pause-button">Play</button>
-                <p>Please fill out your time entries for the week. Ensure all fields are accurate before submitting.</p>
-
-                <table id="time-entry-table" class="time-entry-table">
-                    <thead>
-                        <tr>
+        
+                <!-- Wrapper for responsive table -->
+                <div class="table-responsive">
+                    <table id="time-entry-table" class="time-entry-table">
+                        <thead>
+                            <tr>
                             <th class="date-column">Date</th>
                             <th class="time-column">Start Time</th>
                             <th class="time-column">Lunch Start</th>
@@ -350,6 +352,16 @@ document.getElementById('logout-button').addEventListener('click', function(even
 
 document.getElementById('user-email').addEventListener('click', function() {
     window.location.href = 'supervisor.html';
+});
+
+document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            console.log(`Checkbox ${this.id} was checked and rotated.`);
+        } else {
+            console.log(`Checkbox ${this.id} was unchecked.`);
+        }
+    });
 });
 
 

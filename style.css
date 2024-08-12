@@ -417,7 +417,7 @@ body.dark-mode .toggle-button:hover {
 
 .highlight-row {
     background-color: #f0f8ff !important;
-    color: #c0392b;
+    color: grey;
 }
 
 
@@ -679,12 +679,20 @@ color: #16a085;  }
     margin-top: 20px;
     transition: background-color 0.3s ease, color 0.3s ease; /* Add color transition */
 }
-
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling for mobile */
+}
 .time-entry-table-wrapper {
     width: 100%;
     overflow-x: auto;
 }
-
+/* Optional: You can add some padding to the container for better alignment */
+.table-responsive {
+    padding: 0 10px;
+}
 
 .reset-button:hover {
     background-color: black;
