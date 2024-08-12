@@ -877,7 +877,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     initializeForm();
     initializeTimeDropdowns();
-    initializeKeyboardNavigation();
+    
 
     function handleArrowKeys(event) {
         const key = event.key;

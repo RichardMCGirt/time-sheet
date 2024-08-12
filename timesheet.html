@@ -123,8 +123,7 @@
                                         <td class="narrow-column"><input type="number" name="Holiday_hours3" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td style="text-align: center;"><input type="checkbox" id="did-not-work-3" name="did_not_work3" onchange="toggleWorkInputs(2, this.checked)"></td>
                                     </tr>
-                                    <tr data-day="4">
-                                        <td style="text-align: center;"><input type="date" name="date4" readonly></td>
+                                    <tr data-day="4" class="highlight-row">                                        <td style="text-align: center;"><input type="date" name="date4" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time4" step="900"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_start4" step="900"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_end4" step="900"></td>
@@ -137,7 +136,7 @@
                                         <td class="narrow-column"><input type="number" name="Holiday_hours4" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td style="text-align: center;"><input type="checkbox" id="did-not-work-4" name="did_not_work4" onchange="toggleWorkInputs(3, this.checked)"></td>
                                     </tr>
-                                    <tr data-day="5">
+                                    <tr data-day="5" class="highlight-row">
                                         <td style="text-align: center;"><input type="date" name="date5" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time5" step="900"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_start5" step="900"></td>
@@ -151,6 +150,7 @@
                                         <td class="narrow-column"><input type="number" name="Holiday_hours5" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td style="text-align: center;"><input type="checkbox" id="did-not-work-5" name="did_not_work5" onchange="toggleWorkInputs(4, this.checked)"></td>
                                     </tr>
+                                    
                                     <tr data-day="6">
                                         <td style="text-align: center;"><input type="date" name="date6" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time6" step="900"></td>
@@ -249,7 +249,6 @@
 <script>
  document.addEventListener("DOMContentLoaded", function() {
     initializeTimeDropdowns();
-    initializeKeyboardNavigation();
     updateHeaderText();
 });
 
