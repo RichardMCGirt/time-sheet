@@ -437,6 +437,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function generateCustomXlsx() {
         const data = [];
+    
+        // First row of the header
+        data.push(["RECTYPE", "EMPLOYEE", "PEREND", "TIMECARD", "", "", "", ""]);
+        
+        // Second row of the header with the full columns
         data.push(["RECTYPE", "EMPLOYEE", "PEREND", "TIMECARD", "LINENUM", "CATEGORY", "EARNDED", "HOURS"]);
         
         const tables = document.querySelectorAll('.time-entry-table');
