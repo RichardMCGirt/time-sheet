@@ -658,30 +658,44 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     async function handleSubmit(event) {
         event.preventDefault();
-        console.log('Submitting form...');
+        console.log('User clicked submit. Throwing confetti!');
+        
+        // Trigger confetti immediately when the user clicks submit
+        throwConfetti();
+        
         const totalPtoHours = parseFloat(elements.ptoTimeSpan.textContent) || 0;
         const totalPersonalHours = parseFloat(elements.personalTimeSpan.textContent) || 0;
-
+    
         if (totalPtoHours > availablePTOHours) {
             alert('PTO time used cannot exceed available PTO hours');
             return;
         }
-
+    
         if (totalPersonalHours > availablePersonalHours) {
             alert('Personal time used cannot exceed available Personal hours');
             return;
         }
-
+    
         try {
             await updatePtoHours();
             await updatePersonalHours();
             await sendDataToAirtable();
-            alert('Submission successful!');
             clearForm();
         } catch (error) {
             alert(`Submission failed: ${error.message}`);
         }
     }
+    
+    function throwConfetti() {
+        confetti({
+            particleCount: 6000,
+            spread: 700,
+            origin: { y: 0.6 }
+        });
+    }
+    
+    
+    
 
     async function sendDataToAirtable() {
         const date7 = elements.timeEntryForm.elements['date7']?.value || '0';
