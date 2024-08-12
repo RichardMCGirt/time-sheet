@@ -11,26 +11,40 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     function updateLoadingBar(message) {
         progress += increment;
-        loadingBar.style.width = progress + '%';
+        if (loadingBar) {
+            loadingBar.style.width = progress + '%';
+            loadingBar.textContent = `Loading... ${Math.round(progress)}%`;
+        }
         showNotification(message);
 
         if (progress >= 100) {
             setTimeout(() => {
-                document.getElementById('loading-bar-container').style.display = 'none';
-                content.style.visibility = 'visible';
+                const loadingBarContainer = document.getElementById('loading-bar-container');
+                if (loadingBarContainer) {
+                    loadingBarContainer.style.display = 'none';
+                }
+                if (content) {
+                    content.style.visibility = 'visible';
+                }
                 hideNotification(); // Hide notification when loading is complete
             }, 500); // Small delay for the bar to reach 100%
         }
     }
 
     function showNotification(message) {
-        notificationArea.textContent = message;
-        notificationArea.style.display = 'block';
-        setTimeout(hideNotification, 1500); // Hide the notification after 3 seconds
+        if (notificationArea) {
+            notificationArea.textContent = message;
+            notificationArea.style.display = 'block';
+            setTimeout(hideNotification, 1500); // Hide the notification after 1.5 seconds
+        } else {
+            console.error('Notification area not found');
+        }
     }
 
     function hideNotification() {
-        notificationArea.style.display = 'none';
+        if (notificationArea) {
+            notificationArea.style.display = 'none';
+        }
     }
 
     console.log('DOM fully loaded and parsed');
@@ -121,7 +135,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 showResetButton = true;
             }
         });
-
     }
 
     timeInputs.forEach(input => {
@@ -260,7 +273,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             updateLoadingBar('Personal hours have been downloaded.');
         } catch (error) {
             console.error('Error fetching Personal hours:', error);
-            alert('Failed to fetch Personal hours. Error: ' + error.message);
         }
     }
 
@@ -1002,3 +1014,28 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     loadFormData(); // Load form data on page load
 });
+
+function toggleWorkInputs(dayIndex, isChecked) {
+    const row = document.querySelector(`tr[data-day="${dayIndex + 1}"]`);
+    const timeInputs = row.querySelectorAll('input[type="time"]');
+    const numberInputs = row.querySelectorAll('input[type="number"]');
+    
+    if (isChecked) {
+        timeInputs.forEach(input => {
+            input.disabled = true;
+            input.value = '';
+        });
+        numberInputs.forEach(input => {
+            input.disabled = true;
+            input.value = '';
+        });
+    } else {
+        timeInputs.forEach(input => {
+            input.disabled = false;
+        });
+        numberInputs.forEach(input => {
+            input.disabled = false;
+        });
+    }
+    calculateTotalTimeWorked();
+}

@@ -6,11 +6,9 @@
     <title>Dashboard - Time Tracking Software</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-   
 </head>
-<body>
+<body style="text-align: center;">
     <main>
-       
         <header>
             <div class="header-left">
                 <img src="vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
@@ -18,7 +16,7 @@
             <div id="pto-info" style="display: none;">
                 <h1>PTO Hours Available: <span id="pto-hours">Loading...</span></h1>
                 <label for="personal-time">Personal time used (hours):</label>
-                <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input" placeholder="Enter hours">
+                <input type="number" id="personal-time" name="personal_time" min="0" max="8" step="1" value="0" class="small-input">
             </div>
             <div id="countdown-container" style="font-size: 18px; color: white; margin-top: 10px;">
                 <h3 id="countdown-header">Personal Hours expire in</h3>
@@ -40,56 +38,49 @@
                     <a href="#" id="logout-button" class="logout-button">Logout</a>
                     <button id="convert-to-csv-button">Convert to CSV</button>
                 </div>
-            </div>
         </header>
-        <div id="loading-bar-container">
-            <div id="loading-bar"></div>
-        </div>
-        <div id="notification-area"></div>
-
-        
         <nav class="navbar">
             <ul>
                 <li><a href="timeoff.html">Request Time Off</a></li>
             </ul>
         </nav>
-        <div id="message-container" class="right-70"></div>
+
+        <div id="loading-bar-container">
+            <div id="loading-bar">
+                <span id="loading-text">Loading...</span>
+            </div>
+        </div>
+
         <section id="time-entry" class="time-entry">
             <form id="time-entry-form" class="time-entry-form">
                 <div class="form-group">
-                    <label for="week-ending" class="Week-Ending">Week Ending:</label>
-                    <input type="date" id="week-ending" name="week_ending" required>
-                    <label for="approval-status" class="approved-label"></label>
-                    <span id="approval-status" style="color: red;"></span>
-                </div>
+                    <label for="week-ending" class="Week-Ending" style="margin-right: 0px;">Week Ending (Wednesday):</label>
+                    <input type="date" id="week-ending" name="week_ending" required style="font-size: 20px; margin-right: 0px; max-width: fit-content;"  width="20px">
+                    
+                    <label for="approval-status" class="approved-label"  style="font-size: 20px; margin-right: 50px;"></label>
+                    <span id="approval-status" style="color: red;"  style="font-size: 250px; margin-right: 50px;"></span>
+            </div>
                 <button id="playPauseButton" class="play-pause-button">Play</button>
-                <section id="time-entry" class="time-entry">
-                    <form id="time-entry-form" class="time-entry-form">
-                        <div class="form-group">
-                           
-                            <span id="approval-status" style="color: red;"></span>
-                        </div>
-                        <button id="playPauseButton" class="play-pause-button">Play</button>
-                        <div class="time-entry-wrapper">
-                            <div class="time-entry-table-wrapper">
-                                <table id="time-entry-table" class="time-entry-table">
-                                <thead>
-                                    <tr>
-                                        <th class="date-column">Date</th>
-                                        <th class="time-column">Start Time</th>
-                                        <th class="time-column">Lunch Start</th>
-                                        <th class="time-column">Lunch End</th>
-                                        <th class="time-column">End Time</th>
-                                        <th class="time-column">Additional Time In</th>
-                                        <th class="time-column">Additional Time Out</th>
-                                        <th class="hours-worked-column">Hours Worked</th>
-                                        <th class="narrow-column">PTO Hours</th>
-                                        <th class="narrow-column">Personal Hours</th>
-                                        <th class="narrow-column">Holiday Hours</th>
-                                        <th class="work-column">Did not work</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="time-entry-body">
+                <p>Please fill out your time entries for the week. Ensure all fields are accurate before submitting.</p>
+
+                <table id="time-entry-table" class="time-entry-table">
+                    <thead>
+                        <tr>
+                            <th class="date-column">Date</th>
+                            <th class="time-column">Start Time</th>
+                            <th class="time-column">Lunch Start</th>
+                            <th class="time-column">Lunch End</th>
+                            <th class="time-column">End Time</th>
+                            <th class="time-column">Additional Time In</th>
+                            <th class="time-column">Additional Time Out</th>
+                            <th class="hours-worked-column">Hours Worked</th>
+                            <th class="narrow-column">PTO Hours</th>
+                            <th class="narrow-column">Personal Hours</th>
+                            <th class="narrow-column">Holiday Hours</th>
+                            <th class="work-column">Did not work</th>
+                        </tr>
+                    </thead>
+                    <tbody id="time-entry-body">
                                     <tr data-day="1">
                                         <td style="text-align: center;"><input type="date" name="date1" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time1"></td>
