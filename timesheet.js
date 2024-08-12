@@ -581,26 +581,44 @@ document.addEventListener("DOMContentLoaded", async function () {
     async function updatePtoHours() {
         console.log('Updating PTO hours...');
         const usedPtoHoursValue = parseFloat(elements.ptoTimeSpan.textContent) || 0;
-        const newPtoHoursValue = Math.max(0, availablePTOHours - usedPtoHoursValue);
-        console.log('Used PTO hours value:', usedPtoHoursValue);
-        console.log('New PTO hours value:', newPtoHoursValue);
-
+    
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
         console.log('Endpoint for update:', endpoint);
-
+    
         try {
+            // Fetch the current PTO value
+            const fetchResponse = await fetch(endpoint, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+    
+            if (!fetchResponse.ok) throw new Error(`Failed to fetch current PTO hours: ${fetchResponse.statusText}`);
+    
+            const fetchData = await fetchResponse.json();
+            const currentPtoHours = parseFloat(fetchData.fields['PTO']) || 0;
+    
+            // Calculate new PTO value by adding the used PTO hours
+            const newPtoHoursValue = currentPtoHours + usedPtoHoursValue;
+            console.log('Current PTO hours:', currentPtoHours);
+            console.log('Used PTO hours value:', usedPtoHoursValue);
+            console.log('New PTO hours value:', newPtoHoursValue);
+    
+            // Update the PTO field with the new value
             const updateResponse = await fetch(endpoint, {
                 method: 'PATCH',
                 headers: {
                     Authorization: `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ fields: { 'PTO Time Used': usedPtoHoursValue, 'PTO Total': availablePTOHours } }) // Updated line
+                body: JSON.stringify({ fields: { 'PTO': newPtoHoursValue } })
             });
-
+    
             const updateResponseData = await updateResponse.json();
             console.log('Update response data:', updateResponseData);
-
+    
             if (!updateResponse.ok) throw new Error(`Failed to update PTO hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
             console.log('PTO hours updated successfully');
         } catch (error) {
@@ -608,6 +626,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             throw new Error('Failed to update PTO hours. Error: ' + error.message);
         }
     }
+    
 
     async function updatePersonalHours() {
         console.log('Updating Personal hours...');
