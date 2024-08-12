@@ -691,7 +691,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const totalPtoHours = calculateColumnSum('PTO_hours');
         const totalPersonalHours = calculateColumnSum('Personal_hours');
         const totalHolidayHours = calculateColumnSum('Holiday_hours');
-    
+        
         console.log('Preparing to send data to Airtable:', {
             date7,
             totalPtoHours,
@@ -703,44 +703,51 @@ document.addEventListener("DOMContentLoaded", async function () {
     
         try {
             const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                },
-            });
-            const record = await response.json();
-            
-            const currentPtoTimeUsed = parseFloat(record.fields["PTO Time Used"]) || 0;
-            const updatedPtoTimeUsed = currentPtoTimeUsed + (parseFloat(totalPtoHours) || 0);
-    
-            const data = {
-                "date7": date7 || '0',
-                "PTO Time Used": updatedPtoTimeUsed,
-                "Personal Time Used": parseFloat(totalPersonalHours) || 0,
-                "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
-                "Total Hours Worked": parseFloat(elements.totalTimeWorkedSpan.textContent) || 0,
-                "Total Time with PTO": parseFloat(elements.totalTimeWithPtoSpan.textContent) || 0,
-                "PTO Total": availablePTOHours
-            };
-    
-            const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
                 method: 'PATCH',
                 headers: {
                     Authorization: `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ fields: data })
+                body: JSON.stringify({
+                    fields: {
+                        "date7": date7 || '0',
+                        "PTO": parseFloat(totalPtoHours) || 0,
+                        "Personal Time Used": parseFloat(totalPersonalHours) || 0,
+                        "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
+                        "Total Hours Worked": parseFloat(elements.totalTimeWorkedSpan.textContent) || 0,
+                        "Total Time with PTO": parseFloat(elements.totalTimeWithPtoSpan.textContent) || 0,
+                    }
+                })
             });
     
-            if (updateResponse.ok) {
-                console.log('Data successfully updated in Airtable');
-            } else {
-                console.error('Failed to update data in Airtable');
+            if (!response.ok) {
+                const errorDetails = await response.json();
+                console.error('Error updating Airtable:', response.statusText, errorDetails);
+                throw new Error(`Failed to update data in Airtable: ${response.statusText} - ${JSON.stringify(errorDetails)}`);
             }
+    
+            console.log('Data successfully updated in Airtable');
         } catch (error) {
             console.error('Error updating Airtable:', error);
-        }
+            alert(`Failed to update data in Airtable. 
+                Error Details:
+                - Status: ${response.status}
+                - Status Text: ${response.statusText}
+                - Endpoint: ${endpoint}
+                - Record ID: ${recordId}
+                - API Key: ${apiKey ? 'Provided' : 'Not Provided'}
+                
+                Please check the following:
+                1. Ensure your network connection is stable.
+                2. Verify that your Airtable API Key, Base ID, and Table ID are correct.
+                3. Confirm that the Airtable record ID exists and is correct.
+                4. Review the console logs for more detailed error information.
+                
+                If the problem persists, contact support with the above details.`);
+                        }
     }
-
+    
+    
     document.addEventListener("DOMContentLoaded", function() {
         const timeEntryWrapper = document.querySelector('.time-entry-table-wrapper');
     
@@ -877,7 +884,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     initializeForm();
     initializeTimeDropdowns();
-    initializeKeyboardNavigation();
 
     function handleArrowKeys(event) {
         const key = event.key;
