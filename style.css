@@ -589,7 +589,6 @@ color: #16a085;  }
     position: relative;
     overflow: hidden;
     margin-top: 2px; /* Adjust this to align with the solid line */
-    border: 2px solid black; /* Optional border for better visibility */
 
     /* Centering */
     margin-left: auto;

@@ -39,11 +39,11 @@
                     <button id="convert-to-csv-button">Convert to CSV</button>
                 </div>
         </header>
-        <nav class="navbar">
-            <ul>
-                <li><a href="timeoff.html">Request Time Off</a></li>
-            </ul>
-        </nav>
+      <nav id="navbar" class="navbar">
+    <ul>
+        <li><a href="timeoff.html">Request Time Off</a></li>
+    </ul>
+</nav>
         <div id="message-container" class="right-70"></div>
 
         <div id="loading-bar-container">
@@ -249,123 +249,210 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        initializeTimeDropdowns();
-        updateHeaderText();
-        // Set checkboxes to checked on page load
-        document.getElementById('did-not-work-4').checked = true;
-        document.getElementById('did-not-work-5').checked = true;
+
+document.addEventListener("DOMContentLoaded", function() {
+    initializeTimeDropdowns();
+    updateHeaderText();
+
+    // Set checkboxes to checked on page load
+    document.getElementById('did-not-work-4').checked = true;
+    document.getElementById('did-not-work-5').checked = true;
+
+    // Hide the navbar initially if the loading bar is visible
+    toggleNavbar();
+
+    // Assume loading completes after some time (you can replace this with actual logic when loading completes)
+    setTimeout(function() {
+        setLoadingState(false); // This will hide the loading bar and show the navbar
+    }, 3000); // Example timeout, adjust according to your loading logic
+
+    addGlobal55Shortcut(); // Add the "77" shortcut functionality
+});
+
+function addGlobal55Shortcut() {
+    let keysPressed = "";
+
+    document.addEventListener('keydown', function(event) {
+        if (document.activeElement.tagName !== 'INPUT') { // Ensure no input is focused
+            keysPressed += event.key; // Append the pressed key to the string
+
+            if (keysPressed.endsWith('55')) {
+                apply55Shortcut(); // Trigger the shortcut
+                keysPressed = ""; // Reset the key sequence
+            }
+
+            // Optionally, clear the string if it gets too long or doesn't match
+            if (keysPressed.length > 2) {
+                keysPressed = keysPressed.slice(-2); // Keep only the last two characters
+            }
+        }
+    });
+}
+
+function apply55Shortcut() {
+    const timeEntryTable = document.getElementById('time-entry-table');
+    const rows = timeEntryTable.querySelectorAll('tbody tr');
+
+    rows.forEach(row => {
+        const index = parseInt(row.dataset.day, 10);
+        const startTimeInput = row.querySelector('input[name^="start_time"]');
+        const endTimeInput = row.querySelector('input[name^="end_time"]');
+        const lunchStartInput = row.querySelector('input[name^="lunch_start"]');
+        const lunchEndInput = row.querySelector('input[name^="lunch_end"]');
+
+        if (index === 7) {
+            startTimeInput.value = '07:00';
+            endTimeInput.value = '12:00';
+        } else if ([1, 2, 3, 6].includes(index)) {
+            startTimeInput.value = '07:00';
+            endTimeInput.value = '16:00';
+            lunchStartInput.value = '12:00'; // Set lunch start time to 12:00 PM
+            lunchEndInput.value = '13:00';   // Set lunch end time to 1:00 PM
+        }
+    });
+}
+
+
+function initializeTimeDropdowns() {
+    const timeEntryTable = document.getElementById('time-entry-table');
+    const inputs = timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]');
+
+    inputs.forEach(input => {
+        input.addEventListener('change', checkInputsAndToggleSummary);
+        input.addEventListener('keydown', handleKeyNavigation);
+        input.addEventListener('keyup', handleTimeInput);
     });
 
-    function initializeTimeDropdowns() {
-        const timeEntryTable = document.getElementById('time-entry-table');
-        const inputs = timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]');
+    // Initial check to set the correct visibility of the summary section on page load
+    checkInputsAndToggleSummary();
+}
 
-        inputs.forEach(input => {
-            input.addEventListener('change', checkInputsAndToggleSummary);
-            input.addEventListener('keydown', handleKeyNavigation);
-            input.addEventListener('keyup', handleTimeInput);
-        });
+function checkInputsAndToggleSummary() {
+    const timeEntryTable = document.getElementById('time-entry-table');
+    const inputs = timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]');
+    const summarySection = document.getElementById('summary');
+    let hasInput = Array.from(inputs).some(input => input.value);
 
-        // Initial check to set the correct visibility of the summary section on page load
-        checkInputsAndToggleSummary();
+    summarySection.style.display = hasInput ? 'flex' : 'none';
+}
+
+function handleKeyNavigation(event) {
+    const key = event.key;
+    const input = event.target;
+
+    // Allow left and right arrow navigation for all input types
+    if (key === 'ArrowRight') {
+        navigateToNextField(input);
+    } else if (key === 'ArrowLeft') {
+        navigateToPreviousField(input);
     }
-
-    function checkInputsAndToggleSummary() {
-        const timeEntryTable = document.getElementById('time-entry-table');
-        const inputs = timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]');
-        const summarySection = document.getElementById('summary');
-        let hasInput = Array.from(inputs).some(input => input.value);
-
-        summarySection.style.display = hasInput ? 'flex' : 'none';
-    }
-
-    function handleKeyNavigation(event) {
-        const key = event.key;
-        const input = event.target;
-
-        if (key === 'ArrowDown' || key === 'ArrowRight') {
+    
+    // Prevent up and down arrow navigation for number inputs
+    if (input.type !== 'number') {
+        if (key === 'ArrowDown') {
             navigateToNextField(input);
-        } else if (key === 'ArrowUp' || key === 'ArrowLeft') {
+        } else if (key === 'ArrowUp') {
             navigateToPreviousField(input);
         }
     }
+}
 
-    function navigateToNextField(currentField) {
-        const timeEntryTable = document.getElementById('time-entry-table');
-        const inputs = Array.from(timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]'));
-        const currentIndex = inputs.indexOf(currentField);
+function navigateToNextField(currentField) {
+    const timeEntryTable = document.getElementById('time-entry-table');
+    const inputs = Array.from(timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]'));
+    const currentIndex = inputs.indexOf(currentField);
 
-        for (let i = currentIndex + 1; i < inputs.length; i++) {
-            if (!isFieldInSkippedDay(inputs[i])) {
-                inputs[i].focus();
-                break;
-            }
+    for (let i = currentIndex + 1; i < inputs.length; i++) {
+        if (!isFieldInSkippedDay(inputs[i])) {
+            inputs[i].focus();
+            break;
         }
     }
+}
 
-    function navigateToPreviousField(currentField) {
-        const timeEntryTable = document.getElementById('time-entry-table');
-        const inputs = Array.from(timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]'));
-        const currentIndex = inputs.indexOf(currentField);
+function navigateToPreviousField(currentField) {
+    const timeEntryTable = document.getElementById('time-entry-table');
+    const inputs = Array.from(timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]'));
+    const currentIndex = inputs.indexOf(currentField);
 
-        for (let i = currentIndex - 1; i >= 0; i--) {
-            if (!isFieldInSkippedDay(inputs[i])) {
-                inputs[i].focus();
-                break;
-            }
+    for (let i = currentIndex - 1; i >= 0; i--) {
+        if (!isFieldInSkippedDay(inputs[i])) {
+            inputs[i].focus();
+            break;
         }
     }
+}
 
-    function getDayNumberFromField(field) {
-        const name = field.name;
-        const match = name.match(/date(\d+)/);
-        return match ? parseInt(match[1], 10) : null;
+function getDayNumberFromField(field) {
+    const name = field.name;
+    const match = name.match(/date(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+}
+
+function isFieldInSkippedDay(field) {
+    const inputs = Array.from(document.querySelectorAll('input'));
+    const fieldIndex = inputs.indexOf(field);
+    const indexesToSkip = [4, 5]; // Input indexes to skip
+    return indexesToSkip.includes(fieldIndex);
+}
+
+function handleTimeInput(event) {
+    const value = event.target.value.toUpperCase();
+    if (value.includes('AM') || value.includes('PM')) {
+        navigateToNextField(event.target);
     }
+}
 
-    function isFieldInSkippedDay(field) {
-        const dayNumber = getDayNumberFromField(field);
-        const fieldsToSkip = [4, 5]; // Days to skip
-        return fieldsToSkip.includes(dayNumber);
+function updateHeaderText() {
+    const personalTime = parseFloat(document.getElementById('personal-time').value) || 0;
+    const header = document.getElementById('countdown-header');
+
+    header.textContent = personalTime === 0 
+        ? 'Personal Hours reset in' 
+        : 'Personal Hours expire in';
+}
+
+function toggleNavbar(isLoading) {
+    const loadingBar = document.getElementById('loading-bar-container');
+    const navbar = document.getElementById('navbar');
+
+    if (isLoading) {
+        loadingBar.style.display = 'block';
+        navbar.style.display = 'none';
+    } else {
+        loadingBar.style.display = 'none';
+        navbar.style.display = 'block';
     }
+}
 
-    function handleTimeInput(event) {
-        const value = event.target.value.toUpperCase();
-        if (value.includes('AM') || value.includes('PM')) {
-            navigateToNextField(event.target);
+function setLoadingState(isLoading) {
+    toggleNavbar(isLoading); // Adjust the navbar and loading bar visibility accordingly
+}
+
+// Event listeners for logout and email navigation
+document.getElementById('logout-button').addEventListener('click', function(event) {
+    event.preventDefault();
+    localStorage.removeItem('userEmail');
+    sessionStorage.removeItem('user');
+    window.location.href = 'index.html';
+});
+
+document.getElementById('user-email').addEventListener('click', function() {
+    window.location.href = 'supervisor.html';
+});
+
+document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            console.log(`Checkbox ${this.id} was checked and rotated.`);
+        } else {
+            console.log(`Checkbox ${this.id} was unchecked.`);
         }
-    }
-
-    function updateHeaderText() {
-        const personalTime = parseFloat(document.getElementById('personal-time').value) || 0;
-        const header = document.getElementById('countdown-header');
-
-        header.textContent = personalTime === 0 
-            ? 'Personal Hours reset in' 
-            : 'Personal Hours expire in';
-    }
-
-    // Event listeners for logout and email navigation
-    document.getElementById('logout-button').addEventListener('click', function(event) {
-        event.preventDefault();
-        localStorage.removeItem('userEmail');
-        sessionStorage.removeItem('user');
-        window.location.href = 'index.html';
     });
+});
 
-    document.getElementById('user-email').addEventListener('click', function() {
-        window.location.href = 'supervisor.html';
-    });
-
-    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                console.log(`Checkbox ${this.id} was checked and rotated.`);
-            } else {
-                console.log(`Checkbox ${this.id} was unchecked.`);
-            }
-        });
-    });
 </script>
+
+
 </body>
 </html>
