@@ -571,14 +571,22 @@ color: #16a085;  }
   
 
 #loading-bar-container {
-    width: 100%;
+    width: 40%;
     height: 30px; /* Adjust the height as needed */
     background-color: #34495e; /* Same color as the nav bar background */
     position: relative;
     overflow: hidden;
     margin-top: 2px; /* Adjust this to align with the solid line */
-    border: 2px solid #ecf0f1; /* Optional border for better visibility */
+    border: 2px solid black; /* Optional border for better visibility */
+
+    /* Centering */
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
 
 #loading-bar {
     width: 0%;
