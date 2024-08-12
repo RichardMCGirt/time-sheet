@@ -1,386 +1,810 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", async function () {
+    // Initialize loading bar, content elements, and notification area
+    const loadingBar = document.getElementById('loading-bar');
+    const content = document.getElementById('content');
+    const notificationArea = document.getElementById('notification-area');
+
+    const totalFetchTasks = 4; // Number of fetch tasks
+    const increment = 100 / totalFetchTasks;
+
+    let progress = 0;
+
+    function updateLoadingBar(message) {
+        progress += increment;
+        if (loadingBar) {
+            loadingBar.style.width = progress + '%';
+            loadingBar.textContent = `Loading... ${Math.round(progress)}%`;
+        }
+        showNotification(message);
+
+        if (progress >= 100) {
+            setTimeout(() => {
+                const loadingBarContainer = document.getElementById('loading-bar-container');
+                if (loadingBarContainer) {
+                    loadingBarContainer.style.display = 'none';
+                }
+                if (content) {
+                    content.style.visibility = 'visible';
+                }
+                hideNotification(); // Hide notification when loading is complete
+            }, 500); // Small delay for the bar to reach 100%
+        }
+    }
+
+    function showNotification(message) {
+        if (notificationArea) {
+            notificationArea.textContent = message;
+            notificationArea.style.display = 'block';
+            setTimeout(hideNotification, 1500); // Hide the notification after 1.5 seconds
+        } else {
+            console.error('Notification area not found');
+        }
+    }
+
+    function hideNotification() {
+        if (notificationArea) {
+            notificationArea.style.display = 'none';
+        }
+    }
+
+    console.log('DOM fully loaded and parsed');
+    initializeTimeDropdowns();
+    initializeKeyboardNavigation();
+
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
-    const tableId = 'tbl3PB88KkGdPlT5x';
+    const tableId = 'tbljmLpqXScwhiWTt';
 
-    const userEmail = localStorage.getItem('userEmail');
-    let records = [];
-    let currentEditingIndex = null;
+    let userEmail = localStorage.getItem('userEmail') || '';
+    let recordId = '';
+    console.log('User email:', userEmail);
 
-    const form = document.getElementById('timeOffForm');
-    const requestsList = document.getElementById('requestsList');
-    const previousRequestsContainer = document.getElementById('previousRequests');
-    const submissionStatus = document.getElementById('submissionStatus');
-    const submittedData = document.getElementById('submittedData');
-    const submittedEmployeeName = document.getElementById('submittedEmployeeName');
-    const submittedStartDate = document.getElementById('submittedStartDate');
-    const submittedStartTime = document.getElementById('submittedStartTime');
-    const submittedEndDate = document.getElementById('submittedEndDate');
-    const submittedEndTime = document.getElementById('submittedEndTime');
-    const daysOffMessage = document.getElementById('daysOffMessage');
-    const submitButton = document.getElementById('submitButton');
-    const logoutButton = document.getElementById('logout-button');
+    const elements = {
+        ptoHoursElement: document.getElementById('pto-hours'),
+        holidayHoursInput: document.getElementById('Holiday-hours'),
+        weekEndingInput: document.getElementById('week-ending'),
+        timeEntryForm: document.getElementById('time-entry-form'),
+        ptoTimeSpan: document.getElementById('pto-time'),
+        personalTimeSpan: document.getElementById('personal-time'),
+        holidayTimeSpan: document.getElementById('Holiday-hours'),
+        totalTimeWorkedSpan: document.getElementById('total-time-worked'),
+        totalTimeWithPtoSpan: document.getElementById('total-time-with-pto-value'),
+        ptoValidationMessage: document.getElementById('pto-validation-message'),
+        remainingPtoHoursElement: document.getElementById('remaining-pto-hours'),
+        remainingPersonalHoursElement: document.getElementById('remaining-personal-hours'),
+        logoutButton: document.getElementById('logout-button'),
+        userEmailElement: document.getElementById('user-email'),
+        ptoHoursDisplay: document.getElementById('pto-hours-display'),
+        personalTimeDisplay: document.getElementById('personal-time-display'),
+        resetButton: document.getElementById('reset-button'),
+        submitButton: document.getElementById('submit-button'),
+        countdownElement: document.getElementById('countdown'),
+        loadDataButton: document.getElementById('load-data-button'),
+    };
 
-    if (!userEmail) {
+    let availablePTOHours = 0;
+    let availablePersonalHours = 0;
+
+    elements.ptoHoursDisplay.textContent = 'Loading...';
+    elements.personalTimeDisplay.textContent = 'Loading...';
+
+    if (userEmail) {
+        elements.userEmailElement.textContent = userEmail;
+        console.log('User email set in the UI');
+    } else {
+        console.log('No user email found, redirecting to index.html');
         window.location.href = 'index.html';
-        return;
     }
 
-    fetchEmployeeName(userEmail);
+    elements.holidayHoursInput.addEventListener('input', handleHolidayHoursChange);
+    elements.weekEndingInput.addEventListener('focus', () => elements.weekEndingInput.showPicker());
+    elements.weekEndingInput.addEventListener('change', handleWeekEndingChange);
+    elements.timeEntryForm.addEventListener('input', debounce(calculateTotalTimeWorked, 300));
+    elements.logoutButton.addEventListener('click', handleLogout);
+    elements.submitButton.addEventListener('click', handleSubmit);
 
-    function fillEmailFromLocalStorage() {
-        const email = localStorage.getItem('userEmail');
-        if (email) {
-            document.getElementById('user-email').textContent = email;
+    const timeInputs = document.querySelectorAll('input[type="time"]');
+    const numberInputs = document.querySelectorAll('input[type="number"]');
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const rowCheckboxes = document.querySelectorAll('input[id^="did-not-work"]');
+
+    function checkInputs() {
+        let showResetButton = false;
+
+        timeInputs.forEach(input => {
+            if (input.value) {
+                showResetButton = true;
+            }
+        });
+
+        numberInputs.forEach(input => {
+            if (input.value) {
+                showResetButton = true;
+            }
+        });
+
+        dateInputs.forEach(input => {
+            if (input.value) {
+                showResetButton = true;
+            }
+        });
+
+        checkboxes.forEach(input => {
+            if (input.checked) {
+                showResetButton = true;
+            }
+        });
+    }
+
+    timeInputs.forEach(input => {
+        input.addEventListener('input', saveFormData);
+    });
+
+    numberInputs.forEach(input => {
+        input.addEventListener('input', saveFormData);
+    });
+
+    dateInputs.forEach(input => {
+        input.addEventListener('input', saveFormData);
+    });
+
+    checkboxes.forEach(input => {
+        input.addEventListener('change', saveFormData);
+    });
+
+    checkInputs();
+
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function(event) {
+            const row = event.target.closest('tr');
+            const timeInputsInRow = row.querySelectorAll('input[type="time"]');
+            const numberInputsInRow = row.querySelectorAll('input[type="number"]');
+            const ptoInput = row.querySelector('input[name^="PTO_hours"]');
+            const personalInput = row.querySelector('input[name^="Personal_hours"]');
+            const holidayInput = row.querySelector('input[name^="Holiday_hours"]');
+    
+            if (event.target.checked) {
+                // When "Did Not Work" is checked, disable the time and number inputs
+                timeInputsInRow.forEach(input => {
+                    input.setAttribute('data-previous-value', input.value);
+                    input.value = '';
+                    input.disabled = true;
+                });
+                numberInputsInRow.forEach(input => {
+                    input.setAttribute('data-previous-value', input.value);
+                    input.value = '';
+                    input.disabled = true;
+                });
+                // Enable PTO, Personal, and Holiday inputs when the checkbox is checked
+                if (ptoInput) {
+                    ptoInput.removeAttribute('data-previous-value');
+                    ptoInput.disabled = false;
+                }
+                if (personalInput) {
+                    personalInput.removeAttribute('data-previous-value');
+                    personalInput.disabled = false;
+                }
+                if (holidayInput) {
+                    holidayInput.removeAttribute('data-previous-value');
+                    holidayInput.disabled = false;
+                }
+            } else {
+                // When "Did Not Work" is unchecked, restore the previous values and enable all inputs
+                timeInputsInRow.forEach(input => {
+                    input.value = input.getAttribute('data-previous-value') || '';
+                    input.disabled = false;
+                });
+                numberInputsInRow.forEach(input => {
+                    input.value = input.getAttribute('data-previous-value') || '';
+                    input.disabled = false;
+                });
+                if (ptoInput) {
+                    ptoInput.value = ptoInput.getAttribute('data-previous-value') || '';
+                    ptoInput.disabled = false; // Ensure it's not disabled
+                }
+                if (personalInput) {
+                    personalInput.value = personalInput.getAttribute('data-previous-value') || '';
+                    personalInput.disabled = false; // Ensure it's not disabled
+                }
+                if (holidayInput) {
+                    holidayInput.value = holidayInput.getAttribute('data-previous-value') || '';
+                    holidayInput.disabled = false; // Ensure it's not disabled
+                }
+            }
+            calculateTotalTimeWorked();
+        });
+    });
+    
+
+    // Fetch PTO Hours
+    async function fetchPtoHours() {
+        console.log('Fetching PTO hours...');
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch PTO hours: ${response.statusText}`);
+
+            const data = await response.json();
+            console.log('Fetched PTO hours:', data);
+
+            if (data.records.length > 0) {
+                const record = data.records[0].fields;
+                availablePTOHours = parseFloat(record['PTO Total']) || 0;
+                recordId = data.records[0].id;
+                elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
+                elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2);
+                console.log('Available PTO hours:', availablePTOHours);
+            } else {
+                console.log('No PTO hours data found for user');
+            }
+
+            updateLoadingBar('PTO hours have been downloaded.');
+        } catch (error) {
+            console.error('Error fetching PTO hours:', error);
+            alert('Failed to fetch PTO hours. Error: ' + error.message);
         }
     }
 
-    fillEmailFromLocalStorage();
+    // Fetch Personal Hours
+    async function fetchPersonalTime() {
+        console.log('Fetching Personal hours...');
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
 
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        handleFormSubmit();
-    });
-
-    logoutButton.addEventListener('click', (event) => {
-        handleLogout(event);
-    });
-
-    async function fetchEmployeeName(email) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
-            const response = await fetch(url, {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch Personal hours: ${response.statusText}`);
+
+            const data = await response.json();
+            console.log('Fetched Personal hours:', data);
+
+            if (data.records.length > 0) {
+                const record = data.records[0].fields;
+                availablePersonalHours = parseFloat(record['Personaltime']) || 0;
+                recordId = data.records[0].id;
+                elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
+                elements.remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2);
+                console.log('Available Personal hours:', availablePersonalHours);
+            } else {
+                console.log('No Personal hours data found for user');
+            }
+
+            updateLoadingBar('Personal hours have been downloaded.');
+        } catch (error) {
+            console.error('Error fetching Personal hours:', error);
+        }
+    }
+
+    // Fetch Personal End Date
+    async function fetchPersonalEndDate() {
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+        try {
+            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+            if (!response.ok) throw new Error(`Failed to fetch Personal END Date: ${response.statusText}`);
+            const data = await response.json();
+            if (data.records.length > 0) {
+                const personalEndDate = data.records[0].fields['Personal END Date'];
+                startCountdown(personalEndDate);
+            } else {
+                console.log('No Personal END Date found for user');
+            }
+
+            updateLoadingBar('Previous entries have been downloaded.');
+        } catch (error) {
+            console.error('Error fetching Personal END Date:', error);
+        }
+    }
+
+    // Fetch Approval Status
+    async function fetchApprovalStatus() {
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+        try {
+            const response = await fetch(endpoint, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
                 }
             });
+            if (!response.ok) throw new Error(`Failed to fetch approval status: ${response.statusText}`);
             const data = await response.json();
             if (data.records.length > 0) {
-                const employeeName = data.records[0].fields['Full Name'];
-                document.getElementById('employeeName').value = employeeName;
-                fetchPreviousRequests(email);
-            } else {
-                console.error('No employee found with the given email.');
-            }
-        } catch (error) {
-            console.error('Error fetching employee name:', error);
-        }
-    }
-
-    async function fetchPreviousRequests(email) {
-        try {
-            let url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
-            let allRecords = [];
-            while (url) {
-                const response = await fetch(url, {
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`
-                    }
-                });
-                const data = await response.json();
-                allRecords = allRecords.concat(data.records);
-                url = data.offset ? `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}&offset=${data.offset}` : null;
-            }
-            records = allRecords || [];
-            await deleteExpiredRecords(records);
-            displayPreviousRequests(records);
-        } catch (error) {
-            console.error('Error fetching previous requests:', error);
-        }
-    }
-
-    async function sendToAirtable(formData) {
-        try {
-            const employeeName = document.getElementById('employeeName').value;
-            const recordId = await getRecordIdByName(employeeName);
-
-            if (recordId) {
-                const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-                const response = await fetch(url, {
-                    method: 'PATCH',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ fields: formData })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    showSuccessMessage('Submission successful!');
-                    displaySubmittedData(formData);
-                    fetchPreviousRequests(localStorage.getItem('userEmail'));
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    const errorData = await response.json();
-                    throw new Error(`Failed to update record: ${JSON.stringify(errorData)}`);
+                const record = data.records[0].fields;
+                recordId = data.records[0].id;
+                const isApproved = record['Approved'] === true;
+                const approvalStatusElement = document.getElementById('approval-status');
+                if (isApproved) {
+                    approvalStatusElement.textContent = 'Time sheet approved';
+                    approvalStatusElement.style.color = 'green';
+                    approvalStatusElement.style.fontSize = '30px';
+                    approvalStatusElement.style.fontWeight = 'bold';
+                    approvalStatusElement.style.textDecoration = 'underline';
                 }
+                hideApprovalOnEdit(isApproved);
             } else {
-                const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ fields: formData })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    showSuccessMessage('Submission successful!');
-                    displaySubmittedData(formData);
-                    fetchPreviousRequests(localStorage.getItem('userEmail'));
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    const errorData = await response.json();
-                    throw new Error(`Failed to save record: ${JSON.stringify(errorData)}`);
-                }
+                console.log('No approval status data found for user');
             }
+
+            updateLoadingBar('Approval status has been downloaded.');
         } catch (error) {
-            console.error('Error saving to Airtable:', error);
-            showError('Submission failed. Please try again.');
+            console.error('Error fetching approval status:', error);
+            alert('Failed to fetch approval status. Error: ' + error.message);
         }
     }
 
-    async function getRecordIdByName(name) {
-        try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{Full Name}='${name}'`)}`;
-            const response = await fetch(url, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
+    // Run all fetches sequentially
+    await fetchPtoHours();
+    await fetchPersonalTime();
+    await fetchPersonalEndDate();
+    await fetchApprovalStatus();
+
+    function handleHolidayHoursChange() {
+        console.log('Handling Holiday hours change...');
+        calculateTotalTimeWorked();
+        saveFormData();
+    }
+
+    async function handleWeekEndingChange() {
+        console.log('Handling week-ending date change...');
+        const selectedDate = new Date(elements.weekEndingInput.value);
+        adjustToWednesday(selectedDate);
+        elements.weekEndingInput.value = selectedDate.toISOString().split('T')[0];
+        console.log('Adjusted week-ending date:', selectedDate);
+    
+        const date7 = new Date(selectedDate);
+        date7.setDate(selectedDate.getDate() + 6);
+        elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
+        populateWeekDates(selectedDate);
+        saveFormData();
+    }
+    
+    function adjustToWednesday(date) {
+        const dayOfWeek = date.getDay();
+        const offset = (1 - dayOfWeek + 7) % 7;
+        date.setDate(date.getDate() + offset);
+    }
+    
+    function populateWeekDates(weekEndingDate) {
+        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
+        daysOfWeek.forEach((day, index) => {
+            const currentDate = new Date(weekEndingDate);
+            currentDate.setDate(currentDate.getDate() - (6 - index));
+            const inputField = elements.timeEntryForm.elements[day];
+            inputField.value = currentDate.toISOString().split('T')[0];
+            console.log(`Set date for ${day}:`, currentDate);
+            const checkboxId = `did-not-work-${index + 1}`;
+            let checkbox = document.getElementById(checkboxId);
+            if (!checkbox) {
+                checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = checkboxId;
+                checkbox.name = `did_not_work${index + 1}`;
+                const cell = document.createElement('td');
+                cell.appendChild(checkbox);
+                inputField.parentElement.parentElement.appendChild(cell);
+                console.log('Added checkbox for', day);
+            }
+        });
+        saveFormData();
+    }
+
+    function hideApprovalOnEdit(isApproved) {
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.addEventListener('change', () => {
+                const approvalStatusElement = document.getElementById('approval-status');
+                if (approvalStatusElement.style.color !== 'green') {
+                    approvalStatusElement.style.display = 'none';
                 }
             });
-            const data = await response.json();
-            if (data.records.length > 0) {
-                return data.records[0].id;
+        });
+    }
+
+    function startCountdown(endDate) {
+        const endDateTime = new Date(endDate).getTime();
+        const countdownElement = document.getElementById('countdown');
+
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const distance = endDateTime - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            if (distance < 0) {
+                clearInterval(interval);
+                countdownElement.innerHTML = "EXPIRED";
             }
-            return null;
-        } catch (error) {
-            console.error('Error fetching record ID by name:', error);
-            return null;
-        }
-    }
-
-    function getNextAvailableIndex() {
-        let maxIndex = 0;
-        if (records) {
-            records.forEach(record => {
-                for (let i = 1; i <= 10; i++) {
-                    if (record.fields[`Time off Start Date ${i}`]) {
-                        maxIndex = i;
-                    }
-                }
-            });
-        }
-        return maxIndex + 1;
-    }
-
-    function handleFormSubmit() {
-        const startDate = document.getElementById('startDate').value;
-        let startTime = document.getElementById('startTime').value;
-        const endDate = document.getElementById('endDate').value;
-        let endTime = document.getElementById('endTime').value;
-    
-        if (!startDate || !endDate) {
-            showError('Start Date and End Date are required.');
-            return;
-        }
-    
-        const startDateTime = new Date(`${startDate}T${startTime || '00:00'}`);
-        const endDateTime = new Date(`${endDate}T${endTime || '23:59'}`);
-    
-        if (startDateTime > endDateTime) {
-            showError('Start Date cannot be later than End Date.');
-            return;
-        }
-    
-        const now = new Date();
-        if (now >= startDateTime && now <= endDateTime) {
-            showSuccessMessage('The requested time-off is happening now.');
-        }
-    
-        if (startTime === 'All Day') {
-            startTime = '07:00 AM';
-        } else {
-            startTime = convertToAMPM(startTime);
-        }
-        if (endTime === 'All Day') {
-            endTime = '04:00 PM';
-        } else {
-            endTime = convertToAMPM(endTime);
-        }
-    
-        const nextIndex = currentEditingIndex !== null ? currentEditingIndex : getNextAvailableIndex();
-        if (nextIndex > 10) {
-            showError('No available index to store the new time-off request.');
-            return;
-        }
-    
-        const formData = {
-            'Full Name': document.getElementById('employeeName').value,
-            [`Time off Start Date ${nextIndex}`]: startDate,
-            [`Time off Start Time ${nextIndex}`]: startTime,
-            [`Time off End Date ${nextIndex}`]: endDate,
-            [`Time off End Time ${nextIndex}`]: endTime,
         };
-    
-        sendToAirtable(formData);
-    
-        document.getElementById('startDate').value = '';
-        document.getElementById('startTime').value = '';
-        document.getElementById('endDate').value = '';
-        document.getElementById('endTime').value = '';
-    
-        currentEditingIndex = null;
-        submitButton.textContent = 'Submit';
-    
-        fetchPreviousRequests(userEmail);
-    }
-    
-    function convertToAMPM(time) {
-        const [hourString, minute] = time.split(':');
-        let hour = parseInt(hourString, 10);
-        const period = hour >= 12 ? 'PM' : 'AM';
-        hour = hour % 12 || 12;
-        return `${hour}:${minute} ${period}`;
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
     }
 
-    function displayPreviousRequests(records) {
-        requestsList.innerHTML = '';
-    
-        if (records.length > 0) {
-            previousRequestsContainer.classList.remove('hidden');
+    function calculateTotalTimeWorked() {
+        console.log('Calculating total time worked...');
+        let totalHoursWorked = 0;
+        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
+        daysOfWeek.forEach((day, index) => {
+            const dateInput = elements.timeEntryForm.elements[day];
+            const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'].map(field => elements.timeEntryForm.elements[`${field}${index + 1}`]);
+            const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
+            let hoursWorked = calculateDailyHoursWorked(dateInput, ...timeFields);
+            hoursWorked = roundToClosestQuarterHour(hoursWorked);
+            totalHoursWorked += hoursWorked;
+            hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
+        });
+        const ptoTime = parseFloat(elements.ptoTimeSpan.textContent) || 0;
+        const personalTime = parseFloat(elements.personalTimeSpan.textContent) || 0;
+        const holidayHours = parseFloat(elements.holidayTimeSpan.textContent) || 0;
+        const totalHoursWithPto = totalHoursWorked + ptoTime + personalTime + holidayHours;
+        elements.totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
+        elements.totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
+        console.log('Total hours worked:', totalHoursWorked);
+        console.log('Total hours with PTO:', totalHoursWithPto);
+        validatePtoHours(totalHoursWorked, ptoTime, personalTime);
+        updateTotalPtoAndHolidayHours();
+    }
+
+    function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput) {
+        const startDate = new Date(dateInput.value);
+        const times = [startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput].map(input => parseTime(input.value));
+        const [startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut] = times;
+        let hoursWorked = calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut);
+        return hoursWorked;
+    }
+
+    function parseTime(timeString) {
+        if (!timeString || timeString === "--:--") return null;
+        const [hours, minutes] = timeString.split(':').map(num => parseInt(num, 10));
+        return { hours, minutes };
+    }
+
+    function calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut) {
+        if (!startTime || !endTime) return 0;
+        const startDateTime = new Date(startDate);
+        startDateTime.setHours(startTime.hours, startTime.minutes);
+        const endDateTime = new Date(startDate);
+        endDateTime.setHours(endTime.hours, endTime.minutes);
+        let totalHoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60);
+        if (lunchStart && lunchEnd) {
+            const lunchStartDateTime = new Date(startDate);
+            lunchStartDateTime.setHours(lunchStart.hours, lunchStart.minutes);
+            const lunchEndDateTime = new Date(startDate);
+            lunchEndDateTime.setHours(lunchEnd.hours, lunchEnd.minutes);
+            totalHoursWorked -= (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
+        }
+        if (additionalTimeIn && additionalTimeOut) {
+            const additionalTimeInDateTime = new Date(startDate);
+            additionalTimeInDateTime.setHours(additionalTimeIn.hours, additionalTimeIn.minutes);
+            const additionalTimeOutDateTime = new Date(startDate);
+            additionalTimeOutDateTime.setHours(additionalTimeOut.hours, additionalTimeOut.minutes);
+            totalHoursWorked += (additionalTimeOutDateTime - additionalTimeInDateTime) / (1000 * 60 * 60);
+        }
+        return Math.max(0, totalHoursWorked);
+    }
+
+    function roundToClosestQuarterHour(hours) {
+        return Math.round(hours * 4) / 4;
+    }
+
+    const form = document.getElementById('summary-form');
+
+    form.addEventListener('submit', function (event) {
+        if (!validatePTOandPersonalHours()) {
+            event.preventDefault();
+            alert('PTO and Personal Hours in the summary exceed the allowed values.');
+        }
+    });
+
+    function validatePTOandPersonalHours() {
+        const ptoHeader = parseFloat(document.getElementById('pto-hours-display').textContent) || 0;
+        const personalHeader = parseFloat(document.getElementById('personal-time-display').textContent) || 0;
+        const ptoSummary = parseFloat(document.getElementById('pto-time').textContent) || 0;
+        const personalSummary = parseFloat(document.getElementById('total-personal-time-display').textContent) || 0;
+
+        return ptoSummary <= ptoHeader && personalSummary <= personalHeader;
+    }
+
+    const ptoTimeInput = document.getElementById('pto-time');
+    const ptoHoursDisplay = document.getElementById('pto-hours-display');
+
+    function validatePtoTimeInput() {
+        const ptoTimeValue = parseFloat(ptoTimeInput.textContent) || 0;
+        const maxPtoHours = parseFloat(ptoHoursDisplay.textContent) || 0;
+
+        if (ptoTimeValue > maxPtoHours) {
+            ptoTimeInput.textContent = maxPtoHours.toFixed(2);
+            alert(`PTO time cannot exceed ${maxPtoHours.toFixed(2)} hours`);
+        }
+    }
+
+    function validatePtoHours(totalHoursWorked, ptoTime, personalTime) {
+        const remainingPTO = Math.max(0, availablePTOHours - ptoTime);
+        const totalHoursWithPto = totalHoursWorked + ptoTime + personalTime;
+        console.log('PTO used:', ptoTime);
+
+        if (totalHoursWithPto > 40 && (ptoTime > 0 || personalTime > 0)) {
+            elements.ptoValidationMessage.textContent = 'Total hours including PTO and Personal time cannot exceed 40 hours';
+            elements.ptoValidationMessage.style.color = 'red';
+        } else if (ptoTime > availablePTOHours) {
+            elements.ptoValidationMessage.textContent = 'PTO time used cannot exceed available PTO hours';
+            elements.ptoValidationMessage.style.color = 'red';
+        } else if (personalTime > availablePersonalHours) {
+            elements.ptoValidationMessage.textContent = 'Personal time used cannot exceed available Personal hours';
+            elements.ptoValidationMessage.style.color = 'red';
         } else {
-            previousRequestsContainer.classList.add('hidden');
+            elements.ptoValidationMessage.textContent = '';
         }
+    }
+
+    function updateTotalPtoAndHolidayHours() {
+        let totalPtoHours = 0;
+        let totalHolidayHours = 0;
+        let totalPersonalHours = 0;
+
+        const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
+        ptoInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            totalPtoHours += value;
+        });
+
+        const holidayInputs = document.querySelectorAll('input[name^="Holiday_hours"]');
+        holidayInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            totalHolidayHours += value;
+        });
+
+        const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
+        personalInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            totalPersonalHours += value;
+        });
+
+        console.log('Total PTO hours:', totalPtoHours);
+        console.log('Total Holiday hours:', totalHolidayHours);
+        console.log('Total Personal hours:', totalPersonalHours);
+
+        elements.ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
+        elements.holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
+        elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
+        document.getElementById('total-personal-time-display').textContent = totalPersonalHours.toFixed(2);
+
+        elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(2);
+        elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(2);
+        const totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
+        elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+    }
+
+    async function updatePtoHours() {
+        console.log('Updating PTO hours...');
+        const usedPtoHoursValue = parseFloat(elements.ptoTimeSpan.textContent) || 0;
+        const newPtoHoursValue = Math.max(0, availablePTOHours - usedPtoHoursValue);
+        console.log('Used PTO hours value:', usedPtoHoursValue);
+        console.log('New PTO hours value:', newPtoHoursValue);
+
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+        console.log('Endpoint for update:', endpoint);
+
+        try {
+            const updateResponse = await fetch(endpoint, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields: { 'PTO Time Used': usedPtoHoursValue, 'PTO Total': availablePTOHours } }) // Updated line
+            });
+
+            const updateResponseData = await updateResponse.json();
+            console.log('Update response data:', updateResponseData);
+
+            if (!updateResponse.ok) throw new Error(`Failed to update PTO hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
+            console.log('PTO hours updated successfully');
+        } catch (error) {
+            console.error('Error updating PTO hours:', error);
+            throw new Error('Failed to update PTO hours. Error: ' + error.message);
+        }
+    }
+
+    async function updatePersonalHours() {
+        console.log('Updating Personal hours...');
+        const usedPersonalHoursValue = parseFloat(elements.personalTimeSpan.textContent) || 0;
+        const newPersonalHoursValue = Math.max(0, availablePersonalHours - usedPersonalHoursValue);
+        console.log('Used Personal hours value:', usedPersonalHoursValue);
+        console.log('New Personal hours value:', newPersonalHoursValue);
+
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+        console.log('Endpoint for update:', endpoint);
+
+        try {
+            const updateResponse = await fetch(endpoint, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields: { 'Personaltime': newPersonalHoursValue } })
+            });
+
+            const updateResponseData = await updateResponse.json();
+            console.log('Update response data:', updateResponseData);
+
+            if (!updateResponse.ok) throw new Error(`Failed to update Personal hours: ${updateResponse.statusText} - ${JSON.stringify(updateResponseData)}`);
+            console.log('Personal hours updated successfully');
+        } catch (error) {
+            console.error('Error updating Personal hours:', error);
+            throw new Error('Failed to update Personal hours. Error: ' + error.message);
+        }
+    }
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+        console.log('Submitting form...');
+        const totalPtoHours = parseFloat(elements.ptoTimeSpan.textContent) || 0;
+        const totalPersonalHours = parseFloat(elements.personalTimeSpan.textContent) || 0;
+
+        if (totalPtoHours > availablePTOHours) {
+            alert('PTO time used cannot exceed available PTO hours');
+            return;
+        }
+
+        if (totalPersonalHours > availablePersonalHours) {
+            alert('Personal time used cannot exceed available Personal hours');
+            return;
+        }
+
+        try {
+            await updatePtoHours();
+            await updatePersonalHours();
+            await sendDataToAirtable();
+            alert('Submission successful!');
+            clearForm();
+        } catch (error) {
+            alert(`Submission failed: ${error.message}`);
+        }
+    }
+
+    async function sendDataToAirtable() {
+        const date7 = elements.timeEntryForm.elements['date7']?.value || '0';
+        const totalPtoHours = calculateColumnSum('PTO_hours');
+        const totalPersonalHours = calculateColumnSum('Personal_hours');
+        const totalHolidayHours = calculateColumnSum('Holiday_hours');
     
-        records.forEach(record => {
-            for (let i = 1; i <= 10; i++) {
-                if (record.fields[`Time off Start Date ${i}`]) {
-                    const recordItem = document.createElement('li');
-                    recordItem.className = 'record';
+        console.log('Preparing to send data to Airtable:', {
+            date7,
+            totalPtoHours,
+            totalPersonalHours,
+            totalHolidayHours,
+            totalTimeWorked: elements.totalTimeWorkedSpan.textContent,
+            totalTimeWithPto: elements.totalTimeWithPtoSpan.textContent
+        });
     
-                    const approved = record.fields[`Time off Approved ${i}`];
-                    const approvedCheckbox = approved ? '<input type="checkbox" class="approved-checkbox" checked disabled>' : '';
-                    const approvedText = approved ? '<p><strong>Approved:</strong>' : '';
-                    const daysOff = calculateBusinessDays(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`]);
-                    const reason = record.fields[`Reason ${i}`] || 'N/A';
-                    const reasonClass = reason !== 'N/A' ? 'reason-red' : '';
+        try {
+            const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                },
+            });
+            const record = await response.json();
+            
+            const currentPtoTimeUsed = parseFloat(record.fields["PTO Time Used"]) || 0;
+            const updatedPtoTimeUsed = currentPtoTimeUsed + (parseFloat(totalPtoHours) || 0);
     
-                    recordItem.innerHTML = `
-                        <p><strong>Start Date:</strong> ${record.fields[`Time off Start Date ${i}`]}</p>
-                        <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`]}</p>
-                        <p><strong>End Date:</strong> ${record.fields[`Time off End Date ${i}`]}</p>
-                        <p><strong>End Time:</strong> ${record.fields[`Time off End Time ${i}`]}</p>
-                        <p><strong>Days Off:</strong> ${daysOff} days</p>
-                        <p class="reason ${reasonClass}" style="display: ${approved ? 'none' : 'block'};"><strong>Reason:</strong> ${reason}</p>
-                        ${approvedText}${approvedCheckbox}</p>
-                        <button class="edit-button" data-index="${i}" data-id="${record.id}">Edit</button>
-                        <button class="delete-button" data-index="${i}" data-id="${record.id}">Delete</button>`;
+            const data = {
+                "date7": date7 || '0',
+                "PTO Time Used": updatedPtoTimeUsed,
+                "Personal Time Used": parseFloat(totalPersonalHours) || 0,
+                "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
+                "Total Hours Worked": parseFloat(elements.totalTimeWorkedSpan.textContent) || 0,
+                "Total Time with PTO": parseFloat(elements.totalTimeWithPtoSpan.textContent) || 0,
+                "PTO Total": availablePTOHours
+            };
     
-                    requestsList.appendChild(recordItem);
-                }
+            const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields: data })
+            });
+    
+            if (updateResponse.ok) {
+                console.log('Data successfully updated in Airtable');
+            } else {
+                console.error('Failed to update data in Airtable');
             }
-        });
-    
-        document.querySelectorAll('.edit-button').forEach(button => {
-            button.addEventListener('click', handleEditClick);
-        });
-    
-        document.querySelectorAll('.delete-button').forEach(button => {
-            button.addEventListener('click', handleDeleteClick);
-        });
-    }
-    
-    function handleEditClick(event) {
-        const index = event.target.dataset.index;
-        const id = event.target.dataset.id;
-        const record = records.find(record => record.id === id);
-        if (record) {
-            currentEditingIndex = index;
-            document.getElementById('startDate').value = record.fields[`Time off Start Date ${index}`] || '';
-            document.getElementById('startTime').value = convertTo24HourFormat(record.fields[`Time off Start Time ${index}`]) || '';
-            document.getElementById('endDate').value = record.fields[`Time off End Date ${index}`] || '';
-            document.getElementById('endTime').value = convertTo24HourFormat(record.fields[`Time off End Time ${index}`]) || '';
-
-            document.getElementById('startDate').focus();
-            submitButton.textContent = 'Submit Edit';
+        } catch (error) {
+            console.error('Error updating Airtable:', error);
         }
     }
 
-    async function handleDeleteClick(event) {
-        const index = event.target.dataset.index;
-        const id = event.target.dataset.id;
-        const record = records.find(record => record.id === id);
-        if (record) {
-            const confirmDelete = confirm('Are you sure you want to delete this request?');
-            if (confirmDelete) {
-                try {
-                    const fieldsToDelete = {
-                        [`Time off Start Date ${index}`]: null,
-                        [`Time off Start Time ${index}`]: null,
-                        [`Time off End Date ${index}`]: null,
-                        [`Time off End Time ${index}`]: null,
-                        [`Reason ${index}`]: null,
-                        [`Time off Approved ${index}`]: null
-                    };
+    document.addEventListener("DOMContentLoaded", function() {
+        const timeEntryWrapper = document.querySelector('.time-entry-table-wrapper');
+    
+        let isScrolling;
+    
+        timeEntryWrapper.addEventListener('scroll', function() {
+            timeEntryWrapper.style.scrollbarWidth = 'auto';
+            timeEntryWrapper.style.setProperty('--scrollbar-width', 'auto');
+    
+            window.clearTimeout(isScrolling);
+    
+            isScrolling = setTimeout(function() {
+                timeEntryWrapper.style.scrollbarWidth = 'none';
+                timeEntryWrapper.style.setProperty('--scrollbar-width', 'none');
+            }, 1000);
+        });
+    });
 
-                    const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${id}`;
-                    const response = await fetch(url, {
-                        method: 'PATCH',
-                        headers: {
-                            Authorization: `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ fields: fieldsToDelete })
-                    });
+    function formatNumber(element) {
+        const value = parseInt(element.innerText, 10) || 0;
+        element.innerText = value.toString();
+    }
+    
+    function formatAllNumbers() {
+        formatNumber(document.getElementById('pto-time'));
+        formatNumber(document.getElementById('total-personal-time-display'));
+        formatNumber(document.getElementById('Holiday-hours'));
+    }
+    
+    formatAllNumbers();
+    
+    setInterval(formatAllNumbers, 1);
 
-                    if (response.ok) {
-                        fetchPreviousRequests(localStorage.getItem('userEmail'));
-                    } else {
-                        const errorData = await response.json();
-                        throw new Error(`Failed to delete fields: ${JSON.stringify(errorData)}`);
-                    }
-                } catch (error) {
-                    console.error('Error deleting fields from Airtable:', error);
-                }
-            }
-        }
+    function clearForm() {
+        console.log('Clearing form...');
+        elements.timeEntryForm.reset();
+        elements.ptoTimeSpan.textContent = '0';
+        elements.personalTimeSpan.textContent = '0';
+        elements.holidayTimeSpan.textContent = '0';
+        elements.totalTimeWorkedSpan.textContent = '0.00';
+        elements.totalTimeWithPtoSpan.textContent = '0.00';
+        elements.remainingPtoHoursElement.textContent = '0.00';
+        elements.remainingPersonalHoursElement.textContent = '0.00';
+        window.location.reload();
     }
 
-    function convertTo24HourFormat(time) {
-        const [timePart, period] = time.split(' ');
-        let [hours, minutes] = timePart.split(':');
-        hours = parseInt(hours, 10);
-        if (period === 'PM' && hours < 12) {
-            hours += 12;
-        } else if (period === 'AM' && hours === 12) {
-            hours = 0;
-        }
-        return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    function resetForm(event) {
+        event.preventDefault();
+        console.log('Resetting form...');
+        clearForm();
     }
 
-    function displaySubmittedData(formData) {
-        const index = currentEditingIndex !== null ? currentEditingIndex : getNextAvailableIndex() - 1;
-
-        if (submittedStartDate) submittedStartDate.textContent = formData[`Time off Start Date ${index}`];
-        if (submittedStartTime) submittedStartTime.textContent = formData[`Time off Start Time ${index}`];
-        if (submittedEndDate) submittedEndDate.textContent = formData[`Time off End Date ${index}`];
-        if (submittedEndTime) submittedEndTime.textContent = formData[`Time off End Time ${index}`];
-
-        const daysOff = calculateBusinessDays(formData[`Time off Start Date ${index}`], formData[`Time off End Date ${index}`]);
-        if (daysOffMessage) daysOffMessage.textContent = `Total days off (excluding weekends): ${daysOff}`;
-
-        if (submittedData) submittedData.classList.remove('hidden');
+    function calculateColumnSum(columnName) {
+        const inputs = document.querySelectorAll(`input[name^="${columnName}"]`);
+        let total = 0;
+        inputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            total += value;
+        });
+        return total;
     }
+
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            const context = this;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
+
+    function scrollToElement(element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    timeInputs.forEach(input => {
+        input.addEventListener('focus', () => scrollToElement(input));
+    });
 
     function handleLogout(event) {
         event.preventDefault();
+        console.log('Logging out...');
         localStorage.removeItem('userEmail');
         sessionStorage.removeItem('user');
         setTimeout(() => {
@@ -388,167 +812,230 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     }
 
-    function calculateBusinessDays(startDate, endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        let count = 0;
-        let currentDate = start;
-
-        while (currentDate <= end) {
-            const dayOfWeek = currentDate.getDay();
-            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                count++;
-            }
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-        return count;
+    async function initializeForm() {
+        console.log('Initializing form...');
+        const today = new Date();
+        adjustToWednesday(today);
+        elements.weekEndingInput.value = today.toISOString().split('T')[0];
+        handleWeekEndingChange();
     }
 
-    async function deleteExpiredRecords(records) {
-        const now = new Date();
-        const expiredRecords = records.filter(record => {
-            return Object.keys(record.fields).some(field => {
-                if (field.startsWith('Time off End Date ') && record.fields[field]) {
-                    const endDate = new Date(record.fields[field]);
-                    const endTimeField = field.replace('Date', 'Time');
-                    const endTime = record.fields[endTimeField];
-                    if (endTime) {
-                        const [hours, minutes] = endTime.split(':');
-                        endDate.setHours(hours, minutes);
-                    }
-                    return endDate < now;
-                }
-                return false;
+    const convertToCsvButton = document.getElementById('convert-to-csv-button');
+
+    convertToCsvButton.addEventListener('click', convertToCsv);
+
+    function convertToCsv() {
+        console.log('Converting to CSV...');
+
+        const rows = [];
+        const employeeEmailRow = [userEmail];
+        rows.push(employeeEmailRow);
+
+        const headerRow = ['Date', 'Start Time', 'Lunch Start', 'Lunch End', 'End Time', 'Additional Time In', 'Additional Time Out', 'Hours Worked', 'PTO Hours', 'Personal Hours', 'Holiday Hours'];
+        rows.push(headerRow);
+
+        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
+        daysOfWeek.forEach((day, index) => {
+            const row = [];
+            row.push(elements.timeEntryForm.elements[day].value);
+            const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'].map(field => elements.timeEntryForm.elements[`${field}${index + 1}`].value);
+            row.push(...timeFields);
+            row.push(document.getElementById(`hours-worked-today${index + 1}`).textContent);
+            row.push(elements.timeEntryForm.elements[`PTO_hours${index + 1}`]?.value || '');
+            row.push(elements.timeEntryForm.elements[`Personal_hours${index + 1}`]?.value || '');
+            row.push(elements.timeEntryForm.elements[`Holiday_hours${index + 1}`]?.value || '');
+            rows.push(row);
+        });
+
+        const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "time_entries.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    initializeForm();
+    initializeTimeDropdowns();
+    initializeKeyboardNavigation();
+
+    function handleArrowKeys(event) {
+        const key = event.key;
+        const currentInput = event.target;
+        const inputs = Array.from(document.querySelectorAll('select.time-dropdown'));
+
+        let index = inputs.indexOf(currentInput);
+
+        if (key === 'ArrowRight') {
+            index = (index + 1) % inputs.length;
+        } else if (key === 'ArrowLeft') {
+            index = (index - 1 + inputs.length) % inputs.length;
+        } else if (key === 'ArrowDown') {
+            index = (index + 6) % inputs.length;
+        } else if (key === 'ArrowUp') {
+            index = (index - 6 + inputs.length) % inputs.length;
+        }
+
+        inputs[index].focus();
+    }
+
+    function shouldPlayMusic() {
+        const userEmailElement = document.getElementById('user-email');
+        const email = userEmailElement ? userEmailElement.textContent.trim() : '';
+        const excludedEmails = [
+            'jason.smith@vanirinstalledsales.com',
+            'richard.mcgirt@vanirinstalledsales.com',
+            'hunter@vanirinstalledsales.com',
+            'katy@vanirinstalledsales.com',
+            'diana.smith@vanirinstalledsales.com'
+        ];
+        return !excludedEmails.includes(email);
+    }
+
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const playPauseButton = document.getElementById('playPauseButton');
+
+    function updateButtonText() {
+        if (backgroundMusic.paused) {
+            playPauseButton.textContent = 'Play';
+        } else {
+            playPauseButton.textContent = 'Pause';
+        }
+    }
+
+    if (backgroundMusic && playPauseButton && shouldPlayMusic()) {
+        backgroundMusic.currentTime = 9;
+        backgroundMusic.play();
+        updateButtonText();
+
+        playPauseButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            if (backgroundMusic.paused) {
+                backgroundMusic.play();
+                updateButtonText();
+            } else {
+                backgroundMusic.pause();
+                updateButtonText();
+            }
+        });
+
+        backgroundMusic.onplay = function() {
+            sessionStorage.setItem('isMusicPlaying', 'true');
+        };
+
+        backgroundMusic.onpause = function() {
+            sessionStorage.setItem('isMusicPlaying', 'false');
+            updateButtonText();
+        };
+    } else {
+        if (playPauseButton) {
+            playPauseButton.style.display = 'none';
+        }
+    }
+
+    function showPickerOnFocus() {
+        const timeInputs = document.querySelectorAll('select.time-dropdown, input[type="number"]');
+        timeInputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                if (input.showPicker) input.showPicker();
             });
         });
+    }
 
-        for (const record of expiredRecords) {
-            for (let i = 1; i <= 10; i++) {
-                if (record.fields[`Time off End Date ${i}`]) {
-                    try {
-                        const fieldsToDelete = {
-                            [`Time off Start Date ${i}`]: null,
-                            [`Time off Start Time ${i}`]: null,
-                            [`Time off End Date ${i}`]: null,
-                            [`Time off End Time ${i}`]: null,
-                            [`Reason ${i}`]: null,
-                            [`Time off Approved ${i}`]: null
-                        };
+    showPickerOnFocus();
 
-                        const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${record.id}`;
-                        const response = await fetch(url, {
-                            method: 'PATCH',
-                            headers: {
-                                Authorization: `Bearer ${apiKey}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ fields: fieldsToDelete })
-                        });
+    function saveFormData() {
+        const formData = new FormData(elements.timeEntryForm);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
 
-                        if (response.ok) {
-                            console.log('Expired fields deleted successfully');
-                        } else {
-                            const errorData = await response.json();
-                            throw new Error(`Failed to delete expired fields: ${JSON.stringify(errorData)}`);
-                        }
-                    } catch (error) {
-                        console.error('Error deleting expired fields from Airtable:', error);
-                    }
+        // Save number inputs
+        const numberInputs = document.querySelectorAll('input[type="number"]');
+        numberInputs.forEach(input => {
+            data[input.name] = input.value;
+        });
+
+        // Save date inputs
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        dateInputs.forEach(input => {
+            data[input.name] = input.value;
+        });
+
+        // Save time inputs
+        const timeInputs = document.querySelectorAll('input[type="time"]');
+        timeInputs.forEach(input => {
+            data[input.name] = input.value;
+        });
+
+        localStorage.setItem('formData', JSON.stringify(data));
+    }
+
+    function loadFormData() {
+        const data = JSON.parse(localStorage.getItem('formData'));
+        if (data) {
+            Object.keys(data).forEach(key => {
+                const input = elements.timeEntryForm.elements[key];
+                if (input) {
+                    input.value = data[key];
                 }
-            }
+            });
+
+            // Load number inputs
+            const numberInputs = document.querySelectorAll('input[type="number"]');
+            numberInputs.forEach(input => {
+                if (data[input.name]) {
+                    input.value = data[input.name];
+                }
+            });
+
+            // Load date inputs
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(input => {
+                if (data[input.name]) {
+                    input.value = data[input.name];
+                }
+            });
+
+            // Load time inputs
+            const timeInputs = document.querySelectorAll('input[type="time"]');
+            timeInputs.forEach(input => {
+                if (data[input.name]) {
+                    input.value = data[input.name];
+                }
+            });
+
+            calculateTotalTimeWorked();
         }
     }
 
-    setInterval(() => {
-        fetchPreviousRequests(userEmail).then(() => {
-            deleteExpiredRecords(records);
-        });
-    }, 24 * 60 * 60 * 1000);
-
-    fetchPreviousRequests(userEmail).then(() => {
-        deleteExpiredRecords(records);
-    });
-
-    function convertTimeToTextInput(inputId) {
-        const input = document.getElementById(inputId);
-        let isTextInput = false;
-        input.addEventListener('dblclick', () => {
-            if (!isTextInput) {
-                input.type = 'text';
-                input.value = 'All Day';
-                isTextInput = true;
-            } else {
-                input.type = 'time';
-                input.value = '';
-                isTextInput = false;
-            }
-        });
-        input.addEventListener('click', () => {
-            if (input.type === 'time') {
-                input.showPicker();
-            }
-        });
-    }
-
-    convertTimeToTextInput('startTime');
-    convertTimeToTextInput('endTime');
-
-    function showDatePicker(inputId) {
-        const input = document.getElementById(inputId);
-        input.addEventListener('click', () => {
-            input.showPicker();
-        });
-    }
-
-    showDatePicker('startDate');
-    showDatePicker('endDate');
-
-    function showSuccessMessage(message) {
-        submissionStatus.textContent = message;
-        submissionStatus.classList.remove('hidden');
-        submissionStatus.classList.add('success');
-    }
-
-    function showError(message) {
-        submissionStatus.textContent = message;
-        submissionStatus.classList.remove('hidden');
-        submissionStatus.classList.add('error');
-    }
-
-    // Validation logic for PTO, personal, and holiday hours
-
-    function validateHours() {
-        const ptoInput = document.getElementById('pto-input');
-        const personalHoursInput = document.getElementById('personal-hours-input');
-        const holidayHoursInput = document.getElementById('holiday-hours-input'); // Assuming there's an input for holiday hours
-
-        const availablePTO = parseFloat(document.getElementById('available-pto').textContent);
-        const availablePersonalHours = parseFloat(document.getElementById('available-personal-hours').textContent);
-
-        ptoInput.addEventListener('input', function() {
-            if (parseFloat(ptoInput.value) > availablePTO) {
-                ptoInput.setCustomValidity('You cannot request more PTO than available.');
-            } else {
-                ptoInput.setCustomValidity('');
-            }
-        });
-
-        personalHoursInput.addEventListener('input', function() {
-            if (parseFloat(personalHoursInput.value) > availablePersonalHours) {
-                personalHoursInput.setCustomValidity('You cannot request more personal hours than available.');
-            } else {
-                personalHoursInput.setCustomValidity('');
-            }
-        });
-
-        holidayHoursInput.addEventListener('input', function() {
-            if (parseFloat(holidayHoursInput.value) > 40) {
-                holidayHoursInput.setCustomValidity('Holiday hours cannot be greater than 40.');
-            } else {
-                holidayHoursInput.setCustomValidity('');
-            }
-        });
-    }
-
-    validateHours();
+    loadFormData(); // Load form data on page load
 });
+
+function toggleWorkInputs(dayIndex, isChecked) {
+    const row = document.querySelector(`tr[data-day="${dayIndex + 1}"]`);
+    const timeInputs = row.querySelectorAll('input[type="time"]');
+    const numberInputs = row.querySelectorAll('input[type="number"]');
+    
+    if (isChecked) {
+        timeInputs.forEach(input => {
+            input.disabled = true;
+            input.value = '';
+        });
+        numberInputs.forEach(input => {
+            input.disabled = true;
+            input.value = '';
+        });
+    } else {
+        timeInputs.forEach(input => {
+            input.disabled = false;
+        });
+        numberInputs.forEach(input => {
+            input.disabled = false;
+        });
+    }
+    calculateTotalTimeWorked();
+}
