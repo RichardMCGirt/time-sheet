@@ -247,81 +247,113 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        initializeTimeDropdowns();
-        initializeKeyboardNavigation();
-    });
+ document.addEventListener("DOMContentLoaded", function() {
+    initializeTimeDropdowns();
+    initializeKeyboardNavigation();
+    updateHeaderText();
+});
 
-        function initializeTimeDropdowns() {
-            // Your logic to initialize time dropdowns
-        }
-
-        function initializeKeyboardNavigation() {
-            // Your logic to initialize keyboard navigation
-        }
-
-        document.getElementById('logout-button').addEventListener('click', function(event) {
-            event.preventDefault();
-            localStorage.removeItem('userEmail');
-            sessionStorage.removeItem('user');
-            window.location.href = 'index.html';
-        });
-
-        // Add click event for email navigation
-        document.getElementById('user-email').addEventListener('click', function() {
-            window.location.href = 'supervisor.html';
-        });
-
-        function checkInputsAndToggleSummary() {
-    const timeEntryTable = document.getElementById('time-entry-table');
-    const inputs = timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]');
-    let hasInput = false;
-
-    inputs.forEach(input => {
-        if (input.value) {
-            hasInput = true;
-        }
-    });
-
-    const summarySection = document.getElementById('summary');
-    if (hasInput) {
-        summarySection.style.display = 'flex';
-    } else {
-        summarySection.style.display = 'none';
-    }
-}
 function initializeTimeDropdowns() {
     const timeEntryTable = document.getElementById('time-entry-table');
     const inputs = timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]');
 
     inputs.forEach(input => {
         input.addEventListener('change', checkInputsAndToggleSummary);
+        input.addEventListener('keydown', handleKeyNavigation);
+        input.addEventListener('keyup', handleTimeInput);
     });
 
     // Initial check to set the correct visibility of the summary section on page load
     checkInputsAndToggleSummary();
 }
 
+function checkInputsAndToggleSummary() {
+    const timeEntryTable = document.getElementById('time-entry-table');
+    const inputs = timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]');
+    const summarySection = document.getElementById('summary');
+    let hasInput = Array.from(inputs).some(input => input.value);
+
+    summarySection.style.display = hasInput ? 'flex' : 'none';
+}
+
+function handleKeyNavigation(event) {
+    const key = event.key;
+    const input = event.target;
+
+    if (key === 'ArrowDown' || key === 'ArrowRight') {
+        navigateToNextField(input);
+    } else if (key === 'ArrowUp' || key === 'ArrowLeft') {
+        navigateToPreviousField(input);
+    }
+}
+
+function navigateToNextField(currentField) {
+    const timeEntryTable = document.getElementById('time-entry-table');
+    const inputs = Array.from(timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]'));
+    const currentIndex = inputs.indexOf(currentField);
+
+    for (let i = currentIndex + 1; i < inputs.length; i++) {
+        if (!isFieldInSkippedDay(inputs[i])) {
+            inputs[i].focus();
+            break;
+        }
+    }
+}
+
+function navigateToPreviousField(currentField) {
+    const timeEntryTable = document.getElementById('time-entry-table');
+    const inputs = Array.from(timeEntryTable.querySelectorAll('input[type="time"], input[type="number"]'));
+    const currentIndex = inputs.indexOf(currentField);
+
+    for (let i = currentIndex - 1; i >= 0; i--) {
+        if (!isFieldInSkippedDay(inputs[i])) {
+            inputs[i].focus();
+            break;
+        }
+    }
+}
+
+function getDayNumberFromField(field) {
+    const name = field.name;
+    const match = name.match(/date(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+}
+
+function isFieldInSkippedDay(field) {
+    const dayNumber = getDayNumberFromField(field);
+    const fieldsToSkip = [4, 5]; // Days to skip
+    return fieldsToSkip.includes(dayNumber);
+}
+
+function handleTimeInput(event) {
+    const value = event.target.value.toUpperCase();
+    if (value.includes('AM') || value.includes('PM')) {
+        navigateToNextField(event.target);
+    }
+}
+
 function updateHeaderText() {
     const personalTime = parseFloat(document.getElementById('personal-time').value) || 0;
     const header = document.getElementById('countdown-header');
 
-    // Update the header text based on the available personal hours
-    if (personalTime = 0) {
-        header.textContent = 'Personal Hours reset in';
-    } else {
-        header.textContent = 'Personal Hours expire in';
-    }
+    header.textContent = personalTime === 0 
+        ? 'Personal Hours reset in' 
+        : 'Personal Hours expire in';
 }
 
-// Add event listener to the personal time input to call the function on input
-document.getElementById('personal-time').addEventListener('input', updateHeaderText);
+// Event listeners for logout and email navigation
+document.getElementById('logout-button').addEventListener('click', function(event) {
+    event.preventDefault();
+    localStorage.removeItem('userEmail');
+    sessionStorage.removeItem('user');
+    window.location.href = 'index.html';
+});
 
-// Initial check when the page loads
-updateHeaderText();
+document.getElementById('user-email').addEventListener('click', function() {
+    window.location.href = 'supervisor.html';
+});
 
 
-       
     </script>
 </body>
 </html>
