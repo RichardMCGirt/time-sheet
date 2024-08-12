@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
-    const baseId = 'app9gw2qxhGCmtJvW';
-    const newTableId = 'tbl8znXria2leJfUd'; // Replace with your new table ID
+    const apiKey = 'patdCNFzzxpHXs14G.892585ccb188d17d06078c040fedb939583a082a9f7c84ca3063eae2024a998b';
+    const baseId = 'appzys5CNiZIV1ihx';
+    const newTableId = 'tblKBCKzmHgoPClac'; // Replace with your new table ID
 
     let userEmail = localStorage.getItem('userEmail') || '';
 
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log('Sending data to Airtable...', data);
         const endpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}`;
         const searchEndpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}?filterByFormula=AND({Email}="${userEmail}")`;
-
+    
         try {
             const searchResponse = await fetch(searchEndpoint, {
                 headers: {
@@ -98,23 +98,23 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             const searchData = await searchResponse.json();
             console.log('Search data:', searchData);
-
+    
             if (!searchData.records || searchData.records.length === 0) {
                 throw new Error('No matching record found to update.');
             }
-
+    
             const recordId = searchData.records[0].id;
             console.log('Existing record found with ID:', recordId);
-
+    
             const record = {
                 fields: {
-                    ...data,
-                    "email": userEmail
+                    ...data
+                    // Do not include "email": userEmail here since it's a synced field
                 }
             };
-
+    
             console.log('Payload being sent to Airtable:', JSON.stringify(record));
-
+    
             const response = await fetch(`${endpoint}/${recordId}`, {
                 method: 'PATCH',
                 headers: {
@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 },
                 body: JSON.stringify(record)
             });
-
+    
             if (!response.ok) {
                 const errorResponse = await response.json();
                 console.error('Error response from Airtable:', errorResponse);
@@ -137,6 +137,7 @@ document.addEventListener("DOMContentLoaded", function() {
             throw error;
         }
     }
+    
 
     document.getElementById('clear-button').addEventListener('click', async () => {
         const userConfirmed = await showModal();
