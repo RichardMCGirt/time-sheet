@@ -378,13 +378,27 @@ input[type="date"]:-webkit-autofill {
     background-color: var(--highlight-hover-color);
 }
 
+.time-entry-table input:focus {
+    border-color: #00bcd4; /* Cyan border to indicate focus */
+}
+
+.highlighted-change {
+    background-color: white !important; /* Light yellow background to highlight changes */
+    transition: background-color 0.5s ease !important;
+    border: 2px solid #1abc9c !important; /* Yellow border for extra visibility */
+    color: black !important;;
+}
+
+
+
+
 #submit-button {
     position: sticky;
-    bottom: 10%;
+    bottom: 5%;
     left: 50%;
     transform: translateX(-50%);
     padding: 10px 20px;
-    background-color: #007BFF; /* Change to your preferred color */
+    background-color: #1abc9c; 
     color: white;
     border: none;
     border-radius: 5px;
@@ -394,7 +408,7 @@ input[type="date"]:-webkit-autofill {
 }
 
 #submit-button:hover {
-    background-color: #0056b3; /* Darker shade for hover effect */
+    background-color: #00b345; /* Darker shade for hover effect */
 }
 
 #submit-button:focus {

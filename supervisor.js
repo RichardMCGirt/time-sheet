@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingScreen = document.getElementById('loading-screen');
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
-    const submitButton = document.getElementById('submit-button'); // New submit button
+    const submitButton = document.getElementById('submit-button');
 
     // Elements to hide during data fetching
     const titleElement = document.querySelector('h1');
@@ -20,6 +20,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     let allChecked = false;
     let pendingChanges = {}; // Object to store pending changes
+    let initialValues = {}; // Object to store initial checkbox and input values
+
+    // Hide the submit button for the first 3 seconds
+    submitButton.style.display = 'none';
+    setTimeout(() => {
+        if (supervisorEmail !== 'katy@vanirinstalledsales.com') {
+            submitButton.style.display = 'block';
+        }
+    }, 5000);
 
     if (userEmailElement) {
         userEmailElement.textContent = supervisorEmail;
@@ -36,7 +45,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     checkAllButton.addEventListener('click', handleCheckAll);
-    submitButton.addEventListener('click', submitChanges); // Submit button event listener
+    submitButton.addEventListener('click', submitChanges);
+
+    // Listen for Enter key to submit
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            submitChanges();
+        }
+    });
 
     // Hide elements during data fetching
     titleElement.style.display = 'none';
@@ -175,6 +191,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
 
                 timesheetsBody.appendChild(table);
+
+                // Store initial values
+                storeInitialValues(record.id, fields);
             }
         } else {
             const noRecordsRow = document.createElement('div');
@@ -182,6 +201,13 @@ document.addEventListener("DOMContentLoaded", async function () {
             noRecordsRow.textContent = `No records found for the supervisor: ${supervisorEmail}`;
             timesheetsBody.appendChild(noRecordsRow);
         }
+    }
+
+    function storeInitialValues(recordId, fields) {
+        initialValues[recordId] = {
+            Approved: fields['Approved'] || false,
+            NotApprovedReason: fields['Timesheet Not Approved Reason'] || ''
+        };
     }
 
     function checkTimesheetValues(fields) {
@@ -210,11 +236,13 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
-        // Store the change in the pendingChanges object
         if (!pendingChanges[recordId]) {
             pendingChanges[recordId] = {};
         }
-        if (isApproved !== null) pendingChanges[recordId].Approved = isApproved;
+        if (isApproved !== null) {
+            pendingChanges[recordId].Approved = isApproved;
+            highlightChange(checkbox, recordId);
+        }
     }
 
     function handleTextChange(event) {
@@ -230,13 +258,36 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return;
             }
 
-            // Store the change in the pendingChanges object
             if (!pendingChanges[recordId]) {
                 pendingChanges[recordId] = {};
             }
             pendingChanges[recordId]['Timesheet Not Approved Reason'] = isNotApproved;
+            highlightChange(input, recordId);
         }
     }
+
+    function highlightChange(element, recordId) {
+        const initialValue = initialValues[recordId];
+        const newValue = element.type === 'checkbox' ? element.checked : element.value.trim();
+    
+        // Target the parent element or the container holding the value
+        const valueContainer = element.closest('td') || element;
+    
+        if (element.type === 'checkbox') {
+            if (newValue !== initialValue.Approved) {
+                valueContainer.classList.add('highlighted-change');
+            } else {
+                valueContainer.classList.remove('highlighted-change');
+            }
+        } else {
+            if (newValue !== initialValue.NotApprovedReason) {
+                valueContainer.classList.add('highlighted-change');
+            } else {
+                valueContainer.classList.remove('highlighted-change');
+            }
+        }
+    }
+    
 
     function generateRows(fields, recordId, employeeNumber) {
         let hoursWorked = fields['Total Hours Worked'] || 0;
@@ -287,6 +338,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     pendingChanges[recordId] = {};
                 }
                 pendingChanges[recordId].Approved = isApproved;
+                highlightChange(checkbox, recordId);
             }
         });
         allChecked = !allChecked;
@@ -299,6 +351,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
         alert('Changes submitted successfully.');
         pendingChanges = {}; // Clear pending changes after submission
+        clearHighlights(); // Clear all highlights after submission
     }
 
     async function updateApprovalStatus(recordId, changes) {
@@ -322,11 +375,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    function clearHighlights() {
+        const highlightedElements = timesheetsBody.querySelectorAll('.highlighted-change');
+        highlightedElements.forEach(element => {
+            element.classList.remove('highlighted-change');
+        });
+    }
+
     // Event listeners for input changes
     timesheetsBody.addEventListener('change', handleCheckboxChange);
     timesheetsBody.addEventListener('blur', handleTextChange, true);
-
-
 
     function resetAllCheckboxes() {
         const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
