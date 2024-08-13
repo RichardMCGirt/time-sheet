@@ -354,9 +354,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     
     function adjustToWednesday(date) {
+        // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
         const dayOfWeek = date.getDay();
-        const offset = (1 - dayOfWeek + 7) % 7;
-        date.setDate(date.getDate() + offset);
+    
+        // Check if the current day is Tuesday (2)
+        if (dayOfWeek === 2) {
+            // If it's Tuesday, return the current date
+            return date;
+        } else {
+            // Otherwise, return the date 7 days ahead
+            let newDate = new Date(date);
+            newDate.setDate(date.getDate() + 7);
+            return newDate;
+        }
     }
     
     function populateWeekDates(weekEndingDate) {
