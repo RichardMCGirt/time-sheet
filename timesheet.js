@@ -655,7 +655,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             throw new Error('Failed to update Personal hours. Error: ' + error.message);
         }
     }
-
     async function handleSubmit(event) {
         event.preventDefault();
         console.log('User clicked submit. Throwing confetti!');
@@ -680,7 +679,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             await updatePtoHours();
             await updatePersonalHours();
             await sendDataToAirtable();
-            clearForm();
+            showModal(); // Show the success modal after successful submission
         } catch (error) {
             alert(`Submission failed: ${error.message}`);
         }
@@ -688,11 +687,52 @@ document.addEventListener("DOMContentLoaded", async function () {
     
     function throwConfetti() {
         confetti({
-            particleCount: 6000,
-            spread: 700,
+            particleCount: 1200,
+            spread: 180,
             origin: { y: 0.6 }
         });
     }
+    
+    function showModal() {
+        const modal = document.getElementById('successModal');
+        const closeButton = modal.querySelector('.close-button');
+        const countdownElement = document.createElement('p');
+        let countdown = 25;
+    
+        // Display the modal
+        modal.style.display = 'block';
+        
+        // Add the countdown element to the modal
+        countdownElement.textContent = `This modal will close in ${countdown} seconds.`;
+        modal.querySelector('.modal-content').appendChild(countdownElement);
+    
+        // Start the countdown
+        const countdownInterval = setInterval(() => {
+            countdown -= 1;
+            countdownElement.textContent = `Close in ${countdown} seconds.`;
+    
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                modal.style.display = 'none'; // Automatically close the modal
+            }
+        }, 1000);
+    
+        // Close the modal when the user clicks the close button
+        closeButton.onclick = function() {
+            clearInterval(countdownInterval); // Stop the countdown
+            modal.style.display = 'none';
+        };
+        
+        // Close the modal when the user clicks anywhere outside of it
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                clearInterval(countdownInterval); // Stop the countdown
+                modal.style.display = 'none';
+            }
+        };
+    }
+    
+    
     
     
     
