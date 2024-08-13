@@ -263,6 +263,51 @@ input[type="date"] {
     font-size: large;
 }
 
+/* Add these styles to your CSS */
+.highlight-green {
+    background-color: #d4edda; /* Light green */
+}
+
+.highlight-red {
+    background-color: #f8d7da; /* Light red */
+}
+
+.notification {
+    display: none;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.notification.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.notification.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.fade-in {
+    animation: fadeIn 1s forwards;
+}
+
+.fade-out {
+    animation: fadeOut 1s forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+
 #loading-screen {
     position: fixed;
     top: 0;
@@ -332,6 +377,31 @@ input[type="date"]:-webkit-autofill {
 .play-pause-button:hover {
     background-color: var(--highlight-hover-color);
 }
+
+#submit-button {
+    position: sticky;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background-color: #007BFF; /* Change to your preferred color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+#submit-button:hover {
+    background-color: #0056b3; /* Darker shade for hover effect */
+}
+
+#submit-button:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
 
 @media (max-width: 768px) {
     .name-container {

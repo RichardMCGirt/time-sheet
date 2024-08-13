@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingScreen = document.getElementById('loading-screen');
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
+    const submitButton = document.getElementById('submit-button'); // New submit button
 
     // Elements to hide during data fetching
     const titleElement = document.querySelector('h1');
@@ -18,6 +19,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const keyEnterHint = document.querySelector('p');
 
     let allChecked = false;
+    let pendingChanges = {}; // Object to store pending changes
 
     if (userEmailElement) {
         userEmailElement.textContent = supervisorEmail;
@@ -33,8 +35,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
-    document.getElementById('export-button').addEventListener('click', exportToExcel);
     checkAllButton.addEventListener('click', handleCheckAll);
+    submitButton.addEventListener('click', submitChanges); // Submit button event listener
 
     // Hide elements during data fetching
     titleElement.style.display = 'none';
@@ -44,19 +46,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Handle the loading screen
     setTimeout(() => {
-        // Trigger the transition to full color
         loadingLogo.classList.add('full-color');
 
         setTimeout(() => {
             loadingScreen.classList.add('fade-out');
             setTimeout(() => {
                 loadingScreen.classList.add('hidden');
-                // Now load the data and show the main content
                 mainContent.classList.add('visible');
-                loadDataAndInitializePage(); 
-            }, 700); // Wait 1 second for the fade-out transition before hiding
-        }, 1000); // Wait 1 second for the full color transition before starting fade-out
-    }, 1000); // Display the loading screen for 1 second before starting the color transition
+                loadDataAndInitializePage();
+            }, 700);
+        }, 1000);
+    }, 1000);
 
     async function loadDataAndInitializePage() {
         const supervisorName = await fetchSupervisorName(supervisorEmail);
@@ -97,14 +97,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     async function fetchTimesheets(supervisorName) {
-        const filterFormula = supervisorEmail === 'katy@vanirinstalledsales.com' ? 
-                              '{Employee Number}!=BLANK()' : 
-                              `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
+        const filterFormula = supervisorEmail === 'katy@vanirinstalledsales.com' ?
+            '{Employee Number}!=BLANK()' :
+            `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
 
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
 
         try {
-            loadingIndicator.style.display = 'block'; // Show loading indicator
+            loadingIndicator.style.display = 'block';
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
             if (!response.ok) throw new Error(`Failed to fetch timesheets: ${response.statusText}`);
             const data = await response.json();
@@ -113,8 +113,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             console.error(error);
             alert("Error fetching timesheet data. Please try again later.");
         } finally {
-            loadingIndicator.style.display = 'none'; // Hide loading indicator
-            // Show elements after data has been fetched
+            loadingIndicator.style.display = 'none';
             titleElement.style.display = '';
             messageContainer.style.display = '';
             checkAllButton.style.display = '';
@@ -123,42 +122,40 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     async function populateTimesheets(records) {
-        timesheetsBody.innerHTML = ''; // Clear any existing rows
-    
+        timesheetsBody.innerHTML = '';
+
         if (records.length > 0) {
             for (const record of records) {
                 const fields = record.fields;
                 const employeeNumber = fields['Employee Number'];
-    
-                if (!employeeNumber) continue; // Skip records without Employee Number
-    
+
+                if (!employeeNumber) continue;
+
                 const employeeName = await fetchEmployeeName(employeeNumber);
                 const hasValues = checkTimesheetValues(fields);
-    
+
                 const nameContainer = document.createElement('div');
                 nameContainer.classList.add('name-container');
-                nameContainer.textContent = `${employeeName}`; // Employee name only, number hidden
-                nameContainer.setAttribute('data-record-id', record.id); // Set the record ID
-                nameContainer.setAttribute('data-employee-number', employeeNumber); // Store employee number for CSV generation
+                nameContainer.textContent = `${employeeName}`;
+                nameContainer.setAttribute('data-record-id', record.id);
+                nameContainer.setAttribute('data-employee-number', employeeNumber);
                 nameContainer.addEventListener('click', () => {
                     toggleVisibility(record.id);
                 });
                 nameContainer.classList.add('clickable');
                 if (!hasValues) {
-                    nameContainer.style.color = 'red'; // Set the name color to red if no values
+                    nameContainer.style.color = 'red';
                 }
                 timesheetsBody.appendChild(nameContainer);
-    
+
                 const table = document.createElement('table');
                 table.classList.add('time-entry-table');
-                table.setAttribute('data-record-id', record.id); // Set the record ID
+                table.setAttribute('data-record-id', record.id);
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <!-- Employee Number column removed from the table header -->
                             <th class="date-column">Date Ending</th>
                             <th class="narrow-column">Hours Worked</th>
-
                             <th class="narrow-column">PTO Hours used</th>
                             <th class="narrow-column">Personal Hours used</th>
                             <th class="narrow-column">Holiday Hours used</th>
@@ -169,14 +166,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                         </tr>
                     </thead>
                     <tbody>
-                        ${generateRows(fields, record.id, employeeNumber)} <!-- Pass employeeNumber -->
+                        ${generateRows(fields, record.id, employeeNumber)}
                     </tbody>
                 `;
-    
+
                 if (supervisorEmail !== 'katy@vanirinstalledsales.com' && fields['Approved']) {
-                    table.style.display = 'none'; // Hide approved rows for non-Katy users
+                    table.style.display = 'none';
                 }
-    
+
                 timesheetsBody.appendChild(table);
             }
         } else {
@@ -190,13 +187,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     function checkTimesheetValues(fields) {
         return fields['Total Hours Worked'] || fields['PTO Time Used'] || fields['Personal Time Used'] || fields['Holiday Hours Used'];
     }
-    
+
     function toggleVisibility(recordId) {
         const nameContainer = timesheetsBody.querySelector(`.name-container[data-record-id="${recordId}"]`);
         const table = timesheetsBody.querySelector(`.time-entry-table[data-record-id="${recordId}"]`);
-    
+
         if (nameContainer && table) {
-            // Toggle the display of the table
             table.style.display = table.style.display === 'none' ? '' : 'none';
             nameContainer.classList.toggle('hidden', table.style.display === 'none');
         }
@@ -207,27 +203,38 @@ document.addEventListener("DOMContentLoaded", async function () {
         const recordId = checkbox.getAttribute('data-record-id');
         const isApproved = checkbox.classList.contains('approve-checkbox') ? checkbox.checked : null;
 
-        // Validate against conflicting "Not Approved" text input
         const notApprovedInput = timesheetsBody.querySelector(`.not-approved-checkbox[data-record-id="${recordId}"]`);
         if (notApprovedInput && isApproved && notApprovedInput.value.trim()) {
             alert("Please clear the 'Not Approved' text input if you check the 'Approved' checkbox.");
-            checkbox.checked = !isApproved; // Revert checkbox state
+            checkbox.checked = !isApproved;
             return;
         }
 
-        updateApprovalStatus(recordId, isApproved, null);
+        // Store the change in the pendingChanges object
+        if (!pendingChanges[recordId]) {
+            pendingChanges[recordId] = {};
+        }
+        if (isApproved !== null) pendingChanges[recordId].Approved = isApproved;
+    }
 
-        // Adjust visibility of the table based on the checkbox state
-        const table = timesheetsBody.querySelector(`.time-entry-table[data-record-id="${recordId}"]`);
-    
-        if (table) {
-            if (supervisorEmail !== 'katy@vanirinstalledsales.com') {
-                // Hide the table if the checkbox is checked and the supervisor is not Katy
-                table.style.display = isApproved ? 'none' : '';
-            } else {
-                // For Katy, do not hide the table based on checkbox state
-                table.style.display = '';
+    function handleTextChange(event) {
+        const input = event.target;
+        if (input.classList.contains('not-approved-checkbox')) {
+            const recordId = input.getAttribute('data-record-id');
+            const isNotApproved = input.value.trim() || '';
+
+            const checkbox = timesheetsBody.querySelector(`.approve-checkbox[data-record-id="${recordId}"]`);
+            if (checkbox && checkbox.checked && isNotApproved) {
+                alert("Please uncheck the 'Approved' checkbox if you enter a reason in the 'Not Approved' text input.");
+                input.value = '';
+                return;
             }
+
+            // Store the change in the pendingChanges object
+            if (!pendingChanges[recordId]) {
+                pendingChanges[recordId] = {};
+            }
+            pendingChanges[recordId]['Timesheet Not Approved Reason'] = isNotApproved;
         }
     }
 
@@ -236,29 +243,21 @@ document.addEventListener("DOMContentLoaded", async function () {
         const ptoHours = fields['PTO Time Used'] || 0;
         const personalHours = fields['Personal Time Used'] || 0;
         const holidayHours = fields['Holiday Hours Used'] || 0;
-    
-        // Round hoursWorked to the nearest quarter
+
         hoursWorked = Math.round(hoursWorked * 4) / 4;
-    
-        // Calculate giftedHours
+
         let giftedHours = hoursWorked > 0 ? Math.min(3, 40 - (hoursWorked + ptoHours + personalHours + holidayHours)) : 0;
-        // Ensure giftedHours is not negative
         if (giftedHours < 0) giftedHours = 0;
-        // Round giftedHours to two decimal points
         giftedHours = Math.round(giftedHours * 100) / 100;
-    
-        // Calculate totalHours
+
         let totalHours = hoursWorked + ptoHours + personalHours + holidayHours + giftedHours;
-        
-        // Set giftedHours to 0 if totalHours exceeds 40 and recalculate totalHours
         if (totalHours > 40) {
             giftedHours = 0;
             totalHours = hoursWorked + ptoHours + personalHours + holidayHours;
         }
-    
+
         return `
             <tr>
-                <!-- Removed Employee Number Row -->
                 <th><input type="date" name="dateEnding" value="${fields['date7'] || ''}" readonly></th>
                 <th><input type="number" name="hours_worked" value="${hoursWorked}" placeholder="0" readonly></th>
                 <th><input type="number" name="pto_hours" value="${ptoHours}" placeholder="0" readonly></th>
@@ -272,22 +271,39 @@ document.addEventListener("DOMContentLoaded", async function () {
         `;
     }
 
-    async function updateApprovalStatus(recordId, isApproved, isNotApproved) {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-        const bodyFields = {};
+    function handleCheckAll() {
+        const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = !allChecked;
+            const recordId = checkbox.getAttribute('data-record-id');
+            const isApproved = checkbox.checked;
 
-        // Ensure that both values are not set simultaneously
-        if (isApproved !== null && isNotApproved !== null) {
-            alert("You cannot have both the 'Approved' checkbox checked and a 'Not Approved' reason filled out.");
-            return;
+            const notApprovedInput = timesheetsBody.querySelector(`.not-approved-checkbox[data-record-id="${recordId}"]`);
+            if (notApprovedInput && isApproved && notApprovedInput.value.trim()) {
+                alert("Please clear the 'Not Approved' text input for all records before checking 'Approved'.");
+                checkbox.checked = !isApproved;
+            } else {
+                if (!pendingChanges[recordId]) {
+                    pendingChanges[recordId] = {};
+                }
+                pendingChanges[recordId].Approved = isApproved;
+            }
+        });
+        allChecked = !allChecked;
+        checkAllButton.textContent = allChecked ? "Deselect All" : "Select All";
+    }
+
+    async function submitChanges() {
+        for (const [recordId, changes] of Object.entries(pendingChanges)) {
+            await updateApprovalStatus(recordId, changes);
         }
+        alert('Changes submitted successfully.');
+        pendingChanges = {}; // Clear pending changes after submission
+    }
 
-        if (isApproved !== null) bodyFields.Approved = isApproved;
-        if (isNotApproved !== null) bodyFields['Timesheet Not Approved Reason'] = isNotApproved === '' ? '' : isNotApproved;
-
-        if (Object.keys(bodyFields).length === 0) return; // No updates to make
-
-        const body = JSON.stringify({ fields: bodyFields });
+    async function updateApprovalStatus(recordId, changes) {
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+        const body = JSON.stringify({ fields: changes });
 
         try {
             const response = await fetch(endpoint, {
@@ -306,51 +322,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    function debounce(func, wait) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-        };
-    }
+    // Event listeners for input changes
+    timesheetsBody.addEventListener('change', handleCheckboxChange);
+    timesheetsBody.addEventListener('blur', handleTextChange, true);
 
-    const handleBlurDebounced = debounce(async function (event) {
-        const input = event.target;
-        if (input.classList.contains('not-approved-checkbox')) {
-            const recordId = input.getAttribute('data-record-id');
-            const isNotApproved = input.value.trim() || ''; // Save the text value, or empty string if empty
 
-            // Validate against conflicting checkbox
-            const checkbox = timesheetsBody.querySelector(`.approve-checkbox[data-record-id="${recordId}"]`);
-            if (checkbox && checkbox.checked && isNotApproved) {
-                alert("Please uncheck the 'Approved' checkbox if you enter a reason in the 'Not Approved' text input.");
-                input.value = ''; // Clear the text input
-                return;
-            }
-
-            updateApprovalStatus(recordId, null, isNotApproved);
-        }
-    }, 300);
-
-    function handleCheckAll() {
-        const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = !allChecked;
-            const recordId = checkbox.getAttribute('data-record-id');
-            const isApproved = checkbox.checked;
-            
-            // Ensure that no conflicting text input exists
-            const notApprovedInput = timesheetsBody.querySelector(`.not-approved-checkbox[data-record-id="${recordId}"]`);
-            if (notApprovedInput && isApproved && notApprovedInput.value.trim()) {
-                alert("Please clear the 'Not Approved' text input for all records before checking 'Approved'.");
-                checkbox.checked = !isApproved; // Revert checkbox state
-            } else {
-                updateApprovalStatus(recordId, isApproved, null);
-            }
-        });
-        allChecked = !allChecked;
-        checkAllButton.textContent = allChecked ? "Deselect All" : "Select All";
-    }
 
     function resetAllCheckboxes() {
         const checkboxes = timesheetsBody.querySelectorAll('.approve-checkbox');
