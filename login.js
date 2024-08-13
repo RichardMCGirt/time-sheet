@@ -132,9 +132,19 @@ function handleInput() {
     const email = emailInput.value;
     const password = passwordInput.value;
 
+    // Get the first letter of the email or password, if available
     const firstLetter = (email.charAt(0) || password.charAt(0)).toLowerCase();
 
-    if ((email || password) && firstLetter !== 'j' && firstLetter !== 'r' && firstLetter !== 'd' ){
+    // Check if music should play
+    const shouldPlayMusic = (email || password) &&
+        firstLetter !== 'j' &&
+        firstLetter !== 'r' &&
+        firstLetter !== 'd' &&
+        firstLetter !== 'b' &&
+        firstLetter !== 'k' &&
+        firstLetter !== 'm';
+
+    if (shouldPlayMusic) {
         if (backgroundMusic && backgroundMusic.paused) {
             backgroundMusic.muted = false;
             backgroundMusic.volume = 1.0;
@@ -151,6 +161,7 @@ function handleInput() {
         }
     }
 }
+
 
 document.addEventListener('DOMContentLoaded', function () {
     const emailInput = document.querySelector('.email-input');

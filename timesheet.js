@@ -963,7 +963,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             'richard.mcgirt@vanirinstalledsales.com',
             'hunter@vanirinstalledsales.com',
             'katy@vanirinstalledsales.com',
-            'diana.smith@vanirinstalledsales.com'
+            'diana.smith@vanirinstalledsales.com',
+            'brittany.godwin@vanirinstalledsales.com',
+            'martha.favilabeltran@vanirinstalledsales.com'
+
         ];
         return !excludedEmails.includes(email);
     }
