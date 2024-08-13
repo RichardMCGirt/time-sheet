@@ -172,8 +172,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const minWidthValue = parseInt(minWidth, 10);
 
     function adjustWidth() {
-        const newWidth = ((emailInput.value.length + 1) * 8) + 'px';
-        emailInput.style.width = (parseInt(newWidth, 10) < minWidthValue) ? minWidth : newWidth;
+        const newWidth = ((emailInput.value.length + 3) * 8) + 'px';
+        emailInput.style.width = (parseInt(newWidth, 13) < minWidthValue) ? minWidth : newWidth;
     }
 
     adjustWidth(); // Initial width based on default value
