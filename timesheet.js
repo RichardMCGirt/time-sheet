@@ -687,7 +687,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     
     function throwConfetti() {
         confetti({
-            particleCount: 1200,
+            particleCount: 1400,
             spread: 180,
             origin: { y: 0.6 }
         });
