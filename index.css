@@ -49,11 +49,17 @@ h1 {
 .logo-box {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
+    align-items: center;
+    margin: 0 auto 20px;
     background-color: #ecf0f1;
-    padding: 15px;
+    padding: 10px;
     border-radius: 12px;
+    max-width: 150px;
+    position: relative;
+    top: 30%;
+    transform: translateY(-0%);
 }
+
 
 .logo {
     width: 150px;
