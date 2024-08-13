@@ -341,21 +341,44 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     async function handleWeekEndingChange() {
         console.log('Handling week-ending date change...');
-        const selectedDate = new Date(elements.weekEndingInput.value);
-        adjustToWednesday(selectedDate);
-        elements.weekEndingInput.value = selectedDate.toISOString().split('T')[0];
-        console.log('Adjusted week-ending date:', selectedDate);
+        
+        // Get the current date
+        const today = new Date();
+        const currentDay = today.getDay();
     
-        const date7 = new Date(selectedDate);
-        date7.setDate(selectedDate.getDate() + 6);
-        elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
-        populateWeekDates(selectedDate);
+        // Check if today is Tuesday
+        if (currentDay === 2) { // 2 corresponds to Tuesday
+            // Set week-ending date to today if it's Tuesday
+            elements.weekEndingInput.value = today.toISOString().split('T')[0];
+            adjustToWednesday(today); // Adjust to the next Wednesday
+            console.log('Adjusted week-ending date for Tuesday:', today);
+            
+            // Update the date7 field
+            const date7 = new Date(today);
+            date7.setDate(today.getDate() + 6);
+            elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
+    
+            // Populate the week dates
+            populateWeekDates(today);
+        } else {
+            // Handle the change if it's not Tuesday
+            const selectedDate = new Date(elements.weekEndingInput.value);
+            adjustToWednesday(selectedDate);
+            elements.weekEndingInput.value = selectedDate.toISOString().split('T')[0];
+            console.log('Adjusted week-ending date:', selectedDate);
+        
+            const date7 = new Date(selectedDate);
+            date7.setDate(selectedDate.getDate() + 6);
+            elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
+            populateWeekDates(selectedDate);
+        }
+        
         saveFormData();
     }
     
     function adjustToWednesday(date) {
         const dayOfWeek = date.getDay();
-        const offset = (1 - dayOfWeek + 7) % 7;
+        const offset = (3 - dayOfWeek + 7) % 7; // Adjust to the next Wednesday
         date.setDate(date.getDate() + offset);
     }
     
@@ -382,6 +405,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
         saveFormData();
     }
+    
 
     function hideApprovalOnEdit(isApproved) {
         const inputs = document.querySelectorAll('input, textarea, select');
