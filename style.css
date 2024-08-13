@@ -608,7 +608,9 @@ color: #16a085;  }
     font-size: 28px;
     font-weight: bold;
 }
-
+h2{
+    color: #000;
+}
 .close-button:hover,
 .close-button:focus {
     color: black;
