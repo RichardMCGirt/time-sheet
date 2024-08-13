@@ -31,11 +31,15 @@ document.addEventListener("DOMContentLoaded", function() {
         try {
             await clearDataInAirtable();
             showMessage('Data cleared successfully!');
+            
+         
+            
         } catch (error) {
             showMessage('Failed to clear data. Please try again.');
             console.error('Error clearing data:', error);
         }
     }
+    
 
     function showMessage(message) {
         const messageContainer = document.getElementById('message-container');
@@ -157,7 +161,13 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('confirm-yes').addEventListener('click', () => {
                 closeModal();
                 resolve(true);
+            
+                // Set a timeout to refresh the page after 2 seconds
+                setTimeout(() => {
+                    location.reload(); // This will refresh the page
+                }, 2000);
             });
+            
     
             document.getElementById('confirm-no').addEventListener('click', () => {
                 closeModal();
