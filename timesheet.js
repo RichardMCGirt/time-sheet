@@ -696,27 +696,31 @@ document.addEventListener("DOMContentLoaded", async function () {
     function showModal() {
         const modal = document.getElementById('successModal');
         const closeButton = modal.querySelector('.close-button');
-        const countdownElement = document.createElement('p');
+        
+        // Ensure there is only one countdown element
+        let countdownElement = modal.querySelector('.countdown');
+        if (!countdownElement) {
+            countdownElement = document.createElement('p');
+            countdownElement.className = 'countdown';
+            modal.querySelector('.modal-content').appendChild(countdownElement);
+        }
+        
         let countdown = 25;
-    
+        
         // Display the modal
         modal.style.display = 'block';
         
-        // Add the countdown element to the modal
-        countdownElement.textContent = `This modal will close in ${countdown} seconds.`;
-        modal.querySelector('.modal-content').appendChild(countdownElement);
-    
         // Start the countdown
         const countdownInterval = setInterval(() => {
             countdown -= 1;
             countdownElement.textContent = `Close in ${countdown} seconds.`;
-    
+        
             if (countdown <= 0) {
                 clearInterval(countdownInterval);
                 modal.style.display = 'none'; // Automatically close the modal
             }
         }, 1000);
-    
+        
         // Close the modal when the user clicks the close button
         closeButton.onclick = function() {
             clearInterval(countdownInterval); // Stop the countdown
