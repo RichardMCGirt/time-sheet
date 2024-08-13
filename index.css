@@ -49,11 +49,17 @@ h1 {
 .logo-box {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
+    align-items: center;
+    margin: 0 auto 20px;
     background-color: #ecf0f1;
-    padding: 15px;
+    padding: 10px;
     border-radius: 12px;
+    max-width: 150px;
+    position: relative;
+    top: 30%;
+    transform: translateY(-0%);
 }
+
 
 .logo {
     width: 150px;
@@ -79,7 +85,7 @@ h1 {
 
 .input-text {
     max-width: 100%;
-    min-width: 200px;
+    min-width: 300px;
     padding: 14px;
     border-radius: 8px;
     border: 1px solid #bdc3c7;
@@ -98,6 +104,10 @@ h1 {
     position: relative;
     display: inline-block;
     width: 100%;
+}
+
+#password {
+    max-width: 100px; /* Adjust as needed */
 }
 
 .toggle-password-button {
