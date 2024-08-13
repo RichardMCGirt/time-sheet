@@ -1,6 +1,6 @@
-const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
-const baseId = 'app9gw2qxhGCmtJvW';
-const tableId = 'tbljmLpqXScwhiWTt/';
+const apiKey = 'patdCNFzzxpHXs14G.892585ccb188d17d06078c040fedb939583a082a9f7c84ca3063eae2024a998b';
+const baseId = 'appzys5CNiZIV1ihx';
+const tableId = 'tblKBCKzmHgoPClac'; 
 
 // DOM elements
 const jokeText = document.getElementById('joke-text');
