@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
-    const newTableId = 'tbl8znXria2leJfUd'; // Replace with your new table ID
+    const newTableId = 'tbl8znXria2leJfUd'; 
 
     let userEmail = localStorage.getItem('userEmail') || '';
 
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
             formData[`end${i}`] = getValue(`input[name="end_time${i}"]`);
             formData[`additionali${i}`] = getValue(`input[name="Additional_Time_In${i}"]`);
             formData[`additionalo${i}`] = getValue(`input[name="Additional_Time_Out${i}"]`);
-            formData[`PTO Hours ${i}`] = parseFloat(getValue(`input[name="Pto_hours${i}"]`)) || 0;
+            formData[`PTO Hours ${i}`] = parseFloat(getValue(`input[name="PTO_hours${i}"]`)) || 0;
             formData[`Personal Hours ${i}`] = parseFloat(getValue(`input[name="Personal_hours${i}"]`)) || 0;
             formData[`Holiday Hours ${i}`] = parseFloat(getValue(`input[name="Holiday_hours${i}"]`)) || 0;
             formData[`Did not work ${i}`] = getCheckboxValue(`input[name="did_not_work${i}"]`);
