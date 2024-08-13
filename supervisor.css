@@ -394,7 +394,7 @@ input[type="date"]:-webkit-autofill {
 
 #submit-button {
     position: sticky;
-    bottom: 5%;
+    bottom: 3%;
     left: 50%;
     transform: translateX(-50%);
     padding: 10px 20px;
