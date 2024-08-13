@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const apiKey = 'patdCNFzzxpHXs14G.892585ccb188d17d06078c040fedb939583a082a9f7c84ca3063eae2024a998b';
-    const baseId = 'appzys5CNiZIV1ihx';
-    const newTableId = 'tblKBCKzmHgoPClac'; 
+    const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
+    const baseId = 'app9gw2qxhGCmtJvW';
+    const newTableId = 'tbl8znXria2leJfUd'; // Replace with your new table ID
 
     let userEmail = localStorage.getItem('userEmail') || '';
 
@@ -54,9 +54,9 @@ document.addEventListener("DOMContentLoaded", function() {
             formData[`end${i}`] = getValue(`input[name="end_time${i}"]`);
             formData[`additionali${i}`] = getValue(`input[name="Additional_Time_In${i}"]`);
             formData[`additionalo${i}`] = getValue(`input[name="Additional_Time_Out${i}"]`);
-            formData[`PTO Hours ${i}`] = parseFloat(getValue(`input[name="Pto_hours${i}"]`)) || 0;
-            formData[`Personal Hours ${i}`] = parseFloat(getValue(`input[name="Personal_hours${i}"]`)) || 0;
-            formData[`Holiday Hours ${i}`] = parseFloat(getValue(`input[name="Holiday_hours${i}"]`)) || 0;
+            formData[`PTO Hours ${i}`] = parseFloat(getValue(`input[name="pto_hours${i}"]`)) || 0;
+            formData[`Personal Hours ${i}`] = parseFloat(getValue(`input[name="personal_hours${i}"]`)) || 0;
+            formData[`Holiday Hours ${i}`] = parseFloat(getValue(`input[name="holiday_hours${i}"]`)) || 0;
             formData[`Did not work ${i}`] = getCheckboxValue(`input[name="did_not_work${i}"]`);
 
             console.log(`Data for day ${i}:`, {
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log('Sending data to Airtable...', data);
         const endpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}`;
         const searchEndpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}?filterByFormula=AND({Email}="${userEmail}")`;
-    
+
         try {
             const searchResponse = await fetch(searchEndpoint, {
                 headers: {
@@ -98,25 +98,23 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             const searchData = await searchResponse.json();
             console.log('Search data:', searchData);
-    
+
             if (!searchData.records || searchData.records.length === 0) {
                 throw new Error('No matching record found to update.');
             }
-    
+
             const recordId = searchData.records[0].id;
             console.log('Existing record found with ID:', recordId);
-    
-            // Exclude the email field from the record object
-            const { email, ...dataWithoutEmail } = data;
-    
+
             const record = {
                 fields: {
-                    ...dataWithoutEmail
+                    ...data,
+                    "email": userEmail
                 }
             };
-    
+
             console.log('Payload being sent to Airtable:', JSON.stringify(record));
-    
+
             const response = await fetch(`${endpoint}/${recordId}`, {
                 method: 'PATCH',
                 headers: {
@@ -125,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 },
                 body: JSON.stringify(record)
             });
-    
+
             if (!response.ok) {
                 const errorResponse = await response.json();
                 console.error('Error response from Airtable:', errorResponse);
@@ -139,9 +137,6 @@ document.addEventListener("DOMContentLoaded", function() {
             throw error;
         }
     }
-    
-    
-    
 
     document.getElementById('clear-button').addEventListener('click', async () => {
         const userConfirmed = await showModal();
@@ -196,7 +191,6 @@ document.addEventListener("DOMContentLoaded", function() {
             const recordId = searchData.records[0].id;
             console.log('Existing record found with ID:', recordId);
     
-            // Make sure `record` is properly defined
             const record = {
                 fields: {
                     ...Object.fromEntries(
@@ -231,7 +225,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    
     function resetFormFields() {
         for (let i = 1; i <= 7; i++) {
             setValue(`input[name="start_time${i}"]`, '');
@@ -240,10 +233,10 @@ document.addEventListener("DOMContentLoaded", function() {
             setValue(`input[name="end_time${i}"]`, '');
             setValue(`input[name="Additional_Time_In${i}"]`, '');
             setValue(`input[name="Additional_Time_Out${i}"]`, '');
-            setValue(`input[name="PTO_hours${i}"]`, '');
-            setValue(`input[name="Personal_hours${i}"]`, '');
-            setValue(`input[name="Holiday_hours${i}"]`, '');
-            setCheckboxValue(`input[name="did_not_work_${i}"]`, false);
+            setValue(`input[name="pto_hours${i}"]`, '');
+            setValue(`input[name="personal_hours${i}"]`, '');
+            setValue(`input[name="holiday_hours${i}"]`, '');
+            setCheckboxValue(`input[name="did_not_work${i}"]`, false);
         }
     }
     
@@ -278,10 +271,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 setValue(`input[name="end_time${i}"]`, record[`end${i}`]);
                 setValue(`input[name="Additional_Time_In${i}"]`, record[`additionali${i}`]);
                 setValue(`input[name="Additional_Time_Out${i}"]`, record[`additionalo${i}`]);
-                setValue(`input[name="PTO_hours${i}"]`, record[`PTO Hours ${i}`]);
-                setValue(`input[name="Personal_hours${i}"]`, record[`Personal Hours ${i}`]);
-                setValue(`input[name="Holiday_hours${i}"]`, record[`Holiday Hours ${i}`]);
-                setCheckboxValue(`input[name="did_not_work_${i}"]`, record[`Did not work ${i}`]);
+                setValue(`input[name="pto_hours${i}"]`, record[`PTO Hours${i}`]);
+                setValue(`input[name="personal_hours${i}"]`, record[`Personal Hours${i}`]);
+                setValue(`input[name="holiday_hours${i}"]`, record[`Holiday Hours${i}`]);
+                setCheckboxValue(`input[name="did_not_work${i}"]`, record[`Did not work${i}`]);
             }
         } catch (error) {
             console.error('Error populating form data:', error);

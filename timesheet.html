@@ -39,12 +39,11 @@
                     <button id="convert-to-csv-button">Convert to CSV</button>
                 </div>
         </header>
-      <nav id="navbar" class="navbar">
-    <ul>
-        <li><a href="timeoff.html">Request Time Off</a></li>
-    </ul>
-</nav>
-        <div id="message-container" class="right-70"></div>
+        <nav class="navbar">
+            <ul>
+                <li><a href="timeoff.html">Request Time Off</a></li>
+            </ul>
+        </nav>
 
         <div id="loading-bar-container">
             <div id="loading-bar">
@@ -55,19 +54,18 @@
         <section id="time-entry" class="time-entry">
             <form id="time-entry-form" class="time-entry-form">
                 <div class="form-group">
-                    <label for="week-ending" class="Week-Ending" style="margin-right: 0px;">Week Ending (Tuesday):</label>
+                    <label for="week-ending" class="Week-Ending" style="margin-right: 0px;">Week Ending (Wednesday):</label>
                     <input type="date" id="week-ending" name="week_ending" required style="font-size: 20px; margin-right: 0px; max-width: fit-content;"  width="20px">
                     
-                    <label for="approval-status" class="approved-label" style="font-size: 20px; margin-right: 50px;"></label>
-                    <span id="approval-status" style="color: red; font-size: 250px; margin-right: 50px;"></span>
-                </div>
+                    <label for="approval-status" class="approved-label"  style="font-size: 20px; margin-right: 50px;"></label>
+                    <span id="approval-status" style="color: red;"  style="font-size: 250px; margin-right: 50px;"></span>
+            </div>
                 <button id="playPauseButton" class="play-pause-button">Play</button>
-        
-                <!-- Wrapper for responsive table -->
-                <div class="table-responsive">
-                    <table id="time-entry-table" class="time-entry-table">
-                        <thead>
-                            <tr>
+                <p>Please fill out your time entries for the week. Ensure all fields are accurate before submitting.</p>
+
+                <table id="time-entry-table" class="time-entry-table">
+                    <thead>
+                        <tr>
                             <th class="date-column">Date</th>
                             <th class="time-column">Start Time</th>
                             <th class="time-column">Lunch Start</th>
@@ -125,36 +123,34 @@
                                         <td class="narrow-column"><input type="number" name="Holiday_hours3" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td style="text-align: center;"><input type="checkbox" id="did-not-work-3" name="did_not_work3" onchange="toggleWorkInputs(2, this.checked)"></td>
                                     </tr>
-                                    <tr data-day="4" class="highlight-row">
-                                        <td class="highlight-row" style="text-align: center;"><input type="date" name="date4" readonly></td>
-                                        <td class="highlight-row" style="text-align: center;"><input type="time" name="start_time4" step="900"></td>
-                                        <td class="highlight-row" style="text-align: center;"><input type="time" name="lunch_start4" step="900"></td>
-                                        <td class="highlight-row" style="text-align: center;"><input type="time" name="lunch_end4" step="900"></td>
-                                        <td class="highlight-row" style="text-align: center;"><input type="time" name="end_time4" step="900"></td>
-                                        <td class="highlight-row additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In4" step="900"></td>
-                                        <td class="highlight-row additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out4" step="900"></td>
-                                        <td class="highlight-row" style="text-align: center;"><span id="hours-worked-today4">0</span></td>
-                                        <td class="highlight-row narrow-column"><input type="number" name="PTO_hours4" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td class="highlight-row narrow-column"><input type="number" name="Personal_hours4" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td class="highlight-row narrow-column"><input type="number" name="Holiday_hours4" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td class="highlight-row" style="text-align: center;"><input type="checkbox" id="did-not-work-4" name="did_not_work4" onchange="toggleWorkInputs(3, this.checked)"></td>
+                                    <tr data-day="4">
+                                        <td style="text-align: center;"><input type="date" name="date4" readonly></td>
+                                        <td style="text-align: center;"><input type="time" name="start_time4" step="900"></td>
+                                        <td style="text-align: center;"><input type="time" name="lunch_start4" step="900"></td>
+                                        <td style="text-align: center;"><input type="time" name="lunch_end4" step="900"></td>
+                                        <td style="text-align: center;"><input type="time" name="end_time4" step="900"></td>
+                                        <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In4" step="900"></td>
+                                        <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out4" step="900"></td>
+                                        <td style="text-align: center;"><span id="hours-worked-today4">0</span></td>
+                                        <td class="narrow-column"><input type="number" name="PTO_hours4" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
+                                        <td class="narrow-column"><input type="number" name="Personal_hours4" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
+                                        <td class="narrow-column"><input type="number" name="Holiday_hours4" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
+                                        <td style="text-align: center;"><input type="checkbox" id="did-not-work-4" name="did_not_work4" onchange="toggleWorkInputs(3, this.checked)"></td>
                                     </tr>
-                                    <tr data-day="5" class="highlight-row">
-                                        <td class="highlight-row" style="text-align: center;"><input type="date" name="date5" readonly></td>
-                                        <td class="highlight-row" style="text-align: center;"><input type="time" name="start_time5" step="900"></td>
-                                        <td class="highlight-row" style="text-align: center;"><input type="time" name="lunch_start5" step="900"></td>
-                                        <td class="highlight-row" style="text-align: center;"><input type="time" name="lunch_end5" step="900"></td>
-                                        <td class="highlight-row" style="text-align: center;"><input type="time" name="end_time5" step="900"></td>
-                                        <td class="highlight-row additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In5" step="900"></td>
-                                        <td class="highlight-row additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out5" step="900"></td>
-                                        <td class="highlight-row" style="text-align: center;"><span id="hours-worked-today5">0</span></td>
-                                        <td class="highlight-row narrow-column"><input type="number" name="PTO_hours5" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td class="highlight-row narrow-column"><input type="number" name="Personal_hours5" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td class="highlight-row narrow-column"><input type="number" name="Holiday_hours5" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td class="highlight-row" style="text-align: center;"><input type="checkbox" id="did-not-work-5" name="did_not_work5" onchange="toggleWorkInputs(4, this.checked)"></td>
+                                    <tr data-day="5">
+                                        <td style="text-align: center;"><input type="date" name="date5" readonly></td>
+                                        <td style="text-align: center;"><input type="time" name="start_time5" step="900"></td>
+                                        <td style="text-align: center;"><input type="time" name="lunch_start5" step="900"></td>
+                                        <td style="text-align: center;"><input type="time" name="lunch_end5" step="900"></td>
+                                        <td style="text-align: center;"><input type="time" name="end_time5" step="900"></td>
+                                        <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_In5" step="900"></td>
+                                        <td class="additional-time" style="text-align: center;"><input type="time" name="Additional_Time_Out5" step="900"></td>
+                                        <td style="text-align: center;"><span id="hours-worked-today5">0</span></td>
+                                        <td class="narrow-column"><input type="number" name="PTO_hours5" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
+                                        <td class="narrow-column"><input type="number" name="Personal_hours5" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
+                                        <td class="narrow-column"><input type="number" name="Holiday_hours5" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
+                                        <td style="text-align: center;"><input type="checkbox" id="did-not-work-5" name="did_not_work5" onchange="toggleWorkInputs(4, this.checked)"></td>
                                     </tr>
-                                    
-                                    
                                     <tr data-day="6">
                                         <td style="text-align: center;"><input type="date" name="date6" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time6" step="900"></td>
@@ -189,12 +185,7 @@
                         <button id="clear-button">Clear Data</button>
                     </form>
                 </section>
-                <div id="successModal" class="modal" style="display: none;">
-                    <div class="modal-content">
-                        <span class="close-button">&times;</span>
-                        <h2>Submission Successful!</h2>
-                    </div>
-                </div>
+                
         <!-- Modal HTML -->
         <div id="confirm-modal" class="modal">
             <div class="modal-content">
@@ -250,77 +241,17 @@
 <div id="script-placeholder"></div>
 <script src="disable-script.js"></script>
 <script src="huntergong.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
-
 <script src="airtablestorage.js"></script>
 <script src="overtimeCalculation.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-
-document.addEventListener("DOMContentLoaded", function() {
+ document.addEventListener("DOMContentLoaded", function() {
     initializeTimeDropdowns();
+    initializeKeyboardNavigation();
     updateHeaderText();
-
-    // Set checkboxes to checked on page load
-    document.getElementById('did-not-work-4').checked = true;
-    document.getElementById('did-not-work-5').checked = true;
-
-    // Hide the navbar initially if the loading bar is visible
-    toggleNavbar();
-
-    // Assume loading completes after some time (you can replace this with actual logic when loading completes)
-    setTimeout(function() {
-        setLoadingState(false); // This will hide the loading bar and show the navbar
-    }, 3000); // Example timeout, adjust according to your loading logic
-
-    addGlobal55Shortcut(); // Add the "77" shortcut functionality
 });
-
-function addGlobal55Shortcut() {
-    let keysPressed = "";
-
-    document.addEventListener('keydown', function(event) {
-        if (document.activeElement.tagName !== 'INPUT') { // Ensure no input is focused
-            keysPressed += event.key; // Append the pressed key to the string
-
-            if (keysPressed.endsWith('55')) {
-                apply55Shortcut(); // Trigger the shortcut
-                keysPressed = ""; // Reset the key sequence
-            }
-
-            // Optionally, clear the string if it gets too long or doesn't match
-            if (keysPressed.length > 2) {
-                keysPressed = keysPressed.slice(-2); // Keep only the last two characters
-            }
-        }
-    });
-}
-
-function apply55Shortcut() {
-    const timeEntryTable = document.getElementById('time-entry-table');
-    const rows = timeEntryTable.querySelectorAll('tbody tr');
-
-    rows.forEach(row => {
-        const index = parseInt(row.dataset.day, 10);
-        const startTimeInput = row.querySelector('input[name^="start_time"]');
-        const endTimeInput = row.querySelector('input[name^="end_time"]');
-        const lunchStartInput = row.querySelector('input[name^="lunch_start"]');
-        const lunchEndInput = row.querySelector('input[name^="lunch_end"]');
-
-        if (index === 7) {
-            startTimeInput.value = '07:00';
-            endTimeInput.value = '12:00';
-        } else if ([1, 2, 3, 6].includes(index)) {
-            startTimeInput.value = '07:00';
-            endTimeInput.value = '16:00';
-            lunchStartInput.value = '12:00'; // Set lunch start time to 12:00 PM
-            lunchEndInput.value = '13:00';   // Set lunch end time to 1:00 PM
-        }
-    });
-}
-
 
 function initializeTimeDropdowns() {
     const timeEntryTable = document.getElementById('time-entry-table');
@@ -349,20 +280,10 @@ function handleKeyNavigation(event) {
     const key = event.key;
     const input = event.target;
 
-    // Allow left and right arrow navigation for all input types
-    if (key === 'ArrowRight') {
+    if (key === 'ArrowDown' || key === 'ArrowRight') {
         navigateToNextField(input);
-    } else if (key === 'ArrowLeft') {
+    } else if (key === 'ArrowUp' || key === 'ArrowLeft') {
         navigateToPreviousField(input);
-    }
-    
-    // Prevent up and down arrow navigation for number inputs
-    if (input.type !== 'number') {
-        if (key === 'ArrowDown') {
-            navigateToNextField(input);
-        } else if (key === 'ArrowUp') {
-            navigateToPreviousField(input);
-        }
     }
 }
 
@@ -399,10 +320,9 @@ function getDayNumberFromField(field) {
 }
 
 function isFieldInSkippedDay(field) {
-    const inputs = Array.from(document.querySelectorAll('input'));
-    const fieldIndex = inputs.indexOf(field);
-    const indexesToSkip = [4, 5]; // Input indexes to skip
-    return indexesToSkip.includes(fieldIndex);
+    const dayNumber = getDayNumberFromField(field);
+    const fieldsToSkip = [4, 5]; // Days to skip
+    return fieldsToSkip.includes(dayNumber);
 }
 
 function handleTimeInput(event) {
@@ -421,23 +341,6 @@ function updateHeaderText() {
         : 'Personal Hours expire in';
 }
 
-function toggleNavbar(isLoading) {
-    const loadingBar = document.getElementById('loading-bar-container');
-    const navbar = document.getElementById('navbar');
-
-    if (isLoading) {
-        loadingBar.style.display = 'block';
-        navbar.style.display = 'none';
-    } else {
-        loadingBar.style.display = 'none';
-        navbar.style.display = 'block';
-    }
-}
-
-function setLoadingState(isLoading) {
-    toggleNavbar(isLoading); // Adjust the navbar and loading bar visibility accordingly
-}
-
 // Event listeners for logout and email navigation
 document.getElementById('logout-button').addEventListener('click', function(event) {
     event.preventDefault();
@@ -450,18 +353,7 @@ document.getElementById('user-email').addEventListener('click', function() {
     window.location.href = 'supervisor.html';
 });
 
-document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-        if (this.checked) {
-            console.log(`Checkbox ${this.id} was checked and rotated.`);
-        } else {
-            console.log(`Checkbox ${this.id} was unchecked.`);
-        }
-    });
-});
 
-</script>
-
-
+    </script>
 </body>
 </html>
