@@ -144,6 +144,8 @@ document.addEventListener("DOMContentLoaded", function() {
             await clearDataInAirtable();
             resetFormFields();
             showMessage('Data cleared and form reset successfully!');
+            window.location.reload(); // Refresh if user clicks "Yes"
+
         } else {
             showMessage('Data clearing canceled.');
         }
@@ -218,6 +220,8 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 const responseData = await response.json();
                 console.log('Data successfully cleared in Airtable:', responseData);
+
+                     // Refresh the data on the page to reflect changes
             }
         } catch (error) {
             console.error('Error clearing data:', error);
