@@ -344,15 +344,53 @@ document.addEventListener("DOMContentLoaded", async function () {
         allChecked = !allChecked;
         checkAllButton.textContent = allChecked ? "Deselect All" : "Select All";
     }
-
     async function submitChanges() {
         for (const [recordId, changes] of Object.entries(pendingChanges)) {
             await updateApprovalStatus(recordId, changes);
         }
-        alert('Changes submitted successfully.');
+    
+        // Display a centered success message
+        displayMessage('Changes submitted successfully.', 'success');
+    
         pendingChanges = {}; // Clear pending changes after submission
         clearHighlights(); // Clear all highlights after submission
+    
+        // Give the user 2 seconds to read the message before refreshing
+        setTimeout(() => {
+            window.location.reload(); // Refresh the whole page
+        }, 2000); // 2000 milliseconds = 2 seconds
     }
+    
+    // Function to display a centered message on the page
+    function displayMessage(text, type) {
+        const messageContainer = document.createElement('div');
+        messageContainer.className = `message ${type}`;
+        messageContainer.textContent = text;
+    
+        // Center the message on the screen
+        messageContainer.style.position = 'fixed';
+        messageContainer.style.top = '50%';
+        messageContainer.style.left = '50%';
+        messageContainer.style.transform = 'translate(-50%, -50%)';
+        messageContainer.style.padding = '10px 20px';
+        messageContainer.style.backgroundColor = '#4CAF50'; // Success green color
+        messageContainer.style.color = '#fff';
+        messageContainer.style.borderRadius = '5px';
+        messageContainer.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+        messageContainer.style.zIndex = '1000';
+    
+        document.body.appendChild(messageContainer);
+    
+        // Remove the message after a few seconds (optional)
+        setTimeout(() => {
+            messageContainer.remove();
+        }, 3000); // Adjust the duration as needed
+    }
+    
+   
+    
+    
+    
 
     async function updateApprovalStatus(recordId, changes) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
