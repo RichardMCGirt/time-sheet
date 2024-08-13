@@ -384,7 +384,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Remove the message after a few seconds (optional)
         setTimeout(() => {
             messageContainer.remove();
-        }, 3000); // Adjust the duration as needed
+        }, 3500); // Adjust the duration as needed
     }
     
    

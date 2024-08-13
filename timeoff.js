@@ -1,7 +1,8 @@
+
 document.addEventListener('DOMContentLoaded', () => {
-    const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
-    const baseId = 'app9gw2qxhGCmtJvW';
-    const tableId = 'tbl3PB88KkGdPlT5x';
+    const apiKey = 'patdCNFzzxpHXs14G.892585ccb188d17d06078c040fedb939583a082a9f7c84ca3063eae2024a998b';
+    const baseId = 'appzys5CNiZIV1ihx';
+    const tableId = 'tblKBCKzmHgoPClac'; 
 
     const userEmail = localStorage.getItem('userEmail');
     let records = [];
@@ -222,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     
         const formData = {
-            'Full Name': document.getElementById('employeeName').value,
             [`Time off Start Date ${nextIndex}`]: startDate,
             [`Time off Start Time ${nextIndex}`]: startTime,
             [`Time off End Date ${nextIndex}`]: endDate,
@@ -521,34 +521,43 @@ document.addEventListener('DOMContentLoaded', () => {
         const ptoInput = document.getElementById('pto-input');
         const personalHoursInput = document.getElementById('personal-hours-input');
         const holidayHoursInput = document.getElementById('holiday-hours-input'); // Assuming there's an input for holiday hours
-
-        const availablePTO = parseFloat(document.getElementById('available-pto').textContent);
-        const availablePersonalHours = parseFloat(document.getElementById('available-personal-hours').textContent);
-
-        ptoInput.addEventListener('input', function() {
-            if (parseFloat(ptoInput.value) > availablePTO) {
-                ptoInput.setCustomValidity('You cannot request more PTO than available.');
-            } else {
-                ptoInput.setCustomValidity('');
-            }
-        });
-
-        personalHoursInput.addEventListener('input', function() {
-            if (parseFloat(personalHoursInput.value) > availablePersonalHours) {
-                personalHoursInput.setCustomValidity('You cannot request more personal hours than available.');
-            } else {
-                personalHoursInput.setCustomValidity('');
-            }
-        });
-
-        holidayHoursInput.addEventListener('input', function() {
-            if (parseFloat(holidayHoursInput.value) > 40) {
-                holidayHoursInput.setCustomValidity('Holiday hours cannot be greater than 40.');
-            } else {
-                holidayHoursInput.setCustomValidity('');
-            }
-        });
+    
+        const availablePTOElement = document.getElementById('available-pto');
+        const availablePersonalHoursElement = document.getElementById('available-personal-hours');
+    
+        const availablePTO = availablePTOElement ? parseFloat(availablePTOElement.textContent) : 0;
+        const availablePersonalHours = availablePersonalHoursElement ? parseFloat(availablePersonalHoursElement.textContent) : 0;
+    
+        if (ptoInput) {
+            ptoInput.addEventListener('input', function() {
+                if (parseFloat(ptoInput.value) > availablePTO) {
+                    ptoInput.setCustomValidity('You cannot request more PTO than available.');
+                } else {
+                    ptoInput.setCustomValidity('');
+                }
+            });
+        }
+    
+        if (personalHoursInput) {
+            personalHoursInput.addEventListener('input', function() {
+                if (parseFloat(personalHoursInput.value) > availablePersonalHours) {
+                    personalHoursInput.setCustomValidity('You cannot request more personal hours than available.');
+                } else {
+                    personalHoursInput.setCustomValidity('');
+                }
+            });
+        }
+    
+        if (holidayHoursInput) {
+            holidayHoursInput.addEventListener('input', function() {
+                if (parseFloat(holidayHoursInput.value) > 40) {
+                    holidayHoursInput.setCustomValidity('Holiday hours cannot be greater than 40.');
+                } else {
+                    holidayHoursInput.setCustomValidity('');
+                }
+            });
+        }
     }
-
+    
     validateHours();
 });
