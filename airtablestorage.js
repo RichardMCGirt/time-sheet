@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log('Sending data to Airtable...', data);
         const endpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}`;
         const searchEndpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}?filterByFormula=AND({Email}="${userEmail}")`;
-
+    
         try {
             const searchResponse = await fetch(searchEndpoint, {
                 headers: {
@@ -98,23 +98,24 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             const searchData = await searchResponse.json();
             console.log('Search data:', searchData);
-
+    
             if (!searchData.records || searchData.records.length === 0) {
                 throw new Error('No matching record found to update.');
             }
-
+    
             const recordId = searchData.records[0].id;
             console.log('Existing record found with ID:', recordId);
-
+    
+            // Make sure `record` is properly defined
             const record = {
                 fields: {
                     ...data,
                     "email": userEmail
                 }
             };
-
+    
             console.log('Payload being sent to Airtable:', JSON.stringify(record));
-
+    
             const response = await fetch(`${endpoint}/${recordId}`, {
                 method: 'PATCH',
                 headers: {
@@ -123,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 },
                 body: JSON.stringify(record)
             });
-
+    
             if (!response.ok) {
                 const errorResponse = await response.json();
                 console.error('Error response from Airtable:', errorResponse);
@@ -137,6 +138,7 @@ document.addEventListener("DOMContentLoaded", function() {
             throw error;
         }
     }
+    
 
     document.getElementById('clear-button').addEventListener('click', async () => {
         const userConfirmed = await showModal();
@@ -191,6 +193,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const recordId = searchData.records[0].id;
             console.log('Existing record found with ID:', recordId);
     
+            // Make sure `record` is properly defined
             const record = {
                 fields: {
                     ...Object.fromEntries(
@@ -224,6 +227,7 @@ document.addEventListener("DOMContentLoaded", function() {
             throw error;
         }
     }
+    
     
     function resetFormFields() {
         for (let i = 1; i <= 7; i++) {
