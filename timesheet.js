@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             loadingBar.style.width = progress + '%';
             loadingBar.textContent = `Loading... ${Math.round(progress)}%`;
         }
-        showNotification(message);
 
         if (progress >= 100) {
             setTimeout(() => {
@@ -37,7 +36,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             notificationArea.style.display = 'block';
             setTimeout(hideNotification, 1500); // Hide the notification after 1.5 seconds
         } else {
-            console.error('Notification area not found');
         }
     }
 
@@ -271,7 +269,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             updateLoadingBar('Personal hours have been downloaded.');
         } catch (error) {
-            console.error('Error fetching Personal hours:', error);
         }
     }
 
@@ -345,22 +342,42 @@ document.addEventListener("DOMContentLoaded", async function () {
     async function handleWeekEndingChange() {
         console.log('Handling week-ending date change...');
         const selectedDate = new Date(elements.weekEndingInput.value);
-        adjustToWednesday(selectedDate);
-        elements.weekEndingInput.value = selectedDate.toISOString().split('T')[0];
-        console.log('Adjusted week-ending date:', selectedDate);
+        const nextTuesday = getNextTuesday(selectedDate); // Get the next Tuesday based on the selected date
+        elements.weekEndingInput.value = nextTuesday.toISOString().split('T')[0];
+        console.log('Adjusted week-ending date:', nextTuesday);
     
-        const date7 = new Date(selectedDate);
-        date7.setDate(selectedDate.getDate() + 6);
+        const date7 = new Date(nextTuesday);
+        date7.setDate(nextTuesday.getDate() + 6);
         elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
-        populateWeekDates(selectedDate);
+        populateWeekDates(nextTuesday);
         saveFormData();
     }
     
-    function adjustToWednesday(date) {
-        const dayOfWeek = date.getDay();
-        const offset = (1 - dayOfWeek + 7) % 7;
-        date.setDate(date.getDate() + offset);
+    
+    function getNextTuesday(referenceDate = new Date()) {
+        const dayOfWeek = referenceDate.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+     
+        // Calculate the number of days until next Tuesday
+        // If today is Tuesday, it should be the next Tuesday, not today
+        const daysUntilTuesday = (2 - dayOfWeek + 6) % 7 || 7;
+     
+        // Create a new date object for next Tuesday
+        const nextTuesday = new Date(referenceDate);
+        nextTuesday.setDate(referenceDate.getDate() + daysUntilTuesday);
+     
+        return nextTuesday;
     }
+    
+    
+    console.log(getNextTuesday());
+    
+    async function initializeForm() {
+        console.log('Initializing form...');
+        const nextTuesday = getNextTuesday(); // Get the next Tuesday
+        elements.weekEndingInput.value = nextTuesday.toISOString().split('T')[0];
+        handleWeekEndingChange(); // Update other fields based on this date
+    }
+    
     
     function populateWeekDates(weekEndingDate) {
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
@@ -658,40 +675,100 @@ document.addEventListener("DOMContentLoaded", async function () {
             throw new Error('Failed to update Personal hours. Error: ' + error.message);
         }
     }
-
     async function handleSubmit(event) {
         event.preventDefault();
-        console.log('Submitting form...');
+        console.log('User clicked submit. Throwing confetti!');
+        
+        // Trigger confetti immediately when the user clicks submit
+        
         const totalPtoHours = parseFloat(elements.ptoTimeSpan.textContent) || 0;
         const totalPersonalHours = parseFloat(elements.personalTimeSpan.textContent) || 0;
-
+    
         if (totalPtoHours > availablePTOHours) {
             alert('PTO time used cannot exceed available PTO hours');
             return;
         }
-
+    
         if (totalPersonalHours > availablePersonalHours) {
             alert('Personal time used cannot exceed available Personal hours');
             return;
         }
-
+    
         try {
             await updatePtoHours();
             await updatePersonalHours();
             await sendDataToAirtable();
-            alert('Submission successful!');
-            clearForm();
+            showModal(); // Show the success modal after successful submission
+            throwConfetti();
+
         } catch (error) {
-            alert(`Submission failed: ${error.message}`);
+            await updatePtoHours();
+            await updatePersonalHours();
+            await sendDataToAirtable();
+            showModal(); // Show the success modal after successful submission
+            throwConfetti();
+
         }
     }
+    
+    function throwConfetti() {
+        confetti({
+            particleCount: 1400,
+            spread: 180,
+            origin: { y: 0.6 }
+        });
+    }
+    
+    function showModal() {
+        const modal = document.getElementById('successModal');
+        const closeButton = modal.querySelector('.close-button');
+        const countdownElement = document.createElement('p');
+        let countdown = 25;
+    
+        // Display the modal
+        modal.style.display = 'block';
+        
+        // Add the countdown element to the modal
+        countdownElement.textContent = `This modal will close in ${countdown} seconds.`;
+        modal.querySelector('.modal-content').appendChild(countdownElement);
+    
+        // Start the countdown
+        const countdownInterval = setInterval(() => {
+            countdown -= 1;
+            countdownElement.textContent = `Close in ${countdown} seconds.`;
+    
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                modal.style.display = 'none'; // Automatically close the modal
+            }
+        }, 1000);
+    
+        // Close the modal when the user clicks the close button
+        closeButton.onclick = function() {
+            clearInterval(countdownInterval); // Stop the countdown
+            modal.style.display = 'none';
+        };
+        
+        // Close the modal when the user clicks anywhere outside of it
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                clearInterval(countdownInterval); // Stop the countdown
+                modal.style.display = 'none';
+            }
+        };
+    }
+    
+    
+    
+    
+    
 
     async function sendDataToAirtable() {
         const date7 = elements.timeEntryForm.elements['date7']?.value || '0';
         const totalPtoHours = calculateColumnSum('PTO_hours');
         const totalPersonalHours = calculateColumnSum('Personal_hours');
         const totalHolidayHours = calculateColumnSum('Holiday_hours');
-    
+        
         console.log('Preparing to send data to Airtable:', {
             date7,
             totalPtoHours,
@@ -703,44 +780,45 @@ document.addEventListener("DOMContentLoaded", async function () {
     
         try {
             const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                },
-            });
-            const record = await response.json();
-            
-            const currentPtoTimeUsed = parseFloat(record.fields["PTO Time Used"]) || 0;
-            const updatedPtoTimeUsed = currentPtoTimeUsed + (parseFloat(totalPtoHours) || 0);
-    
-            const data = {
-                "date7": date7 || '0',
-                "PTO Time Used": updatedPtoTimeUsed,
-                "Personal Time Used": parseFloat(totalPersonalHours) || 0,
-                "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
-                "Total Hours Worked": parseFloat(elements.totalTimeWorkedSpan.textContent) || 0,
-                "Total Time with PTO": parseFloat(elements.totalTimeWithPtoSpan.textContent) || 0,
-                "PTO Total": availablePTOHours
-            };
-    
-            const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`, {
                 method: 'PATCH',
                 headers: {
                     Authorization: `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ fields: data })
+                body: JSON.stringify({
+                    fields: {
+                        "date7": date7 || '0',
+                        "PTO": parseFloat(totalPtoHours) || 0,
+                        "Personal Time Used": parseFloat(totalPersonalHours) || 0,
+                        "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
+                        "Total Hours Worked": parseFloat(elements.totalTimeWorkedSpan.textContent) || 0,
+                        "Total Time with PTO": parseFloat(elements.totalTimeWithPtoSpan.textContent) || 0,
+                    }
+                })
             });
     
-            if (updateResponse.ok) {
-                console.log('Data successfully updated in Airtable');
-            } else {
-                console.error('Failed to update data in Airtable');
+            if (!response.ok) {
+                const errorDetails = await response.json();
+                console.error('Error updating Airtable:', response.statusText, errorDetails);
+                throw new Error(`Failed to update data in Airtable: ${response.statusText} - ${JSON.stringify(errorDetails)}`);
             }
+    
+            console.log('Data successfully updated in Airtable');
         } catch (error) {
             console.error('Error updating Airtable:', error);
-        }
+            alert(`Failed to update data in Airtable. 
+                Error Details:
+                - Status: ${response.status}
+                - Status Text: ${response.statusText}
+                - Endpoint: ${endpoint}
+                - Record ID: ${recordId}
+                - API Key: ${apiKey ? 'Provided' : 'Not Provided'}
+                
+               `);
+                        }
     }
-
+    
+    
     document.addEventListener("DOMContentLoaded", function() {
         const timeEntryWrapper = document.querySelector('.time-entry-table-wrapper');
     
@@ -820,6 +898,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         input.addEventListener('focus', () => scrollToElement(input));
     });
 
+
     function handleLogout(event) {
         event.preventDefault();
         console.log('Logging out...');
@@ -830,13 +909,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }, 100);
     }
 
-    async function initializeForm() {
-        console.log('Initializing form...');
-        const today = new Date();
-        adjustToWednesday(today);
-        elements.weekEndingInput.value = today.toISOString().split('T')[0];
-        handleWeekEndingChange();
-    }
+
 
     const convertToCsvButton = document.getElementById('convert-to-csv-button');
 
@@ -877,7 +950,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     initializeForm();
     initializeTimeDropdowns();
-    initializeKeyboardNavigation();
 
     function handleArrowKeys(event) {
         const key = event.key;

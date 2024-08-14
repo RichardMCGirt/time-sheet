@@ -44,6 +44,7 @@
                 <li><a href="timeoff.html">Request Time Off</a></li>
             </ul>
         </nav>
+        <div id="message-container"></div>
 
         <div id="loading-bar-container">
             <div id="loading-bar">
@@ -54,7 +55,7 @@
         <section id="time-entry" class="time-entry">
             <form id="time-entry-form" class="time-entry-form">
                 <div class="form-group">
-                    <label for="week-ending" class="Week-Ending" style="margin-right: 0px;">Week Ending (Wednesday):</label>
+                    <label for="week-ending" class="Week-Ending" style="margin-right: 0px;">Week Ending (Tuesday):</label>
                     <input type="date" id="week-ending" name="week_ending" required style="font-size: 20px; margin-right: 0px; max-width: fit-content;"  width="20px">
                     
                     <label for="approval-status" class="approved-label"  style="font-size: 20px; margin-right: 50px;"></label>
@@ -243,13 +244,14 @@
 <script src="huntergong.js"></script>
 <script src="airtablestorage.js"></script>
 <script src="overtimeCalculation.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
  document.addEventListener("DOMContentLoaded", function() {
     initializeTimeDropdowns();
-    initializeKeyboardNavigation();
     updateHeaderText();
 });
 
