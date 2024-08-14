@@ -232,6 +232,12 @@ document.addEventListener("DOMContentLoaded", async function () {
                     approveCheckbox.addEventListener('change', handleCheckboxChange);
                 }
 
+                // Bind the blur event to the "Not Approved Reason" text input
+                const notApprovedInput = table.querySelector('.not-approved-checkbox');
+                if (notApprovedInput) {
+                    notApprovedInput.addEventListener('blur', handleTextInputChange);
+                }
+
                 if (supervisorEmail !== 'katy@vanirinstalledsales.com' && fields['Approved']) {
                     table.style.display = 'none'; // Hide approved rows for non-Katy users
                 }
@@ -294,6 +300,29 @@ document.addEventListener("DOMContentLoaded", async function () {
                 table.style.display = '';  // For Katy, do not hide the table
             }
         }
+    }
+
+    function handleTextInputChange(event) {
+        const input = event.target;
+        const recordId = input.getAttribute('data-record-id');
+        const notApprovedReason = input.value.trim(); // Get the current value of the input
+
+        console.log(`Text input changed: Record ID=${recordId}, Not Approved Reason=${notApprovedReason}`);
+
+        // Validate against conflicting checkbox
+        const checkbox = timesheetsBody.querySelector(`.approve-checkbox[data-record-id="${recordId}"]`);
+        if (checkbox && checkbox.checked && notApprovedReason) {
+            alert("Please uncheck the 'Approved' checkbox if you enter a reason in the 'Not Approved' text input.");
+            input.value = ''; // Clear the text input
+            console.log('Conflict detected, clearing Not Approved input');
+            return;
+        }
+
+        // Update the Airtable record with the new Not Approved reason
+        updateApprovalStatus(recordId, null, notApprovedReason);
+
+        // Show a success message
+        displaySuccessMessage("Record successfully updated");
     }
 
     async function updateApprovalStatus(recordId, isApproved, isNotApproved) {
