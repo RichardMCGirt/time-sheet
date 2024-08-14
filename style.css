@@ -604,6 +604,10 @@ color: #16a085;  }
     color: white;
 }
 
+p{ 
+    color: white;
+}
+
 .close-button {
     color: #aaa;
     float: right;

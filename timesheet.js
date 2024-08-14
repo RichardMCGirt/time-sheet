@@ -598,12 +598,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     async function updatePtoHours() {
         console.log('Updating PTO hours...');
         const usedPtoHoursValue = parseFloat(elements.ptoTimeSpan.textContent) || 0;
+        console.log('Total PTO hours:', usedPtoHoursValue);
     
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
         console.log('Endpoint for update:', endpoint);
     
         try {
-            // Fetch the current PTO value
+            // Step 1: Fetch the current value of PTO from Airtable
             const fetchResponse = await fetch(endpoint, {
                 method: 'GET',
                 headers: {
@@ -615,22 +616,26 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (!fetchResponse.ok) throw new Error(`Failed to fetch current PTO hours: ${fetchResponse.statusText}`);
     
             const fetchData = await fetchResponse.json();
-            const currentPtoHours = parseFloat(fetchData.fields['PTO']) || 0;
+            console.log('Fetched data:', fetchData);
+            
+            // Fetch and parse the current PTO hours
+            const currentPtoHours = parseFloat(fetchData.fields['PTO']);
+            console.log('Current PTO hours fetched from Airtable:', currentPtoHours);
     
-            // Calculate new PTO value by adding the used PTO hours
+            if (isNaN(currentPtoHours)) throw new Error(`Invalid PTO hours value retrieved from Airtable: ${fetchData.fields['PTO']}`);
+    
+            // Step 2: Add the used PTO hours value to the current PTO hours
             const newPtoHoursValue = currentPtoHours + usedPtoHoursValue;
-            console.log('Current PTO hours:', currentPtoHours);
-            console.log('Used PTO hours value:', usedPtoHoursValue);
-            console.log('New PTO hours value:', newPtoHoursValue);
+            console.log('New PTO hours value to update:', newPtoHoursValue);
     
-            // Update the PTO field with the new value
+            // Step 3: Patch the updated total back to Airtable
             const updateResponse = await fetch(endpoint, {
                 method: 'PATCH',
                 headers: {
                     Authorization: `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ fields: { 'PTO': newPtoHoursValue } })
+                body: JSON.stringify({ fields: { 'PTO': newPtoHoursValue } })  // Send the new total as a number
             });
     
             const updateResponseData = await updateResponse.json();
@@ -643,6 +648,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             throw new Error('Failed to update PTO hours. Error: ' + error.message);
         }
     }
+    
+    
+    
+    
+    
     
 
     async function updatePersonalHours() {
@@ -701,15 +711,27 @@ document.addEventListener("DOMContentLoaded", async function () {
             showModal(); // Show the success modal after successful submission
             throwConfetti();
 
+             // Refresh the page after 2 seconds
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
         } catch (error) {
-            await updatePtoHours();
-            await updatePersonalHours();
-            await sendDataToAirtable();
-            showModal(); // Show the success modal after successful submission
-            throwConfetti();
-
+            // Extracting detailed error information
+            const errorMessage = error.message || 'Unknown error';
+            const errorName = error.name || 'Error';
+            const errorStack = error.stack || 'No stack trace available';
+            
+            // Log detailed error information to the console
+            console.error(`Error Name: ${errorName}`);
+            console.error(`Error Message: ${errorMessage}`);
+            console.error(`Error Stack: ${errorStack}`);
+            
+            // Show a detailed alert to the user
+            alert(`An error occurred while submitting your data. Please try again.\n\nError Details:\n- Name: ${errorName}\n- Message: ${errorMessage}\n- See console for more details.`);
         }
     }
+    
+    
     
     function throwConfetti() {
         confetti({
@@ -799,7 +821,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 body: JSON.stringify({
                     fields: {
                         "date7": date7 || '0',
-                        "PTO": parseFloat(totalPtoHours) || 0,
+                        "PTO Time Used": parseFloat(totalPtoHours) || 0,
                         "Personal Time Used": parseFloat(totalPersonalHours) || 0,
                         "Holiday Hours Used": parseFloat(totalHolidayHours) || 0,
                         "Total Hours Worked": parseFloat(elements.totalTimeWorkedSpan.textContent) || 0,
