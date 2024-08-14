@@ -342,7 +342,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     async function handleWeekEndingChange() {
         console.log('Handling week-ending date change...');
         const selectedDate = new Date(elements.weekEndingInput.value);
-        adjustToWednesday(selectedDate);
+        getNextTuesday(selectedDate);
         elements.weekEndingInput.value = selectedDate.toISOString().split('T')[0];
         console.log('Adjusted week-ending date:', selectedDate);
     
@@ -353,21 +353,22 @@ document.addEventListener("DOMContentLoaded", async function () {
         saveFormData();
     }
     
-    function adjustToWednesday(date) {
-        // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-        const dayOfWeek = date.getDay();
+    function getNextTuesday() {
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
     
-        // Check if the current day is Tuesday (2)
-        if (dayOfWeek === 2) {
-            // If it's Tuesday, return the current date
-            return date;
-        } else {
-            // Otherwise, return the date 7 days ahead
-            let newDate = new Date(date);
-            newDate.setDate(date.getDate() + 7);
-            return newDate;
-        }
+        // Calculate the number of days until next Tuesday
+        const daysUntilTuesday = (9 - dayOfWeek) % 7;
+    
+        // Add the number of days until Tuesday to today's date
+        const nextTuesday = new Date(today);
+        nextTuesday.setDate(today.getDate() + daysUntilTuesday);
+
     }
+    
+    console.log(getNextTuesday());
+    
+        
     
     function populateWeekDates(weekEndingDate) {
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
