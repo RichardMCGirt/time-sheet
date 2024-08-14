@@ -358,7 +358,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const dayOfWeek = today.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
     
         // Calculate the number of days until next Tuesday
-        const daysUntilTuesday = (9 - dayOfWeek) % 7;
+        const daysUntilTuesday = (8 - dayOfWeek) % 7;
     
         // Add the number of days until Tuesday to today's date
         const nextTuesday = new Date(today);
