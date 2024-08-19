@@ -396,7 +396,7 @@ body.dark-mode .toggle-button:hover {
     width: 100%; /* Use full width of the container */
     max-width: 95%; /* Prevent overflow */
     border-collapse: collapse;
-    font-size: 14px; /* Reduce font size */
+    font-size: 18px; /* Reduce font size */
     margin: 20px auto;
 }
 
@@ -413,6 +413,7 @@ body.dark-mode .toggle-button:hover {
 
 .time-entry-table td {
     background-color: #34495e;
+    font-size: 16px;
 }
 
 .highlight-row {
@@ -593,6 +594,10 @@ color: #16a085;  }
     background-color: rgba(0,0,0,0.5); /* Black with opacity */
 }
 
+p {
+    color: white;
+}
+
 .modal-content {
     background-color: black;
     margin: 15% auto; /* 15% from the top and centered */
@@ -601,10 +606,6 @@ color: #16a085;  }
     width: 80%; /* Could be more or less, depending on screen size */
     max-width: 500px;
     text-align: center;
-    color: white;
-}
-
-p{ 
     color: white;
 }
 
