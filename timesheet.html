@@ -354,14 +354,15 @@ function handleKeyNavigation(event) {
         navigateToPreviousField(input);
     }
     
-    // Prevent up and down arrow navigation for number inputs
-    if (input.type !== 'number') {
-        if (key === 'ArrowDown') {
-            navigateToNextField(input);
-        } else if (key === 'ArrowUp') {
-            navigateToPreviousField(input);
-        }
+// Prevent up and down arrow navigation for number and time inputs
+if (input.type !== 'number' && input.type !== 'time') {
+    if (key === 'ArrowDown') {
+        navigateToNextField(input);
+    } else if (key === 'ArrowUp') {
+        navigateToPreviousField(input);
     }
+}
+
 }
 
 function navigateToNextField(currentField) {

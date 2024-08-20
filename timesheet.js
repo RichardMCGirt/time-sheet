@@ -716,7 +716,7 @@ document.addEventListener("DOMContentLoaded", async function () {
              // Refresh the page after 2 seconds
         setTimeout(() => {
             window.location.reload();
-        }, 5000);
+        }, 30000);
         } catch (error) {
             // Extracting detailed error information
             const errorMessage = error.message || 'Unknown error';
