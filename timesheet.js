@@ -342,7 +342,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     async function handleWeekEndingChange() {
         console.log('Handling week-ending date change...');
         const selectedDate = new Date(elements.weekEndingInput.value);
-        const nextTuesday = getNextTuesday(selectedDate); // Get the next Tuesday based on the selected date
         elements.weekEndingInput.value = nextTuesday.toISOString().split('T')[0];
         console.log('Adjusted week-ending date:', nextTuesday);
     
@@ -353,20 +352,23 @@ document.addEventListener("DOMContentLoaded", async function () {
         saveFormData();
     }
     
-    
     function getNextTuesday(referenceDate = new Date()) {
         const dayOfWeek = referenceDate.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
-     
-        // Calculate the number of days until next Tuesday
-        // If today is Tuesday, it should be the next Tuesday, not today
-        const daysUntilTuesday = (2 - dayOfWeek + 6) % 7 || 7;
-     
-        // Create a new date object for next Tuesday
+    
+        // Calculate the number of days until the next Tuesday
+        // If today is Tuesday, it should return today
+        const daysUntilTuesday = dayOfWeek === 1 ? 0 : (1 - dayOfWeek + 7) % 7;
+        
+        // Create a new date object for the next Tuesday
         const nextTuesday = new Date(referenceDate);
         nextTuesday.setDate(referenceDate.getDate() + daysUntilTuesday);
-     
+        
         return nextTuesday;
     }
+    
+    // Example usage:
+    console.log(getNextTuesday(new Date())); // Returns 8/20/2024 if today is 8/20/2024
+    
     
     
     console.log(getNextTuesday());
