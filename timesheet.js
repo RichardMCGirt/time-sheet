@@ -747,55 +747,65 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
     
-    function showModal() {
-        const modal = document.getElementById('successModal');
-        if (!modal) {
-            console.error('Modal element not found');
-            return;
+    let countdownInterval; // Declare countdownInterval in a higher scope to track the interval
+
+function showModal() {
+    const modal = document.getElementById('successModal');
+    if (!modal) {
+        console.error('Modal element not found');
+        return;
+    }
+
+    const closeButton = modal.querySelector('.close-button');
+    if (!closeButton) {
+        console.error('Close button not found');
+        return;
+    }
+
+    // Clear any existing interval to prevent duplicates
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+
+    const countdownElement = document.createElement('p');
+    let countdown = 25;
+
+    // Display the modal
+    modal.style.display = 'block';
+
+    // Add the countdown element to the modal
+    countdownElement.textContent = `This modal will close in ${countdown} seconds.`;
+    modal.querySelector('.modal-content').appendChild(countdownElement);
+
+    // Start the countdown
+    countdownInterval = setInterval(() => {
+        countdown -= 1;
+        countdownElement.textContent = `Close in ${countdown} seconds.`;
+
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            modal.style.display = 'none'; // Automatically close the modal
+            window.location.reload(); // Refresh the page
         }
-    
-        const closeButton = modal.querySelector('.close-button');
-        if (!closeButton) {
-            console.error('Close button not found');
-            return;
-        }
-    
-        const countdownElement = document.createElement('p');
-        let countdown = 25;
-    
-        // Display the modal
-        modal.style.display = 'block';
-    
-        // Add the countdown element to the modal
-        countdownElement.textContent = `This modal will close in ${countdown} seconds.`;
-        modal.querySelector('.modal-content').appendChild(countdownElement);
-    
-        // Start the countdown
-        const countdownInterval = setInterval(() => {
-            countdown -= 1;
-            countdownElement.textContent = `Close in ${countdown} seconds.`;
-    
-            if (countdown <= 0) {
-                clearInterval(countdownInterval);
-                modal.style.display = 'none'; // Automatically close the modal
-            }
-        }, 1000);
-    
-        // Close the modal when the user clicks the close button
-        closeButton.onclick = function() {
+    }, 1000);
+
+    // Close the modal when the user clicks the close button
+    closeButton.onclick = function() {
+        clearInterval(countdownInterval); // Stop the countdown
+        modal.style.display = 'none';
+        window.location.reload(); // Refresh the page
+    };
+
+    // Close the modal when the user clicks anywhere outside of it
+    window.onclick = function(event) {
+        if (event.target === modal) {
             clearInterval(countdownInterval); // Stop the countdown
             modal.style.display = 'none';
-        };
-    
-        // Close the modal when the user clicks anywhere outside of it
-        window.onclick = function(event) {
-            if (event.target === modal) {
-                clearInterval(countdownInterval); // Stop the countdown
-                modal.style.display = 'none';
-            }
-        };
-    }
-    
+            window.location.reload(); // Refresh the page
+        }
+    };
+}
+
     
     
     
