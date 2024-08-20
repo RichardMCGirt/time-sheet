@@ -624,7 +624,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             console.log('Fetched data:', fetchData);
             
             // Fetch and parse the current PTO hours
-            const currentPtoHours = parseFloat(fetchData.fields['PTO']);
+            const currentPtoHours = parseFloat(fetchData.fields['PTO']) || 0; // Default to 0 if undefined
             console.log('Current PTO hours fetched from Airtable:', currentPtoHours);
     
             if (isNaN(currentPtoHours)) throw new Error(`Invalid PTO hours value retrieved from Airtable: ${fetchData.fields['PTO']}`);
@@ -653,6 +653,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             throw new Error('Failed to update PTO hours. Error: ' + error.message);
         }
     }
+    
     
     
     
