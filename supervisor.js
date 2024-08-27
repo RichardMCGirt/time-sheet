@@ -593,12 +593,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     function formatDate(dateEnding) {
         if (!dateEnding) {
             console.warn('Empty date field detected, skipping row.');
-            return null;
+            return "";
         }
         const dateObj = new Date(dateEnding);
         if (isNaN(dateObj.getTime())) {
             console.warn(`Invalid date: ${dateEnding}`);
-            return null;
+            return "";
         }
         return dateObj.toISOString().split('T')[0].replace(/-/g, '');
     }
