@@ -546,14 +546,21 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (employeeNumber) {
                 const formattedEmployeeNumber = formatEmployeeNumber(employeeNumber);
                 const rows = table.querySelectorAll('tbody tr');
-        
+    
+                // Fetch the date from date7 for the employee
+                const dateEndingField = rows[0].querySelector('input[name="dateEnding"]');
+                const formattedDate = formatDate(dateEndingField.value);
+    
+                // Add the header row before processing timesheets for the employee
+                csvContent += `1,${formattedEmployeeNumber},${formattedDate},R\n`;
+    
                 let lineNumber = 1; // Start the line number at 1 for each employee
-        
+            
                 rows.forEach(row => {
-                    const formattedDate = formatDate(row.querySelector('input[name="dateEnding"]').value);
-        
-                    if (formattedDate) {
-                        const csvRows = generateCsvRows(row, formattedEmployeeNumber, formattedDate, lineNumber);
+                    const formattedDateRow = formatDate(row.querySelector('input[name="dateEnding"]').value);
+            
+                    if (formattedDateRow) {
+                        const csvRows = generateCsvRows(row, formattedEmployeeNumber, formattedDateRow, lineNumber);
                         csvContent += csvRows;
                         lineNumber = (lineNumber % 8) + 1; // Increment and reset line number after reaching 8
                     }
@@ -565,6 +572,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         
         downloadCsv(csvContent, 'Corporate_timesheets.csv');
     }
+    
     
     function generateCsvHeader() {
         console.log('Generating CSV header');
@@ -595,45 +603,45 @@ document.addEventListener("DOMContentLoaded", async function () {
         return dateObj.toISOString().split('T')[0].replace(/-/g, '');
     }
     
-    function generateCsvRows(row, formattedEmployeeNumber, formattedDate, lineNumber) {
-        const totalHours = parseFloat(row.querySelector('input[name="total_hours"]').value || 0);
-        const giftedHours = parseFloat(row.querySelector('input[name="gifted_hours"]').value || 0);
-        const ptoHours = parseFloat(row.querySelector('input[name="pto_hours"]').value || 0);
-        const personalHours = parseFloat(row.querySelector('input[name="personal_hours"]').value || 0);
-        const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
-        const overtimeHours = Math.max(totalHours - 40, 0);
-        let csvRows = '';
-    
-        // Only add rows with RECTYPE 2
-        if (totalHours > 0) {
-            const regularHours = Math.min(totalHours, 40);
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0001', regularHours, lineNumber++);
-        }
-    
-        if (overtimeHours > 0) {
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0002', overtimeHours, lineNumber++);
-        }
-    
-        if (giftedHours > 0) {
-            const cappedGiftedHours = Math.min(giftedHours, 3);
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0011', cappedGiftedHours, lineNumber++);
-        }
-    
-        if (ptoHours > 0) {
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0004', ptoHours, lineNumber++);
-        }
-    
-        if (personalHours > 0) {
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0005', personalHours, lineNumber++);
-        }
-    
-        if (holidayHours > 0) {
-            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0007', holidayHours, lineNumber++);
-        }
-    
-        return csvRows;
+  function generateCsvRows(row, formattedEmployeeNumber, formattedDate, lineNumber) {
+    const totalHours = parseFloat(row.querySelector('input[name="total_hours"]').value || 0);
+    const giftedHours = parseFloat(row.querySelector('input[name="gifted_hours"]').value || 0);
+    const ptoHours = parseFloat(row.querySelector('input[name="pto_hours"]').value || 0);
+    const personalHours = parseFloat(row.querySelector('input[name="personal_hours"]').value || 0);
+    const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
+    const overtimeHours = Math.max(totalHours - 40, 0);
+    let csvRows = '';
+
+    // Only add rows with RECTYPE 2
+    if (totalHours > 0) {
+        const regularHours = Math.min(totalHours, 40);
+        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0001', regularHours, lineNumber++);
     }
-    
+
+    if (overtimeHours > 0) {
+        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0002', overtimeHours, lineNumber++);
+    }
+
+    if (giftedHours > 0) {
+        const cappedGiftedHours = Math.min(giftedHours, 3);
+        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0011', cappedGiftedHours, lineNumber++);
+    }
+
+    if (ptoHours > 0) {
+        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0004', ptoHours, lineNumber++);
+    }
+
+    if (personalHours > 0) {
+        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0005', personalHours, lineNumber++);
+    }
+
+    if (holidayHours > 0) {
+        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0007', holidayHours, lineNumber++);
+    }
+
+    return csvRows;
+}
+
     
     function generateCsvLine(employeeNumber, date, category, earnDed, hours, lineNumber) {
         console.log(`Generating CSV line: Employee=${employeeNumber}, Date=${date}, LineNum=${lineNumber}, Category=${category}, EarnDed=${earnDed}, Hours=${hours}`);
