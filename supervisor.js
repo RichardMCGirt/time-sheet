@@ -615,11 +615,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Only add rows with RECTYPE 2
         if (totalHours > 0) {
             let regularHours = Math.min(totalHours, 40);
-            
-            // Subtract gifted hours from regular hours for "0001" row
-            if (giftedHours > 0) {
-                regularHours -= giftedHours;
-            }
+    
+            // Subtract gifted hours, PTO hours, personal hours, and holiday hours from regular hours for "0001" row
+            const deductions = giftedHours + ptoHours + personalHours + holidayHours;
+            regularHours -= deductions;
     
             // Ensure regular hours are not negative
             if (regularHours < 0) {
@@ -652,6 +651,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     
         return csvRows;
     }
+    
     
 
     
