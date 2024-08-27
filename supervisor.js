@@ -563,7 +563,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         });
         
-        downloadCsv(csvContent, 'custom_timesheets.csv');
+        downloadCsv(csvContent, 'Corporate_timesheets.csv');
     }
     
     function generateCsvHeader() {
@@ -604,40 +604,36 @@ document.addEventListener("DOMContentLoaded", async function () {
         const overtimeHours = Math.max(totalHours - 40, 0);
         let csvRows = '';
     
-        // Regular hours (capped at 40) and category 2
+        // Only add rows with RECTYPE 2
         if (totalHours > 0) {
             const regularHours = Math.min(totalHours, 40);
             csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0001', regularHours, lineNumber++);
         }
     
-        // Overtime hours and category 2
         if (overtimeHours > 0) {
             csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0002', overtimeHours, lineNumber++);
         }
     
-        // Gifted hours and category 2
         if (giftedHours > 0) {
             const cappedGiftedHours = Math.min(giftedHours, 3);
             csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0011', cappedGiftedHours, lineNumber++);
         }
     
-        // PTO hours and category 2
         if (ptoHours > 0) {
             csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0004', ptoHours, lineNumber++);
         }
     
-        // Personal hours and category 2
         if (personalHours > 0) {
             csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0005', personalHours, lineNumber++);
         }
     
-        // Holiday hours and category 2
         if (holidayHours > 0) {
             csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0007', holidayHours, lineNumber++);
         }
     
         return csvRows;
     }
+    
     
     function generateCsvLine(employeeNumber, date, category, earnDed, hours, lineNumber) {
         console.log(`Generating CSV line: Employee=${employeeNumber}, Date=${date}, LineNum=${lineNumber}, Category=${category}, EarnDed=${earnDed}, Hours=${hours}`);
