@@ -603,44 +603,56 @@ document.addEventListener("DOMContentLoaded", async function () {
         return dateObj.toISOString().split('T')[0].replace(/-/g, '');
     }
     
-  function generateCsvRows(row, formattedEmployeeNumber, formattedDate, lineNumber) {
-    const totalHours = parseFloat(row.querySelector('input[name="total_hours"]').value || 0);
-    const giftedHours = parseFloat(row.querySelector('input[name="gifted_hours"]').value || 0);
-    const ptoHours = parseFloat(row.querySelector('input[name="pto_hours"]').value || 0);
-    const personalHours = parseFloat(row.querySelector('input[name="personal_hours"]').value || 0);
-    const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
-    const overtimeHours = Math.max(totalHours - 40, 0);
-    let csvRows = '';
-
-    // Only add rows with RECTYPE 2
-    if (totalHours > 0) {
-        const regularHours = Math.min(totalHours, 40);
-        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0001', regularHours, lineNumber++);
+    function generateCsvRows(row, formattedEmployeeNumber, formattedDate, lineNumber) {
+        const totalHours = parseFloat(row.querySelector('input[name="total_hours"]').value || 0);
+        const giftedHours = parseFloat(row.querySelector('input[name="gifted_hours"]').value || 0);
+        const ptoHours = parseFloat(row.querySelector('input[name="pto_hours"]').value || 0);
+        const personalHours = parseFloat(row.querySelector('input[name="personal_hours"]').value || 0);
+        const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
+        const overtimeHours = Math.max(totalHours - 40, 0);
+        let csvRows = '';
+    
+        // Only add rows with RECTYPE 2
+        if (totalHours > 0) {
+            let regularHours = Math.min(totalHours, 40);
+            
+            // Subtract gifted hours from regular hours for "0001" row
+            if (giftedHours > 0) {
+                regularHours -= giftedHours;
+            }
+    
+            // Ensure regular hours are not negative
+            if (regularHours < 0) {
+                regularHours = 0;
+            }
+    
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0001', regularHours, lineNumber++);
+        }
+    
+        if (overtimeHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0002', overtimeHours, lineNumber++);
+        }
+    
+        if (giftedHours > 0) {
+            const cappedGiftedHours = Math.min(giftedHours, 3);
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0011', cappedGiftedHours, lineNumber++);
+        }
+    
+        if (ptoHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0004', ptoHours, lineNumber++);
+        }
+    
+        if (personalHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0005', personalHours, lineNumber++);
+        }
+    
+        if (holidayHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0007', holidayHours, lineNumber++);
+        }
+    
+        return csvRows;
     }
-
-    if (overtimeHours > 0) {
-        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0002', overtimeHours, lineNumber++);
-    }
-
-    if (giftedHours > 0) {
-        const cappedGiftedHours = Math.min(giftedHours, 3);
-        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0011', cappedGiftedHours, lineNumber++);
-    }
-
-    if (ptoHours > 0) {
-        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0004', ptoHours, lineNumber++);
-    }
-
-    if (personalHours > 0) {
-        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0005', personalHours, lineNumber++);
-    }
-
-    if (holidayHours > 0) {
-        csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0007', holidayHours, lineNumber++);
-    }
-
-    return csvRows;
-}
+    
 
     
     function generateCsvLine(employeeNumber, date, category, earnDed, hours, lineNumber) {
