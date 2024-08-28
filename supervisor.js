@@ -148,11 +148,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     async function fetchTimesheets(supervisorName) {
-        const filterFormula = supervisorEmail === 'katy@vanirinstalledsales.com' ? 
-                              '{Employee Number}!=BLANK()' : 
-                              `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
-
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${filterFormula}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
+        let filterFormula;
+        
+        if (supervisorEmail === 'katy@vanirinstalledsales.com') {
+            filterFormula = '{Employee Number}!=BLANK()';
+        } else if (supervisorEmail === 'josh@vanirinstalledsales.com' || supervisorEmail === 'ethen.wilson@vanirinstalledsales.com') {
+            // Josh and Ethan can see all records where the Supervisor is either Josh Boyd or Ethen Wilson
+            filterFormula = `OR({Supervisor}='Josh Boyd', {Supervisor}='Ethen Wilson')`;
+        } else {
+            filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
+        }
+    
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
         console.log(`Fetching timesheets with endpoint: ${endpoint}`);
         try {
             loadingIndicator.style.display = 'block'; // Show loading indicator
@@ -174,6 +181,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             keyEnterHint.style.display = '';
         }
     }
+    
+    
+    
+    
+    
+    
 
     async function populateTimesheets(records) {
         console.log('Populating timesheets');

@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const response = await fetch(supervisorUrl, { headers });
             const data = await response.json();
             if (data.records.length > 0) {
-                return data.records[0].fields['Full Name'];
+                return data.records[0].fields['Name'];
             } else {
                 console.error('No supervisor found with the given email.');
                 window.location.href = 'index.html';
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             if (data.records.length > 0) {
                 const employee = data.records[0].fields;
-                const availablePTO = employee['PTO #'] || 0;
+                const availablePTO = employee['PTO Total'] || 0;
                 const availablePersonalHours = employee['Personaltime'] || 0;
                 return { availablePTO, availablePersonalHours };
             } else {
@@ -160,13 +160,26 @@ document.addEventListener("DOMContentLoaded", function() {
                             missedHours.textContent = `Hours Missed: ${hoursMissed}`;
                             requestDiv.appendChild(missedHours);
 
-                            const approvedCheckbox = document.createElement('input');
-                            approvedCheckbox.type = 'checkbox';
-                            approvedCheckbox.checked = record.fields[`Time off Approved ${i}`] || false;
-                            approvedCheckbox.dataset.recordId = record.id;
-                            approvedCheckbox.dataset.approvalIndex = i;
-                            approvedCheckbox.addEventListener('change', handleApprovalChange);
-                            requestDiv.appendChild(approvedCheckbox);
+                         // Create a new <p> element
+const approvalParagraph = document.createElement('p');
+
+// Set the text content for the <p> element
+approvalParagraph.textContent = 'Check to approve or ';
+
+// Create the checkbox input
+const approvedCheckbox = document.createElement('input');
+approvedCheckbox.type = 'checkbox';
+approvedCheckbox.checked = record.fields[`Time off Approved ${i}`] || false;
+approvedCheckbox.dataset.recordId = record.id;
+approvedCheckbox.dataset.approvalIndex = i;
+approvedCheckbox.addEventListener('change', handleApprovalChange);
+
+// Append the checkbox to the <p> element
+approvalParagraph.appendChild(approvedCheckbox);
+
+// Append the <p> element to the requestDiv or your desired container
+requestDiv.appendChild(approvalParagraph);
+
 
                             const denialReasonSelect = document.createElement('select');
                             denialReasonSelect.dataset.recordId = record.id;
