@@ -692,14 +692,44 @@ document.addEventListener("DOMContentLoaded", async function () {
             throw new Error('Failed to update Personal hours. Error: ' + error.message);
         }
     }
+    function isWholeNumber(value) {
+        return Number.isInteger(parseFloat(value));
+    }
+    
+    function validateWholeNumbers() {
+        const ptoHours = elements.ptoTimeSpan.textContent;
+        const personalHours = elements.personalTimeSpan.textContent;
+        const holidayHours = elements.holidayTimeSpan.textContent;
+    
+        if (!isWholeNumber(ptoHours)) {
+            alert('PTO hours must be a whole number.');
+            return false;
+        }
+    
+        if (!isWholeNumber(personalHours)) {
+            alert('Personal hours must be a whole number.');
+            return false;
+        }
+    
+        if (!isWholeNumber(holidayHours)) {
+            alert('Holiday hours must be a whole number.');
+            return false;
+        }
+    
+        return true;
+    }
+    
     async function handleSubmit(event) {
         event.preventDefault();
-        console.log('User clicked submit. Throwing confetti!');
-        
-        // Trigger confetti immediately when the user clicks submit
-        
+    
+        console.log('User clicked submit.');
+    
         const totalPtoHours = parseFloat(elements.ptoTimeSpan.textContent) || 0;
         const totalPersonalHours = parseFloat(elements.personalTimeSpan.textContent) || 0;
+    
+        if (!validateWholeNumbers()) {
+            return; // Stop the form submission if the validation fails
+        }
     
         if (totalPtoHours > availablePTOHours) {
             alert('PTO time used cannot exceed available PTO hours');
@@ -717,26 +747,17 @@ document.addEventListener("DOMContentLoaded", async function () {
             await sendDataToAirtable();
             showModal(); // Show the success modal after successful submission
             throwConfetti();
-
-             // Refresh the page after 2 seconds
-        setTimeout(() => {
-            window.location.reload();
-        }, 30000);
+    
+            // Refresh the page after 2 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 30000);
         } catch (error) {
-            // Extracting detailed error information
-            const errorMessage = error.message || 'Unknown error';
-            const errorName = error.name || 'Error';
-            const errorStack = error.stack || 'No stack trace available';
-            
-            // Log detailed error information to the console
-            console.error(`Error Name: ${errorName}`);
-            console.error(`Error Message: ${errorMessage}`);
-            console.error(`Error Stack: ${errorStack}`);
-            
-            // Show a detailed alert to the user
-            alert(`An error occurred while submitting your data. Please try again.\n\nError Details:\n- Name: ${errorName}\n- Message: ${errorMessage}\n- See console for more details.`);
+            console.error('Error submitting form:', error);
+            alert(`An error occurred: ${error.message}`);
         }
     }
+    
     
     
     
