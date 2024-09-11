@@ -342,24 +342,31 @@ document.addEventListener("DOMContentLoaded", function() {
                 recordId = data.records[0].id;
                 const isApproved = record['Approved'] === true;
                 const approvalStatusElement = document.getElementById('approval-status');
+                
                 if (isApproved) {
-                    approvalStatusElement.textContent = 'Time sheet approved';
+                    approvalStatusElement.textContent = 'Timesheet approved';
                     approvalStatusElement.style.color = 'green';
                     approvalStatusElement.style.fontSize = '30px';
                     approvalStatusElement.style.fontWeight = 'bold';
                     approvalStatusElement.style.textDecoration = 'underline';
+                    
+                    // Disable the submit button if approved
+                    elements.submitButton.disabled = true;
+                    elements.submitButton.textContent = "Timesheet Approved"; // Optional: Change button text
+                } else {
+                    approvalStatusElement.textContent = '';
                 }
-                hideApprovalOnEdit(isApproved);
             } else {
                 console.log('No approval status data found for user');
             }
-
+    
             updateLoadingBar('Approval status has been downloaded.');
         } catch (error) {
             console.error('Error fetching approval status:', error);
             alert('Failed to fetch approval status. Error: ' + error.message);
         }
     }
+    
 
     // Run all fetches sequentially
     await fetchPtoHours();
@@ -771,7 +778,13 @@ document.addEventListener("DOMContentLoaded", function() {
     
 
     async function handleSubmit(event) {
-        event.preventDefault(); // This ensures the form does not submit by default
+        event.preventDefault(); // Prevent form submission by default
+    
+        // Check if the submit button is disabled (e.g., when timesheet is approved)
+        if (elements.submitButton.disabled) {
+            console.log('Form submission blocked: Timesheet is already approved');
+            return;
+        }
     
         console.log('User clicked submit.');
 
@@ -818,11 +831,7 @@ document.addEventListener("DOMContentLoaded", function() {
             alert(`An error occurred: ${error.message}`);
         }
     }
-    
-    
-    
-    
-    
+       
     function throwConfetti() {
         confetti({
             particleCount: 1400,
