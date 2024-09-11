@@ -363,7 +363,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     
         // Calculate the number of days until the next Tuesday
-        const daysUntilTuesday = (1 - dayOfWeek) % 7 || 7;
+        const daysUntilTuesday = (1 - dayOfWeek + 7) % 7 || 7;
     
         // Create a new date object for the next Tuesday
         const nextTuesday = new Date(referenceDate);
@@ -373,7 +373,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     
     // Example usage:
-    console.log(getNextTuesday(new Date())); // Returns today's date if today is Tuesday or the next Tuesday's date otherwise
+    console.log(getNextTuesday(new Date())); 
+    
     
     
     async function initializeForm() {
