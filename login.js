@@ -17,6 +17,13 @@ playPauseButton.addEventListener('click', toggleMusic);
 
 loginButton.addEventListener('click', login);
 
+// Trigger login on Enter key press
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        login(); // Trigger the login function
+    }
+});
+
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM fully loaded and parsed");
     debounce(fetchJoke, 300)(); // Fetch joke on page load with debounce
