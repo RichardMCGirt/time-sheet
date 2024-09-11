@@ -30,6 +30,40 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    // Function to prevent non-integer input (blocks decimal points)
+function preventDecimalInput(event) {
+    const key = event.key;
+    if (key === '.' || key === ',') {
+        event.preventDefault(); // Block the decimal point and comma
+    }
+}
+
+// Add the event listeners to PTO, Personal, and Holiday hours fields
+function attachNoDecimalValidation() {
+    const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
+    const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
+    const holidayInputs = document.querySelectorAll('input[name^="Holiday_hours"]');
+
+    // Add event listener to block decimal points
+    ptoInputs.forEach(input => {
+        input.addEventListener('keydown', preventDecimalInput);
+    });
+
+    personalInputs.forEach(input => {
+        input.addEventListener('keydown', preventDecimalInput);
+    });
+
+    holidayInputs.forEach(input => {
+        input.addEventListener('keydown', preventDecimalInput);
+    });
+}
+
+// Call this function after DOM content is loaded to attach the validation
+document.addEventListener("DOMContentLoaded", function() {
+    attachNoDecimalValidation();
+});
+
+
     function showNotification(message) {
         if (notificationArea) {
             notificationArea.textContent = message;
@@ -567,39 +601,40 @@ document.addEventListener("DOMContentLoaded", async function () {
         let totalPtoHours = 0;
         let totalHolidayHours = 0;
         let totalPersonalHours = 0;
-
+    
         const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
         ptoInputs.forEach(input => {
             const value = parseFloat(input.value) || 0;
             totalPtoHours += value;
         });
-
+    
         const holidayInputs = document.querySelectorAll('input[name^="Holiday_hours"]');
         holidayInputs.forEach(input => {
             const value = parseFloat(input.value) || 0;
             totalHolidayHours += value;
         });
-
+    
         const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
         personalInputs.forEach(input => {
             const value = parseFloat(input.value) || 0;
             totalPersonalHours += value;
         });
-
-        console.log('Total PTO hours:', totalPtoHours);
+    
+        console.log('Total PTO hours:', totalPtoHours); // Debugging log
         console.log('Total Holiday hours:', totalHolidayHours);
         console.log('Total Personal hours:', totalPersonalHours);
-
+    
+        // Ensure the textContent is correctly updated
         elements.ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
         elements.holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
         elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
-        document.getElementById('total-personal-time-display').textContent = totalPersonalHours.toFixed(2);
-
+    
         elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(2);
         elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(2);
         const totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
         elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
     }
+    
 
     async function updatePtoHours() {
         console.log('Updating PTO hours...');
@@ -692,55 +727,81 @@ document.addEventListener("DOMContentLoaded", async function () {
             throw new Error('Failed to update Personal hours. Error: ' + error.message);
         }
     }
-    function isWholeNumber(value) {
-        return Number.isInteger(parseFloat(value));
-    }
-    
     function validateWholeNumbers() {
-        const ptoHours = elements.ptoTimeSpan.textContent;
-        const personalHours = elements.personalTimeSpan.textContent;
-        const holidayHours = elements.holidayTimeSpan.textContent;
+        let hasDecimal = false; // Flag to track if any field has a decimal
     
-        if (!isWholeNumber(ptoHours)) {
-            alert('PTO hours must be a whole number.');
-            return false;
-        }
+        // Check PTO input fields directly
+        const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
+        ptoInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            console.log('Validating PTO input value:', value); // Log the value
+            if (value % 1 !== 0) {
+                alert(`PTO hours must be a whole number. Current value: ${value}`);
+                hasDecimal = true;
+            }
+        });
     
-        if (!isWholeNumber(personalHours)) {
-            alert('Personal hours must be a whole number.');
-            return false;
-        }
+        // Check Personal input fields directly
+        const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
+        personalInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            console.log('Validating Personal input value:', value); // Log the value
+            if (value % 1 !== 0) {
+                alert(`Personal hours must be a whole number. Current value: ${value}`);
+                hasDecimal = true;
+            }
+        });
     
-        if (!isWholeNumber(holidayHours)) {
-            alert('Holiday hours must be a whole number.');
-            return false;
-        }
+        // Check Holiday input fields directly
+        const holidayInputs = document.querySelectorAll('input[name^="Holiday_hours"]');
+        holidayInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            console.log('Validating Holiday input value:', value); // Log the value
+            if (value % 1 !== 0) {
+                alert(`Holiday hours must be a whole number. Current value: ${value}`);
+                hasDecimal = true;
+            }
+        });
     
-        return true;
+        return !hasDecimal; // If any decimal was found, return false to prevent submission
     }
     
+    
+    
+    
+
     async function handleSubmit(event) {
-        event.preventDefault();
+        event.preventDefault(); // This ensures the form does not submit by default
     
         console.log('User clicked submit.');
+
+        if (!validateWholeNumbers()) {
+            console.log("Validation failed: Non-whole number in PTO, Personal, or Holiday hours.");
+            return; // Stop the form submission if the validation fails
+        }
+    
     
         const totalPtoHours = parseFloat(elements.ptoTimeSpan.textContent) || 0;
         const totalPersonalHours = parseFloat(elements.personalTimeSpan.textContent) || 0;
     
+        // Validate the whole numbers for PTO, Personal, and Holiday Hours
         if (!validateWholeNumbers()) {
+            console.log("Validation failed: Non-whole number in PTO, Personal, or Holiday hours.");
             return; // Stop the form submission if the validation fails
         }
     
+        // Validate that PTO and Personal hours don't exceed the available amount
         if (totalPtoHours > availablePTOHours) {
             alert('PTO time used cannot exceed available PTO hours');
-            return;
+            return; // Stop the form submission if PTO hours exceed available hours
         }
     
         if (totalPersonalHours > availablePersonalHours) {
             alert('Personal time used cannot exceed available Personal hours');
-            return;
+            return; // Stop the form submission if Personal hours exceed available hours
         }
     
+        // If all validations pass, proceed with submitting the data
         try {
             await updatePtoHours();
             await updatePersonalHours();
@@ -748,15 +809,16 @@ document.addEventListener("DOMContentLoaded", async function () {
             showModal(); // Show the success modal after successful submission
             throwConfetti();
     
-            // Refresh the page after 2 seconds
+            // Refresh the page after a delay
             setTimeout(() => {
                 window.location.reload();
-            }, 30000);
+            }, 30000); // Reduce delay to 3 seconds for better user experience
         } catch (error) {
             console.error('Error submitting form:', error);
             alert(`An error occurred: ${error.message}`);
         }
     }
+    
     
     
     
