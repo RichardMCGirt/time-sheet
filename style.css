@@ -755,127 +755,209 @@ input[type="number"] {
     box-sizing: content-box; /* Ensure padding doesn't affect width */
 }
 
-/* Responsive Adjustments */
+/* General Mobile-Friendly Adjustments */
 @media (max-width: 768px) {
-    .header-right {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .time-entry-table {
-        width: 90%;
-        overflow-x: auto;
-        display: block;
-    }
-
-    .time-entry-table th,
-    .time-entry-table td {
-        min-width: 120px; /* Adjust based on your preference */
-        box-sizing: border-box;
-    }
-
-    .time-entry-form {
+    body {
+        font-size: 14px;
         padding: 10px;
     }
 
-    .form-group label {
-        font-size: 14px;
+    .header-left, .header-right, .info-container {
+        display: block;
+        text-align: center;
+        margin: 10px 0;
     }
 
-    .submit-button {
-        padding: 8px 16px;
-        font-size: 14px;
-    }
-
-    .play-pause-button {
-        padding: 8px 16px;
-        font-size: 14px;
-    }
-
-    /* Make the table scrollable */
-    .time-entry-table-wrapper {
-        overflow-x: auto;
-    }
-}
-
-/* Add these styles at the end of your style.css file */
-
-@media (max-width: 1024px) {
-    .time-entry-table {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .time-entry-table th,
-    .time-entry-table td {
-        min-width: 100px; /* Adjust as needed */
-        padding: 5px;
-        font-size: 14px;
-    }
-
-    .form-group {
-        flex-direction: column;
-        align-items: flex-start;
+    .form-group, .form-row {
+        display: block;
+        margin-bottom: 15px;
+        text-align: left;
     }
 
     .form-label {
         text-align: left;
-        padding-right: 0;
+        font-size: 14px;
     }
 
-    .form-value {
-        text-align: right;
+    .sticky-submit {
+        width: 90%;
+        font-size: 14px;
+        padding: 12px;
     }
 
-    .header-left, .header-right {
-        flex-direction: column;
-        align-items: flex-start;
+    .modal-content {
+        width: 90%;
+        max-width: 350px;
+        padding: 15px;
     }
 
-    .info-container {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-@media (max-width: 768px) {
-    .header-left, .header-right {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .info-container {
-        flex-direction: column;
-        align-items: flex-start;
+    .time-entry-table-wrapper {
+        overflow-x: auto;
+        width: 100%;
     }
 
     .time-entry-table {
         width: 100%;
-        overflow-x: auto;
-        display: block;
+        font-size: 14px;
     }
 
-    .time-entry-table th,
-    .time-entry-table td {
-        min-width: 80px; /* Adjust based on your preference */
-        box-sizing: border-box;
+    .time-entry-table th, .time-entry-table td {
+        padding: 5px;
+        font-size: 14px;
     }
 
-    .time-entry-form {
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    input[type="text"] {
+        width: 100%; /* Full width inputs for smaller screens */
+        font-size: 14px;
         padding: 10px;
     }
 
-    .form-group label {
+    #loading-bar-container {
+        width: 80%; /* Adjust loading bar width */
+    }
+
+    .submit-button,
+    .reset-button,
+    .play-pause-button {
+        width: 90%;
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    .navbar ul {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .navbar ul li {
+        display: block;
+        margin: 5px 0;
+    }
+
+    .pto-info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .pto-info-row .small-input {
+        width: 100%; /* Ensure input fields stretch to full width */
+    }
+
+    .navbar ul li a {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    #notification-area {
+        top: 20%;
         font-size: 12px;
     }
 
-    .submit-button {
-        padding: 8px 16px;
+    .name-container {
         font-size: 14px;
+        padding-left: 10px;
+    }
+}
+
+/* More Adjustments for Small Screens (Mobile) */
+@media (max-width: 480px) {
+    body {
+        font-size: 12px;
     }
 
+    .sticky-submit {
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .time-entry-table th, .time-entry-table td {
+        font-size: 12px;
+        padding: 3px;
+    }
+
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    input[type="text"] {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 10px;
+        max-width: 320px;
+    }
+
+    .submit-button, 
+    .reset-button, 
     .play-pause-button {
-        padding: 8px 16px;
-        font-size: 14px;
+        width: 95%;
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .pto-info-row label,
+    .pto-info-row .small-input {
+        font-size: 12px;
+    }
+
+    #loading-bar-container {
+        width: 90%;
+        height: 20px;
+    }
+
+    .header-left .logo {
+        height: 40px; /* Reduce logo size on smaller screens */
+    }
+
+    #loading-text {
+        font-size: 12px;
+    }
+
+    .name-container {
+        font-size: 12px;
+        padding-left: 5px;
+    }
+
+    .user-info span {
+        font-size: 12px;
+    }
+
+    .navbar ul {
+        gap: 10px;
+    }
+}
+
+/* Optional Further Adjustments for Ultra-Small Screens */
+@media (max-width: 320px) {
+    .sticky-submit {
+        font-size: 10px;
+        padding: 8px;
+    }
+
+    .time-entry-table th, .time-entry-table td {
+        font-size: 10px;
+        padding: 2px;
+    }
+
+    .submit-button,
+    .reset-button,
+    .play-pause-button {
+        width: 100%;
+        font-size: 10px;
+        padding: 8px;
+    }
+
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    input[type="text"] {
+        font-size: 10px;
+        padding: 5px;
     }
 }

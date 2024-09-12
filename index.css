@@ -217,45 +217,128 @@ h1 {
     font-size: 18px;
 }
 
+/* Media query for devices with max-width of 768px */
 @media (max-width: 768px) {
-    main {
-        max-width: 100%;
-        margin: 0;
-        padding: 20px;
-        box-shadow: none;
+    body {
+        padding: 10px;
+        font-size: 16px;
     }
-    .submit-button, .input-text {
+
+    .login-container {
+        padding: 20px;
+        width: 90%;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .logo-box img {
+        width: 80px; /* Reduce the size of the logo */
+        margin-bottom: 20px;
+    }
+
+    .form-fields {
         width: 100%;
+    }
+
+    .form-group {
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .input-text {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .submit-button,
+    .forgot-password-button {
+        width: 100%;
+        font-size: 16px;
+        padding: 12px 0;
+        margin-top: 10px;
+    }
+
+    #playPauseButton {
+        width: 100%;
+        font-size: 16px;
+        padding: 12px 0;
+        margin-top: 10px;
+    }
+
+    #joke-section {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    #joke-section h2 {
+        font-size: 18px;
+    }
+
+    #joke-section p {
+        font-size: 16px;
     }
 }
 
+/* Media query for devices with max-width of 480px */
 @media (max-width: 480px) {
-    main {
+    body {
+        font-size: 14px;
+    }
+
+    .login-container {
         padding: 15px;
-    }
-    h1 {
-        font-size: 1.5rem;
-    }
-    .logo-box {
-        padding: 10px;
-    }
-    .logo {
-        width: 120px;
-    }
-    .submit-button, .input-text {
         width: 100%;
+        max-width: 350px;
+        margin: 0 auto;
     }
-    .submit-button {
-        font-size: 16px;
+
+    .logo-box img {
+        width: 60px; /* Further reduce logo size */
+        margin-bottom: 15px;
     }
-    #easter-egg, #easter-egg-rm {
-        font-size: 12px;
+
+    h1 {
+        font-size: 22px;
+    }
+
+    .form-group {
+        margin-bottom: 10px;
+    }
+
+    .input-text {
         padding: 8px;
+        font-size: 14px;
     }
+
+    .submit-button,
+    .forgot-password-button {
+        width: 100%;
+        font-size: 14px;
+        padding: 10px 0;
+        margin-top: 8px;
+    }
+
+    #playPauseButton {
+        width: 100%;
+        font-size: 14px;
+        padding: 10px 0;
+    }
+
     #joke-section h2 {
-        font-size: 1.2rem;
-    }
-    #joke-section p {
         font-size: 16px;
+    }
+
+    #joke-section p {
+        font-size: 14px;
+    }
+
+    #login-success {
+        font-size: 14px;
     }
 }
