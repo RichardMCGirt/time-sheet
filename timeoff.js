@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
-    const tableId = 'tbl3PB88KkGdPlT5x';
+    const tableId = 'tblDUlMq88nxT7M4I';
 
     const userEmail = localStorage.getItem('userEmail');
     let records = [];
@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const daysOffMessage = document.getElementById('daysOffMessage');
     const submitButton = document.getElementById('submitButton');
     const logoutButton = document.getElementById('logout-button');
+   
 
     if (!userEmail) {
         window.location.href = 'index.html';
@@ -91,9 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function sendToAirtable(formData) {
         try {
+            // Remove Full Name from formData since it's a synced field and cannot be updated
+            delete formData['Full Name'];
+    
             const employeeName = document.getElementById('employeeName').value;
             const recordId = await getRecordIdByName(employeeName);
-
+    
             if (recordId) {
                 const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
                 const response = await fetch(url, {
@@ -104,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify({ fields: formData })
                 });
-
+    
                 if (response.ok) {
                     const data = await response.json();
                     showSuccessMessage('Submission successful!');
@@ -127,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify({ fields: formData })
                 });
-
+    
                 if (response.ok) {
                     const data = await response.json();
                     showSuccessMessage('Submission successful!');
@@ -146,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showError('Submission failed. Please try again.');
         }
     }
+    
 
     async function getRecordIdByName(name) {
         try {
@@ -515,40 +520,5 @@ document.addEventListener('DOMContentLoaded', () => {
         submissionStatus.classList.add('error');
     }
 
-    // Validation logic for PTO, personal, and holiday hours
-
-    function validateHours() {
-        const ptoInput = document.getElementById('pto-input');
-        const personalHoursInput = document.getElementById('personal-hours-input');
-        const holidayHoursInput = document.getElementById('holiday-hours-input'); // Assuming there's an input for holiday hours
-
-        const availablePTO = parseFloat(document.getElementById('available-pto').textContent);
-        const availablePersonalHours = parseFloat(document.getElementById('available-personal-hours').textContent);
-
-        ptoInput.addEventListener('input', function() {
-            if (parseFloat(ptoInput.value) > availablePTO) {
-                ptoInput.setCustomValidity('You cannot request more PTO than available.');
-            } else {
-                ptoInput.setCustomValidity('');
-            }
-        });
-
-        personalHoursInput.addEventListener('input', function() {
-            if (parseFloat(personalHoursInput.value) > availablePersonalHours) {
-                personalHoursInput.setCustomValidity('You cannot request more personal hours than available.');
-            } else {
-                personalHoursInput.setCustomValidity('');
-            }
-        });
-
-        holidayHoursInput.addEventListener('input', function() {
-            if (parseFloat(holidayHoursInput.value) > 40) {
-                holidayHoursInput.setCustomValidity('Holiday hours cannot be greater than 40.');
-            } else {
-                holidayHoursInput.setCustomValidity('');
-            }
-        });
-    }
-
-    validateHours();
+   
 });
