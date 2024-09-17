@@ -404,7 +404,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     
         // Calculate the number of days until the next Tuesday
-        const daysUntilTuesday = (1 - dayOfWeek + 7) % 7 || 7;
+        const daysUntilTuesday = (1 - dayOfWeek + 0) % 7 || 7;
     
         // Create a new date object for the next Tuesday
         const nextTuesday = new Date(referenceDate);
@@ -412,9 +412,6 @@ document.addEventListener("DOMContentLoaded", function() {
     
         return nextTuesday;
     }
-    
-    // Example usage:
-    console.log(getNextTuesday(new Date())); 
     
     
     
@@ -842,62 +839,69 @@ document.addEventListener("DOMContentLoaded", function() {
     
     let countdownInterval; // Declare countdownInterval in a higher scope to track the interval
 
-function showModal() {
-    const modal = document.getElementById('successModal');
-    if (!modal) {
-        console.error('Modal element not found');
-        return;
-    }
-
-    const closeButton = modal.querySelector('.close-button');
-    if (!closeButton) {
-        console.error('Close button not found');
-        return;
-    }
-
-    // Clear any existing interval to prevent duplicates
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-    }
-
-    const countdownElement = document.createElement('p');
-    let countdown = 25;
-
-    // Display the modal
-    modal.style.display = 'block';
-
-    // Add the countdown element to the modal
-    countdownElement.textContent = `This modal will close in ${countdown} seconds.`;
-    modal.querySelector('.modal-content').appendChild(countdownElement);
-
-    // Start the countdown
-    countdownInterval = setInterval(() => {
-        countdown -= 1;
-        countdownElement.textContent = `Close in ${countdown} seconds.`;
-
-        if (countdown <= 0) {
-            clearInterval(countdownInterval);
-            modal.style.display = 'none'; // Automatically close the modal
-            window.location.reload(); // Refresh the page
+    function showModal() {
+        const modal = document.getElementById('successModal');
+        const userEmail = localStorage.getItem('userEmail'); // Assuming user email is stored in localStorage
+        if (!modal) {
+            console.error('Modal element not found');
+            return;
         }
-    }, 1000);
-
-    // Close the modal when the user clicks the close button
-    closeButton.onclick = function() {
-        clearInterval(countdownInterval); // Stop the countdown
-        modal.style.display = 'none';
-        window.location.reload(); // Refresh the page
-    };
-
-    // Close the modal when the user clicks anywhere outside of it
-    window.onclick = function(event) {
-        if (event.target === modal) {
+    
+        // Check if the user is heath.kornegay@vanirinstalledsales.com
+        if (userEmail === 'heath.kornegay@vanirinstalledsales.com') {
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.innerHTML = "<h2>A HK Production</h2>";
+            } else {
+                console.error('Modal content element not found');
+            }
+        }
+    
+        // Display the modal (assuming a CSS class controls its visibility)
+        modal.style.display = 'block';
+    
+        // Add event listener for the close button after displaying the modal
+        const closeButton = modal.querySelector('.close-button');
+        if (!closeButton) {
+            console.error('Close button not found');
+            return;
+        }
+    
+        let countdown = 25; // Set countdown time
+    
+        const countdownElement = document.createElement('p');
+        countdownElement.textContent = `This modal will close in ${countdown} seconds.`;
+        modal.querySelector('.modal-content').appendChild(countdownElement);
+    
+        const countdownInterval = setInterval(() => {
+            countdown -= 1;
+            countdownElement.textContent = `Close in ${countdown} seconds.`;
+    
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                modal.style.display = 'none'; // Automatically close the modal
+                window.location.reload(); // Refresh the page
+            }
+        }, 1000);
+    
+        // Close the modal when the user clicks the close button
+        closeButton.onclick = function() {
             clearInterval(countdownInterval); // Stop the countdown
             modal.style.display = 'none';
             window.location.reload(); // Refresh the page
-        }
-    };
-}
+        };
+    
+        // Close the modal when the user clicks anywhere outside of it
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                clearInterval(countdownInterval); // Stop the countdown
+                modal.style.display = 'none';
+                window.location.reload(); // Refresh the page
+            }
+        };
+    }
+    
+
 
     
     
