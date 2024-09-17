@@ -63,6 +63,7 @@
                     <label for="approval-status" class="approved-label" style="font-size: 20px; margin-right: 50px;"></label>
                     <span id="approval-status" style="color: red; font-size: 250px; margin-right: 50px;"></span>
                 </div>
+                <button id="playPauseButton" class="play-pause-button">Play</button>
         
                 <!-- Wrapper for responsive table -->
                 <div class="table-responsive">
@@ -186,10 +187,6 @@
                             </table>
                         </div>
                         <button id="clear-button">Clear Data</button>
-                        <br>
-                        <button id="submit-button" class="sticky-submit">Submit</button>
-
-
                     </form>
                 </section>
                 <div id="successModal" class="modal" style="display: none;">
@@ -206,7 +203,6 @@
                 <button id="confirm-no">No</button>
             </div>
         </div>
-
         <section id="summary" class="summary-section" style="display: flex; justify-content: center; align-items: center; padding: 20px;">
             <form id="summary-form" class="summary-form" style="display: flex; flex-direction: column; align-items: center; background-color: #34495e; padding: 20px; border-radius: 10px; width: 100%; max-width: 600px;">
                 <div class="form-row">
@@ -244,11 +240,10 @@
                     <div id="personal-time-error" class="error" style="display: none;">Not enough personal hours</div>
                 </div>
                 <span id="pto-validation-message" class="validation-message" style="color: red; text-align: center;"></span><br>
+                <button id="submit-button" class="sticky-submit">Submit</button>
             </form>
         </section>
     </section>
-                            <button id="submit-button" class="sticky-submit">Submit</button>
-
 </main>
 <audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
 <script src="timesheet.js"></script>
