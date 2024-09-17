@@ -848,14 +848,16 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     
         // Check if the user is heath.kornegay@vanirinstalledsales.com
-        if (userEmail === 'heath.kornegay@vanirinstalledsales.com') {
-            const modalContent = modal.querySelector('.modal-content');
-            if (modalContent) {
-                modalContent.innerHTML = "<h2>A HK Production</h2>";
-            } else {
-                console.error('Modal content element not found');
-            }
-        }
+       // Check if the user is heath.kornegay@vanirinstalledsales.com
+if (userEmail === 'heath.kornegay@vanirinstalledsales.com') {
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.innerHTML = "<h2>A HK Production</h2><br><p>By Jason Smith</p>";
+    } else {
+        console.error('Modal content element not found');
+    }
+}
+
     
         // Display the modal (assuming a CSS class controls its visibility)
         modal.style.display = 'block';
