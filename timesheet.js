@@ -847,61 +847,81 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
     
-        // Check if the user is heath.kornegay@vanirinstalledsales.com
-       // Check if the user is heath.kornegay@vanirinstalledsales.com
-if (userEmail === 'heath.kornegay@vanirinstalledsales.com') {
-    const modalContent = modal.querySelector('.modal-content');
-    if (modalContent) {
-        modalContent.innerHTML = "<h2>A HK Production</h2><br><p>By Jason Smith</p>";
-    } else {
-        console.error('Modal content element not found');
-    }
-}
-
-    
-        // Display the modal (assuming a CSS class controls its visibility)
+        // Display the modal
         modal.style.display = 'block';
     
-        // Add event listener for the close button after displaying the modal
-        const closeButton = modal.querySelector('.close-button');
-        if (!closeButton) {
-            console.error('Close button not found');
-            return;
+        // Check if the user is heath.kornegay@vanirinstalledsales.com
+        if (userEmail === 'heath.kornegay@vanirinstalledsales.com') {
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                // Update the modal content for Heath and add a custom close button
+                modalContent.innerHTML = `
+                    <h2>A HK Production</h2>
+                    <p>By Jason Smith</p>
+                    <button id="heathCloseButton" class="close-button">Close</button>
+                `;
+            } else {
+                console.error('Modal content element not found');
+            }
+    
+            // Automatically close the modal after 3 seconds for Heath
+            setTimeout(() => {
+                modal.style.display = 'none';
+                console.log('Modal closed after 3 seconds for Heath.');
+    
+                // Simulate pressing the Shift key three times
+                for (let i = 0; i < 3; i++) {
+                    simulateShiftKeyPress();
+                }
+            }, 3000); // 3000 milliseconds = 3 seconds
+    
+            // Add functionality to manually close the modal with the close button
+            const heathCloseButton = document.getElementById('heathCloseButton');
+            if (heathCloseButton) {
+                heathCloseButton.onclick = function() {
+                    modal.style.display = 'none';
+                    console.log('Modal manually closed by Heath.');
+    
+                    // Simulate pressing the Shift key three times when manually closed
+                    for (let i = 0; i < 3; i++) {
+                        simulateShiftKeyPress();
+                    }
+                };
+            } else {
+                console.error('Heath-specific close button not found.');
+            }
         }
     
-        let countdown = 25; // Set countdown time
-    
-        const countdownElement = document.createElement('p');
-        countdownElement.textContent = `This modal will close in ${countdown} seconds.`;
-        modal.querySelector('.modal-content').appendChild(countdownElement);
-    
-        const countdownInterval = setInterval(() => {
-            countdown -= 1;
-            countdownElement.textContent = `Close in ${countdown} seconds.`;
-    
-            if (countdown <= 0) {
-                clearInterval(countdownInterval);
-                modal.style.display = 'none'; // Automatically close the modal
-                window.location.reload(); // Refresh the page
-            }
-        }, 1000);
-    
-        // Close the modal when the user clicks the close button
-        closeButton.onclick = function() {
-            clearInterval(countdownInterval); // Stop the countdown
-            modal.style.display = 'none';
-            window.location.reload(); // Refresh the page
-        };
+        // Add event listener for the default close button if it's present
+        const closeButton = modal.querySelector('.close-button');
+        if (closeButton) {
+            closeButton.onclick = function() {
+                modal.style.display = 'none';
+            };
+        } else {
+            console.error('Default close button not found.');
+        }
     
         // Close the modal when the user clicks anywhere outside of it
         window.onclick = function(event) {
             if (event.target === modal) {
-                clearInterval(countdownInterval); // Stop the countdown
                 modal.style.display = 'none';
-                window.location.reload(); // Refresh the page
             }
         };
     }
+    
+    // Function to simulate pressing the Shift key
+    function simulateShiftKeyPress() {
+        const event = new KeyboardEvent('keydown', {
+            key: 'Shift',
+            code: 'ShiftLeft',
+            keyCode: 16, // Shift key
+            which: 16,   // Shift key
+            bubbles: true
+        });
+        document.dispatchEvent(event);
+    }
+    
     
 
 

@@ -39,3 +39,54 @@ function loadScript() {
     script.src = "//gravityscript.github.io/grav.js";
     document.getElementById('script-placeholder').appendChild(script);
 }
+
+function showModal() {
+    const modal = document.getElementById('successModal');
+    const userEmail = localStorage.getItem('userEmail'); // Assuming user email is stored in localStorage
+    if (!modal) {
+        console.error('Modal element not found');
+        return;
+    }
+
+    // Check if the user is heath.kornegay@vanirinstalledsales.com
+    if (userEmail === 'heath.kornegay@vanirinstalledsales.com') {
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.innerHTML = "<h2>A HK Production</h2><br><p>By Jason Smith</p>";
+        } else {
+            console.error('Modal content element not found');
+        }
+    }
+
+    // Display the modal
+    modal.style.display = 'block';
+
+    // Add event listener for the close button
+    const closeButton = modal.querySelector('.close-button');
+    if (closeButton) {
+        closeButton.onclick = function() {
+            modal.style.display = 'none';
+            handleModalClose(); // Call function when modal closes
+        };
+    }
+
+    // Close the modal when the user clicks anywhere outside of it
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+            handleModalClose(); // Call function when modal closes
+        }
+    };
+}
+
+// Function to handle actions after the modal closes
+function handleModalClose() {
+    const userEmail = localStorage.getItem('userEmail');
+    
+    // Trigger prank if the user is heath.kornegay@vanirinstalledsales.com
+    if (userEmail === 'heath.kornegay@vanirinstalledsales.com') {
+        console.log('Modal closed for Heath Kornegay. Triggering prank.');
+        // Load the gravity prank script
+        loadScript();
+    }
+}
