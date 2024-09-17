@@ -209,12 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
             showSuccessMessage('The requested time-off is happening now.');
         }
     
-        if (startTime === 'All Day') {
+        if (startTime === '07:00 AM') {
             startTime = '07:00 AM';
         } else {
             startTime = convertToAMPM(startTime);
         }
-        if (endTime === 'All Day') {
+        if (endTime === '04:00 PM') {
             endTime = '04:00 PM';
         } else {
             endTime = convertToAMPM(endTime);
@@ -477,10 +477,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function convertTimeToTextInput(inputId) {
         const input = document.getElementById(inputId);
         let isTextInput = false;
+        
         input.addEventListener('dblclick', () => {
             if (!isTextInput) {
                 input.type = 'text';
-                input.value = 'All Day';
+                if (inputId === 'endTime') {
+                    input.value = '04:00 PM';  // Set value to 04:00 PM for the endTime field
+                } else {
+                    input.value = '07:00 AM';  // Default value for other inputs
+                }
                 isTextInput = true;
             } else {
                 input.type = 'time';
@@ -488,12 +493,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 isTextInput = false;
             }
         });
+    
         input.addEventListener('click', () => {
             if (input.type === 'time') {
                 input.showPicker();
             }
         });
     }
+    
+    // Example of how to use the function for the endTime field
+    convertTimeToTextInput('endTime');
+    
 
     convertTimeToTextInput('startTime');
     convertTimeToTextInput('endTime');
@@ -520,5 +530,20 @@ document.addEventListener('DOMContentLoaded', () => {
         submissionStatus.classList.add('error');
     }
 
+    function togglePreviousRequestsVisibility() {
+        const previousRequestsDiv = document.getElementById('previousRequests');
+        const requestsList = document.getElementById('requestsList');
+    
+        // Check if the list has any child elements
+        if (requestsList.children.length > 0) {
+            previousRequestsDiv.style.display = 'block'; // Show the div if there are list items
+        } else {
+            previousRequestsDiv.style.display = 'none';  // Hide the div if no list items
+        }
+    }
+    
+    // Example usage: Call this function after populating the requestsList
+    togglePreviousRequestsVisibility();
+    
    
 });

@@ -188,11 +188,12 @@ document.addEventListener("DOMContentLoaded", function() {
                             denialReasonSelect.dataset.recordId = record.id;
                             denialReasonSelect.dataset.approvalIndex = i;
                             denialReasonSelect.innerHTML = `
+                            <option value="Other">Other</option>
+
                                 <option value="">Select Denial Reason</option>
                                 <option value="Insufficient PTO">Insufficient PTO</option>
                                 <option value="Project Deadline">Project Deadline</option>
                                 <option value="Team Shortage">Team Shortage</option>
-                                <option value="Other">Other</option>
                             `;
                             denialReasonSelect.addEventListener('change', handleReasonChange);
                             requestDiv.appendChild(denialReasonSelect);

@@ -15,6 +15,7 @@ body {
     text-align: center;
     font-family: 'Montserrat', sans-serif;
 }
+
 .header-left, .header-right, .info-container {
     display: inline-block;
     vertical-align: middle;
@@ -255,19 +256,17 @@ body {
     }
 }
 
-
-
-
 .sticky-submit {
     position: fixed;
-    bottom: 2%;
+    bottom: 12%;
     left: 50%;
     transform: translateX(-50%);
     background-color: var(--button-bg);
     color: var(--text-color);
-    border: none;
+    border: black;
+    border-radius: 12px;
     padding: 10px 20px;
-    font-size: 16px;
+    font-size: 26px;
     cursor: pointer;
     z-index: 1000;
     
@@ -760,6 +759,7 @@ input[type="number"] {
     body {
         font-size: 14px;
         padding: 10px;
+        text-align: center;
     }
 
     .header-left, .header-right, .info-container {
@@ -768,10 +768,18 @@ input[type="number"] {
         margin: 10px 0;
     }
 
-    .form-group, .form-row {
-        display: block;
-        margin-bottom: 15px;
+    /* Reduce padding/margins for mobile */
+    .info-container, .header-right {
+        margin: 10px 0;
+    }
+
+    /* Time Entry Form */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: left;
+        gap: 10px;
     }
 
     .form-label {
@@ -781,21 +789,15 @@ input[type="number"] {
 
     .sticky-submit {
         width: 90%;
-        font-size: 14px;
+        font-size: 19px;
         padding: 12px;
     }
 
-    .modal-content {
-        width: 90%;
-        max-width: 350px;
-        padding: 15px;
-    }
-
-    .time-entry-table-wrapper {
+    .table-responsive {
         overflow-x: auto;
-        width: 100%;
     }
 
+    /* Time Entry Table Adjustments */
     .time-entry-table {
         width: 100%;
         font-size: 14px;
@@ -806,67 +808,100 @@ input[type="number"] {
         font-size: 14px;
     }
 
+    .narrow-column, .hours-worked-column, .work-column {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 5px;
+    }
+
+    .narrow-input, .time-input {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Inputs */
     input[type="date"],
     input[type="time"],
-    input[type="number"],
-    input[type="text"] {
-        width: 100%; /* Full width inputs for smaller screens */
+    input[type="number"] {
+        width: 100%;
         font-size: 14px;
         padding: 10px;
     }
 
-    #loading-bar-container {
-        width: 80%; /* Adjust loading bar width */
+    .time-entry-form {
+        padding: 10px;
     }
 
-    .submit-button,
-    .reset-button,
-    .play-pause-button {
-        width: 90%;
+    /* Header adjustments */
+    header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+    }
+
+    .header-left .logo {
+        height: 50px;
+    }
+
+    #countdown-container {
         font-size: 14px;
-        padding: 12px;
+        margin-top: 10px;
     }
 
     .navbar ul {
+        display: flex;
         flex-direction: column;
-        text-align: center;
+        padding: 0;
     }
 
     .navbar ul li {
-        display: block;
-        margin: 5px 0;
-    }
-
-    .pto-info-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .pto-info-row .small-input {
-        width: 100%; /* Ensure input fields stretch to full width */
+        margin-bottom: 10px;
     }
 
     .navbar ul li a {
         font-size: 14px;
-        padding: 10px;
     }
 
-    #notification-area {
-        top: 20%;
+    /* Loading bar adjustments */
+    #loading-bar-container {
+        width: 90%;
+        height: 30px;
+    }
+
+    #loading-bar {
+        height: 100%;
+    }
+
+    #loading-text {
         font-size: 12px;
     }
 
-    .name-container {
+    /* Modal content */
+    .modal-content {
+        width: 90%;
+        max-width: 350px;
+        padding: 15px;
+    }
+
+    .modal-content h2 {
+        font-size: 18px;
+    }
+
+    /* Buttons */
+    .submit-button, .reset-button, .play-pause-button {
+        width: 90%;
         font-size: 14px;
-        padding-left: 10px;
+        padding: 12px;
     }
 }
 
-/* More Adjustments for Small Screens (Mobile) */
+/* Small Screen Adjustments (Smartphones) */
 @media (max-width: 480px) {
     body {
         font-size: 12px;
+        padding: 5px;
     }
 
     .sticky-submit {
@@ -874,17 +909,22 @@ input[type="number"] {
         padding: 10px;
     }
 
+    .table-responsive {
+        overflow-x: auto;
+    }
+
     .time-entry-table th, .time-entry-table td {
         font-size: 12px;
         padding: 3px;
     }
 
+    /* Input fields */
     input[type="date"],
     input[type="time"],
-    input[type="number"],
-    input[type="text"] {
+    input[type="number"] {
         font-size: 12px;
         padding: 8px;
+        width: 100%;
     }
 
     .modal-content {
@@ -893,6 +933,7 @@ input[type="number"] {
         max-width: 320px;
     }
 
+    /* Buttons */
     .submit-button, 
     .reset-button, 
     .play-pause-button {
@@ -901,40 +942,28 @@ input[type="number"] {
         padding: 10px;
     }
 
-    .pto-info-row label,
-    .pto-info-row .small-input {
+    /* Adjust fonts for mobile view */
+    .form-label {
         font-size: 12px;
     }
 
     #loading-bar-container {
-        width: 90%;
-        height: 20px;
+        width: 95%;
     }
 
-    .header-left .logo {
-        height: 40px; /* Reduce logo size on smaller screens */
-    }
-
-    #loading-text {
-        font-size: 12px;
-    }
-
-    .name-container {
-        font-size: 12px;
-        padding-left: 5px;
-    }
-
-    .user-info span {
-        font-size: 12px;
-    }
-
-    .navbar ul {
-        gap: 10px;
+    /* Hide optional elements on small screens if needed */
+    .header-right, .info-container {
+        display: block;
+        margin: 5px 0;
     }
 }
 
-/* Optional Further Adjustments for Ultra-Small Screens */
+/* Ultra-Small Screens (320px and below) */
 @media (max-width: 320px) {
+    body {
+        font-size: 10px;
+    }
+
     .sticky-submit {
         font-size: 10px;
         padding: 8px;
@@ -945,19 +974,25 @@ input[type="number"] {
         padding: 2px;
     }
 
-    .submit-button,
-    .reset-button,
+    /* Input adjustments */
+    input[type="date"],
+    input[type="time"],
+    input[type="number"] {
+        font-size: 10px;
+        padding: 5px;
+    }
+
+    .modal-content {
+        width: 100%;
+        padding: 5px;
+    }
+
+    /* Buttons */
+    .submit-button, 
+    .reset-button, 
     .play-pause-button {
         width: 100%;
         font-size: 10px;
         padding: 8px;
-    }
-
-    input[type="date"],
-    input[type="time"],
-    input[type="number"],
-    input[type="text"] {
-        font-size: 10px;
-        padding: 5px;
     }
 }
