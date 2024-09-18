@@ -31,6 +31,8 @@ header {
     align-items: center;
     border-bottom: 2px solid var(--border-color);
     transition: background-color 0.3s ease, border-color 0.3s ease;
+    width: 100%; /* Ensures the header takes the full width */
+    box-sizing: border-box; /* Includes padding and border in the width calculation */
 }
 
 .header-left .logo {
@@ -119,13 +121,75 @@ header {
     font-weight: bold;
     padding: 20px;
     transition: color 0.3s ease;
-    width: 70%; /* Match the width of the table */
     margin: 0 auto; /* Center the container */
     cursor: pointer;
 }
 
 .name-container.hidden {
-    padding-bottom: 40px; /* Additional space when table is hidden */
+    padding-bottom: 45px; /* Additional space when table is hidden */
+}
+
+/* Centering tables inside the table-wrapper */
+#main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Styles for narrowing borders and making width fit the text */
+.narrow-border {
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+ 
+    padding: 10px;
+    text-align: right;
+    margin: 0 auto;
+    width: auto; /* Fit the width to the text */
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+
+/* Ensuring input fields inside narrow-border are well-aligned */
+.narrow-border input {
+    width: auto; /* Make input width fit its content */
+    text-align: center;
+}
+
+
+
+
+
+.table-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Add spacing between the two tables if needed */
+    width: 100%; /* Ensure the wrapper takes up the full width */
+    padding: 20px;
+}
+
+.time-tracking-table, .approval-table {
+    display: flex;
+    justify-content: center;
+    width: 50%; /* Adjust the width as needed */
+}
+
+table {
+    border-collapse: collapse;
+    margin: 0 auto; /* Center the tables themselves */
+    width: 100%; /* Full width for each table */
+    max-width: 500px; /* Optional: set a max-width for tables */
+}
+
+th, td {
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    text-align: center;
+}
+
+h1, h3 {
+    text-align: center; /* Center the headings */
 }
 
 #check-all-button {
@@ -150,69 +214,27 @@ header {
     padding: 10px;
 }
 
-/* Table Styling */
-.time-entry-table {
-    width: 70%;
-    margin: 20px auto;
-    border-collapse: collapse;
-    font-size: 14px;
-    margin-bottom: 30px;
-    transition: background-color 0.3s ease;
-}
-
-.time-entry-table th,
-.time-entry-table td {
-    text-align: center;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    transition: border-color 0.3s ease;
-}
-
-.time-entry-table th {
-    color: var(--text-color);
-}
-
-.time-entry-table td {
+/* Input Fields Styling */
+input[type="time"],
+input[type="number"],
+input[type="date"] {
     background-color: var(--input-bg);
-}
-
-.time-entry-table input[type="date"],
-.time-entry-table input[type="time"],
-.time-entry-table input[type="number"],
-.time-entry-table input[type="text"] {
-    background-color: inherit;
     color: var(--input-text-color);
     border: none;
     border-radius: 4px;
     padding: 5px;
     text-align: center;
-    font-size: 14px;
+    font-size: large;
 }
 
-/* Placeholder Colors */
-input[type="time"]::placeholder,
-input[type="number"]::placeholder,
-input[type="date"]::placeholder {
-    color: var(--input-text-color);
-    opacity: 1;
-    font-weight: bolder;
-}
-
-input[type="time"]:-webkit-autofill,
-input[type="number"]:-webkit-autofill,
-input[type="date"]:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0 30px inherit inset !important;
-    -webkit-text-fill-color: var(--input-text-color) !important;
-}
-
-/* Submit Button */
+/* Sticky Submit Button */
 #submit-button {
     position: sticky;
     bottom: 3%;
     left: 50%;
     transform: translateX(-50%);
     padding: 10px 20px;
-    background-color: #1abc9c; 
+    background-color: var(--highlight-color); 
     color: white;
     border: none;
     border-radius: 5px;
@@ -223,11 +245,6 @@ input[type="date"]:-webkit-autofill {
 
 #submit-button:hover {
     background-color: #00b345; /* Darker shade for hover effect */
-}
-
-#submit-button:focus {
-    outline: none;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
 /* Loading Screen */
@@ -264,15 +281,6 @@ input[type="date"]:-webkit-autofill {
     display: none;
 }
 
-/* Highlighting */
-.highlight-green {
-    background-color: #d4edda; /* Light green */
-}
-
-.highlight-red {
-    background-color: #f8d7da; /* Light red */
-}
-
 /* Notifications */
 .notification {
     display: none;
@@ -291,33 +299,7 @@ input[type="date"]:-webkit-autofill {
     color: #721c24;
 }
 
-/* Animations */
-.fade-in {
-    animation: fadeIn 1s forwards;
-}
-
-.fade-out {
-    animation: fadeOut 1s forwards;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-
 /* Form Styling */
-.form-group {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
-
 .time-entry-form {
     width: 96%;
     max-width: 2550px;
@@ -326,73 +308,6 @@ input[type="date"]:-webkit-autofill {
     padding: 20px;
     border-radius: 10px;
     transition: background-color 0.3s ease;
-}
-
-.form-label {
-    color: var(--text-color);
-    font-weight: bold;
-    transition: color 0.3s ease;
-}
-
-input[type="number"] {
-    width: 50%;
-}
-
-.input-time {
-    font-size: medium;
-}
-
-.input-date,
-.input-time {
-    position: relative;
-    padding-left: 30px;
-    color: var(--input-text-color);
-}
-
-input[type="time"],
-input[type="number"],
-input[type="date"] {
-    background-color: inherit;
-    color: var(--input-text-color);
-    border: none;
-    border-radius: 4px;
-    padding: 5px;
-    text-align: center;
-    font-weight: bolder;
-    width: 95%;
-    max-width: 300px;
-    font-size: large;
-}
-
-/* Sticky Submit Button */
-.submit-button,
-.play-pause-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: var(--highlight-color);
-    color: var(--text-color);
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.submit-button:hover,
-.play-pause-button:hover {
-    background-color: var(--highlight-hover-color);
-}
-
-.time-entry-table input:focus {
-    border-color: #00bcd4; /* Cyan border to indicate focus */
-}
-
-.highlighted-change {
-    background-color: white !important; /* Light yellow background to highlight changes */
-    transition: background-color 0.5s ease !important;
-    border: 2px solid #1abc9c !important; /* Yellow border for extra visibility */
-    color: black !important;
 }
 
 /* Mobile Adjustments */

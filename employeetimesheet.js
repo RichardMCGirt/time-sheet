@@ -134,6 +134,17 @@ document.addEventListener("DOMContentLoaded", async function () {
         return workedHours > 0 ? workedHours.toFixed(2) : 0; // Return total worked hours, rounded to 2 decimal places
     }
     
+    function formatDateToMMDDYYYY(dateString) {
+        if (!dateString) return ''; // Return empty string if date is not available
+        const date = new Date(dateString);
+        
+        const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Get month and pad with 0 if necessary
+        const day = date.getDate().toString().padStart(2, '0'); // Get day and pad with 0 if necessary
+        const year = date.getFullYear(); // Get year
+        
+        return `${month}/${day}/${year}`;
+    }
+    
 
     function generateRows(fields, recordId, employeeNumber) {
         console.log('Generating rows for timesheet');
@@ -177,6 +188,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (totalHoursWorked > 0 && totalHoursWorked < 40) {
             giftedHours = Math.min(3, 40 - totalHoursWorked);  // Gifted hours between 0-3, ensuring total does not exceed 40
         }
+        
     
         // Fetch values of Total Personal Hours, Total PTO Hours, and Total Holiday Hours from Airtable fields
         const totalPersonalHours = parseFloat(fields['Total Personal Hours'] || 0);
@@ -189,78 +201,80 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Add a row for total hours worked, gifted hours, and each of the additional hour types if they are greater than 0
         let totalRow = '';
 
-        if (totalHoursWorked > 0) {
-            totalRow += `
-                <tr>
-                    <th colspan="6" style="text-align:right;">Total Hours Worked:</th>
-                    <th>${totalHoursWorked.toFixed(2)}</th>
-                    <!-- Add an empty cell for alignment with checkbox column -->
-                    <th></th>
-                </tr>
-            `;
-        }
-    
-        if (giftedHours > 0) {
-            totalRow += `
-                <tr>
-                    <th colspan="6" style="text-align:right;">Gifted Hours:</th>
-                    <th>${giftedHours.toFixed(2)}</th>
-                </tr>
-            `;
-        }
-    
-        if (totalPersonalHours > 0) {
-            totalRow += `
-                <tr>
-                    <th colspan="6" style="text-align:right;">Personal Hours:</th>
-                    <th>${totalPersonalHours.toFixed(2)}</th>
-                </tr>
-            `;
-        }
-    
-        if (totalPtoHours > 0) {
-            totalRow += `
-                <tr>
-                    <th colspan="6" style="text-align:right;">PTO Hours:</th>
-                    <th>${totalPtoHours.toFixed(2)}</th>
-                </tr>
-            `;
-        }
-    
-        if (totalHolidayHours > 0) {
-            totalRow += `
-                <tr>
-                    <th colspan="6" style="text-align:right;">Holiday Hours:</th>
-                    <th>${totalHolidayHours.toFixed(2)}</th>
-                </tr>
-            `;
-        }
-    
-        // Always show the total hours combined from all sources
-        totalRow += `
-            <tr>
-                <th colspan="6" style="text-align:right;">Total Hours :</th>
-                <th>${(totalHoursWorked + totalGiftedHours + totalHolidayHours + totalPtoHours + totalPersonalHours).toFixed(2)}</th>
-            </tr>
-        `;
-    
-  // Add a row for overtime hours if any
-  if (totalOvertimeHours > 0) {
+// Add a row for total hours worked only if it doesn't match total gifted, PTO, holiday, and personal hours
+if (totalHoursWorked > 0 && totalHoursWorked !== (totalHoursWorked + totalGiftedHours + totalHolidayHours + totalPtoHours + totalPersonalHours)) {
     totalRow += `
         <tr>
-            <th colspan="6" style="text-align:right;">Overtime Hours (over 40):</th>
+            <th colspan="6" class="narrow-border" style="text-align:right;">Total Hours Worked:</th>
+            <th>${totalHoursWorked.toFixed(2)}</th>
+        </tr>
+    `;
+}
+
+
+if (giftedHours > 0) {
+    totalRow += `
+        <tr>
+            <th colspan="6" class="narrow-border" style="text-align:right;">Gifted Hours:</th>
+            <th>${giftedHours.toFixed(2)}</th>
+        </tr>
+    `;
+}
+
+if (totalPersonalHours > 0) {
+    totalRow += `
+        <tr>
+            <th colspan="6" class="narrow-border" style="text-align:right;">Personal Hours:</th>
+            <th>${totalPersonalHours.toFixed(2)}</th>
+        </tr>
+    `;
+}
+
+if (totalPtoHours > 0) {
+    totalRow += `
+        <tr>
+            <th colspan="6" class="narrow-border" style="text-align:right;">PTO Hours:</th>
+            <th>${totalPtoHours.toFixed(2)}</th>
+        </tr>
+    `;
+}
+
+if (totalHolidayHours > 0) {
+    totalRow += `
+        <tr>
+            <th colspan="6" class="narrow-border" style="text-align:right;">Holiday Hours:</th>
+            <th>${totalHolidayHours.toFixed(2)}</th>
+        </tr>
+    `;
+}
+
+// Always show the total hours combined from all sources
+totalRow += `
+    <tr>
+        <th colspan="6" class="narrow-border" style="text-align:right;">Total Hours :</th>
+        <th>${(totalHoursWorked + totalGiftedHours + totalHolidayHours + totalPtoHours + totalPersonalHours).toFixed(2)}</th>
+    </tr>
+`;
+
+// Add a row for overtime hours if any
+if (totalOvertimeHours > 0) {
+    totalRow += `
+        <tr>
+            <th colspan="6" class="narrow-border" style="text-align:right;">Overtime Hours (over 40):</th>
             <th>${totalOvertimeHours.toFixed(2)}</th>
         </tr>
     `;
 }
 
-// Add the approval checkbox as the last row (or place it wherever necessary)
+// Add the approval checkbox as the last row
 totalRow += `
     <tr>
-        <th colspan="6" style="text-align:right;">Approval:</th>
+        <th colspan="6" class="narrow-border" style="text-align:right;">Approval:</th>
         <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Approved'] ? 'checked' : ''}></th>
-        </tr>
+    </tr>
 `;
+
+        
 
 return rows + totalRow;
 }
@@ -370,21 +384,17 @@ async function fetchTimesheets(supervisorName) {
             }
         } while (offset); // Continue fetching as long as there's an offset (i.e., more pages)
     
-        // Create a map of employee numbers and their approval statuses
+        // Create a map of employee numbers, their approval statuses, and date7 values
         return allRecords.reduce((acc, record) => {
             const employeeNumber = record.fields['Employee Number'];
             const approved = record.fields['Approved'] ?? false;  // Use 'false' if undefined or null
-            acc[employeeNumber] = approved;
-            console.log(`Employee Number: ${employeeNumber}, Approved: ${approved}`);
+            const date7 = record.fields['date7'] || '';  // Fetch the date7 field
+            acc[employeeNumber] = { approved, date7 }; // Store both approved status and date7
+            console.log(`Employee Number: ${employeeNumber}, Approved: ${approved}, date7: ${date7}`);
             return acc;
         }, {});
     }
     
-    
-    
-    
-    
-
     async function populateTimesheets(records, approvedData) {
         console.log('Populating timesheets');
         timesheetsBody.innerHTML = ''; // Clear any existing rows
@@ -399,9 +409,22 @@ async function fetchTimesheets(supervisorName) {
                 const employeeName = await fetchEmployeeName(employeeNumber);
                 const hasValues = checkTimesheetValues(fields);
     
+                // Get the approval status and date7 value from approvedData
+                const { approved, date7 } = approvedData[employeeNumber] || { approved: false, date7: '' };
+    
+                // Format date7 to mm/dd/yyyy
+                const formattedDate7 = formatDateToMMDDYYYY(date7);
+    
+                // Calculate the total hours worked to determine if the name should be red
+                let totalHoursWorked = 0;
+                for (let day = 1; day <= 7; day++) {
+                    totalHoursWorked += parseFloat(calculateHours(fields[`start${day}`], fields[`end${day}`], fields[`lunchs${day}`], fields[`lunche${day}`], fields[`additionali${day}`], fields[`additionalo${day}`])) || 0;
+                }
+    
                 const nameContainer = document.createElement('div');
                 nameContainer.classList.add('name-container');
-                nameContainer.textContent = `${employeeName}`; // Employee name only, number hidden
+                // Display employee name and formatted date7
+                nameContainer.textContent = `${employeeName}  ${formattedDate7}`;
                 nameContainer.setAttribute('data-record-id', record.id);
                 nameContainer.setAttribute('data-employee-number', employeeNumber);
                 nameContainer.addEventListener('click', () => {
@@ -409,8 +432,10 @@ async function fetchTimesheets(supervisorName) {
                     toggleVisibility(record.id);
                 });
                 nameContainer.classList.add('clickable');
-                if (!hasValues) {
-                    nameContainer.style.color = 'red'; // Set the name color to red if no values
+    
+                // If total hours worked is zero, apply the red color
+                if (totalHoursWorked === 0) {
+                    nameContainer.style.color = 'red'; // Set the name color and date to red
                 }
                 timesheetsBody.appendChild(nameContainer);
     
@@ -460,6 +485,7 @@ async function fetchTimesheets(supervisorName) {
             timesheetsBody.appendChild(noRecordsRow);
         }
     }
+    
     
     
     
