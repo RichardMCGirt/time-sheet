@@ -172,17 +172,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     
         // Iterate over all days (1-7) to generate rows
         const rows = [1, 2, 3, 4, 5, 6, 7].map(day => `
-            <tr>
-                <th><input type="time" name="start${day}" value="${fields[`start${day}`] || ''}" readonly></th>
-                <th><input type="time" name="lunchs${day}" value="${fields[`lunchs${day}`] || ''}" readonly></th>
-                <th><input type="time" name="lunche${day}" value="${fields[`lunche${day}`] || ''}" readonly></th>
-                <th><input type="time" name="end${day}" value="${fields[`end${day}`] || ''}" readonly></th>
-                <th><input type="time" name="additionali${day}" value="${fields[`additionali${day}`] || ''}" readonly></th>
-                <th><input type="time" name="additionalo${day}" value="${fields[`additionalo${day}`] || ''}" readonly></th>
-                <th>${calculateAndAccumulateHours(day)}</th>
+        <tr>
+            <th><input type="time" name="start${day}" value="${fields[`start${day}`] || ''}" disabled></th>
+            <th><input type="time" name="lunchs${day}" value="${fields[`lunchs${day}`] || ''}" disabled></th>
+            <th><input type="time" name="lunche${day}" value="${fields[`lunche${day}`] || ''}" disabled></th>
+            <th><input type="time" name="end${day}" value="${fields[`end${day}`] || ''}" disabled></th>
+            <th><input type="time" name="additionali${day}" value="${fields[`additionali${day}`] || ''}" disabled></th>
+            <th><input type="time" name="additionalo${day}" value="${fields[`additionalo${day}`] || ''}" disabled></th>
+            <th>${calculateAndAccumulateHours(day)}</th>
+        </tr>
+    `).join('');
 
-            </tr>
-        `).join('');
     
         // Calculate gifted hours
         if (totalHoursWorked > 0 && totalHoursWorked < 40) {

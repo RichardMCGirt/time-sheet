@@ -193,6 +193,33 @@ input[type="checkbox"] {
 th, tr {
     font-weight: bolder !important;
     font-size: medium !important;
+    cursor: not-allowed; /* Maintain the not-allowed cursor on hover */
+
+}
+
+/* Apply to all input elements except checkboxes */
+input[type="time"]:not(.approve-checkbox),
+input[type="text"]:not(.approve-checkbox),
+input[type="number"]:not(.approve-checkbox),
+input[type="date"]:not(.approve-checkbox) {
+    cursor: not-allowed; /* Disabled cursor */
+   
+}
+
+/* Add hover effect to show the cursor is not allowed */
+input[type="time"]:hover,
+input[type="text"]:hover,
+input[type="number"]:hover,
+input[type="date"]:hover {
+    cursor: not-allowed; /* Maintain the not-allowed cursor on hover */
+}
+
+/* Prevent interaction */
+input[type="time"]:disabled,
+input[type="text"]:disabled,
+input[type="number"]:disabled,
+input[type="date"]:disabled {
+    cursor: not-allowed; /* Maintain the not-allowed cursor on hover */
 }
 
 
@@ -260,6 +287,7 @@ input[type="date"] {
     text-align: center;
     font-size: large;
 }
+
 
 /* Sticky Submit Button */
 #submit-button {
