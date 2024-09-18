@@ -11,6 +11,14 @@
     --highlight-hover-color: #16a085;
 }
 
+main {
+    width: 75%;
+    margin: 0 auto; /* Centers the main content */
+    padding: 20px;  /* Adds some padding for spacing */
+    box-sizing: border-box; /* Ensures padding is included in the width */
+}
+
+
 body {
     font-family: Arial, sans-serif;
     background-color: var(--bg-color);

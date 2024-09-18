@@ -138,8 +138,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!dateString) return ''; // Return empty string if date is not available
         const date = new Date(dateString);
         
-        const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Get month and pad with 0 if necessary
-        const day = date.getDate().toString().padStart(2, '0'); // Get day and pad with 0 if necessary
+        const month = (date.getMonth() + 1).toString().padStart(2, ''); 
+        const day = date.getDate().toString().padStart(2, ''); 
         const year = date.getFullYear(); // Get year
         
         return `${month}/${day}/${year}`;
@@ -269,7 +269,7 @@ if (totalOvertimeHours > 0) {
 // Add the approval checkbox as the last row
 totalRow += `
     <tr>
-        <th colspan="6" class="narrow-border" style="text-align:right;">Approval:</th>
+        <th colspan="6" class="narrow-border" style="text-align:right;">Approval :</th>
         <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Approved'] ? 'checked' : ''}></th>
     </tr>
 `;
@@ -715,5 +715,194 @@ async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
         }, 2000);
     }
  
+    function exportToExcel() {
+        console.log('Exporting data to Excel');
+        const data = collectTimesheetData();
+        
+        // Define header row and data
+        const wsData = [
+            ["Employee Name", "Date Ending", "Hours Worked", "PTO Hours Used", "Personal Hours Used", "Holiday Hours Used", "Gifted Hours", "Total Hours"],
+            ...data
+        ];
+
+        // Create a new worksheet
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+        // Define styles
+        const headerStyle = {
+            font: { bold: true, color: "FFFFFF" }, // Bold font and white text
+            fill: { fgColor: { rgb: "000000" } }   // Black background
+        };
+
+        // Apply styles to header row (row index 0)
+        for (let col = 0; col < wsData[0].length; col++) {
+            const cellAddress = { c: col, r: 0 }; // { c: column index, r: row index }
+            const cellRef = XLSX.utils.encode_cell(cellAddress);
+            ws[cellRef].s = headerStyle; // Apply the style
+        }
+
+        // Define column widths
+        ws['!cols'] = [
+            { wpx: 150 },
+            { wpx: 120 },
+            { wpx: 120 },
+            { wpx: 120 },
+            { wpx: 120 },
+            { wpx: 120 },
+            { wpx: 120 },
+            { wpx: 120 }
+        ];
+
+        // Create a new workbook and add the worksheet
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Timesheets Data');
+
+        // Write workbook to file
+        XLSX.writeFile(wb, 'timesheets_data.xlsx');
+    }
+
+    document.getElementById('customCsvButton').addEventListener('click', generateCustomCsv);
+
+    function generateCustomCsv() {
+        console.log('Generating custom CSV');
+        let csvContent = generateCsvHeader();
+        
+        const tables = document.querySelectorAll('.time-entry-table');
+        
+        tables.forEach(table => {
+            const recordId = table.getAttribute('data-record-id');
+            const employeeNumber = getEmployeeNumber(recordId);
+            
+            if (employeeNumber) {
+                const formattedEmployeeNumber = formatEmployeeNumber(employeeNumber);
+                const rows = table.querySelectorAll('tbody tr');
+    
+                // Fetch the date from date7 for the employee
+                const dateEndingField = rows[0].querySelector('input[name="dateEnding"]');
+                const formattedDate = formatDate(dateEndingField.value);
+    
+                // Add the header row before processing timesheets for the employee
+                csvContent += `1,${formattedEmployeeNumber},${formattedDate},R\n`;
+    
+                let lineNumber = 1; // Start the line number at 1 for each employee
+            
+                rows.forEach(row => {
+                    const formattedDateRow = formatDate(row.querySelector('input[name="dateEnding"]').value);
+            
+                    if (formattedDateRow) {
+                        const csvRows = generateCsvRows(row, formattedEmployeeNumber, formattedDateRow, lineNumber);
+                        csvContent += csvRows;
+                        lineNumber = (lineNumber % 8) + 1; // Increment and reset line number after reaching 8
+                    }
+                });
+            } else {
+                console.warn(`Employee number element not found for record ID: ${recordId}`);
+            }
+        });
+        
+        downloadCsv(csvContent, 'Corporate_timesheets.csv');
+    }
+    
+    
+    function generateCsvHeader() {
+        console.log('Generating CSV header');
+        return "RECTYPE,EMPLOYEE,PEREND,TIMECARD\nRECTYPE,EMPLOYEE,PEREND,TIMECARD,LINENUM,CATEGORY,EARNDED,HOURS\n";
+    }
+    
+    function getEmployeeNumber(recordId) {
+        const nameContainer = document.querySelector(`.name-container[data-record-id="${recordId}"]`);
+        const employeeNumber = nameContainer ? nameContainer.getAttribute('data-employee-number').trim() : null;
+        console.log(`Retrieved employee number for record ID ${recordId}: ${employeeNumber}`);
+        return employeeNumber;
+    }
+    
+    function formatEmployeeNumber(employeeNumber) {
+        return employeeNumber.padStart(6, '0');
+    }
+    
+    function formatDate(dateEnding) {
+        if (!dateEnding) {
+            console.warn('Empty date field detected, skipping row.');
+            return "";
+        }
+        const dateObj = new Date(dateEnding);
+        if (isNaN(dateObj.getTime())) {
+            console.warn(`Invalid date: ${dateEnding}`);
+            return "";
+        }
+        return dateObj.toISOString().split('T')[0].replace(/-/g, '');
+    }
+    
+    function generateCsvRows(row, formattedEmployeeNumber, formattedDate, lineNumber) {
+        const totalHours = parseFloat(row.querySelector('input[name="total_hours"]').value || 0);
+        const giftedHours = parseFloat(row.querySelector('input[name="gifted_hours"]').value || 0);
+        const ptoHours = parseFloat(row.querySelector('input[name="pto_hours"]').value || 0);
+        const personalHours = parseFloat(row.querySelector('input[name="personal_hours"]').value || 0);
+        const holidayHours = parseFloat(row.querySelector('input[name="holiday_hours"]').value || 0);
+        const overtimeHours = Math.max(totalHours - 40, 0);
+        let csvRows = '';
+    
+        // Only add rows with RECTYPE 2
+        if (totalHours > 0) {
+            let regularHours = Math.min(totalHours, 40);
+    
+            // Subtract gifted hours, PTO hours, personal hours, and holiday hours from regular hours for "0001" row
+            const deductions = giftedHours + ptoHours + personalHours + holidayHours;
+            regularHours -= deductions;
+    
+            // Ensure regular hours are not negative
+            if (regularHours < 0) {
+                regularHours = 0;
+            }
+    
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0001', regularHours, lineNumber++);
+        }
+    
+        if (overtimeHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0002', overtimeHours, lineNumber++);
+        }
+    
+        if (giftedHours > 0) {
+            const cappedGiftedHours = Math.min(giftedHours, 3);
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0011', cappedGiftedHours, lineNumber++);
+        }
+    
+        if (ptoHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0004', ptoHours, lineNumber++);
+        }
+    
+        if (personalHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0005', personalHours, lineNumber++);
+        }
+    
+        if (holidayHours > 0) {
+            csvRows += generateCsvLine(formattedEmployeeNumber, formattedDate, 2, '0007', holidayHours, lineNumber++);
+        }
+    
+        return csvRows;
+    }
+    
+    
+
+    
+    function generateCsvLine(employeeNumber, date, category, earnDed, hours, lineNumber) {
+        console.log(`Generating CSV line: Employee=${employeeNumber}, Date=${date}, LineNum=${lineNumber}, Category=${category}, EarnDed=${earnDed}, Hours=${hours}`);
+        return `2,${employeeNumber},${date},R,${lineNumber},${category},${earnDed},${hours}\n`;
+    }
+    
+    function downloadCsv(csvContent, filename) {
+        console.log(`Downloading CSV: ${filename}`);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
   
 });

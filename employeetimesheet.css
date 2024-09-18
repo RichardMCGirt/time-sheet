@@ -11,6 +11,19 @@
     --highlight-hover-color: #f39c12; /* Changed to a more contrasting color */
 }
 
+main {
+    width: 75% !important;
+    margin: 0 auto;
+    padding: 20px;
+    height: 100% !important;
+}
+
+#timesheets-body {
+    width: 75% !important;
+    margin: 0 auto; /* To center the table */
+}
+
+
 /* Global Styles */
 body {
     font-family: Arial, sans-serif;
@@ -159,6 +172,28 @@ header {
 
 
 
+/* Styling for the total rows (bold text, different background) */
+tr.total-row td {
+    font-weight: bold;
+}
+
+/* Styling for approval checkbox row */
+tr.approval-row td {
+    padding: 10px;
+}
+
+/* Custom checkbox styling */
+input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    accent-color: #007bff; /* Custom color for the checkbox */
+}
+
+th, tr {
+    font-weight: bolder !important;
+    font-size: medium !important;
+}
 
 
 .table-wrapper {
@@ -172,8 +207,7 @@ header {
 .time-tracking-table, .approval-table {
     display: flex;
     justify-content: center;
-    width: 50%; /* Adjust the width as needed */
-}
+    width: 70% !important;}
 
 table {
     border-collapse: collapse;
