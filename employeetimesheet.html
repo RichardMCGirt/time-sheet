@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supervisor Access - Approve Timesheets</title>
-    <link rel="stylesheet" href="supervisor.css">
+    <link rel="stylesheet" href="employeetimesheet.css">
     <link rel="icon" href="/favicon3.ico" type="image/x-icon">
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -22,7 +21,6 @@
                         <img src="vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
                     </a>
                     <div id="loading-indicator"></div>
-
                 </div>
                 <h3>Supervisor Portal</h3>
                 <div class="header-right">
@@ -43,12 +41,23 @@
             <div id="message-container"></div>
             <button id="check-all-button" class="toggle-button">Check All</button>
             <p>key enter twice to refresh</p>
-            <div id="timesheets-body"></div>
-            <section id="timesheets-section" class="timesheets-section">
-                <div id="timesheets-body">
-                    <!-- Timesheets will be populated here -->
+
+            <!-- Wrapper for the two tables -->
+            <div class="table-wrapper">
+                <!-- Time Tracking Table -->
+                <div class="time-tracking-table">
+                    <table id="timesheets-body">
+                        <!-- Timesheets will be populated here -->
+                    </table>
                 </div>
-            </section>
+
+                <!-- Approval Table -->
+                <div class="approval-table">
+                    <table id="approval-body">
+                        <!-- Approval details (gifted hours, total hours, etc.) will be populated here -->
+                    </table>
+                </div>
+            </div>
         </main>
     </div>
 
