@@ -158,6 +158,8 @@ header {
     flex-direction: column;
     width: 100%;
     min-height: 100vh;
+    display: none; /* Hide main content initially */
+
 }
 
 /* Styles for narrowing borders and making width fit the text */
@@ -284,14 +286,11 @@ h1, h3 {
 }
 
 /* Initially hide the header */
-#header, h1 {
-    display: none;
-}
+
 
 /* Show the header once the page is fully loaded */
-.header-visible {
-    display: block;
-}
+
+
 
 
 /* Input Fields Styling */
@@ -358,9 +357,7 @@ input[type="date"] {
     pointer-events: none;
 }
 
-#loading-screen.hidden {
-    display: none;
-}
+
 
 /* Notifications */
 .notification {
@@ -374,6 +371,10 @@ input[type="date"] {
     background-color: #d4edda;
     color: #155724;
 }
+
+
+
+
 
 .notification.error {
     background-color: #f8d7da;
