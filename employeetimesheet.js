@@ -72,7 +72,17 @@ document.addEventListener("DOMContentLoaded", async function () {
             console.error(`Supervisor not found for email: ${supervisorEmail}`);
             alert("Supervisor not found. Please check your email and try again.");
         }
+    
+        // Make header, title, and other elements visible after data is loaded
+        document.querySelector('header').classList.add('visible');
+        document.querySelector('h1').classList.add('visible');
+        document.querySelector('#check-all-button').classList.add('visible');
+        document.querySelector('p').classList.add('visible');
+        document.querySelector('#message-container').classList.add('visible');
     }
+    
+    
+    
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
@@ -141,7 +151,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const month = (date.getMonth() + 1).toString().padStart(2, ''); 
         const day = date.getDate().toString().padStart(2, ''); 
         const year = date.getFullYear(); // Get year
-        
+
         return `${month}/${day}/${year}`;
     }
     
@@ -270,16 +280,21 @@ if (totalOvertimeHours > 0) {
 totalRow += `
     <tr>
         <th colspan="6" class="narrow-border" style="text-align:right;">Approval :</th>
-        <th><input type="checkbox" class="approve-checkbox" data-record-id="${recordId}" ${fields['Approved'] ? 'checked' : ''}></th>
-    </tr>
+        <th>
+        <input type="checkbox" class="approve-checkbox" 
+               data-record-id="${recordId}" 
+               ${fields['Approved'] === true ? 'checked' : ''}>
+      </th>
+              </tr>
 `;
 
-        
+console.log(`Employee Number: ${employeeNumber}, Approved: ${fields['Approved']}`);
+
 
 return rows + totalRow;
 }
     
-    
+
     
 
 
@@ -394,7 +409,7 @@ async function fetchTimesheets(supervisorName) {
             return acc;
         }, {});
     }
-    
+
     async function populateTimesheets(records, approvedData) {
         console.log('Populating timesheets');
         timesheetsBody.innerHTML = ''; // Clear any existing rows
@@ -458,7 +473,8 @@ async function fetchTimesheets(supervisorName) {
                         ${generateRows(fields, record.id, employeeNumber)}
                     </tbody>
                 `;
-    
+                console.log(`Employee Number: ${employeeNumber}, Approved: ${fields['Approved']}`);
+
                 // Fetch the approved status from approvedData and log it
                 const approvedStatus = approvedData[employeeNumber] ?? false;  // Use the correct Employee Number, default to false if not found
                 console.log(`Setting checkbox for Employee Number: ${employeeNumber}, Approved Status: ${approvedStatus}`);

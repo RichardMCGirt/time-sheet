@@ -94,7 +94,10 @@ header {
 .navbar {
     background-color: var(--header-bg);
     overflow: hidden;
+    padding: 10px;  /* Add padding to space out the navbar */
     transition: background-color 0.3s ease;
+    border-radius: 15px; /* Rounded corners for the entire navbar */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for 3D effect */
 }
 
 .navbar ul {
@@ -112,18 +115,23 @@ header {
 
 .navbar ul li a {
     display: inline-block;
-    color: var(--text-color);
+    color: var(--bg-color);
     text-align: center;
     padding: 14px 20px;
     text-decoration: none;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
     background-color: #16a085;
+    border-radius: 10px; /* Rounded corners for each link */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Add shadow for 3D effect */
 }
 
 .navbar ul li a:hover {
     background-color: var(--highlight-color);
-    color: var(--text-color);
+    color: black;
+    transform: translateY(-3px); /* Lift the button slightly */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Intensify shadow for hover effect */
 }
+
 
 /* Name Container */
 .name-container {
@@ -274,6 +282,17 @@ h1, h3 {
     font-size: 18px;
     padding: 10px;
 }
+
+/* Initially hide the header */
+#header, h1 {
+    display: none;
+}
+
+/* Show the header once the page is fully loaded */
+.header-visible {
+    display: block;
+}
+
 
 /* Input Fields Styling */
 input[type="time"],
