@@ -380,31 +380,30 @@ async function fetchTimesheets(supervisorName) {
 
     async function fetchApprovedStatus() {
         let allRecords = [];
-        let offset = null; // Used for pagination
+        let offset = null;
     
         do {
             const endpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}${offset ? `?offset=${offset}` : ''}`;
             console.log(`Fetching approved status with endpoint: ${endpoint}`);
-    
+        
             try {
                 const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
                 if (!response.ok) throw new Error(`Failed to fetch approved status: ${response.statusText}`);
                 const data = await response.json();
-                allRecords = allRecords.concat(data.records); // Append new records to the list
-    
-                offset = data.offset; // Get the next page's offset if available
+                allRecords = allRecords.concat(data.records);
+        
+                offset = data.offset;
             } catch (error) {
                 console.error('Error fetching approved status:', error);
                 return {};
             }
-        } while (offset); // Continue fetching as long as there's an offset (i.e., more pages)
-    
-        // Create a map of employee numbers, their approval statuses, and date7 values
+        } while (offset);
+        
         return allRecords.reduce((acc, record) => {
             const employeeNumber = record.fields['Employee Number'];
-            const approved = record.fields['Approved'] ?? false;  // Use 'false' if undefined or null
-            const date7 = record.fields['date7'] || '';  // Fetch the date7 field
-            acc[employeeNumber] = { approved, date7 }; // Store both approved status and date7
+            const approved = record.fields['Approved'] ?? false;
+            const date7 = record.fields['date7'] || '';
+            acc[employeeNumber] = { approved, date7 };
             console.log(`Employee Number: ${employeeNumber}, Approved: ${approved}, date7: ${date7}`);
             return acc;
         }, {});
@@ -412,25 +411,24 @@ async function fetchTimesheets(supervisorName) {
 
     async function populateTimesheets(records, approvedData) {
         console.log('Populating timesheets');
-        timesheetsBody.innerHTML = ''; // Clear any existing rows
+        timesheetsBody.innerHTML = '';
     
         if (records.length > 0) {
             for (const record of records) {
                 const fields = record.fields;
                 const employeeNumber = fields['Employee Number'];
     
-                if (!employeeNumber) continue; // Skip records without Employee Number
+                if (!employeeNumber) continue;
     
                 const employeeName = await fetchEmployeeName(employeeNumber);
                 const hasValues = checkTimesheetValues(fields);
     
                 // Get the approval status and date7 value from approvedData
-                const { approved, date7 } = approvedData[employeeNumber] || { approved: false, date7: '' };
+                const { approved: approvalStatus, date7 } = approvedData[employeeNumber] || { approved: false, date7: '' };
     
                 // Format date7 to mm/dd/yyyy
                 const formattedDate7 = formatDateToMMDDYYYY(date7);
     
-                // Calculate the total hours worked to determine if the name should be red
                 let totalHoursWorked = 0;
                 for (let day = 1; day <= 7; day++) {
                     totalHoursWorked += parseFloat(calculateHours(fields[`start${day}`], fields[`end${day}`], fields[`lunchs${day}`], fields[`lunche${day}`], fields[`additionali${day}`], fields[`additionalo${day}`])) || 0;
@@ -438,7 +436,6 @@ async function fetchTimesheets(supervisorName) {
     
                 const nameContainer = document.createElement('div');
                 nameContainer.classList.add('name-container');
-                // Display employee name and formatted date7
                 nameContainer.textContent = `${employeeName}  ${formattedDate7}`;
                 nameContainer.setAttribute('data-record-id', record.id);
                 nameContainer.setAttribute('data-employee-number', employeeNumber);
@@ -448,9 +445,8 @@ async function fetchTimesheets(supervisorName) {
                 });
                 nameContainer.classList.add('clickable');
     
-                // If total hours worked is zero, apply the red color
                 if (totalHoursWorked === 0) {
-                    nameContainer.style.color = 'red'; // Set the name color and date to red
+                    nameContainer.style.color = 'red';
                 }
                 timesheetsBody.appendChild(nameContainer);
     
@@ -473,21 +469,20 @@ async function fetchTimesheets(supervisorName) {
                         ${generateRows(fields, record.id, employeeNumber)}
                     </tbody>
                 `;
-                console.log(`Employee Number: ${employeeNumber}, Approved: ${fields['Approved']}`);
-
-                // Fetch the approved status from approvedData and log it
-                const approvedStatus = approvedData[employeeNumber] ?? false;  // Use the correct Employee Number, default to false if not found
-                console.log(`Setting checkbox for Employee Number: ${employeeNumber}, Approved Status: ${approvedStatus}`);
+                console.log(`Employee Number: ${employeeNumber}, Approved: ${approvalStatus}`);
     
-                // Update the checkbox with the approved status
+                // Fetch the approved status from approvedData and log it
+                console.log(`Setting checkbox for Employee Number: ${employeeNumber}, Approved Status: ${approvalStatus}`);
+    
+                // Update the checkbox with the approval status
                 const approveCheckbox = table.querySelector('.approve-checkbox');
                 if (approveCheckbox) {
-                    approveCheckbox.checked = approvedStatus; // Set checked based on the approval status
+                    approveCheckbox.checked = approvalStatus; // Set checked based on the approval status
                     approveCheckbox.setAttribute('data-employee-number', employeeNumber);
                     approveCheckbox.addEventListener('change', handleCheckboxChange);
                 }
     
-                if (supervisorEmail !== 'katy@vanirinstalledsales.com' && approvedStatus) {
+                if (supervisorEmail !== 'katy@vanirinstalledsales.com' && approvalStatus) {
                     table.style.display = 'none'; // Hide approved rows for non-Katy users
                 }
     
@@ -502,9 +497,8 @@ async function fetchTimesheets(supervisorName) {
         }
     }
     
-    
-    
-    
+
+
     
     function handleCheckboxBlur(event) {
         const checkbox = event.target;
