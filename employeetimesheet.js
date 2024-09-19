@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
 
+
+
+    
     // Elements to hide during data fetching
     const titleElement = document.querySelector('h1');
     const messageContainer = document.getElementById('message-container');
