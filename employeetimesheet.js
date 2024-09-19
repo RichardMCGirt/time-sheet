@@ -146,14 +146,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     
     function formatDateToMMDDYYYY(dateString) {
         if (!dateString) return ''; // Return empty string if date is not available
-        const date = new Date(dateString);
-        
-        const month = (date.getMonth() + 1).toString().padStart(2, ''); 
-        const day = date.getDate().toString().padStart(2, ''); 
-        const year = date.getFullYear(); // Get year
-
+    
+        // Append 'T00:00:00Z' to treat the date as UTC
+        const date = new Date(`${dateString}T00:00:00Z`);
+    
+        const month = (date.getUTCMonth() + 1).toString().padStart(2, ''); // Get month (UTC)
+        const day = date.getUTCDate().toString().padStart(2, ''); // Get day (UTC)
+        const year = date.getUTCFullYear(); // Get year (UTC)
+    
         return `${month}/${day}/${year}`;
     }
+    
     
 
     function generateRows(fields, recordId, employeeNumber) {
