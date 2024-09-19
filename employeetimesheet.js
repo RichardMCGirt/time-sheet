@@ -13,16 +13,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
 
-    // Define the header element here
-    const headerElement = document.querySelector('header');
-    const navElement = document.querySelector('nav'); // Define nav element
-
-    
     // Elements to hide during data fetching
     const titleElement = document.querySelector('h1');
     const messageContainer = document.getElementById('message-container');
     const keyEnterHint = document.querySelector('p');
-
 
 
     if (userEmailElement) {
@@ -43,55 +37,49 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
 
-     // Hide elements during data fetching
-     headerElement.style.display = 'none'; // Hide header
-     navElement.style.display = 'none';    // Hide nav
-     titleElement.style.display = 'none';
-     messageContainer.style.display = 'none';
-     checkAllButton.style.display = 'none';
-     keyEnterHint.style.display = 'none';
+    // Hide elements during data fetching
+    console.log('Hiding elements before data fetching');
+    titleElement.style.display = 'none';
+    messageContainer.style.display = 'none';
+    checkAllButton.style.display = 'none';
+    keyEnterHint.style.display = 'none';
 
-// Handle the loading screen
-console.log('Starting loading screen sequence');
-setTimeout(() => {
-    console.log('Applying full-color transition to loading logo');
-    loadingLogo.classList.add('full-color');
-
+    // Handle the loading screen
+    console.log('Starting loading screen sequence');
     setTimeout(() => {
-        // Start the transition to fade out the loading screen
-        loadingScreen.classList.add('fade-out');
+        console.log('Applying full-color transition to loading logo');
+        loadingLogo.classList.add('full-color');
 
-        // After the transition, hide the loading screen and show the main content
         setTimeout(() => {
-            loadingScreen.classList.add('hidden'); // Hide the loading screen
-            mainContent.style.display = 'block'; // Show the main content
-        }, 700); // Matches the fade-out duration
-    }, 1000); // Simulate a delay for data loading, adjust as needed
-}, 1000);
+            console.log('Fading out loading screen');
+            loadingScreen.classList.add('fade-out');
+            setTimeout(() => {
+                console.log('Hiding loading screen and displaying main content');
+                loadingScreen.classList.add('hidden');
+                mainContent.classList.add('visible');
+                loadDataAndInitializePage();
+            }, 700);
+        }, 1000);
+    }, 1000);
 
-
-
-async function loadDataAndInitializePage() {
-    console.log(`Fetching supervisor name for email: ${supervisorEmail}`);
-    const supervisorName = await fetchSupervisorName(supervisorEmail);
-    if (supervisorName) {
-        console.log(`Supervisor found: ${supervisorName}`);
-        await fetchTimesheets(supervisorName);
-    } else {
-        console.error(`Supervisor not found for email: ${supervisorEmail}`);
-        alert("Supervisor not found. Please check your email and try again.");
+    async function loadDataAndInitializePage() {
+        console.log(`Fetching supervisor name for email: ${supervisorEmail}`);
+        const supervisorName = await fetchSupervisorName(supervisorEmail);
+        if (supervisorName) {
+            console.log(`Supervisor found: ${supervisorName}`);
+            await fetchTimesheets(supervisorName);
+        } else {
+            console.error(`Supervisor not found for email: ${supervisorEmail}`);
+            alert("Supervisor not found. Please check your email and try again.");
+        }
+    
+        // Make header, title, and other elements visible after data is loaded
+        document.querySelector('header').classList.add('visible');
+        document.querySelector('h1').classList.add('visible');
+        document.querySelector('#check-all-button').classList.add('visible');
+        document.querySelector('p').classList.add('visible');
+        document.querySelector('#message-container').classList.add('visible');
     }
-
-    // Show the header, nav, and other elements after the data is loaded
-    headerElement.style.display = ''; // Show the header after loading
-    navElement.style.display = '';    // Show the nav after loading
-    titleElement.style.display = '';  // Show the title
-    messageContainer.style.display = ''; // Show the message container
-    checkAllButton.style.display = ''; // Show the check all button
-    keyEnterHint.style.display = ''; // Show the key enter hint
-}
-
-loadDataAndInitializePage();
     
     
     
@@ -514,6 +502,20 @@ async function fetchTimesheets(supervisorName) {
             timesheetsBody.appendChild(noRecordsRow);
         }
     }
+    
+
+
+    
+    function handleCheckboxBlur(event) {
+        const checkbox = event.target;
+        const recordId = checkbox.getAttribute('data-record-id');
+        const isApproved = checkbox.checked;
+    
+        console.log(`Checkbox blurred. Record ID: ${recordId}, Approved: ${isApproved}`);
+    
+        // Update Airtable Approved field on blur.
+        updateApprovalStatus(recordId, isApproved, null);
+    }
 
     function checkTimesheetValues(fields) {
         console.log('Checking timesheet values');
@@ -693,7 +695,10 @@ async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
             console.error('Error updating approval status:', error);
         }
     }
-     
+    
+    
+    
+    
 
 
 
@@ -726,6 +731,6 @@ async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
         }, 2000);
     }
  
- 
+    
   
 });
