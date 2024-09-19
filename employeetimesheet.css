@@ -74,21 +74,26 @@ header {
 
 .logout-button,
 .toggle-button {
-    font-size: 16px;
+    font-size: 23px;
     font-weight: bold;
-    border-radius: 5px;
+    border-radius: 15px;
     padding: 5px 10px;
     background-color: var(--button-bg);
     color: var(--text-color);
     text-decoration: none;
     display: inline-block;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s ease-in-out, 
+                transform 0.3s ease-in-out, 
+                box-shadow 0.3s ease-in-out; /* Smooth transition for background, scale, and shadow */
 }
 
 .logout-button:hover,
 .toggle-button:hover {
-    background-color: var(--button-hover-bg);
+    background-color: var(--button-hover-bg); /* Change background color */
+    transform: scale(1.05); /* Slightly enlarge the button */
+    box-shadow: 0px 4px 10px rgba(84, 2, 2, 0.2); /* Add a shadow */
 }
+
 
 /* Navbar Styles */
 .navbar {
@@ -266,6 +271,7 @@ h1, h3 {
 #check-all-button {
     cursor: pointer; /* Changes cursor to pointer */
     transition: transform 0.5s ease; /* Smooth transition for the transform effect */
+
 }
 
 #check-all-button:hover {
@@ -357,7 +363,15 @@ input[type="date"] {
     pointer-events: none;
 }
 
+#user-email {
+    font-weight: bold; /* Make the text bold */
+    font-size: 18px;   /* Set the text size to 18px */
+}
 
+h3 {
+    font-weight: bold;
+    font-size: 23px;
+}
 
 /* Notifications */
 .notification {
