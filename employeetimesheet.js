@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     async function fetchEmployeeName(employeeNumber) {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Employee Number}='${employeeNumber}')`;
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Employee Number}='${employeeNumber}')&sort[0][field]=Full Name&sort[0][direction]=asc`;
         console.log(`Fetching employee name from Airtable with endpoint: ${endpoint}`);
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             return 'Unknown';
         }
     }
+    
 
     function calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut) {
         if (!start || !end) return 0; // If start or end time is missing, return 0
@@ -324,7 +325,7 @@ async function fetchTimesheets(supervisorName) {
     let offset = null; // Used for pagination
 
     do {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Employee Number&sort[0][direction]=asc${offset ? `&offset=${offset}` : ''}`;
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Full Name&sort[0][direction]=asc`;
         console.log(`Fetching timesheets with endpoint: ${endpoint}`);
 
         try {
@@ -351,41 +352,7 @@ async function fetchTimesheets(supervisorName) {
 
 
 
-    async function fetchTimesheets(supervisorName) {
-        let filterFormula;
-        
-        if (supervisorEmail === 'katy@vanirinstalledsales.com') {
-            filterFormula = '{Employee Number}!=BLANK()';
-        } else if (supervisorEmail === 'josh@vanirinstalledsales.com' || supervisorEmail === 'ethen.wilson@vanirinstalledsales.com') {
-            filterFormula = `OR({Supervisor}='Josh Boyd', {Supervisor}='Ethen Wilson')`;
-        } else {
-            filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
-        }
-    
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
-        console.log(`Fetching timesheets with endpoint: ${endpoint}`);
-        
-        try {
-            loadingIndicator.style.display = 'block'; // Show loading indicator
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch timesheets: ${response.statusText}`);
-            const data = await response.json();
-            console.log('Timesheets data fetched:', data);
-            
-            // Fetch approval status from table2Id
-            const approvedData = await fetchApprovedStatus();
-            await populateTimesheets(data.records, approvedData);
-        } catch (error) {
-            console.error(error);
-            alert("Error fetching timesheet data. Please try again later.");
-        } finally {
-            loadingIndicator.style.display = 'none'; // Hide loading indicator
-            titleElement.style.display = '';
-            messageContainer.style.display = '';
-            checkAllButton.style.display = '';
-            keyEnterHint.style.display = '';
-        }
-    }
+   
 
     async function fetchApprovedStatus() {
         let allRecords = [];
@@ -507,18 +474,6 @@ async function fetchTimesheets(supervisorName) {
     }
     
 
-
-    
-    function handleCheckboxBlur(event) {
-        const checkbox = event.target;
-        const recordId = checkbox.getAttribute('data-record-id');
-        const isApproved = checkbox.checked;
-    
-        console.log(`Checkbox blurred. Record ID: ${recordId}, Approved: ${isApproved}`);
-    
-        // Update Airtable Approved field on blur.
-        updateApprovalStatus(recordId, isApproved, null);
-    }
 
     function checkTimesheetValues(fields) {
         console.log('Checking timesheet values');
