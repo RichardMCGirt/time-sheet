@@ -66,15 +66,36 @@ document.addEventListener("DOMContentLoaded", async function () {
     }, 1000);
 
     async function loadDataAndInitializePage() {
-        console.log(`Fetching supervisor name for email: ${supervisorEmail}`);
-        const supervisorName = await fetchSupervisorName(supervisorEmail);
-        if (supervisorName) {
-            console.log(`Supervisor found: ${supervisorName}`);
-            await fetchTimesheets(supervisorName);
-        } else {
-            console.error(`Supervisor not found for email: ${supervisorEmail}`);
-            alert("Supervisor not found. Please check your email and try again.");
+        try {
+            console.log(`[INFO] Initializing page and fetching supervisor name for email: ${supervisorEmail}`);
+    
+            // Fetch supervisor name
+            const supervisorName = await fetchSupervisorName(supervisorEmail);
+            console.log(`[DEBUG] fetchSupervisorName(${supervisorEmail}) called`);
+    
+            // Check if supervisor name was returned
+            if (supervisorName) {
+                console.log(`[INFO] Supervisor found: ${supervisorName}`);
+                
+                // Fetch timesheets based on supervisor name
+                await fetchTimesheets(supervisorName);
+                console.log(`[INFO] Timesheets successfully fetched for supervisor: ${supervisorName}`);
+            } else {
+                // Log error if supervisor name is not found
+                console.error(`[ERROR] Supervisor not found for email: ${supervisorEmail}`);
+                alert("Supervisor not found. Please ensure the email is correct.");
+            }
+    
+        } catch (error) {
+            // Catch and log any unexpected errors
+            console.error(`[ERROR] An error occurred while loading data and initializing the page: ${error.message}`, error);
+            alert("An unexpected error occurred. Please try again later.");
+        } finally {
+            // Add logs indicating end of function execution
+            console.log(`[INFO] loadDataAndInitializePage execution completed.`);
         }
+    
+    
     
         // Make header, title, and other elements visible after data is loaded
         document.querySelector('header').classList.add('visible');
@@ -568,7 +589,7 @@ async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
 }
 
 
-    loadDataAndInitializePage();
+
 
 
     async function fetchSingleRecord(recordId) {

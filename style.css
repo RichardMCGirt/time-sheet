@@ -267,7 +267,7 @@ body {
 
 .sticky-submit {
     position: fixed;
-    bottom: 12%;
+    bottom: 1%;
     left: 50%;
     transform: translateX(-50%);
     background-color: var(--button-bg);
@@ -278,7 +278,6 @@ body {
     font-size: 26px;
     cursor: pointer;
     z-index: 1000;
-    
     max-width: 400px;
 }
 

@@ -262,7 +262,6 @@
 
 document.addEventListener("DOMContentLoaded", function() {
     initializeTimeDropdowns();
-    updateHeaderText();
 
     // Set checkboxes to checked on page load
     document.getElementById('did-not-work-4').checked = true;
@@ -414,14 +413,7 @@ function handleTimeInput(event) {
     }
 }
 
-function updateHeaderText() {
-    const personalTime = parseFloat(document.getElementById('personal-time').value) || 0;
-    const header = document.getElementById('countdown-header');
 
-    header.textContent = personalTime === 0 
-        ? 'Personal Hours reset in' 
-        : 'Personal Hours expire in';
-}
 
 function toggleNavbar(isLoading) {
     const loadingBar = document.getElementById('loading-bar-container');
