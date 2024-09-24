@@ -633,31 +633,34 @@ function calculateTotalTimeWorked() {
             .map(field => elements.timeEntryForm.elements[`${field}${index + 1}`]);
         const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
         
-        // Calculate daily hours worked
+        // Calculate daily hours worked without rounding
         let hoursWorked = calculateDailyHoursWorked(dateInput, ...timeFields);
         
-        // Round to nearest quarter hour
-        hoursWorked = roundToNearestQuarterHour(hoursWorked);
-        
-        totalHoursWorked += hoursWorked;
-        hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
+        totalHoursWorked += hoursWorked; // Add daily hours to total, no rounding for daily hours
+        hoursWorkedSpan.textContent = hoursWorked.toFixed(2); // Display unrounded hours worked for the day
     });
+    
+    // Round the total weekly hours to the nearest quarter hour
+    const roundedTotalHoursWorked = roundToNearestQuarterHour(totalHoursWorked);
     
     const ptoTime = roundToNearestQuarterHour(parseFloat(elements.ptoTimeSpan.textContent) || 0);
     const personalTime = roundToNearestQuarterHour(parseFloat(elements.personalTimeSpan.textContent) || 0);
     const holidayHours = roundToNearestQuarterHour(parseFloat(elements.holidayTimeSpan.textContent) || 0);
     
-    const totalHoursWithPto = roundToNearestQuarterHour(totalHoursWorked + ptoTime + personalTime + holidayHours);
+    const totalHoursWithPto = roundToNearestQuarterHour(roundedTotalHoursWorked + ptoTime + personalTime + holidayHours);
     
-    elements.totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
+    // Update the total weekly hours and total with PTO in the UI
+    elements.totalTimeWorkedSpan.textContent = roundedTotalHoursWorked.toFixed(2);
     elements.totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
     
-    console.log('Total hours worked:', totalHoursWorked);
-    console.log('Total hours with PTO:', totalHoursWithPto);
+    console.log('Total hours worked (rounded):', roundedTotalHoursWorked);
+    console.log('Total hours with PTO (rounded):', totalHoursWithPto);
     
     validatePtoHours(totalHoursWorked, ptoTime, personalTime);
     updateTotalPtoAndHolidayHours();
 }
+
+
 
 
     function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput) {
