@@ -169,27 +169,28 @@ document.addEventListener("DOMContentLoaded", async function () {
         return workedHours > 0 ? workedHours.toFixed(2) : 0; // Return total worked hours, rounded to 2 decimal places
     }
     
+    
     function formatDateToMMDDYYYY(dateString) {
         if (!dateString) return ''; // Return empty string if date is not available
     
         // Append 'T00:00:00Z' to treat the date as UTC
         const date = new Date(`${dateString}T00:00:00Z`);
     
-        const month = (date.getUTCMonth() + 1).toString().padStart(2, ''); // Get month (UTC)
-        const day = date.getUTCDate().toString().padStart(2, ''); // Get day (UTC)
+        const month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Get month (UTC)
+        const day = date.getUTCDate().toString().padStart(2, '0'); // Get day (UTC)
         const year = date.getUTCFullYear(); // Get year (UTC)
     
         return `${month}/${day}/${year}`;
     }
     
     
-
+    
     function generateRows(fields, recordId, employeeNumber) {
         console.log('Generating rows for timesheet');
         console.log('Generating rows for record:', recordId); // Debugging to check `recordId`
-
-        let totalHoursWorked = 0;  // Initialize total hours worked across all days.
-        let totalOvertimeHours = 0;  // Initialize total overtime hours.
+    
+        let totalHoursWorked = 0; // Initialize total hours worked across all days.
+        let totalOvertimeHours = 0; // Initialize total overtime hours.
         let giftedHours = 0; // Initialize gifted hours.
     
         // Helper function to calculate hours worked and accumulate total and gifted hours
@@ -203,28 +204,27 @@ document.addEventListener("DOMContentLoaded", async function () {
     
             // Calculate hours worked for the current day
             const hours = calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut);
-            totalHoursWorked += parseFloat(hours) || 0;  // Accumulate total hours worked
+            totalHoursWorked += parseFloat(hours) || 0; // Accumulate total hours worked
     
             return hours;
         }
     
         // Iterate over all days (1-7) to generate rows
         const rows = [1, 2, 3, 4, 5, 6, 7].map(day => `
-        <tr>
-            <th><input type="time" name="start${day}" value="${fields[`start${day}`] || ''}" disabled></th>
-            <th><input type="time" name="lunchs${day}" value="${fields[`lunchs${day}`] || ''}" disabled></th>
-            <th><input type="time" name="lunche${day}" value="${fields[`lunche${day}`] || ''}" disabled></th>
-            <th><input type="time" name="end${day}" value="${fields[`end${day}`] || ''}" disabled></th>
-            <th><input type="time" name="additionali${day}" value="${fields[`additionali${day}`] || ''}" disabled></th>
-            <th><input type="time" name="additionalo${day}" value="${fields[`additionalo${day}`] || ''}" disabled></th>
-            <th>${calculateAndAccumulateHours(day)}</th>
-        </tr>
-    `).join('');
-
+            <tr>
+                <th><input type="time" name="start${day}" value="${fields[`start${day}`] || ''}" disabled></th>
+                <th><input type="time" name="lunchs${day}" value="${fields[`lunchs${day}`] || ''}" disabled></th>
+                <th><input type="time" name="lunche${day}" value="${fields[`lunche${day}`] || ''}" disabled></th>
+                <th><input type="time" name="end${day}" value="${fields[`end${day}`] || ''}" disabled></th>
+                <th><input type="time" name="additionali${day}" value="${fields[`additionali${day}`] || ''}" disabled></th>
+                <th><input type="time" name="additionalo${day}" value="${fields[`additionalo${day}`] || ''}" disabled></th>
+                <th>${calculateAndAccumulateHours(day)}</th>
+            </tr>
+        `).join('');
     
-        // Calculate gifted hours
-        if (totalHoursWorked > 0 && totalHoursWorked < 40) {
-            giftedHours = Math.min(3, 40 - totalHoursWorked);  // Gifted hours between 0-3, ensuring total does not exceed 40
+        // Calculate gifted hours only if the total hours worked are less than 40
+        if (totalHoursWorked > 0 && totalHoursWorked < 40 && (totalHoursWorked + giftedHours) < 40) {
+            giftedHours = Math.min(3, 40 - totalHoursWorked); // Gifted hours between 0-3, ensuring total does not exceed 40
         }
         
     
@@ -233,97 +233,110 @@ document.addEventListener("DOMContentLoaded", async function () {
         const totalPtoHours = parseFloat(fields['Total PTO Hours'] || 0);
         const totalHolidayHours = parseFloat(fields['Total Holiday Hours'] || 0);
     
-        // Sum of gifted hours and the additional Airtable fields
+        // Ensure adding gifted, PTO, and personal hours doesn't push total hours above 40
         const totalGiftedHours = giftedHours + totalPersonalHours + totalPtoHours + totalHolidayHours;
+        const totalWithExtras = totalHoursWorked + totalGiftedHours;
     
         // Add a row for total hours worked, gifted hours, and each of the additional hour types if they are greater than 0
         let totalRow = '';
-
-// Add a row for total hours worked only if it doesn't match total gifted, PTO, holiday, and personal hours
-if (totalHoursWorked > 0 && totalHoursWorked !== (totalHoursWorked + totalGiftedHours + totalHolidayHours + totalPtoHours + totalPersonalHours)) {
-    totalRow += `
-        <tr>
-        <td colspan="5" style="border: none;"></td>
-                    <td class="narrow-border" style="text-align:right; border-top: 4px solid white; border-left: 4px solid white; width: 30%;">Total Hours Worked:</td>
-            <td style="border-top: 4px solid white;  border-right: 4px solid white; width: 10%;">${totalHoursWorked.toFixed(2)}</td>
-        </tr>
-    `;
-}
-
-if (giftedHours > 0) {
-    totalRow += `
-        <tr>
-        <td colspan="5" style="border: none;"></td>
+    
+        // Add a row for total hours worked and highlight if total exceeds 40 hours
+        totalRow += `
+            <tr>
+                <td colspan="5" style="border: none;"></td>
+                <td class="narrow-border" style="text-align:right; border-top: 4px solid white; border-left: 4px solid white; width: 30%;">Total Hours Worked:</td>
+                <td style="border-top: 4px solid white;  border-right: 4px solid white; width: 10%; color: ${totalHoursWorked > 40 ? 'red' : 'white'};">
+                    ${totalHoursWorked.toFixed(2)}
+                </td>
+            </tr>
+        `;
+    
+        if (giftedHours > 0) {
+            totalRow += `
+                <tr>
+                    <td colspan="5" style="border: none;"></td>
                     <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Gifted Hours:</td>
-            <td style="border-right: 4px solid white; width: 10%;">${giftedHours.toFixed(2)}</td>
-        </tr>
-    `;
+                    <td style="border-right: 4px solid white; width: 10%;">${giftedHours.toFixed(2)}</td>
+                </tr>
+            `;
+        }
+    
+        if (totalPersonalHours > 0) {
+            totalRow += `
+                <tr>
+                    <td colspan="5" style="border: none;"></td>
+                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Personal Hours:</td>
+                    <td style="border-right: 4px solid white; width: 10%;">${totalPersonalHours.toFixed(2)}</td>
+                </tr>
+            `;
+        }
+    
+        if (totalPtoHours > 0) {
+            totalRow += `
+                <tr>
+                    <td colspan="5" style="border: none;"></td>
+                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">PTO Hours:</td>
+                    <td style="border-right: 4px solid white; width: 10%;">${totalPtoHours.toFixed(2)}</td>
+                </tr>
+            `;
+        }
+    
+        if (totalHolidayHours > 0) {
+            totalRow += `
+                <tr>
+                    <td colspan="5" style="border: none;"></td>
+                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Holiday Hours:</td>
+                    <td style="border-right: 4px solid white; width: 10%;">${totalHolidayHours.toFixed(2)}</td>
+                </tr>
+            `;
+        }
+    
+        // Always show the total hours combined from all sources
+    // Calculate the total hours, ensuring that the final total doesn't exceed 40
+let finalTotalHours = totalHoursWorked + totalHolidayHours + totalPtoHours + totalPersonalHours;
+
+// Only add gifted hours if the total is less than 40 and won't exceed 40 after adding them
+if (finalTotalHours < 40) {
+    finalTotalHours += Math.min(giftedHours, 40 - finalTotalHours);
 }
 
-if (totalPersonalHours > 0) {
-    totalRow += `
-        <tr>
-        <td colspan="5" style="border: none;"></td>            <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Personal Hours:</td>
-            <td style="border-right: 4px solid white; width: 10%;">${totalPersonalHours.toFixed(2)}</td>
-        </tr>
-    `;
-}
-
-if (totalPtoHours > 0) {
-    totalRow += `
-        <tr>
-        <td colspan="5" style="border: none;"></td>            <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">PTO Hours:</td>
-            <td style="border-right: 4px solid white; width: 10%;">${totalPtoHours.toFixed(2)}</td>
-        </tr>
-    `;
-}
-
-if (totalHolidayHours > 0) {
-    totalRow += `
-        <tr>
-        <td colspan="5" style="border: none;"></td>            <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Holiday Hours:</td>
-            <td style="border-right: 4px solid white; width: 10%;">${totalHolidayHours.toFixed(2)}</td>
-        </tr>
-    `;
-}
-
-// Always show the total hours combined from all sources
 totalRow += `
     <tr>
-    <td colspan="5" style="border: none;"></td>        <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Total Hours :</td>
-        <td style="border-right: 4px solid white; width: 10%;">${(totalHoursWorked + totalGiftedHours + totalHolidayHours + totalPtoHours + totalPersonalHours).toFixed(2)}</td>
+        <td colspan="5" style="border: none;"></td>
+        <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Total Hours :</td>
+        <td style="border-right: 4px solid white; width: 10%;">${finalTotalHours.toFixed(2)}</td>
+
     </tr>
 `;
-
-// Add a row for overtime hours if any
-if (totalOvertimeHours > 0) {
-    totalRow += `
-        <tr>
-        <td colspan="5" style="border: none;"></td>            <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Overtime Hours (over 40):</td>
-            <td style="border-right: 4px solid white; width: 10%;">${totalOvertimeHours.toFixed(2)}</td>
-        </tr>
-    `;
-}
-
-// Add the approval checkbox as the last row
-totalRow += `
-    <tr>
-    <td colspan="5" style="border: none;"></td>        <td class="narrow-border" style="text-align:right; border-bottom: 4px solid white; border-left: 4px solid white; width: 30%;">Approval :</td>
-        <td style="border-bottom: 4px solid white; border-right: 4px solid white; width: 10%;">
-        <input type="checkbox" class="approve-checkbox" 
-               data-record-id="${recordId}" 
-               ${fields['Approved'] === true ? 'checked' : ''}>
-      </td>
-    </tr>
-`;
-
-
-
-console.log(`Employee Number: ${employeeNumber}, Approved: ${fields['Approved']}`);
-
-
-return rows + totalRow;
-}
+    
+        // Add a row for overtime hours if any
+        if (totalOvertimeHours > 0) {
+            totalRow += `
+                <tr>
+                    <td colspan="5" style="border: none;"></td>
+                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Overtime Hours (over 40):</td>
+                    <td style="border-right: 4px solid white; width: 10%;">${totalOvertimeHours.toFixed(2)}</td>
+                </tr>
+            `;
+        }
+    
+        // Add the approval checkbox as the last row
+        totalRow += `
+            <tr>
+                <td colspan="5" style="border: none;"></td>
+                <td class="narrow-border" style="text-align:right; border-bottom: 4px solid white; border-left: 4px solid white; width: 30%;">Approval :</td>
+                <td style="border-bottom: 4px solid white; border-right: 4px solid white; width: 10%;">
+                    <input type="checkbox" class="approve-checkbox" 
+                        data-record-id="${recordId}" 
+                        ${fields['Approved'] === true ? 'checked' : ''}>
+                </td>
+            </tr>
+        `;
+    
+        console.log(`Employee Number: ${employeeNumber}, Approved: ${fields['Approved']}`);
+    
+        return rows + totalRow;
+    }
     
 
     
