@@ -35,11 +35,45 @@ function validateEmail(email) {
     return re.test(String(email).toLowerCase());
 }
 
+// Fetch all records from Airtable with pagination
+async function fetchAllRecords() {
+    let allRecords = [];
+    let offset = '';
+
+    try {
+        do {
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={email}='${emailInput.value}'${offset ? `&offset=${offset}` : ''}`;
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            allRecords = allRecords.concat(data.records);
+            offset = data.offset; // Update the offset for the next request, if present
+
+        } while (offset); // Continue fetching as long as there's an offset
+
+        return allRecords;
+
+    } catch (error) {
+        console.error('Error fetching records:', error);
+        return [];
+    }
+}
+
+// The login function that uses fetchAllRecords
 async function login() {
     const email = emailInput.value;
     const password = passwordInput.value;
 
     console.log("Login attempt with email:", email);
+    console.log("Password entered:", password); // Log the entered password
 
     if (!email || !password) {
         alert('Please fill in both email and password fields.');
@@ -52,19 +86,15 @@ async function login() {
     }
 
     try {
-        const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={email}='${email}'`, {
-            headers: {
-                Authorization: `Bearer ${apiKey}`
-            }
+        const allRecords = await fetchAllRecords(); // Fetch all records from Airtable
+        console.log("Fetched records from Airtable:", allRecords); // Log the fetched records
+
+        const user = allRecords.find(record => {
+            console.log("Checking record:", record.fields); // Log the individual record being checked
+            console.log("Record email:", record.fields.email); // Log email of the record
+            console.log("Record password:", record.fields.password); // Log password of the record
+            return record.fields.email === email && record.fields.password === password;
         });
-
-        if (!response.ok) {
-            throw new Error(`Network response was not ok: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log("Fetched user data from Airtable:", data);
-        const user = data.records.find(record => record.fields.email === email && record.fields.password === password);
 
         if (user) {
             console.log("User authenticated:", user);
@@ -82,6 +112,7 @@ async function login() {
             loginSuccessMessage.classList.remove('hidden'); // Show success message
             window.location.href = 'timesheet.html';
         } else {
+            console.log("No matching user found. Invalid email or password."); // Log if no match is found
             alert('Invalid email or password');
         }
     } catch (error) {
@@ -89,6 +120,9 @@ async function login() {
         alert('Login failed: ' + error.message);
     }
 }
+
+
+
 
 async function fetchJoke() {
     console.log('Fetching a random joke...');

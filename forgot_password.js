@@ -25,25 +25,49 @@ function handleEmailInput() {
 }
 
 async function handleEmailSubmit() {
-    const email = emailInput.value;
+    const email = emailInput.value.trim().toLowerCase();
     if (!email) {
         alert('Please enter your email.');
         return;
     }
 
     try {
-        const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={email}='${email}'`, {
-            headers: {
-                Authorization: `Bearer ${apiKey}`
-            }
-        });
+        let records = [];
+        let offset = '';
+        let keepFetching = true;
+        let recordCount = 0; // To track total records fetched
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+        // Loop until all records are fetched
+        while (keepFetching) {
+            console.log(`Fetching records with offset: ${offset}`);
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=LOWER({email})='${email}'&offset=${offset}`;
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log(`Fetched ${data.records.length} records in this batch`);
+            records = records.concat(data.records);
+            recordCount += data.records.length;
+
+            // Check if there is more data to fetch
+            if (data.offset) {
+                offset = data.offset;
+            } else {
+                keepFetching = false;
+            }
         }
 
-        const data = await response.json();
-        if (data.records.length > 0) {
+        console.log(`Total records fetched: ${recordCount}`);
+        console.log(records);
+
+        if (records.length > 0) {
             forgotPasswordForm.style.display = 'none';
             resetPasswordForm.style.display = 'block';
         } else {
@@ -70,22 +94,46 @@ async function handlePasswordReset() {
     }
 
     const email = emailInput.value;
-
     try {
-        const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={email}='${email}'`, {
-            headers: {
-                Authorization: `Bearer ${apiKey}`
-            }
-        });
+        let records = [];
+        let offset = '';
+        let keepFetching = true;
+        let recordCount = 0; // To track total records fetched
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+        // Loop to fetch all records with pagination
+        while (keepFetching) {
+            console.log(`Fetching records with offset: ${offset}`);
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={email}='${email}'&offset=${offset}`;
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log(`Fetched ${data.records.length} records in this batch`);
+            records = records.concat(data.records);
+            recordCount += data.records.length;
+
+            // Check if there is more data to fetch
+            if (data.offset) {
+                offset = data.offset;
+            } else {
+                keepFetching = false;
+            }
         }
 
-        const data = await response.json();
-        const userRecord = data.records.find(record => record.fields.email === email);
+        console.log(`Total records fetched: ${recordCount}`);
+        console.log(records);
+
+        const userRecord = records.find(record => record.fields.email === email);
 
         if (userRecord) {
+            console.log('Found user record:', userRecord);
             const updateResponse = await fetch(`https://api.airtable.com/v0/${baseId}/${tableId}/${userRecord.id}`, {
                 method: 'PATCH',
                 headers: {

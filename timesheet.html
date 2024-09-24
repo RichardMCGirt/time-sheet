@@ -507,8 +507,17 @@ document.getElementById('logout-button').addEventListener('click', function(even
 });
 
 document.getElementById('user-email').addEventListener('click', function() {
-    window.location.href = 'employeetimesheet.html';
+    // Retrieve the email from the user email field
+    const userEmail = document.getElementById('user-email').textContent.trim();
+
+    // Check if the user is Katy, redirect to supervisor.html, otherwise to employeetimesheet.html
+    if (userEmail === 'katy@vanirinstalledsales.com') {
+        window.location.href = 'supervisor.html';
+    } else {
+        window.location.href = 'employeetimesheet.html';
+    }
 });
+
 
 document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
     checkbox.addEventListener('change', function() {
