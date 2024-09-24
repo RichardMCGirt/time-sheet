@@ -11,15 +11,23 @@
     --highlight-hover-color: #f39c12; /* Changed to a more contrasting color */
 }
 
-
 html, body {
     overflow: hidden;
     height: 100%;
     margin: 0;
 }
 
+/* Hide scrollbar while still allowing scrolling */
+.scrollable {
+    -ms-overflow-style: none;  /* Internet Explorer and Edge */
+    scrollbar-width: none;     /* Firefox */
+}
 
-/* Global Styles */
+.scrollable::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+}
+
+
 body {
     font-family: Arial, sans-serif;
     background-color: var(--bg-color);
@@ -29,22 +37,21 @@ body {
     text-align: center;
     font-weight: bolder;
     transition: background-color 0.3s ease, color 0.3s ease;
-    height: 100vh; /* Full viewport height */
+    height: 100vh;
 }
 
 header {
     background-color: var(--header-bg);
     padding: 20px;
     top: 0;
-    z-index: 1000; /* Ensure the header stays above other content */
-
+    z-index: 1000;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid var(--border-color);
     transition: background-color 0.3s ease, border-color 0.3s ease;
-    width: 100%; /* Ensures the header takes the full width */
-    box-sizing: border-box; /* Includes padding and border in the width calculation */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .header-left .logo {
@@ -93,10 +100,10 @@ header {
 .navbar {
     background-color: var(--header-bg);
     overflow: hidden;
-    padding: 10px;  /* Add padding to space out the navbar */
+    padding: 10px;
     transition: background-color 0.3s ease;
-    border-radius: 15px; /* Rounded corners for the entire navbar */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for 3D effect */
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .navbar ul {
@@ -120,36 +127,33 @@ header {
     text-decoration: none;
     transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
     background-color: #16a085;
-    border-radius: 10px; /* Rounded corners for each link */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Add shadow for 3D effect */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .navbar ul li a:hover {
     background-color: var(--highlight-color);
     color: black;
-    transform: translateY(-3px); /* Lift the button slightly */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Intensify shadow for hover effect */
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-
-/* Name Container */
 .name-container {
-    text-align: left; /* Ensures text is left-aligned */
+    text-align: left;
     font-size: 18px;
     margin: 10px 0;
     color: var(--text-color);
     font-weight: bold;
     padding: 20px;
     transition: color 0.3s ease;
-    margin: 0 auto; /* Center the container */
+    margin: 0 auto;
     cursor: pointer;
 }
 
 .name-container.hidden {
-    padding-bottom: 45px; /* Additional space when table is hidden */
+    padding-bottom: 45px;
 }
 
-/* Centering tables inside the table-wrapper */
 #main-content {
     display: flex;
     justify-content: center;
@@ -158,81 +162,76 @@ header {
     width: 100%;
 }
 
-/* Styles for narrowing borders and making width fit the text */
 .narrow-border {
     border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
- 
     padding: 10px;
     text-align: right;
     margin: 0 auto;
-    width: auto; /* Fit the width to the text */
-    white-space: nowrap; /* Prevent text from wrapping */
+    width: auto;
+    white-space: nowrap;
 }
 
-/* Ensuring input fields inside narrow-border are well-aligned */
 .narrow-border input {
-    width: auto; /* Make input width fit its content */
+    width: auto;
     text-align: center;
 }
 
-
-
-/* Styling for the total rows (bold text, different background) */
 tr.total-row td {
     font-weight: bold;
 }
 
-/* Styling for approval checkbox row */
 tr.approval-row td {
     padding: 10px;
 }
 
-/* Custom checkbox styling */
+/* Styling the narrow-column class */
+th.narrow-column {
+    max-width: 55px;
+    text-align: center; /* Optional: To ensure text is centered */
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Ensure content doesn't overflow */
+}
+
+
 input[type="checkbox"] {
     width: 24px;
     height: 24px;
     cursor: pointer;
-    accent-color: #007bff; /* Custom color for the checkbox */
+    accent-color: #007bff;
 }
 
 th, tr {
     font-weight: bolder !important;
     font-size: medium !important;
-    cursor: not-allowed; /* Maintain the not-allowed cursor on hover */
-
+    cursor: not-allowed;
 }
 
-/* Apply to all input elements except checkboxes */
 input[type="time"]:not(.approve-checkbox),
 input[type="text"]:not(.approve-checkbox),
 input[type="number"]:not(.approve-checkbox),
 input[type="date"]:not(.approve-checkbox) {
-    cursor: not-allowed; /* Disabled cursor */
-   
+    cursor: not-allowed;
 }
 
-/* Add hover effect to show the cursor is not allowed */
 input[type="time"]:hover,
 input[type="text"]:hover,
 input[type="number"]:hover,
 input[type="date"]:hover {
-    cursor: not-allowed; /* Maintain the not-allowed cursor on hover */
+    cursor: not-allowed;
 }
 
-/* Prevent interaction */
 input[type="time"]:disabled,
 input[type="text"]:disabled,
 input[type="number"]:disabled,
 input[type="date"]:disabled {
-    cursor: not-allowed; /* Maintain the not-allowed cursor on hover */
+    cursor: not-allowed;
+    text-align: center;
 }
-
 
 .table-wrapper {
     display: flex;
     gap: 20px;
-    /* Ensure the wrapper takes up the full width and height of the screen */
     max-width: 150vw;
     max-height: 150vh;
     overflow: hidden;
@@ -240,14 +239,12 @@ input[type="date"]:disabled {
 }
 
 .scrollable {
-    /* Ensure the tables take up only the available screen space */
     max-width: 100%;
-    max-height: calc(100vh - 200px); /* Adjust based on header height */
-    overflow-y: auto; /* Vertical scrolling */
-    overflow-x: auto; /* Horizontal scrolling, if necessary */
-    box-sizing: border-box; /* Ensures padding and border are included in width/height */
-    padding-bottom: 20px; /* Add some padding at the bottom to prevent cutting off last row */
-
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    overflow-x: auto;
+    box-sizing: border-box;
+    padding-bottom: 20px;
 }
 
 table {
@@ -261,35 +258,12 @@ table td, table th {
     text-align: center;
 }
 
-
-
-
 .time-tracking-table {
-    display: block; /* Ensure it behaves like a block-level element */
-    margin: 0 auto; /* This centers it horizontally */
-    max-width: 100%; /* Ensure it doesn't exceed the screen width */
-    width: fit-content; /* Table will adjust to its content width */
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    width: fit-content;
 }
-
-
-table {
-    border-collapse: collapse;
-    margin: 0 auto; /* Center the tables themselves */
-    width: 100%; /* Full width for each table */
-    max-width: 500px; /* Optional: set a max-width for tables */
-}
-
-th, td {
-    border: 1px solid var(--border-color);
-    padding: 10px;
-    text-align: center;
-}
-
-h1, h3 {
-    text-align: center; /* Center the headings */
-}
-
-
 
 @keyframes randomEffect {
     0%, 100% { transform: rotate(0deg); }
@@ -304,18 +278,14 @@ h1, h3 {
     padding: 10px;
 }
 
-/* Initially hide the header */
 #header, h1 {
     display: none;
 }
 
-/* Show the header once the page is fully loaded */
 .header-visible {
     display: block;
 }
 
-
-/* Input Fields Styling */
 input[type="time"],
 input[type="number"],
 input[type="date"] {
@@ -328,15 +298,13 @@ input[type="date"] {
     font-size: large;
 }
 
-
-/* Sticky Submit Button */
 #submit-button {
     position: sticky;
     bottom: 3%;
     left: 50%;
     transform: translateX(-50%);
     padding: 10px 20px;
-    background-color: var(--highlight-color); 
+    background-color: var(--highlight-color);
     color: white;
     border: none;
     border-radius: 5px;
@@ -346,10 +314,9 @@ input[type="date"] {
 }
 
 #submit-button:hover {
-    background-color: #00b345; /* Darker shade for hover effect */
+    background-color: #00b345;
 }
 
-/* Loading Screen */
 #loading-screen {
     position: fixed;
     top: 0;
@@ -359,7 +326,7 @@ input[type="date"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000; /* Ensure it is on top of other elements */
+    z-index: 1000;
     transition: opacity 1s ease-in-out;
 }
 
@@ -383,7 +350,6 @@ input[type="date"] {
     display: none;
 }
 
-/* Notifications */
 .notification {
     display: none;
     padding: 10px;
@@ -401,7 +367,6 @@ input[type="date"] {
     color: #721c24;
 }
 
-/* Form Styling */
 .time-entry-form {
     width: 96%;
     max-width: 2550px;
@@ -415,13 +380,13 @@ input[type="date"] {
 /* Mobile Adjustments */
 @media (max-width: 768px) {
     .name-container {
-        width: 100%; /* Full width on smaller screens */
-        padding-left: 10px; /* Adjust padding for smaller screens */
+        width: 100%;
+        padding-left: 10px;
     }
 
     .time-entry-table {
-        width: 100%; /* Full width on smaller screens */
-        margin: 10px 0; /* Adjust margin for smaller screens */
+        width: 100%;
+        margin: 10px 0;
     }
 
     .navbar ul {
