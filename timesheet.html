@@ -267,6 +267,72 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('did-not-work-4').checked = true;
     document.getElementById('did-not-work-5').checked = true;
 
+    
+
+
+    function toggleWorkInputs(dayIndex, isChecked) {
+    const row = document.querySelector(`tr[data-day="${dayIndex + 1}"]`);
+    const timeInputs = row.querySelectorAll('input[type="time"]');
+    const numberInputs = row.querySelectorAll('input[type="number"]');
+    const checkbox = document.getElementById(`did-not-work-${dayIndex + 1}`);
+
+    // Function to check if any input in the row has a value
+    const checkIfAnyInputFilled = () => {
+        let inputFilled = false;
+
+        // Check if any time or number input in the row has a value
+        timeInputs.forEach(input => {
+            if (input.value) inputFilled = true;
+        });
+        numberInputs.forEach(input => {
+            if (input.value) inputFilled = true;
+        });
+
+        return inputFilled;
+    };
+
+    // Disable inputs if checkbox is checked, otherwise enable them
+    if (isChecked) {
+        timeInputs.forEach(input => {
+            input.disabled = true;
+            input.value = ''; // Clear value when disabled
+        });
+        numberInputs.forEach(input => {
+            input.disabled = true;
+            input.value = ''; // Clear value when disabled
+        });
+    } else {
+        timeInputs.forEach(input => {
+            input.disabled = false;
+        });
+        numberInputs.forEach(input => {
+            input.disabled = false;
+        });
+    }
+
+    // Monitor the row for input changes and automatically uncheck the checkbox
+    timeInputs.forEach(input => {
+        input.addEventListener('input', () => {
+            if (checkIfAnyInputFilled()) {
+                checkbox.checked = false;
+                timeInputs.forEach(input => input.disabled = false);
+                numberInputs.forEach(input => input.disabled = false);
+            }
+        });
+    });
+
+    numberInputs.forEach(input => {
+        input.addEventListener('input', () => {
+            if (checkIfAnyInputFilled()) {
+                checkbox.checked = false;
+                timeInputs.forEach(input => input.disabled = false);
+                numberInputs.forEach(input => input.disabled = false);
+            }
+        });
+    });
+}
+
+
     // Hide the navbar initially if the loading bar is visible
     toggleNavbar();
 

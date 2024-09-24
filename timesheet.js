@@ -407,7 +407,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     
         // Calculate the number of days until the next Tuesday
-        const daysUntilTuesday = (1 - dayOfWeek + 7) % 7 || 7;
+        const daysUntilTuesday = (1 - dayOfWeek + 0) % 7 || 7;
     
         // Create a new date object for the next Tuesday
         const nextTuesday = new Date(referenceDate);
@@ -576,69 +576,89 @@ function populateWeekDates(weekEndingDate) {
     saveFormData();
 }
 
+function startCountdown() {
+    const now = new Date();
+    
+    // Set the target time to midnight (12:00 AM) of tomorrow
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0); // Set time to 00:00:00 of the next day
 
+    const endDateTime = midnight.getTime(); // Get the timestamp for midnight
+    const countdownElement = document.getElementById('countdown');
 
-    function hideApprovalOnEdit(isApproved) {
-        const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            input.addEventListener('change', () => {
-                const approvalStatusElement = document.getElementById('approval-status');
-                if (approvalStatusElement.style.color !== 'green') {
-                    approvalStatusElement.style.display = 'none';
-                }
-            });
-        });
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = endDateTime - now;
+
+        if (distance < 0) {
+            countdownElement.innerHTML = "EXPIRED";
+            return; // Stop if the countdown is over
+        }
+
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        countdownElement.innerHTML = `${hours}h ${minutes}m ${seconds}s`;
+
+        // Calculate the exact remaining milliseconds until the next full second
+        const nextUpdateInMs = 1000 - (now % 1000);
+
+        // Schedule the next update accurately for the next full second
+        setTimeout(updateCountdown, nextUpdateInMs);
     }
 
-    function startCountdown(endDate) {
-        const endDateTime = new Date(endDate).getTime();
-        const countdownElement = document.getElementById('countdown');
+    // Start the countdown immediately
+    updateCountdown();
+}
 
-        const updateCountdown = () => {
-            const now = new Date().getTime();
-            const distance = endDateTime - now;
+// Call the function to start the countdown
+startCountdown();
 
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    
 
-            if (distance < 0) {
-                clearInterval(interval);
-                countdownElement.innerHTML = "EXPIRED";
-            }
-        };
+function roundToNearestQuarterHour(hours) {
+    return Math.round(hours * 4) / 4;
+}
 
-        updateCountdown();
-        const interval = setInterval(updateCountdown, 1000);
-    }
+function calculateTotalTimeWorked() {
+    console.log('Calculating total time worked...');
+    let totalHoursWorked = 0;
+    const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
+    
+    daysOfWeek.forEach((day, index) => {
+        const dateInput = elements.timeEntryForm.elements[day];
+        const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out']
+            .map(field => elements.timeEntryForm.elements[`${field}${index + 1}`]);
+        const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
+        
+        // Calculate daily hours worked
+        let hoursWorked = calculateDailyHoursWorked(dateInput, ...timeFields);
+        
+        // Round to nearest quarter hour
+        hoursWorked = roundToNearestQuarterHour(hoursWorked);
+        
+        totalHoursWorked += hoursWorked;
+        hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
+    });
+    
+    const ptoTime = roundToNearestQuarterHour(parseFloat(elements.ptoTimeSpan.textContent) || 0);
+    const personalTime = roundToNearestQuarterHour(parseFloat(elements.personalTimeSpan.textContent) || 0);
+    const holidayHours = roundToNearestQuarterHour(parseFloat(elements.holidayTimeSpan.textContent) || 0);
+    
+    const totalHoursWithPto = roundToNearestQuarterHour(totalHoursWorked + ptoTime + personalTime + holidayHours);
+    
+    elements.totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
+    elements.totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
+    
+    console.log('Total hours worked:', totalHoursWorked);
+    console.log('Total hours with PTO:', totalHoursWithPto);
+    
+    validatePtoHours(totalHoursWorked, ptoTime, personalTime);
+    updateTotalPtoAndHolidayHours();
+}
 
-    function calculateTotalTimeWorked() {
-        console.log('Calculating total time worked...');
-        let totalHoursWorked = 0;
-        const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
-        daysOfWeek.forEach((day, index) => {
-            const dateInput = elements.timeEntryForm.elements[day];
-            const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'].map(field => elements.timeEntryForm.elements[`${field}${index + 1}`]);
-            const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
-            let hoursWorked = calculateDailyHoursWorked(dateInput, ...timeFields);
-            hoursWorked = roundToClosestQuarterHour(hoursWorked);
-            totalHoursWorked += hoursWorked;
-            hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
-        });
-        const ptoTime = parseFloat(elements.ptoTimeSpan.textContent) || 0;
-        const personalTime = parseFloat(elements.personalTimeSpan.textContent) || 0;
-        const holidayHours = parseFloat(elements.holidayTimeSpan.textContent) || 0;
-        const totalHoursWithPto = totalHoursWorked + ptoTime + personalTime + holidayHours;
-        elements.totalTimeWorkedSpan.textContent = totalHoursWorked.toFixed(2);
-        elements.totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
-        console.log('Total hours worked:', totalHoursWorked);
-        console.log('Total hours with PTO:', totalHoursWithPto);
-        validatePtoHours(totalHoursWorked, ptoTime, personalTime);
-        updateTotalPtoAndHolidayHours();
-    }
 
     function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput) {
         const startDate = new Date(dateInput.value);
@@ -655,28 +675,54 @@ function populateWeekDates(weekEndingDate) {
     }
 
     function calculateHoursWorked(startDate, startTime, lunchStart, lunchEnd, endTime, additionalTimeIn, additionalTimeOut) {
-        if (!startTime || !endTime) return 0;
-        const startDateTime = new Date(startDate);
-        startDateTime.setHours(startTime.hours, startTime.minutes);
-        const endDateTime = new Date(startDate);
-        endDateTime.setHours(endTime.hours, endTime.minutes);
-        let totalHoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60);
-        if (lunchStart && lunchEnd) {
-            const lunchStartDateTime = new Date(startDate);
-            lunchStartDateTime.setHours(lunchStart.hours, lunchStart.minutes);
-            const lunchEndDateTime = new Date(startDate);
-            lunchEndDateTime.setHours(lunchEnd.hours, lunchEnd.minutes);
-            totalHoursWorked -= (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
+        let totalHoursWorked = 0;
+    
+        // Calculate regular working hours
+        if (startTime && endTime) {
+            const startDateTime = new Date(startDate);
+            startDateTime.setHours(startTime.hours, startTime.minutes);
+    
+            const endDateTime = new Date(startDate);
+            endDateTime.setHours(endTime.hours, endTime.minutes);
+    
+            totalHoursWorked = (endDateTime - startDateTime) / (1000 * 60 * 60); // Convert milliseconds to hours
+    
+            // Subtract lunch time if provided
+            if (lunchStart && lunchEnd) {
+                const lunchStartDateTime = new Date(startDate);
+                lunchStartDateTime.setHours(lunchStart.hours, lunchStart.minutes);
+    
+                const lunchEndDateTime = new Date(startDate);
+                lunchEndDateTime.setHours(lunchEnd.hours, lunchEnd.minutes);
+    
+                totalHoursWorked -= (lunchEndDateTime - lunchStartDateTime) / (1000 * 60 * 60);
+            }
         }
+    
+        // Add additional hours if both are provided
         if (additionalTimeIn && additionalTimeOut) {
             const additionalTimeInDateTime = new Date(startDate);
             additionalTimeInDateTime.setHours(additionalTimeIn.hours, additionalTimeIn.minutes);
+    
             const additionalTimeOutDateTime = new Date(startDate);
             additionalTimeOutDateTime.setHours(additionalTimeOut.hours, additionalTimeOut.minutes);
-            totalHoursWorked += (additionalTimeOutDateTime - additionalTimeInDateTime) / (1000 * 60 * 60);
+    
+            const additionalHoursWorked = (additionalTimeOutDateTime - additionalTimeInDateTime) / (1000 * 60 * 60);
+            totalHoursWorked += additionalHoursWorked;
+        } else if (!startTime && !endTime && additionalTimeIn && additionalTimeOut) {
+            // Handle the case where only additional time is provided
+            const additionalTimeInDateTime = new Date(startDate);
+            additionalTimeInDateTime.setHours(additionalTimeIn.hours, additionalTimeIn.minutes);
+    
+            const additionalTimeOutDateTime = new Date(startDate);
+            additionalTimeOutDateTime.setHours(additionalTimeOut.hours, additionalTimeOut.minutes);
+    
+            totalHoursWorked = (additionalTimeOutDateTime - additionalTimeInDateTime) / (1000 * 60 * 60); // Only additional hours
         }
+    
         return Math.max(0, totalHoursWorked);
     }
+    
 
     function roundToClosestQuarterHour(hours) {
         return Math.round(hours * 4) / 4;
@@ -703,15 +749,7 @@ function populateWeekDates(weekEndingDate) {
     const ptoTimeInput = document.getElementById('pto-time');
     const ptoHoursDisplay = document.getElementById('pto-hours-display');
 
-    function validatePtoTimeInput() {
-        const ptoTimeValue = parseFloat(ptoTimeInput.textContent) || 0;
-        const maxPtoHours = parseFloat(ptoHoursDisplay.textContent) || 0;
 
-        if (ptoTimeValue > maxPtoHours) {
-            ptoTimeInput.textContent = maxPtoHours.toFixed(2);
-            alert(`PTO time cannot exceed ${maxPtoHours.toFixed(2)} hours`);
-        }
-    }
 
     function validatePtoHours(totalHoursWorked, ptoTime, personalTime) {
         const remainingPTO = Math.max(0, availablePTOHours - ptoTime);
@@ -824,13 +862,7 @@ function populateWeekDates(weekEndingDate) {
             throw new Error('Failed to update PTO hours. Error: ' + error.message);
         }
     }
-    
-    
-    
-    
-    
-    
-    
+             
 
     async function updatePersonalHours() {
         console.log('Updating Personal hours...');
@@ -1053,13 +1085,7 @@ function populateWeekDates(weekEndingDate) {
         document.dispatchEvent(event);
     }
     
-    
-
-
-    
-    
-    
-    
+       
     
 
     async function sendDataToAirtable() {
@@ -1270,59 +1296,7 @@ function populateWeekDates(weekEndingDate) {
         inputs[index].focus();
     }
 
-    function shouldPlayMusic() {
-        const userEmailElement = document.getElementById('user-email');
-        const email = userEmailElement ? userEmailElement.textContent.trim() : '';
-        const excludedEmails = [
-            'jason.smith@vanirinstalledsales.com',
-            'richard.mcgirt@vanirinstalledsales.com',
-            'hunter@vanirinstalledsales.com',
-            'katy@vanirinstalledsales.com',
-            'diana.smith@vanirinstalledsales.com'
-        ];
-        return !excludedEmails.includes(email);
-    }
-
-    const backgroundMusic = document.getElementById('backgroundMusic');
-    const playPauseButton = document.getElementById('playPauseButton');
-
-    function updateButtonText() {
-        if (backgroundMusic.paused) {
-            playPauseButton.textContent = 'Play';
-        } else {
-            playPauseButton.textContent = 'Pause';
-        }
-    }
-
-    if (backgroundMusic && playPauseButton && shouldPlayMusic()) {
-        backgroundMusic.currentTime = 9;
-        backgroundMusic.play();
-        updateButtonText();
-
-        playPauseButton.addEventListener('click', function(event) {
-            event.preventDefault();
-            if (backgroundMusic.paused) {
-                backgroundMusic.play();
-                updateButtonText();
-            } else {
-                backgroundMusic.pause();
-                updateButtonText();
-            }
-        });
-
-        backgroundMusic.onplay = function() {
-            sessionStorage.setItem('isMusicPlaying', 'true');
-        };
-
-        backgroundMusic.onpause = function() {
-            sessionStorage.setItem('isMusicPlaying', 'false');
-            updateButtonText();
-        };
-    } else {
-        if (playPauseButton) {
-            playPauseButton.style.display = 'none';
-        }
-    }
+   
 
     function showPickerOnFocus() {
         const timeInputs = document.querySelectorAll('select.time-dropdown, input[type="number"]');
