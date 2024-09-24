@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     const supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
     const userEmailElement = document.getElementById('user-email');
     const timesheetsBody = document.getElementById('timesheets-body');
-    const checkAllButton = document.getElementById('check-all-button');
     const logoutButton = document.getElementById('logout-button');
     const loadingIndicator = document.getElementById('loading-indicator');
     const loadingScreen = document.getElementById('loading-screen');
@@ -19,7 +18,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Elements to hide during data fetching
     const titleElement = document.querySelector('h1');
     const messageContainer = document.getElementById('message-container');
-    const keyEnterHint = document.querySelector('p');
 
 
     if (userEmailElement) {
@@ -44,8 +42,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     console.log('Hiding elements before data fetching');
     titleElement.style.display = 'none';
     messageContainer.style.display = 'none';
-    checkAllButton.style.display = 'none';
-    keyEnterHint.style.display = 'none';
 
     // Handle the loading screen
     console.log('Starting loading screen sequence');
@@ -244,7 +240,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         totalRow += `
             <tr>
                 <td colspan="5" style="border: none;"></td>
-                <td class="narrow-border" style="text-align:right; border-top: 4px solid white; border-left: 4px solid white; width: 30%;">Total Hours Worked:</td>
+                <td class="narrow-border" style="text-align:right; border-top: 4px solid white; border-left: 4px solid white; width: 40%;">Total Hours Worked:</td>
                 <td style="border-top: 4px solid white;  border-right: 4px solid white; width: 10%; color: ${totalHoursWorked > 40 ? 'red' : 'white'};">
                     ${totalHoursWorked.toFixed(2)}
                 </td>
@@ -255,7 +251,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             totalRow += `
                 <tr>
                     <td colspan="5" style="border: none;"></td>
-                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Gifted Hours:</td>
+                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 40%;">Gifted Hours:</td>
                     <td style="border-right: 4px solid white; width: 10%;">${giftedHours.toFixed(2)}</td>
                 </tr>
             `;
@@ -265,7 +261,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             totalRow += `
                 <tr>
                     <td colspan="5" style="border: none;"></td>
-                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Personal Hours:</td>
+                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 40%;">Personal Hours:</td>
                     <td style="border-right: 4px solid white; width: 10%;">${totalPersonalHours.toFixed(2)}</td>
                 </tr>
             `;
@@ -275,7 +271,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             totalRow += `
                 <tr>
                     <td colspan="5" style="border: none;"></td>
-                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">PTO Hours:</td>
+                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 40%;">PTO Hours:</td>
                     <td style="border-right: 4px solid white; width: 10%;">${totalPtoHours.toFixed(2)}</td>
                 </tr>
             `;
@@ -285,7 +281,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             totalRow += `
                 <tr>
                     <td colspan="5" style="border: none;"></td>
-                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Holiday Hours:</td>
+                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 40%;">Holiday Hours:</td>
                     <td style="border-right: 4px solid white; width: 10%;">${totalHolidayHours.toFixed(2)}</td>
                 </tr>
             `;

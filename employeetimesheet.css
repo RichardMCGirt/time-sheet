@@ -11,16 +11,11 @@
     --highlight-hover-color: #f39c12; /* Changed to a more contrasting color */
 }
 
-main {
-    width: 75% !important;
-    margin: 0 auto;
-    padding: 20px;
-    height: 100% !important;
-}
 
-#timesheets-body {
-    width: 75% !important;
-    margin: 0 auto; /* To center the table */
+html, body {
+    overflow: hidden;
+    height: 100%;
+    margin: 0;
 }
 
 
@@ -34,11 +29,15 @@ body {
     text-align: center;
     font-weight: bolder;
     transition: background-color 0.3s ease, color 0.3s ease;
+    height: 100vh; /* Full viewport height */
 }
 
 header {
     background-color: var(--header-bg);
     padding: 20px;
+    top: 0;
+    z-index: 1000; /* Ensure the header stays above other content */
+
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -157,7 +156,6 @@ header {
     align-items: center;
     flex-direction: column;
     width: 100%;
-    min-height: 100vh;
 }
 
 /* Styles for narrowing borders and making width fit the text */
@@ -233,16 +231,46 @@ input[type="date"]:disabled {
 
 .table-wrapper {
     display: flex;
-    justify-content: center;
-    gap: 20px; /* Add spacing between the two tables if needed */
-    width: 100%; /* Ensure the wrapper takes up the full width */
-    padding: 20px;
+    gap: 20px;
+    /* Ensure the wrapper takes up the full width and height of the screen */
+    max-width: 150vw;
+    max-height: 150vh;
+    overflow: hidden;
+    padding-bottom: 45px;
 }
 
-.time-tracking-table, .approval-table {
-    display: flex;
-    justify-content: center;
-    width: 70% !important;}
+.scrollable {
+    /* Ensure the tables take up only the available screen space */
+    max-width: 100%;
+    max-height: calc(100vh - 200px); /* Adjust based on header height */
+    overflow-y: auto; /* Vertical scrolling */
+    overflow-x: auto; /* Horizontal scrolling, if necessary */
+    box-sizing: border-box; /* Ensures padding and border are included in width/height */
+    padding-bottom: 20px; /* Add some padding at the bottom to prevent cutting off last row */
+
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table td, table th {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+
+
+
+.time-tracking-table {
+    display: block; /* Ensure it behaves like a block-level element */
+    margin: 0 auto; /* This centers it horizontally */
+    max-width: 100%; /* Ensure it doesn't exceed the screen width */
+    width: fit-content; /* Table will adjust to its content width */
+}
+
 
 table {
     border-collapse: collapse;
@@ -261,14 +289,7 @@ h1, h3 {
     text-align: center; /* Center the headings */
 }
 
-#check-all-button {
-    cursor: pointer; /* Changes cursor to pointer */
-    transition: transform 0.5s ease; /* Smooth transition for the transform effect */
-}
 
-#check-all-button:hover {
-    animation: randomEffect 1s infinite;
-}
 
 @keyframes randomEffect {
     0%, 100% { transform: rotate(0deg); }
@@ -302,7 +323,7 @@ input[type="date"] {
     color: var(--input-text-color);
     border: none;
     border-radius: 4px;
-    padding: 5px;
+    padding: 8px;
     text-align: center;
     font-size: large;
 }
