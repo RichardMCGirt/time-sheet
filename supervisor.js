@@ -181,12 +181,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             keyEnterHint.style.display = '';
         }
     }
-    
-    
-    
-    
-    
-    
 
     async function populateTimesheets(records) {
         console.log('Populating timesheets');
@@ -688,16 +682,5 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    // Schedule checkbox reset for every Thursday
-    const now = new Date();
-    const nextThursday = new Date();
-    nextThursday.setDate(now.getDate() + ((4 + 7 - now.getDay()) % 7));
-    nextThursday.setHours(0, 0, 0, 0);
-
-    const timeUntilNextThursday = nextThursday - now;
-    console.log(`Scheduling checkbox reset: Next Thursday at ${nextThursday}`);
-    setTimeout(function() {
-        resetAllCheckboxes();
-        setInterval(resetAllCheckboxes, 7 * 24 * 60 * 60 * 1000); // Every 7 days
-    }, timeUntilNextThursday);
+    
 });

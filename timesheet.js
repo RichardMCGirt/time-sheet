@@ -355,8 +355,22 @@ document.addEventListener("DOMContentLoaded", function() {
                     // Disable the submit button if approved
                     elements.submitButton.disabled = true;
                     elements.submitButton.textContent = "Timesheet Approved"; // Optional: Change button text
+                    
+                    // Hide the clear button if approved
+                    const clearDataButton = document.getElementById('clear-button'); // Updated button ID
+                    if (clearDataButton) {
+                        clearDataButton.style.display = 'none'; // Hides the button completely
+                        console.log('Clear data button hidden.');
+                    } else {
+                        console.error('Clear data button not found.');
+                    }
                 } else {
                     approvalStatusElement.textContent = '';
+                    // Show the clear button if not approved
+                    const clearDataButton = document.getElementById('clear-button');
+                    if (clearDataButton) {
+                        clearDataButton.style.display = ''; // Show the button if not approved
+                    }
                 }
             } else {
                 console.log('No approval status data found for user');
@@ -368,6 +382,9 @@ document.addEventListener("DOMContentLoaded", function() {
             alert('Failed to fetch approval status. Error: ' + error.message);
         }
     }
+    
+    
+    
     
 
     // Run all fetches sequentially
