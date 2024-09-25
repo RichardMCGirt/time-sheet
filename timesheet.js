@@ -400,14 +400,14 @@ document.addEventListener("DOMContentLoaded", function() {
     
     function getNextTuesday(referenceDate = new Date()) {
         const dayOfWeek = referenceDate.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
-        
+    
         // If today is Tuesday (dayOfWeek === 2), return today
         if (dayOfWeek === 1) {
             return referenceDate;
         }
     
         // Calculate the number of days until the next Tuesday
-        const daysUntilTuesday = (1 - dayOfWeek + 0) % 7 || 7;
+        const daysUntilTuesday = (1 - dayOfWeek + 7) % 7 || 7;
     
         // Create a new date object for the next Tuesday
         const nextTuesday = new Date(referenceDate);
@@ -415,6 +415,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
         return nextTuesday;
     }
+    
     
     
     
@@ -577,13 +578,9 @@ function populateWeekDates(weekEndingDate) {
 }
 
 function startCountdown() {
-    const now = new Date();
-    
-    // Set the target time to midnight (12:00 AM) of tomorrow
-    const midnight = new Date();
-    midnight.setHours(24, 0, 0, 0); // Set time to 00:00:00 of the next day
-
-    const endDateTime = midnight.getTime(); // Get the timestamp for midnight
+    // Set the target date and time to December 31, 2024, at midnight (00:00:00)
+    const targetDate = new Date('2024-12-31T00:00:00');
+    const endDateTime = targetDate.getTime(); // Get the timestamp for the target date
     const countdownElement = document.getElementById('countdown');
 
     function updateCountdown() {
@@ -595,11 +592,12 @@ function startCountdown() {
             return; // Stop if the countdown is over
         }
 
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        countdownElement.innerHTML = `${hours}h ${minutes}m ${seconds}s`;
+        countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 
         // Calculate the exact remaining milliseconds until the next full second
         const nextUpdateInMs = 1000 - (now % 1000);
@@ -614,7 +612,6 @@ function startCountdown() {
 
 // Call the function to start the countdown
 startCountdown();
-
 
     
 
