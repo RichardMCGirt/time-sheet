@@ -301,6 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Function to handle clicking the edit button
     function handleEditClick(event) {
         const index = event.target.dataset.index; // Get the index from the clicked button
         const id = event.target.dataset.id; // Get the record id from the clicked button
@@ -316,6 +317,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.getElementById('startDate').focus(); // Focus on the date input for quick editing
             submitButton.textContent = 'Submit Edit'; // Update the submit button text
+
+            // Hide the previous requests container
+            previousRequestsContainer.style.display = 'none';
         }
     }
 
@@ -358,6 +362,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+     // Function to show the previous requests container after form submit or enter key press
+     function showPreviousRequests() {
+        previousRequestsContainer.style.display = 'block'; // Show the previous requests container
+    }
+
+    // Add event listener for form submit
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        handleFormSubmit();
+        showPreviousRequests(); // Show previous requests after submitting
+    });
+
+    // Add event listener for keydown to check for the Enter key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && form.contains(document.activeElement)) {
+            event.preventDefault(); // Prevent default Enter key behavior
+            handleFormSubmit();
+            showPreviousRequests(); // Show previous requests after pressing Enter
+        }
+    });
 
        // Add event listeners to the edit buttons
        function attachEditListeners() {
