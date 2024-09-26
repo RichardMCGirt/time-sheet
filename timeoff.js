@@ -70,91 +70,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchPreviousRequests(email) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
-            const response = await fetch(url, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
-                }
-            });
-            const data = await response.json();
-    
-            if (data.records.length > 0) {
-                const employeeRecord = data.records[0]; // Assuming there's only one record per email
-                const fields = employeeRecord.fields;
-                displayPreviousTimeOffSubmissions(fields);
-            } else {
-                console.log('No previous time-off submissions found.');
+            let url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
+            let allRecords = [];
+            while (url) {
+                const response = await fetch(url, {
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`
+                    }
+                });
+                const data = await response.json();
+                allRecords = allRecords.concat(data.records);
+                url = data.offset ? `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}&offset=${data.offset}` : null;
             }
+            records = allRecords || [];
+            await deleteExpiredRecords(records);
+            displayPreviousRequests(records);
         } catch (error) {
-            console.error('Error fetching previous time-off submissions:', error);
+            console.error('Error fetching previous requests:', error);
         }
     }
-    
-    // Function to display the previous time-off submissions dynamically
-    function displayPreviousTimeOffSubmissions(fields) {
-        requestsList.innerHTML = ''; // Clear the previous list
-    
-        const previousRequestsContainer = document.getElementById('previousRequests');
-        previousRequestsContainer.classList.remove('hidden'); // Show container
-    
-        let timesheetApproved = false; // Variable to track if any timesheet is approved
-    
-        // Loop through the dynamic time-off fields
-        for (let i = 1; i <= 10; i++) {
-            const startDate = fields[`Time off Start Date ${i}`];
-            const startTime = fields[`Time off Start Time ${i}`];
-            const endDate = fields[`Time off End Date ${i}`];
-            const endTime = fields[`Time off End Time ${i}`];
-            const approved = fields[`Time off Approved ${i}`];
-            const reason = fields[`Reason ${i}`] || 'N/A';
-    
-            if (startDate) {
-                const recordItem = document.createElement('li');
-                recordItem.className = 'record';
-    
-                const approvedCheckbox = approved ? '<input type="checkbox" class="approved-checkbox" checked disabled>' : '';
-                const approvedText = approved ? '<p><strong>Approved:</strong>' : '';
-    
-                const daysOff = calculateBusinessDays(startDate, endDate);
-                const reasonClass = reason !== 'N/A' ? 'reason-red' : '';
-    
-                recordItem.innerHTML = `
-                    <p><strong>Start Date:</strong> ${startDate}</p>
-                    <p><strong>Start Time:</strong> ${startTime}</p>
-                    <p><strong>End Date:</strong> ${endDate}</p>
-                    <p><strong>End Time:</strong> ${endTime}</p>
-                    <p><strong>Days Off:</strong> ${daysOff} days</p>
-                    <p class="reason ${reasonClass}" style="display: ${approved ? 'none' : 'block'};"><strong>Reason:</strong> ${reason}</p>
-                    ${approvedText}${approvedCheckbox}</p>
-                    <button class="edit-button" data-index="${i}" data-id="${fields.id}" ${approved ? 'disabled' : ''}>Edit</button>
-                    <button class="delete-button" data-index="${i}" data-id="${fields.id}" ${approved ? 'disabled' : ''}>Delete</button>`;
-    
-                requestsList.appendChild(recordItem);
-    
-                // If any record is approved, disable the clear data button
-                if (approved) {
-                    timesheetApproved = true;
-                }
-            }
-        }
-    
-        // Disable the clear data button if any timesheet is approved
-        const clearDataButton = document.getElementById('clearDataButton');
-        if (timesheetApproved) {
-            clearDataButton.disabled = true;
-        }
-    
-        document.querySelectorAll('.edit-button').forEach(button => {
-            button.addEventListener('click', handleEditClick);
-        });
-    
-        document.querySelectorAll('.delete-button').forEach(button => {
-            button.addEventListener('click', handleDeleteClick);
-        });
-    }
-    
-    // Call the function when needed (e.g., after fetching the employee email)
-    fetchPreviousTimeOffSubmissions(userEmail);
 
     async function sendToAirtable(formData) {
         try {
@@ -275,12 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
             showSuccessMessage('The requested time-off is happening now.');
         }
     
-        if (startTime === '07:00 AM') {
+        if (startTime === 'All Day') {
             startTime = '07:00 AM';
         } else {
             startTime = convertToAMPM(startTime);
         }
-        if (endTime === '04:00 PM') {
+        if (endTime === 'All Day') {
             endTime = '04:00 PM';
         } else {
             endTime = convertToAMPM(endTime);
@@ -324,8 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayPreviousRequests(records) {
         requestsList.innerHTML = '';
 
-        let timesheetApproved = false; // Variable to track if any timesheet is approved
-
         if (records.length > 0) {
             previousRequestsContainer.classList.remove('hidden');
         } else {
@@ -339,10 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     recordItem.className = 'record';
 
                     const approved = record.fields[`Time off Approved ${i}`];
-                    if (approved) {
-                        timesheetApproved = true; // Set to true if any record is approved
-                    }
-
                     const approvedCheckbox = approved ? '<input type="checkbox" class="approved-checkbox" checked disabled>' : '';
                     const approvedText = approved ? '<p><strong>Approved:</strong>' : '';
                     const daysOff = calculateBusinessDays(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`]);
@@ -357,24 +285,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>Days Off:</strong> ${daysOff} days</p>
                         <p class="reason ${reasonClass}" style="display: ${approved ? 'none' : 'block'};"><strong>Reason:</strong> ${reason}</p>
                         ${approvedText}${approvedCheckbox}</p>
-                        <button class="edit-button" data-index="${i}" data-id="${record.id}" ${approved ? 'disabled' : ''}>Edit</button>
-                        <button class="delete-button" data-index="${i}" data-id="${record.id}" ${approved ? 'disabled' : ''}>Delete</button>`;
+                        <button class="edit-button" data-index="${i}" data-id="${record.id}">Edit</button>
+                        <button class="delete-button" data-index="${i}" data-id="${record.id}">Delete</button>`;
 
                     requestsList.appendChild(recordItem);
                 }
             }
         });
 
-        // Disable the clear data button if any timesheet is approved
-        if (timesheetApproved) {
-            clearDataButton.disabled = true;
-        } else {
-            clearDataButton.disabled = false;
-        }
-
-        document.querySelectorAll('.edit-button').forEach(button => {
-            button.addEventListener('click', handleEditClick);
-        });
+        // Attach event listeners to the edit buttons
+        attachEditListeners();
 
         document.querySelectorAll('.delete-button').forEach(button => {
             button.addEventListener('click', handleDeleteClick);
@@ -382,18 +302,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function handleEditClick(event) {
-        const index = event.target.dataset.index;
-        const id = event.target.dataset.id;
-        const record = records.find(record => record.id === id);
+        const index = event.target.dataset.index; // Get the index from the clicked button
+        const id = event.target.dataset.id; // Get the record id from the clicked button
+        const record = records.find(record => record.id === id); // Find the record in the list of records
+
         if (record) {
+            // Fill form fields with the existing data for editing
             currentEditingIndex = index;
             document.getElementById('startDate').value = record.fields[`Time off Start Date ${index}`] || '';
             document.getElementById('startTime').value = convertTo24HourFormat(record.fields[`Time off Start Time ${index}`]) || '';
             document.getElementById('endDate').value = record.fields[`Time off End Date ${index}`] || '';
             document.getElementById('endTime').value = convertTo24HourFormat(record.fields[`Time off End Time ${index}`]) || '';
 
-            document.getElementById('startDate').focus();
-            submitButton.textContent = 'Submit Edit';
+            document.getElementById('startDate').focus(); // Focus on the date input for quick editing
+            submitButton.textContent = 'Submit Edit'; // Update the submit button text
         }
     }
 
@@ -437,6 +359,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+       // Add event listeners to the edit buttons
+       function attachEditListeners() {
+        document.querySelectorAll('.edit-button').forEach(button => {
+            button.addEventListener('click', handleEditClick);
+        });
+    }
+
     function convertTo24HourFormat(time) {
         const [timePart, period] = time.split(' ');
         let [hours, minutes] = timePart.split(':');
@@ -448,60 +377,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return `${hours.toString().padStart(2, '0')}:${minutes}`;
     }
-
-    function displayPreviousRequests(records) {
-        requestsList.innerHTML = '';
-    
-        if (records.length > 0) {
-            previousRequestsContainer.classList.remove('hidden');
-        } else {
-            previousRequestsContainer.classList.add('hidden');
-        }
-    
-        records.forEach(record => {
-            for (let i = 1; i <= 10; i++) {
-                if (record.fields[`Time off Start Date ${i}`]) {
-                    const recordItem = document.createElement('li');
-                    recordItem.className = 'record';
-    
-                    const approved = record.fields[`Time off Approved ${i}`];
-                    const approvedCheckbox = approved ? '<input type="checkbox" class="approved-checkbox" checked disabled>' : '';
-                    const approvedText = approved ? '<p><strong>Approved:</strong>' : '';
-                    const daysOff = calculateBusinessDays(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`]);
-                    const reason = record.fields[`Reason ${i}`] || 'N/A';
-                    const reasonClass = reason !== 'N/A' ? 'reason-red' : '';
-    
-                    recordItem.innerHTML = `
-                        <p><strong>Start Date:</strong> ${record.fields[`Time off Start Date ${i}`]}</p>
-                        <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`]}</p>
-                        <p><strong>End Date:</strong> ${record.fields[`Time off End Date ${i}`]}</p>
-                        <p><strong>End Time:</strong> ${record.fields[`Time off End Time ${i}`]}</p>
-                        <p><strong>Days Off:</strong> ${daysOff} days</p>
-                        <p class="reason ${reasonClass}" style="display: ${approved ? 'none' : 'block'};"><strong>Reason:</strong> ${reason}</p>
-                        ${approvedText}${approvedCheckbox}</p>
-                        <button class="edit-button" data-index="${i}" data-id="${record.id}" ${approved ? 'disabled' : ''}>Edit</button>
-                        <button class="delete-button" data-index="${i}" data-id="${record.id}" ${approved ? 'disabled' : ''}>Delete</button>`;
-    
-                    requestsList.appendChild(recordItem);
-    
-                    // Disable the clear data button if the timesheet is approved
-                    const clearDataButton = document.getElementById('clearDataButton');
-                    if (approved) {
-                        clearDataButton.disabled = true;
-                    }
-                }
-            }
-        });
-    
-        document.querySelectorAll('.edit-button').forEach(button => {
-            button.addEventListener('click', handleEditClick);
-        });
-    
-        document.querySelectorAll('.delete-button').forEach(button => {
-            button.addEventListener('click', handleDeleteClick);
-        });
-    }
-    
 
     function displaySubmittedData(formData) {
         const index = currentEditingIndex !== null ? currentEditingIndex : getNextAvailableIndex() - 1;
@@ -610,15 +485,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function convertTimeToTextInput(inputId) {
         const input = document.getElementById(inputId);
         let isTextInput = false;
-        
         input.addEventListener('dblclick', () => {
             if (!isTextInput) {
                 input.type = 'text';
-                if (inputId === 'endTime') {
-                    input.value = '04:00 PM';  // Set value to 04:00 PM for the endTime field
-                } else {
-                    input.value = '07:00 AM';  // Default value for other inputs
-                }
+                input.value = 'All Day';
                 isTextInput = true;
             } else {
                 input.type = 'time';
@@ -626,17 +496,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 isTextInput = false;
             }
         });
-    
         input.addEventListener('click', () => {
             if (input.type === 'time') {
                 input.showPicker();
             }
         });
     }
-    
-    // Example of how to use the function for the endTime field
-    convertTimeToTextInput('endTime');
-    
 
     convertTimeToTextInput('startTime');
     convertTimeToTextInput('endTime');
@@ -663,20 +528,5 @@ document.addEventListener('DOMContentLoaded', () => {
         submissionStatus.classList.add('error');
     }
 
-    function togglePreviousRequestsVisibility() {
-        const previousRequestsDiv = document.getElementById('previousRequests');
-        const requestsList = document.getElementById('requestsList');
-    
-        // Check if the list has any child elements
-        if (requestsList.children.length > 0) {
-            previousRequestsDiv.style.display = 'block'; // Show the div if there are list items
-        } else {
-            previousRequestsDiv.style.display = 'none';  // Hide the div if no list items
-        }
-    }
-    
-    // Example usage: Call this function after populating the requestsList
-    togglePreviousRequestsVisibility();
-    
    
 });

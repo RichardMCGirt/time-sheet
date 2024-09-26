@@ -34,23 +34,40 @@
 
     <div class="container">
         <form id="timeOffForm">
-            <label for="employeeName">Employee Name</label>
-            <input type="text" id="employeeName" name="employeeName" disabled >
-
-            <label for="startDate">Start Date</label>
-            <input type="date" id="startDate" name="startDate" required>
-
-            <label for="startTime">Start Time [double click for all day]</label>
-            <input type="time" id="startTime" name="startTime" >
-
-            <label for="endDate">End Date</label>
-            <input type="date" id="endDate" name="endDate" required>
-
-            <label for="endTime">End Time</label>
-            <input type="time" id="endTime" name="endTime" >
+            <div class="row single" style="text-align: center;">
+                <label for="employeeName"></label>
+                <input type="text" id="employeeName" name="employeeName" disabled style="width: auto; text-align: center; display: inline-block; border: none; font-size: 28px; font-weight: bold;">
+            </div>
+            
+            
+            
+            
+    
+            <div class="row">
+                <div class="half">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" name="startDate" required>
+                </div>
+                <div class="half">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" name="endDate" required>
+                </div>
+            </div>
+    
+            <div class="row">
+                <div class="half">
+                    <label for="startTime">Start Time </label>
+                    <input type="time" id="startTime" name="startTime">
+                </div>
+                <div class="half">
+                    <label for="endTime">End Time</label>
+                    <input type="time" id="endTime" name="endTime">
+                </div>
+            </div>
+    
             <div id="submissionStatus" class="hidden"></div>
 
-             
+
             <button id="submitButton" type="submit">Submit</button>
         </form>
     </div>
@@ -58,6 +75,8 @@
         <h2>Previous Requests</h2>
         <ul id="requestsList"></ul>
     </div>
+    <button id="clearDataButton">Clear Data</button>
+
     <script src="timeoff.js"></script>
     <div id="script-placeholder"></div>
     <script src="disable-script.js"></script>
