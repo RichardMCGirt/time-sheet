@@ -70,25 +70,91 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchPreviousRequests(email) {
         try {
-            let url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
-            let allRecords = [];
-            while (url) {
-                const response = await fetch(url, {
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`
-                    }
-                });
-                const data = await response.json();
-                allRecords = allRecords.concat(data.records);
-                url = data.offset ? `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}&offset=${data.offset}` : null;
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+            const data = await response.json();
+    
+            if (data.records.length > 0) {
+                const employeeRecord = data.records[0]; // Assuming there's only one record per email
+                const fields = employeeRecord.fields;
+                displayPreviousTimeOffSubmissions(fields);
+            } else {
+                console.log('No previous time-off submissions found.');
             }
-            records = allRecords || [];
-            await deleteExpiredRecords(records);
-            displayPreviousRequests(records);
         } catch (error) {
-            console.error('Error fetching previous requests:', error);
+            console.error('Error fetching previous time-off submissions:', error);
         }
     }
+    
+    // Function to display the previous time-off submissions dynamically
+    function displayPreviousTimeOffSubmissions(fields) {
+        requestsList.innerHTML = ''; // Clear the previous list
+    
+        const previousRequestsContainer = document.getElementById('previousRequests');
+        previousRequestsContainer.classList.remove('hidden'); // Show container
+    
+        let timesheetApproved = false; // Variable to track if any timesheet is approved
+    
+        // Loop through the dynamic time-off fields
+        for (let i = 1; i <= 10; i++) {
+            const startDate = fields[`Time off Start Date ${i}`];
+            const startTime = fields[`Time off Start Time ${i}`];
+            const endDate = fields[`Time off End Date ${i}`];
+            const endTime = fields[`Time off End Time ${i}`];
+            const approved = fields[`Time off Approved ${i}`];
+            const reason = fields[`Reason ${i}`] || 'N/A';
+    
+            if (startDate) {
+                const recordItem = document.createElement('li');
+                recordItem.className = 'record';
+    
+                const approvedCheckbox = approved ? '<input type="checkbox" class="approved-checkbox" checked disabled>' : '';
+                const approvedText = approved ? '<p><strong>Approved:</strong>' : '';
+    
+                const daysOff = calculateBusinessDays(startDate, endDate);
+                const reasonClass = reason !== 'N/A' ? 'reason-red' : '';
+    
+                recordItem.innerHTML = `
+                    <p><strong>Start Date:</strong> ${startDate}</p>
+                    <p><strong>Start Time:</strong> ${startTime}</p>
+                    <p><strong>End Date:</strong> ${endDate}</p>
+                    <p><strong>End Time:</strong> ${endTime}</p>
+                    <p><strong>Days Off:</strong> ${daysOff} days</p>
+                    <p class="reason ${reasonClass}" style="display: ${approved ? 'none' : 'block'};"><strong>Reason:</strong> ${reason}</p>
+                    ${approvedText}${approvedCheckbox}</p>
+                    <button class="edit-button" data-index="${i}" data-id="${fields.id}" ${approved ? 'disabled' : ''}>Edit</button>
+                    <button class="delete-button" data-index="${i}" data-id="${fields.id}" ${approved ? 'disabled' : ''}>Delete</button>`;
+    
+                requestsList.appendChild(recordItem);
+    
+                // If any record is approved, disable the clear data button
+                if (approved) {
+                    timesheetApproved = true;
+                }
+            }
+        }
+    
+        // Disable the clear data button if any timesheet is approved
+        const clearDataButton = document.getElementById('clearDataButton');
+        if (timesheetApproved) {
+            clearDataButton.disabled = true;
+        }
+    
+        document.querySelectorAll('.edit-button').forEach(button => {
+            button.addEventListener('click', handleEditClick);
+        });
+    
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', handleDeleteClick);
+        });
+    }
+    
+    // Call the function when needed (e.g., after fetching the employee email)
+    fetchPreviousTimeOffSubmissions(userEmail);
 
     async function sendToAirtable(formData) {
         try {
