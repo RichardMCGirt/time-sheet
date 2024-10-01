@@ -424,7 +424,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     
         // Calculate the number of days until the next Tuesday
-        const daysUntilTuesday = (1 - dayOfWeek + 7) % 7 || 7;
+        const daysUntilTuesday = (1 - dayOfWeek + 0) % 7 || 7;
     
         // Create a new date object for the next Tuesday
         const nextTuesday = new Date(referenceDate);
