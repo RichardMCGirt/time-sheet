@@ -383,24 +383,195 @@ input[type="date"] {
     transition: background-color 0.3s ease;
 }
 
-/* Mobile Adjustments */
-@media (max-width: 768px) {
-    .name-container {
-        width: 100%;
-        padding-left: 10px;
+/* General small device adjustments */
+@media only screen and (max-width: 768px) {
+    body {
+        height: 100vh; /* Adjust height to ensure full visibility */
+        padding-bottom: 20px; /* Extra padding to account for the URL bar */
     }
 
-    .time-entry-table {
-        width: 100%;
-        margin: 10px 0;
+    main {
+        width: 95%; /* Make main content more compact */
     }
 
-    .navbar ul {
-        flex-direction: column;
-        gap: 10px;
+    header {
+        padding: 10px; /* Reduce padding for the header */
+    }
+
+    .header-left .logo {
+        height: 40px; /* Reduce logo size */
+    }
+
+    .header-right {
+        gap: 5px; /* Reduce spacing between items */
+    }
+
+    .scrollable {
+        overflow-x: auto;  /* Allow horizontal scrolling on smaller devices */
+        overflow-y: auto;  /* Allow vertical scrolling */
+        -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on mobile devices */
+    }
+
+    table {
+        width: 100%;  /* Ensure table does not overflow horizontally unnecessarily */
+        min-width: 600px; /* Set a minimum width so the table content can scroll horizontally if needed */
+    }
+
+    table td, table th {
+        white-space: nowrap; /* Prevent wrapping of table cell content */
     }
 
     .navbar ul li a {
-        padding: 10px;
+        padding: 10px; /* Make the navbar items smaller */
+        font-size: 14px; /* Reduce font size */
     }
+
+    .name-container {
+        font-size: 16px; /* Adjust font size for smaller screens */
+    }
+
+    /* Reduce table column widths */
+    th.narrow-column {
+        max-width: 40px; /* Smaller column width for narrow screens */
+    }
+
+    table td, table th {
+        padding: 6px; /* Reduce padding for table cells */
+    }
+
+    /* Adjust the time-tracking table */
+    .time-tracking-table {
+        max-width: 100%; /* Ensure table fits within the screen width */
+    }
+
+    /* Adjust the submit button for small screens */
+    #submit-button {
+        padding: 8px 15px;
+        font-size: 14px;
+        bottom: 5%; /* Keep it sticky at a reasonable height */
+    }
+
+    /* Adjust the loading logo size */
+    #loading-logo {
+        width: 20%;
+        height: 20%; /* Make it larger on small screens */
+    }
+}
+
+/* For portrait orientation */
+@media only screen and (max-width: 768px) and (orientation: portrait) {
+    /* Adjust body and content for portrait view */
+    body {
+        height: 100vh;
+    }
+
+    .table-wrapper {
+        flex-direction: column; /* Stack the tables vertically */
+        gap: 10px; /* Reduce gap between columns */
+    }
+
+    .scrollable {
+        max-height: 60vh; /* Limit scrollable area height */
+        padding-bottom: 15px;
+    }
+
+    .navbar ul li a {
+        padding: 8px; /* Smaller padding in portrait */
+        font-size: 13px; /* Reduce font size for navbar links */
+    }
+
+    /* Adjust time entry form width */
+    .time-entry-form {
+        width: 100%;
+    }
+
+    /* Reduce font size and input size in form */
+    input[type="time"],
+    input[type="number"],
+    input[type="date"] {
+        padding: 6px;
+        font-size: medium;
+    }
+}
+
+/* For landscape orientation */
+@media only screen and (max-width: 768px) and (orientation: landscape) {
+    /* Adjust body and content for landscape view */
+    body {
+        height: calc(100vh - 40px); /* Account for the URL bar */
+        padding-bottom: 0; /* Less padding at the bottom */
+    }
+
+    .header-left .logo {
+        height: 35px; /* Even smaller logo in landscape mode */
+    }
+
+    .header-right {
+        gap: 5px;
+    }
+
+    /* Adjust navbar for landscape */
+    .navbar ul li a {
+        padding: 8px;
+        font-size: 12px; /* Smaller font for landscape mode */
+    }
+
+    /* Adjust the submit button */
+    #submit-button {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    /* Reduce scrollable area height in landscape */
+    .scrollable {
+        max-height: 65vh;
+    }
+}
+
+/* Adjust for very small devices like smartphones */
+@media only screen and (max-width: 480px) {
+    header {
+        padding: 5px; /* Less padding in the header */
+    }
+
+    .header-left .logo {
+        height: 30px; /* Even smaller logo */
+    }
+
+    .navbar ul li a {
+        padding: 6px; /* Smaller padding in navbar links */
+        font-size: 12px; /* Reduce font size */
+    }
+
+    table td, table th {
+        padding: 4px;  /* Reduce padding for smaller devices */
+        font-size: 12px;  /* Decrease font size to fit more content */
+    }
+
+    .name-container {
+        font-size: 14px;
+    }
+
+    .scrollable {
+        max-height: 60vh;  /* Restrict height to make the table more usable */
+    }
+
+    /* Make the table more compact for very small devices */
+    table {
+        min-width: 500px;  /* Adjust the minimum width to better fit smaller screens */
+    }
+
+    input[type="time"],
+    input[type="number"],
+    input[type="date"] {
+        padding: 5px;
+        font-size: small;
+    }
+
+    #submit-button {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+
 }

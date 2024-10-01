@@ -96,8 +96,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Make header, title, and other elements visible after data is loaded
         document.querySelector('header').classList.add('visible');
         document.querySelector('h1').classList.add('visible');
-        document.querySelector('#check-all-button').classList.add('visible');
-        document.querySelector('p').classList.add('visible');
         document.querySelector('#message-container').classList.add('visible');
     }
     
@@ -498,8 +496,16 @@ async function fetchTimesheets(supervisorName) {
             timesheetsBody.appendChild(noRecordsRow);
         }
     }
+   
     
-
+    
+    
+    
+    
+    
+    
+    
+    
 
     function checkTimesheetValues(fields) {
         console.log('Checking timesheet values');
@@ -521,6 +527,20 @@ async function fetchTimesheets(supervisorName) {
         document.querySelectorAll('.approve-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', handleCheckboxChange);
         });
+          // Select the scrollable div that contains the table
+          const scrollableDiv = document.querySelector('.time-tracking-table.scrollable');
+    
+          // Disable body scrolling and let only the table scroll
+          document.body.style.overflow = 'hidden';
+      
+          // Add a 'wheel' event listener to the entire document body
+          document.body.addEventListener('wheel', function (event) {
+              // Prevent default page scroll
+              event.preventDefault();
+      
+              // Scroll the table based on user's scroll input (event.deltaY)
+              scrollableDiv.scrollTop += event.deltaY;
+          });
     });
 
    // Handling the checkbox change and passing `recordId`
@@ -626,64 +646,7 @@ async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
     });
     
 
-    async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
-        // Fetch the record ID from table2Id based on Employee Number
-        const approvedEndpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}?filterByFormula=AND({Employee Number}='${employeeNumber}')`;
-        
-        try {
-            const response = await fetch(approvedEndpoint, {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-    
-            const data = await response.json();
-            if (data.records.length === 0) {
-                throw new Error(`No record found for Employee Number: ${employeeNumber}`);
-            }
-    
-            const recordId = data.records[0].id;  // Get record ID from table2Id
-            const endpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}/${recordId}`;
-            const bodyFields = {};
-    
-            console.log(`Updating approval status: Employee Number=${employeeNumber}, Record ID=${recordId}, Approved=${isApproved}, Not Approved=${isNotApproved}`);
-            
-            if (isApproved !== null) bodyFields.Approved = isApproved;
-            if (isNotApproved !== null) bodyFields['Timesheet Not Approved Reason'] = isNotApproved === '' ? '' : isNotApproved;
-    
-            if (Object.keys(bodyFields).length === 0) return; // No updates to make
-    
-            const body = JSON.stringify({ fields: bodyFields });
-    
-            const updateResponse = await fetch(endpoint, {
-                method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                },
-                body,
-            });
-            
-            if (!updateResponse.ok) {
-                const errorMessage = await updateResponse.text();
-                throw new Error(`Failed to update approval status: ${updateResponse.statusText}. Error message: ${errorMessage}`);
-            }
-    
-            const updatedData = await updateResponse.json();
-            console.log('Approval status updated:', updatedData);
-            displaySuccessMessage("Record successfully updated");
-            
-        } catch (error) {
-            console.error('Error updating approval status:', error);
-        }
-    }
-    
-    
-    
-    
-
+   
 
 
     function displaySuccessMessage(message) {

@@ -382,11 +382,7 @@ document.addEventListener("DOMContentLoaded", function() {
             alert('Failed to fetch approval status. Error: ' + error.message);
         }
     }
-    
-    
-    
-    
-
+           
     // Run all fetches sequentially
     await fetchPtoHours();
     await fetchPersonalTime();
