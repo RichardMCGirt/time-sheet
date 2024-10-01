@@ -401,37 +401,52 @@ document.addEventListener("DOMContentLoaded", function() {
 
     async function handleWeekEndingChange() {
         console.log('Handling week-ending date change...');
+        
+        // Get the selected date from the weekEndingInput field
         const selectedDate = new Date(elements.weekEndingInput.value);
-        const nextTuesday = getNextTuesday(selectedDate); // Get the next Tuesday based on the selected date
+        
+        // Get the next Tuesday based on the selected date
+        const nextTuesday = getNextTuesday(selectedDate); 
         elements.weekEndingInput.value = nextTuesday.toISOString().split('T')[0];
         console.log('Adjusted week-ending date:', nextTuesday);
     
+        // Set date7 (which is 6 days after nextTuesday)
         const date7 = new Date(nextTuesday);
         date7.setDate(nextTuesday.getDate() + 6);
         elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
+    
+        // Populate other week dates based on next Tuesday
         populateWeekDates(nextTuesday);
+        
+        // Save form data
         saveFormData();
     }
     
-    
-    
+    // Get next Tuesday based on the New York timezone
     function getNextTuesday(referenceDate = new Date()) {
-        const dayOfWeek = referenceDate.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
-    
+        // Create an Intl.DateTimeFormat object to get the current date in the New York timezone
+        const options = { timeZone: 'America/New_York', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' };
+        const formatter = new Intl.DateTimeFormat('en-US', options);
+        const newYorkTime = formatter.format(referenceDate);
+        const newYorkDate = new Date(newYorkTime);  // Parse the formatted date back to a Date object
+        
+        const dayOfWeek = newYorkDate.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+        
         // If today is Tuesday (dayOfWeek === 2), return today
-        if (dayOfWeek === 1) {
-            return referenceDate;
+        if (dayOfWeek === 2) {
+            return newYorkDate;
         }
-    
+        
         // Calculate the number of days until the next Tuesday
-        const daysUntilTuesday = (1 - dayOfWeek + 0) % 7 || 7;
-    
+        const daysUntilTuesday = (2 - dayOfWeek + 7) % 7 || 7;
+        
         // Create a new date object for the next Tuesday
-        const nextTuesday = new Date(referenceDate);
-        nextTuesday.setDate(referenceDate.getDate() + daysUntilTuesday);
-    
+        const nextTuesday = new Date(newYorkDate);
+        nextTuesday.setDate(newYorkDate.getDate() + daysUntilTuesday);
+        
         return nextTuesday;
     }
+    
     
     
     
