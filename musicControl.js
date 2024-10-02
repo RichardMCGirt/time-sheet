@@ -1,16 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     const backgroundMusic = document.getElementById('backgroundMusic');
     const playPauseButton = document.getElementById('playPauseButton');
-    
+
     // Function to update playPauseButton text content
     function updateButtonText() {
         playPauseButton.textContent = backgroundMusic.paused ? 'Play' : 'Pause';
     }
 
-    // Function to check if Jason Smith or Richard McGirt is logged in
+    // Function to check if Jason Smith or Hunter is logged in
     function isExemptUserLoggedIn() {
         const userEmail = sessionStorage.getItem('userEmail');
-        return userEmail === 'jason.smith@vanirinstalledsales.com'  || userEmail === 'Hunter@vanirinstalledsales.com';
+        return userEmail === 'jason.smith@vanirinstalledsales.com' || userEmail === 'Hunter@vanirinstalledsales.com';
     }
 
     // Function to unmute the computer and set the volume to max
@@ -19,21 +19,21 @@ document.addEventListener('DOMContentLoaded', function() {
         backgroundMusic.volume = 1.0;
     }
 
-    // Play the audio when the page loads if neither Jason Smith nor Richard McGirt is logged in
-    if (!isExemptUserLoggedIn()) {
-        backgroundMusic.currentTime = 9; // Start the song 9 seconds in
-        unmuteAndSetVolumeMax();
-        backgroundMusic.play();
-        sessionStorage.setItem('isMusicPlaying', 'true');
-        updateButtonText();
-    }
-
     // Handle play/pause button click
     playPauseButton.addEventListener('click', function(event) {
         event.preventDefault(); // Prevent default button behavior (like form submission)
-        if (backgroundMusic.paused) {
+
+        // Check if the user is exempt from auto-playing the audio
+        if (!isExemptUserLoggedIn()) {
+            backgroundMusic.currentTime = 9; // Start the song 9 seconds in
             unmuteAndSetVolumeMax();
-            backgroundMusic.play();
+        }
+
+        // Toggle play/pause
+        if (backgroundMusic.paused) {
+            backgroundMusic.play().catch(function(error) {
+                console.error("Playback failed:", error);
+            });
         } else {
             backgroundMusic.pause();
         }
@@ -51,11 +51,13 @@ document.addEventListener('DOMContentLoaded', function() {
         updateButtonText();
     };
 
-    // Continue playing if the page is refreshed
+    // Ensure the audio state is preserved after a page refresh
     if (sessionStorage.getItem('isMusicPlaying') === 'true' && !isExemptUserLoggedIn()) {
-        backgroundMusic.currentTime = 9; // Start the song 9 seconds in
         unmuteAndSetVolumeMax();
-        backgroundMusic.play();
+        backgroundMusic.play().catch(function(error) {
+            console.error("Playback failed on refresh:", error);
+        });
+    } else {
         updateButtonText();
     }
 });

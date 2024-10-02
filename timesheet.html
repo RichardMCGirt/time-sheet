@@ -241,11 +241,13 @@
                 </div>
                 <span id="pto-validation-message" class="validation-message" style="color: red; text-align: center;"></span><br>
                 <button id="submit-button" class="sticky-submit">Submit</button>
+                <button id="playPauseButton" onclick="togglePlayPause()">Play</button>
+
             </form>
         </section>
     </section>
 </main>
-<audio id="backgroundMusic" src="9 to 5 - Dolly Parton.mp3" loop></audio>
+<audio id="backgroundMusic" src="9 to 5 - Dolly Partons.mp3" loop></audio>
 <script src="timesheet.js"></script>
 <div id="script-placeholder"></div>
 <script src="disable-script.js"></script>
@@ -254,6 +256,7 @@
 
 <script src="airtablestorage.js"></script>
 <script src="overtimeCalculation.js"></script>
+<script src="musicControl.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
