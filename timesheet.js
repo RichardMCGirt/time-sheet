@@ -329,88 +329,108 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-   // Fetch Approval Status
-async function fetchApprovalStatus() {
-    const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-    try {
-        const response = await fetch(endpoint, {
-            headers: {
-                Authorization: `Bearer ${apiKey}`
-            }
-        });
-        if (!response.ok) throw new Error(`Failed to fetch approval status: ${response.statusText}`);
-        const data = await response.json();
-        if (data.records.length > 0) {
-            const record = data.records[0].fields;
-            recordId = data.records[0].id;
-            const isApproved = record['Approved'] === true;
-            const approvalStatusElement = document.getElementById('approval-status');
-            
-            if (isApproved) {
-                approvalStatusElement.textContent = 'Timesheet approved';
-                approvalStatusElement.style.color = 'green';
-                approvalStatusElement.style.fontSize = '30px';
-                approvalStatusElement.style.fontWeight = 'bold';
-                approvalStatusElement.style.textDecoration = 'underline';
+    async function fetchApprovalStatus() {
+        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+        try {
+            const response = await fetch(endpoint, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+            if (!response.ok) throw new Error(`Failed to fetch approval status: ${response.statusText}`);
+            const data = await response.json();
+            if (data.records.length > 0) {
+                const record = data.records[0].fields;
+                recordId = data.records[0].id;
+                const isApproved = record['Approved'] === true;
+                const approvalStatusElement = document.getElementById('approval-status');
                 
-                // Disable the submit button if approved
-                elements.submitButton.disabled = true;
-                elements.submitButton.textContent = "Timesheet Approved"; // Optional: Change button text
-                
-                // Hide the clear button if approved
-                const clearDataButton = document.getElementById('clear-button'); // Updated button ID
-                if (clearDataButton) {
-                    clearDataButton.style.display = 'none'; // Hides the button completely
-                    console.log('Clear data button hidden.');
+                if (isApproved) {
+                    approvalStatusElement.textContent = 'Timesheet approved';
+                    approvalStatusElement.style.color = 'green';
+                    approvalStatusElement.style.fontSize = '30px';
+                    approvalStatusElement.style.fontWeight = 'bold';
+                    approvalStatusElement.style.textDecoration = 'underline';
+    
+                    // Hide the message container if timesheet is approved
+                    const messageContainer = document.getElementById('message-container');
+                    if (messageContainer) {
+                        messageContainer.style.display = 'none';
+                    }
+                    
+                    // Disable the submit button if approved
+                    elements.submitButton.disabled = true;
+                    elements.submitButton.textContent = "Timesheet Approved"; // Optional: Change button text
+                    
+                    // Hide the clear button if approved
+                    const clearDataButton = document.getElementById('clear-button'); // Updated button ID
+                    if (clearDataButton) {
+                        clearDataButton.style.display = 'none'; // Hides the button completely
+                        console.log('Clear data button hidden.');
+                    } else {
+                        console.error('Clear data button not found.');
+                    }
+    
+                    // Call function to disable all form inputs
+                    disableAllInputs();
                 } else {
-                    console.error('Clear data button not found.');
+                    approvalStatusElement.textContent = '';
+                    // Show the clear button if not approved
+                    const clearDataButton = document.getElementById('clear-button');
+                    if (clearDataButton) {
+                        clearDataButton.style.display = ''; // Show the button if not approved
+                    }
                 }
-
-                // Call function to disable all form inputs
-                disableAllInputs();
-
             } else {
-                approvalStatusElement.textContent = '';
-                // Show the clear button if not approved
-                const clearDataButton = document.getElementById('clear-button');
-                if (clearDataButton) {
-                    clearDataButton.style.display = ''; // Show the button if not approved
-                }
+                console.log('No approval status data found for user');
             }
-        } else {
-            console.log('No approval status data found for user');
+    
+            updateLoadingBar('Approval status has been downloaded.');
+        } catch (error) {
+            console.error('Error fetching approval status:', error);
+            alert('Failed to fetch approval status. Error: ' + error.message);
         }
-
-        updateLoadingBar('Approval status has been downloaded.');
-    } catch (error) {
-        console.error('Error fetching approval status:', error);
-        alert('Failed to fetch approval status. Error: ' + error.message);
     }
-}
+    
 
 // Function to disable all form inputs once the timesheet is approved
 function disableAllInputs() {
     const inputs = document.querySelectorAll('input, select, textarea');
+
     inputs.forEach(input => {
-        // Handle the click event
-        input.addEventListener('click', function(event) {
-            event.preventDefault();  // Prevent the default action of clicking
-            alert('This timesheet is approved. You cannot make any changes.');
+        // Check if the event listener is already added by checking a custom attribute
+        if (!input.dataset.isDisabled) {
+            // Handle the click event
+            input.addEventListener('click', function(event) {
+                event.preventDefault();  // Prevent the default action of clicking
 
-            // Set a timeout to refresh the page 5 seconds after the alert is shown
-            setTimeout(() => {
-                location.reload();  // Refresh the page
-            }, 3000);  // 5000 milliseconds = 5 seconds
-        });
+                // Only show one alert per user interaction
+                if (!window.alertShown) {
+                    alert('This timesheet is approved. You cannot make any changes.');
+                    window.alertShown = true;
 
-        // Handle the focus event but do not show the alert again
-        input.addEventListener('focus', function(event) {
-            event.preventDefault();  // Prevent focusing on the input field
-            this.blur();  // Immediately remove focus from the input
-        });
+                    // Set a timeout to reset the alert flag after 3 seconds
+                    setTimeout(() => {
+                        window.alertShown = false;
+                        location.reload();  // Refresh the page after the delay
+                    }, 2000);  // 3000 milliseconds = 3 seconds
+                }
+            });
+
+            // Handle the focus event but do not show the alert again
+            input.addEventListener('focus', function(event) {
+                event.preventDefault();  // Prevent focusing on the input field
+                this.blur();  // Immediately remove focus from the input
+            });
+
+            // Mark the input as disabled by setting a custom attribute
+            input.dataset.isDisabled = true;
+        }
     });
-    console.log('All form inputs now show an alert on click and refresh the page after 5 seconds.');
+
+    console.log('All form inputs now show an alert on click and refresh the page after 3 seconds.');
 }
+
 
 
 
@@ -1025,6 +1045,11 @@ function calculateTotalTimeWorked() {
             console.log('Form submission blocked: Timesheet is already approved');
             return;
         }
+
+        if (isApproved) {
+            alert('This timesheet is approved. You cannot make any changes.');
+            return;  // Stop the form submission if the timesheet is approved
+        }
     
         console.log('User clicked submit.');
 
@@ -1071,6 +1096,8 @@ function calculateTotalTimeWorked() {
             alert(`An error occurred: ${error.message}`);
         }
     }
+
+   
        
     function throwConfetti() {
         confetti({
