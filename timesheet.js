@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    let isApproved = false;  // Define and initialize the isApproved variable
 
 
     // Function to prevent non-integer input (blocks decimal points)
@@ -391,10 +392,27 @@ async function fetchApprovalStatus() {
 function disableAllInputs() {
     const inputs = document.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
-        input.disabled = true;  // Disable all input fields
+        // Handle the click event
+        input.addEventListener('click', function(event) {
+            event.preventDefault();  // Prevent the default action of clicking
+            alert('This timesheet is approved. You cannot make any changes.');
+
+            // Set a timeout to refresh the page 5 seconds after the alert is shown
+            setTimeout(() => {
+                location.reload();  // Refresh the page
+            }, 3000);  // 5000 milliseconds = 5 seconds
+        });
+
+        // Handle the focus event but do not show the alert again
+        input.addEventListener('focus', function(event) {
+            event.preventDefault();  // Prevent focusing on the input field
+            this.blur();  // Immediately remove focus from the input
+        });
     });
-    console.log('All form inputs disabled due to timesheet approval.');
+    console.log('All form inputs now show an alert on click and refresh the page after 5 seconds.');
 }
+
+
 
 // Example function call to disable all inputs based on timesheet approval
 await fetchApprovalStatus();
@@ -435,30 +453,47 @@ await fetchApprovalStatus();
         saveFormData();
     }
     
-    // Get next Tuesday based on the New York timezone
-    function getNextTuesday(referenceDate = new Date()) {
-        // Create an Intl.DateTimeFormat object to get the current date in the New York timezone
-        const options = { timeZone: 'America/New_York', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' };
-        const formatter = new Intl.DateTimeFormat('en-US', options);
-        const newYorkTime = formatter.format(referenceDate);
-        const newYorkDate = new Date(newYorkTime);  // Parse the formatted date back to a Date object
-        
-        const dayOfWeek = newYorkDate.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
-        
-        // If today is Tuesday (dayOfWeek === 2), return today
-        if (dayOfWeek === 2) {
-            return newYorkDate;
-        }
-        
-        // Calculate the number of days until the next Tuesday
-        const daysUntilTuesday = (2 - dayOfWeek + 7) % 7 || 7;
-        
-        // Create a new date object for the next Tuesday
-        const nextTuesday = new Date(newYorkDate);
-        nextTuesday.setDate(newYorkDate.getDate() + daysUntilTuesday);
-        
-        return nextTuesday;
+// Get next Tuesday based on the New York timezone
+function getNextTuesday(referenceDate = new Date()) {
+    // Create a new Date object for the New York timezone
+    const options = { timeZone: 'America/New_York', hour12: false };
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+    });
+    
+    // Format the reference date to match New York's date
+    const [month, day, year] = formatter.format(referenceDate).split('/'); 
+    const newYorkDate = new Date(`${year}-${month}-${day}`);
+    
+    const dayOfWeek = newYorkDate.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    
+    // If today is Wednesday (dayOfWeek === 3), return the previous Tuesday
+    if (dayOfWeek === 3) {
+        const previousTuesday = new Date(newYorkDate);
+        previousTuesday.setDate(newYorkDate.getDate() - 1);  // Subtract 1 day to get Tuesday
+        return previousTuesday;
     }
+    
+    // If today is Tuesday (dayOfWeek === 2), return today
+    if (dayOfWeek === 2) {
+        return newYorkDate;
+    }
+    
+    // Calculate the number of days until the next Tuesday
+    const daysUntilTuesday = (2 - dayOfWeek + 7) % 7 || 7;
+    
+    // Create a new date object for the next Tuesday
+    const nextTuesday = new Date(newYorkDate);
+    nextTuesday.setDate(newYorkDate.getDate() + daysUntilTuesday);
+    
+    return nextTuesday;
+}
+
+
+
     
     
     
@@ -1353,34 +1388,48 @@ function calculateTotalTimeWorked() {
     }
 
     showPickerOnFocus();
+    
 
     function saveFormData() {
+        // Prevent saving form data if the timesheet is approved
+        if (isApproved) {
+            console.log('Form data saving is disabled because the timesheet is approved.');
+            return;  // Exit the function and prevent saving
+        }
+    
         const formData = new FormData(elements.timeEntryForm);
         const data = {};
+    
+        // Save the form inputs to the data object
         formData.forEach((value, key) => {
             data[key] = value;
         });
-
+    
         // Save number inputs
         const numberInputs = document.querySelectorAll('input[type="number"]');
         numberInputs.forEach(input => {
             data[input.name] = input.value;
         });
-
+    
         // Save date inputs
         const dateInputs = document.querySelectorAll('input[type="date"]');
         dateInputs.forEach(input => {
             data[input.name] = input.value;
         });
-
+    
         // Save time inputs
         const timeInputs = document.querySelectorAll('input[type="time"]');
         timeInputs.forEach(input => {
             data[input.name] = input.value;
         });
-
+    
+        // Save the data to localStorage
         localStorage.setItem('formData', JSON.stringify(data));
+        console.log('Form data saved:', data);
     }
+    
+
+   
 
     function loadFormData() {
         const data = JSON.parse(localStorage.getItem('formData'));
