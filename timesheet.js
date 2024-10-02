@@ -328,60 +328,77 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Fetch Approval Status
-    async function fetchApprovalStatus() {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        try {
-            const response = await fetch(endpoint, {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`
-                }
-            });
-            if (!response.ok) throw new Error(`Failed to fetch approval status: ${response.statusText}`);
-            const data = await response.json();
-            if (data.records.length > 0) {
-                const record = data.records[0].fields;
-                recordId = data.records[0].id;
-                const isApproved = record['Approved'] === true;
-                const approvalStatusElement = document.getElementById('approval-status');
-                
-                if (isApproved) {
-                    approvalStatusElement.textContent = 'Timesheet approved';
-                    approvalStatusElement.style.color = 'green';
-                    approvalStatusElement.style.fontSize = '30px';
-                    approvalStatusElement.style.fontWeight = 'bold';
-                    approvalStatusElement.style.textDecoration = 'underline';
-                    
-                    // Disable the submit button if approved
-                    elements.submitButton.disabled = true;
-                    elements.submitButton.textContent = "Timesheet Approved"; // Optional: Change button text
-                    
-                    // Hide the clear button if approved
-                    const clearDataButton = document.getElementById('clear-button'); // Updated button ID
-                    if (clearDataButton) {
-                        clearDataButton.style.display = 'none'; // Hides the button completely
-                        console.log('Clear data button hidden.');
-                    } else {
-                        console.error('Clear data button not found.');
-                    }
-                } else {
-                    approvalStatusElement.textContent = '';
-                    // Show the clear button if not approved
-                    const clearDataButton = document.getElementById('clear-button');
-                    if (clearDataButton) {
-                        clearDataButton.style.display = ''; // Show the button if not approved
-                    }
-                }
-            } else {
-                console.log('No approval status data found for user');
+   // Fetch Approval Status
+async function fetchApprovalStatus() {
+    const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+    try {
+        const response = await fetch(endpoint, {
+            headers: {
+                Authorization: `Bearer ${apiKey}`
             }
-    
-            updateLoadingBar('Approval status has been downloaded.');
-        } catch (error) {
-            console.error('Error fetching approval status:', error);
-            alert('Failed to fetch approval status. Error: ' + error.message);
+        });
+        if (!response.ok) throw new Error(`Failed to fetch approval status: ${response.statusText}`);
+        const data = await response.json();
+        if (data.records.length > 0) {
+            const record = data.records[0].fields;
+            recordId = data.records[0].id;
+            const isApproved = record['Approved'] === true;
+            const approvalStatusElement = document.getElementById('approval-status');
+            
+            if (isApproved) {
+                approvalStatusElement.textContent = 'Timesheet approved';
+                approvalStatusElement.style.color = 'green';
+                approvalStatusElement.style.fontSize = '30px';
+                approvalStatusElement.style.fontWeight = 'bold';
+                approvalStatusElement.style.textDecoration = 'underline';
+                
+                // Disable the submit button if approved
+                elements.submitButton.disabled = true;
+                elements.submitButton.textContent = "Timesheet Approved"; // Optional: Change button text
+                
+                // Hide the clear button if approved
+                const clearDataButton = document.getElementById('clear-button'); // Updated button ID
+                if (clearDataButton) {
+                    clearDataButton.style.display = 'none'; // Hides the button completely
+                    console.log('Clear data button hidden.');
+                } else {
+                    console.error('Clear data button not found.');
+                }
+
+                // Call function to disable all form inputs
+                disableAllInputs();
+
+            } else {
+                approvalStatusElement.textContent = '';
+                // Show the clear button if not approved
+                const clearDataButton = document.getElementById('clear-button');
+                if (clearDataButton) {
+                    clearDataButton.style.display = ''; // Show the button if not approved
+                }
+            }
+        } else {
+            console.log('No approval status data found for user');
         }
+
+        updateLoadingBar('Approval status has been downloaded.');
+    } catch (error) {
+        console.error('Error fetching approval status:', error);
+        alert('Failed to fetch approval status. Error: ' + error.message);
     }
+}
+
+// Function to disable all form inputs once the timesheet is approved
+function disableAllInputs() {
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.disabled = true;  // Disable all input fields
+    });
+    console.log('All form inputs disabled due to timesheet approval.');
+}
+
+// Example function call to disable all inputs based on timesheet approval
+await fetchApprovalStatus();
+
            
     // Run all fetches sequentially
     await fetchPtoHours();
