@@ -456,7 +456,7 @@ await fetchApprovalStatus();
         // Get the selected date from the weekEndingInput field
         const selectedDate = new Date(elements.weekEndingInput.value);
         
-        // Get the next Tuesday based on the selected date
+        // Get the next Tuesday based on the selected date in New York timezone
         const nextTuesday = getNextTuesday(selectedDate); 
         elements.weekEndingInput.value = nextTuesday.toISOString().split('T')[0];
         console.log('Adjusted week-ending date:', nextTuesday);
@@ -473,46 +473,49 @@ await fetchApprovalStatus();
         saveFormData();
     }
     
-// Get next Tuesday based on the New York timezone
-function getNextTuesday(referenceDate = new Date()) {
-    // Create a new Date object for the New York timezone
-    const options = { timeZone: 'America/New_York', hour12: false };
-    const formatter = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'America/New_York',
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric'
-    });
+    // Get next Tuesday based on the New York timezone
+    function getNextTuesday(referenceDate = new Date()) {
+        // Create a new Date object for the New York timezone
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            year: 'numeric',
+            month: '2-digit',  // Ensure two digits for month
+            day: '2-digit',    // Ensure two digits for day
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+        
+        // Format the reference date to match New York's date
+        const formattedDate = formatter.formatToParts(referenceDate);
+        const year = formattedDate.find(part => part.type === 'year').value;
+        const month = formattedDate.find(part => part.type === 'month').value;
+        const day = formattedDate.find(part => part.type === 'day').value;
+        
+        // Create a Date object from the formatted New York date
+        const newYorkDate = new Date(`${year}-${month}-${day}`);
     
-    // Format the reference date to match New York's date
-    const [month, day, year] = formatter.format(referenceDate).split('/'); 
-    const newYorkDate = new Date(`${year}-${month}-${day}`);
+        // Get the day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
+        const dayOfWeek = newYorkDate.getDay();
     
-    const dayOfWeek = newYorkDate.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+        // Calculate the number of days until the next Tuesday
+        let daysUntilTuesday;
+        if (dayOfWeek === 1) { // If today is Tuesday, return today
+            return newYorkDate;
+        } else if (dayOfWeek < 2) {
+            daysUntilTuesday = 1 - dayOfWeek;
+        } else {
+            daysUntilTuesday = 7 - (dayOfWeek - 2);
+        }
     
-    // If today is Wednesday (dayOfWeek === 3), return the previous Tuesday
-    if (dayOfWeek === 3) {
-        const previousTuesday = new Date(newYorkDate);
-        previousTuesday.setDate(newYorkDate.getDate() - 1);  // Subtract 1 day to get Tuesday
-        return previousTuesday;
+        // Create a new date object for the next Tuesday
+        const nextTuesday = new Date(newYorkDate);
+        nextTuesday.setDate(newYorkDate.getDate() + daysUntilTuesday);
+    
+        return nextTuesday;
     }
     
-    // If today is Tuesday (dayOfWeek === 2), return today
-    if (dayOfWeek === 2) {
-        return newYorkDate;
-    }
-    
-    // Calculate the number of days until the next Tuesday
-    const daysUntilTuesday = (2 - dayOfWeek + 7) % 7 || 7;
-    
-    // Create a new date object for the next Tuesday
-    const nextTuesday = new Date(newYorkDate);
-    nextTuesday.setDate(newYorkDate.getDate() + daysUntilTuesday);
-    
-    return nextTuesday;
-}
-
-
 
     
     
