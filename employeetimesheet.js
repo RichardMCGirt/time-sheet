@@ -136,8 +136,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     
 
     function calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut) {
-        if (!start || !end) return "0h 0m"; // If start or end time is missing, return "0h 0m"
-        
+        if (!start || !end) return 0; // If start or end time is missing, return 0
+    
         const startTime = new Date(`1970-01-01T${start}:00`);
         const endTime = new Date(`1970-01-01T${end}:00`);
         const lunchStartTime = lunchStart ? new Date(`1970-01-01T${lunchStart}:00`) : null;
@@ -160,17 +160,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             workedHours += additionalHours; // Add additional hours worked
         }
     
-        // Ensure worked hours are positive
-        if (workedHours <= 0) return "0h 0m";
-    
-        // Convert the total worked hours into hours and minutes
-        const totalMinutes = Math.round(workedHours * 60);
-        const hours = Math.floor(totalMinutes / 60); // Get the whole hours
-        const minutes = totalMinutes % 60; // Get the remaining minutes
-    
-        return `${hours}h ${minutes}m`; // Return formatted time in "hours h minutes m"
+        return workedHours > 0 ? workedHours.toFixed(2) : 0; // Return total worked hours, rounded to 2 decimal places
     }
-    
     
     
     function formatDateToMMDDYYYY(dateString) {
