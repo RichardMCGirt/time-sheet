@@ -452,69 +452,86 @@ await fetchApprovalStatus();
 
     async function handleWeekEndingChange() {
         console.log('Handling week-ending date change...');
-        
+    
         // Get the selected date from the weekEndingInput field
         const selectedDate = new Date(elements.weekEndingInput.value);
-        
+        console.log('Selected Date:', selectedDate);
+    
         // Get the next Tuesday based on the selected date in New York timezone
-        const nextTuesday = getNextTuesday(selectedDate); 
+        const nextTuesday = getNextTuesday(selectedDate);
+        console.log('Next Tuesday (adjusted for New York timezone):', nextTuesday);
+    
+        // Set the value of the week-ending input to the next Tuesday
         elements.weekEndingInput.value = nextTuesday.toISOString().split('T')[0];
-        console.log('Adjusted week-ending date:', nextTuesday);
+        console.log('Adjusted week-ending date input value:', elements.weekEndingInput.value);
     
         // Set date7 (which is 6 days after nextTuesday)
         const date7 = new Date(nextTuesday);
         date7.setDate(nextTuesday.getDate() + 6);
         elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
+        console.log('Set date7 to:', date7.toISOString().split('T')[0]);
     
         // Populate other week dates based on next Tuesday
         populateWeekDates(nextTuesday);
-        
+    
         // Save form data
         saveFormData();
+        console.log('Form data saved.');
     }
     
-    // Get next Tuesday based on the New York timezone
-    function getNextTuesday(referenceDate = new Date()) {
-        // Create a new Date object for the New York timezone
-        const formatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: 'America/New_York',
-            year: 'numeric',
-            month: '2-digit',  // Ensure two digits for month
-            day: '2-digit',    // Ensure two digits for day
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-        });
-        
-        // Format the reference date to match New York's date
-        const formattedDate = formatter.formatToParts(referenceDate);
-        const year = formattedDate.find(part => part.type === 'year').value;
-        const month = formattedDate.find(part => part.type === 'month').value;
-        const day = formattedDate.find(part => part.type === 'day').value;
-        
-        // Create a Date object from the formatted New York date
-        const newYorkDate = new Date(`${year}-${month}-${day}`);
     
-        // Get the day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
-        const dayOfWeek = newYorkDate.getDay();
-    
-        // Calculate the number of days until the next Tuesday
-        let daysUntilTuesday;
-        if (dayOfWeek === 1) { // If today is Tuesday, return today
-            return newYorkDate;
-        } else if (dayOfWeek < 2) {
-            daysUntilTuesday = 1 - dayOfWeek;
-        } else {
-            daysUntilTuesday = 7 - (dayOfWeek - 2);
-        }
-    
-        // Create a new date object for the next Tuesday
-        const nextTuesday = new Date(newYorkDate);
-        nextTuesday.setDate(newYorkDate.getDate() + daysUntilTuesday);
-    
-        return nextTuesday;
+  // Get next Tuesday based on the New York timezone
+function getNextTuesday(referenceDate = new Date()) {
+    console.log('Calculating next Tuesday for reference date:', referenceDate);
+
+    // Create a new Date object for the New York timezone
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+
+    // Format the reference date to match New York's date
+    const formattedDate = formatter.formatToParts(referenceDate);
+    console.log('Formatted Date Parts:', formattedDate);
+
+    const year = formattedDate.find(part => part.type === 'year').value;
+    const month = formattedDate.find(part => part.type === 'month').value;
+    const day = formattedDate.find(part => part.type === 'day').value;
+
+    // Create a Date object from the formatted New York date
+    const newYorkDate = new Date(`${year}-${month}-${day}`);
+    console.log('New York Date:', newYorkDate);
+
+    // Get the day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
+    const dayOfWeek = newYorkDate.getDay();
+    console.log('Day of the Week:', dayOfWeek);
+
+    // Calculate the number of days until the next Tuesday
+    let daysUntilTuesday;
+    if (dayOfWeek === 1) { // If today is Tuesday, return today
+        console.log('Today is already Tuesday.');
+        return newYorkDate;
+    } else if (dayOfWeek < 2) {
+        daysUntilTuesday = 1 - dayOfWeek;
+    } else {
+        daysUntilTuesday = 7 - (dayOfWeek - 1);
     }
+    console.log('Days until next Tuesday:', daysUntilTuesday);
+
+    // Create a new date object for the next Tuesday
+    const nextTuesday = new Date(newYorkDate);
+    nextTuesday.setDate(newYorkDate.getDate() + daysUntilTuesday);
+    console.log('Next Tuesday:', nextTuesday);
+
+    return nextTuesday;
+}
+
     
 
     
@@ -1187,35 +1204,54 @@ function calculateTotalTimeWorked() {
             } else {
                 console.error('Heath-specific close button not found.');
             }
-        }
     
-        // Add event listener for the default close button if it's present
-        const closeButton = modal.querySelector('.close-button');
-        if (closeButton) {
-            closeButton.onclick = function() {
-                modal.style.display = 'none';
-            };
-        } else {
-            console.error('Default close button not found.');
-        }
-    
-        // Close the modal when the user clicks anywhere outside of it
-        window.onclick = function(event) {
-            if (event.target === modal) {
-                modal.style.display = 'none';
+        // Check if the user is diana.smith@vanirinstalledsales.com
+        } else if (userEmail === 'diana.smith@vanirinstalledsales.com') {
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                // Update the modal content for Diana and add a custom close button
+                modalContent.innerHTML = `
+                    <h2>Diana's Special Message</h2>
+                    <p>Welcome to the VIP Section!</p>
+                    <button id="dianaCloseButton" class="close-button">Close</button>
+                `;
+            } else {
+                console.error('Modal content element not found');
             }
-        };
+    
+            // Automatically close the modal after 3 seconds for Diana
+            setTimeout(() => {
+                modal.style.display = 'none';
+                console.log('Modal closed after 3 seconds for Diana.');
+    
+                // Simulate pressing the Shift key three times
+                for (let i = 0; i < 3; i++) {
+                    simulateShiftKeyPress();
+                }
+            }, 3000); // 3000 milliseconds = 3 seconds
+    
+            // Add functionality to manually close the modal with the close button
+            const dianaCloseButton = document.getElementById('dianaCloseButton');
+            if (dianaCloseButton) {
+                dianaCloseButton.onclick = function() {
+                    modal.style.display = 'none';
+                    console.log('Modal manually closed by Diana.');
+    
+                    // Simulate pressing the Shift key three times when manually closed
+                    for (let i = 0; i < 3; i++) {
+                        simulateShiftKeyPress();
+                    }
+                };
+            } else {
+                console.error('Diana-specific close button not found.');
+            }
+        }
     }
     
-    // Function to simulate pressing the Shift key
+    // Function to simulate pressing the Shift key three times
     function simulateShiftKeyPress() {
-        const event = new KeyboardEvent('keydown', {
-            key: 'Shift',
-            code: 'ShiftLeft',
-            keyCode: 16, // Shift key
-            which: 16,   // Shift key
-            bubbles: true
-        });
+        console.log('Simulating Shift key press');
+        const event = new KeyboardEvent('keydown', { key: 'Shift' });
         document.dispatchEvent(event);
     }
     
