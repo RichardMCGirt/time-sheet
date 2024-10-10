@@ -263,14 +263,63 @@
 <script>
 
 document.addEventListener("DOMContentLoaded", function() {
+    console.log("DOM fully loaded and parsed. Initializing time dropdowns...");
     initializeTimeDropdowns();
 
-    // Set checkboxes to checked on page load
-    document.getElementById('did-not-work-4').checked = true;
-    document.getElementById('did-not-work-5').checked = true;
+    // Check if logged-in user is Diana Smith
+    const userEmail = document.getElementById('user-email').textContent.trim();
+    console.log("User Email:", userEmail);
+
+    if (userEmail === 'diana.smith@vanirinstalledsales.com') {
+        console.log("Diana Smith detected. Prompting for shortcut usage.");
+        // Show a prompt and apply the shortcut only if user clicks OK
+        const useShortcut = confirm("Would you like to apply your custom shortcut?");
+        console.log("User chose to apply shortcut:", useShortcut);
+
+        if (useShortcut) {
+            console.log("Applying Diana's shortcut...");
+            setTimeout(() => applyDianaShortcut(), 500);  // Add a delay to ensure inputs are fully loaded
+        }
+    }
+
+    function applyDianaShortcut() {
+        console.log("Inside applyDianaShortcut function...");
+        const timeEntryTable = document.getElementById('time-entry-table');
+        const rows = timeEntryTable.querySelectorAll('tbody tr');
+        console.log("Number of rows found in the table:", rows.length);
+
+        rows.forEach(row => {
+            const index = parseInt(row.dataset.day, 10);
+            const startTimeInput = row.querySelector('input[name^="start_time"]');
+            const endTimeInput = row.querySelector('input[name^="end_time"]');
+            const lunchStartInput = row.querySelector('input[name^="lunch_start"]');
+            const lunchEndInput = row.querySelector('input[name^="lunch_end"]');
+
+            console.log(`Processing row for day ${index}...`);
+
+            if (index === 7) {
+                console.log(`Setting start and end times for day ${index}...`);
+        
+            } else if ([1, 2, 3, 6].includes(index)) {
+                console.log(`Setting start, end, and lunch times for day ${index}...`);
+                startTimeInput.value = '06:00';
+                endTimeInput.value = '16:00';
+                lunchStartInput.value = '12:00'; // Set lunch start time to 12:00 PM
+                lunchEndInput.value = '13:00';   // Set lunch end time to 1:00 PM
+            }
+
+            // Log the values set for each day
+            console.log(`Day ${index}: Start Time = ${startTimeInput?.value || 'N/A'}, End Time = ${endTimeInput?.value || 'N/A'}, Lunch Start = ${lunchStartInput?.value || 'N/A'}, Lunch End = ${lunchEndInput?.value || 'N/A'}`);
+        });
+    }
+
+    console.log(`Row for day ${index}:`, row);
+console.log("Start Time Input:", startTimeInput);
+console.log("End Time Input:", endTimeInput);
+console.log("Lunch Start Input:", lunchStartInput);
+console.log("Lunch End Input:", lunchEndInput);
 
     
-
 
     function toggleWorkInputs(dayIndex, isChecked) {
     const row = document.querySelector(`tr[data-day="${dayIndex + 1}"]`);

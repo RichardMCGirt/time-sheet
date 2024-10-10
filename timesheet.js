@@ -749,16 +749,25 @@ function calculateTotalTimeWorked() {
     
     const totalHoursWithPto = roundToNearestQuarterHour(roundedTotalHoursWorked + ptoTime + personalTime + holidayHours);
     
-    // Update the total weekly hours and total with PTO in the UI
+    // Calculate overtime
+    const overtimeThreshold = 40; // Assuming overtime starts after 40 hours
+    const regularHours = Math.min(roundedTotalHoursWorked, overtimeThreshold);
+    const overtimeHours = Math.max(0, roundedTotalHoursWorked - overtimeThreshold);
+    
+    // Update the total weekly hours, total with PTO, and overtime in the UI
     elements.totalTimeWorkedSpan.textContent = roundedTotalHoursWorked.toFixed(2);
     elements.totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
+    document.getElementById('regular-hours').textContent = regularHours.toFixed(2);
+    document.getElementById('overtime-hours').textContent = overtimeHours.toFixed(2);
     
     console.log('Total hours worked (rounded):', roundedTotalHoursWorked);
     console.log('Total hours with PTO (rounded):', totalHoursWithPto);
+    console.log('Overtime hours:', overtimeHours);
     
     validatePtoHours(totalHoursWorked, ptoTime, personalTime);
     updateTotalPtoAndHolidayHours();
 }
+
 
 
 
