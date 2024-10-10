@@ -724,6 +724,7 @@ function roundToNearestQuarterHour(hours) {
 
 function calculateTotalTimeWorked() {
     console.log('Calculating total time worked...');
+    
     let totalHoursWorked = 0;
     const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
     
@@ -733,40 +734,54 @@ function calculateTotalTimeWorked() {
             .map(field => elements.timeEntryForm.elements[`${field}${index + 1}`]);
         const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
         
-        // Calculate daily hours worked without rounding
         let hoursWorked = calculateDailyHoursWorked(dateInput, ...timeFields);
+        totalHoursWorked += hoursWorked;
         
-        totalHoursWorked += hoursWorked; // Add daily hours to total, no rounding for daily hours
-        hoursWorkedSpan.textContent = hoursWorked.toFixed(2); // Display unrounded hours worked for the day
+        if (hoursWorkedSpan) {
+            hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
+        } else {
+            console.error(`Element 'hours-worked-today${index + 1}' not found`);
+        }
     });
     
-    // Round the total weekly hours to the nearest quarter hour
+    // Round total hours and update the respective elements
     const roundedTotalHoursWorked = roundToNearestQuarterHour(totalHoursWorked);
     
-    const ptoTime = roundToNearestQuarterHour(parseFloat(elements.ptoTimeSpan.textContent) || 0);
-    const personalTime = roundToNearestQuarterHour(parseFloat(elements.personalTimeSpan.textContent) || 0);
-    const holidayHours = roundToNearestQuarterHour(parseFloat(elements.holidayTimeSpan.textContent) || 0);
+    const ptoTime = roundToNearestQuarterHour(parseFloat(elements.ptoTimeSpan?.textContent) || 0);
+    const personalTime = roundToNearestQuarterHour(parseFloat(elements.personalTimeSpan?.textContent) || 0);
+    const holidayHours = roundToNearestQuarterHour(parseFloat(elements.holidayTimeSpan?.textContent) || 0);
     
     const totalHoursWithPto = roundToNearestQuarterHour(roundedTotalHoursWorked + ptoTime + personalTime + holidayHours);
     
-    // Calculate overtime
-    const overtimeThreshold = 40; // Assuming overtime starts after 40 hours
-    const regularHours = Math.min(roundedTotalHoursWorked, overtimeThreshold);
-    const overtimeHours = Math.max(0, roundedTotalHoursWorked - overtimeThreshold);
+    const regularHours = Math.min(roundedTotalHoursWorked, 40);
+    const overtimeHours = Math.max(0, roundedTotalHoursWorked - 40);
     
-    // Update the total weekly hours, total with PTO, and overtime in the UI
-    elements.totalTimeWorkedSpan.textContent = roundedTotalHoursWorked.toFixed(2);
-    elements.totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
-    document.getElementById('regular-hours').textContent = regularHours.toFixed(2);
-    document.getElementById('overtime-hours').textContent = overtimeHours.toFixed(2);
+    if (elements.totalTimeWorkedSpan) {
+        elements.totalTimeWorkedSpan.textContent = roundedTotalHoursWorked.toFixed(2);
+    } else {
+        console.error('Element totalTimeWorkedSpan not found');
+    }
     
-    console.log('Total hours worked (rounded):', roundedTotalHoursWorked);
-    console.log('Total hours with PTO (rounded):', totalHoursWithPto);
-    console.log('Overtime hours:', overtimeHours);
+    if (elements.totalTimeWithPtoSpan) {
+        elements.totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
+    } else {
+        console.error('Element totalTimeWithPtoSpan not found');
+    }
+    
+    const regularHoursElement = document.getElementById('regular-hours');
+    const overtimeHoursElement = document.getElementById('overtime-hours');
+    
+    if (regularHoursElement) {
+        regularHoursElement.textContent = regularHours.toFixed(2);
+    }
+    if (overtimeHoursElement) {
+        overtimeHoursElement.textContent = overtimeHours.toFixed(2);
+    }
     
     validatePtoHours(totalHoursWorked, ptoTime, personalTime);
     updateTotalPtoAndHolidayHours();
 }
+
 
 
 
