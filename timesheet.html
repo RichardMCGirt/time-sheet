@@ -302,23 +302,16 @@ document.addEventListener("DOMContentLoaded", function() {
         
             } else if ([1, 2, 3, 6].includes(index)) {
                 console.log(`Setting start, end, and lunch times for day ${index}...`);
-                startTimeInput.value = '06:00';
+                startTimeInput.value = '06:30';
                 endTimeInput.value = '16:00';
-                lunchStartInput.value = '12:00'; // Set lunch start time to 12:00 PM
-                lunchEndInput.value = '13:00';   // Set lunch end time to 1:00 PM
+                lunchStartInput.value = '13:00'; 
+                lunchEndInput.value = '14:00';   
             }
 
             // Log the values set for each day
             console.log(`Day ${index}: Start Time = ${startTimeInput?.value || 'N/A'}, End Time = ${endTimeInput?.value || 'N/A'}, Lunch Start = ${lunchStartInput?.value || 'N/A'}, Lunch End = ${lunchEndInput?.value || 'N/A'}`);
         });
     }
-
-    console.log(`Row for day ${index}:`, row);
-console.log("Start Time Input:", startTimeInput);
-console.log("End Time Input:", endTimeInput);
-console.log("Lunch Start Input:", lunchStartInput);
-console.log("Lunch End Input:", lunchEndInput);
-
     
 
     function toggleWorkInputs(dayIndex, isChecked) {
@@ -394,6 +387,121 @@ console.log("Lunch End Input:", lunchEndInput);
 
     addGlobal55Shortcut(); // Add the "77" shortcut functionality
 });
+
+// Function to check if PTO or personal hours have been used
+function checkTimeUsed() {
+    const ptoTime = parseInt(document.getElementById('pto-time').innerText, 10);
+    const personalTime = parseInt(document.getElementById('total-personal-time-display').innerText, 10);
+
+    // Check if any Personal_hoursX input is greater than zero
+    let personalHoursGreaterThanZero = false;
+    document.querySelectorAll('input[name^="Personal_hours"]').forEach(function(input) {
+        if (parseInt(input.value, 10) > 0) {
+            personalHoursGreaterThanZero = true;
+        }
+    });
+
+    // Hide the .info-container if any condition is met
+    if (ptoTime > 0 || personalTime > 0 || personalHoursGreaterThanZero) {
+        document.querySelector('.info-container').style.display = 'none';
+    } else {
+        document.querySelector('.info-container').style.display = 'block';
+    }
+}
+
+// Function to enforce max limit of 10 for PTO_hoursX and disable the increase button if remaining PTO hours is zero
+function checkRemainingPtoHours() {
+    const remainingPtoHours = parseFloat(document.getElementById('remaining-pto-hours').innerText);
+
+    document.querySelectorAll('input[name^="PTO_hours"]').forEach(function(input) {
+        const currentValue = parseFloat(input.value);
+        const maxPto = 10;
+
+        if (remainingPtoHours <= 0) {
+            input.setAttribute('max', currentValue); // Disable increase by setting max to current value if remaining PTO is zero
+        } else if (currentValue >= maxPto) {
+            input.value = maxPto; // Set the value to the maximum PTO hours allowed (10)
+            input.setAttribute('max', maxPto); // Limit further increase to 10
+        } else {
+            input.setAttribute('max', maxPto); // Ensure that max is set to 10 for valid cases
+        }
+    });
+}
+
+// Function to enforce max limit of 10 for PTO_hoursX and disable the increase if remaining PTO hours is zero
+function checkRemainingPtoHours() {
+    const remainingPtoHours = parseFloat(document.getElementById('remaining-pto-hours').innerText);
+
+    document.querySelectorAll('input[name^="PTO_hours"]').forEach(function(input) {
+        const currentValue = parseFloat(input.value);
+        const maxPto = 10;
+
+        if (remainingPtoHours <= 0) {
+            input.setAttribute('max', currentValue); // Disable increase by setting max to current value if remaining PTO is zero
+        } else if (currentValue >= maxPto) {
+            input.value = maxPto; // Set the value to the maximum PTO hours allowed (10)
+            input.setAttribute('max', maxPto); // Limit further increase to 10
+        } else {
+            input.setAttribute('max', maxPto); // Ensure that max is set to 10 for valid cases
+        }
+    });
+}
+
+
+// Function to enforce max limit of 8 for Personal_hoursX and disable the increase if remaining personal hours is zero
+function checkRemainingPersonalHours() {
+    const remainingPersonalHours = parseFloat(document.getElementById('remaining-personal-hours').innerText);
+
+    document.querySelectorAll('input[name^="Personal_hours"]').forEach(function(input) {
+        const currentValue = parseFloat(input.value);
+        const maxPersonal = 8;
+
+        if (remainingPersonalHours <= 0) {
+            input.setAttribute('max', currentValue); // Disable increase by setting max to current value if remaining personal is zero
+        } else if (currentValue >= maxPersonal) {
+            input.value = maxPersonal; // Set the value to the maximum personal hours allowed (8)
+            input.setAttribute('max', maxPersonal); // Limit further increase to 8
+        } else {
+            input.setAttribute('max', maxPersonal); // Ensure that max is set to 8 for valid cases
+        }
+    });
+}
+
+// Observe changes in the PTO, personal time, and remaining PTO and personal hours elements
+const ptoTimeElement = document.getElementById('pto-time');
+const personalTimeElement = document.getElementById('total-personal-time-display');
+const remainingPersonalHoursElement = document.getElementById('remaining-personal-hours');
+const remainingPtoHoursElement = document.getElementById('remaining-pto-hours');
+
+// Create a MutationObserver to detect changes in the text content of the PTO, personal time, and remaining personal hours elements
+const observer = new MutationObserver(function() {
+    checkTimeUsed();
+    checkRemainingPtoHours();
+    checkRemainingPersonalHours();
+});
+
+// Set the observer to monitor changes in child nodes (text) of the elements
+observer.observe(ptoTimeElement, { childList: true });
+observer.observe(personalTimeElement, { childList: true });
+observer.observe(remainingPersonalHoursElement, { childList: true, subtree: true });
+observer.observe(remainingPtoHoursElement, { childList: true, subtree: true });
+
+// Add event listeners to the Personal_hoursX and PTO_hoursX inputs to detect changes in their values
+document.querySelectorAll('input[name^="Personal_hours"], input[name^="PTO_hours"]').forEach(function(input) {
+    input.addEventListener('input', function() {
+        checkTimeUsed();
+        checkRemainingPtoHours();
+        checkRemainingPersonalHours();
+    });
+});
+
+// Initial check on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkTimeUsed();
+    checkRemainingPtoHours();
+    checkRemainingPersonalHours();
+});
+
 
 function addGlobal55Shortcut() {
     let keysPressed = "";
