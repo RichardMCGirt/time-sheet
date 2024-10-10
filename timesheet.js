@@ -1117,7 +1117,7 @@ function calculateTotalTimeWorked() {
             // Refresh the page after a delay
             setTimeout(() => {
                 window.location.reload();
-            }, 30000); // Reduce delay to 3 seconds for better user experience
+            }, 6000); // Reduce delay to 3 seconds for better user experience
         } catch (error) {
             console.error('Error submitting form:', error);
             alert(`An error occurred: ${error.message}`);
