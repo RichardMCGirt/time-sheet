@@ -43,6 +43,8 @@ function loadScript() {
 function showModal() {
     const modal = document.getElementById('successModal');
     const userEmail = localStorage.getItem('userEmail'); // Assuming user email is stored in localStorage
+    console.log('User Email in localStorage:', userEmail);
+
     if (!modal) {
         console.error('Modal element not found');
         return;
@@ -53,6 +55,15 @@ function showModal() {
         const modalContent = modal.querySelector('.modal-content');
         if (modalContent) {
             modalContent.innerHTML = "<h2>A HK Production</h2><br><p>By Jason Smith</p>";
+        } else {
+            console.error('Modal content element not found');
+        }
+    }
+    // Check if the user is diana.smith@vanirinstalledsales.com
+    else if (userEmail === 'diana.smith@vanirinstalledsales.com') {
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.innerHTML = "<h2>Diana's Custom Message</h2><br><p>By Vanir Installed Sales</p>";
         } else {
             console.error('Modal content element not found');
         }
@@ -82,11 +93,19 @@ function showModal() {
 // Function to handle actions after the modal closes
 function handleModalClose() {
     const userEmail = localStorage.getItem('userEmail');
+    console.log('Modal closed, userEmail:', userEmail);
     
     // Trigger prank if the user is heath.kornegay@vanirinstalledsales.com
     if (userEmail === 'heath.kornegay@vanirinstalledsales.com') {
         console.log('Modal closed for Heath Kornegay. Triggering prank.');
         // Load the gravity prank script
+        loadScript();
+    }
+
+    // Apply a similar action for Diana Smith
+    if (userEmail === 'diana.smith@vanirinstalledsales.com') {
+        console.log('Modal closed for Diana Smith. Triggering custom action.');
+        // Load the gravity prank script for Diana
         loadScript();
     }
 }
