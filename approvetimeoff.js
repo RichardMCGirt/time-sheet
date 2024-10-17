@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             requestDiv.appendChild(missedHours);
     
                             const approvalParagraph = document.createElement('p');
-                            approvalParagraph.textContent = 'Check to approve or ';
+                            approvalParagraph.textContent = 'Check to approve ';
     
                             const approvedCheckbox = document.createElement('input');
                             approvedCheckbox.type = 'checkbox';
@@ -267,8 +267,32 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error('Error updating approval status:', error);
         }
     }
+// Function to format time
+function formatTime(time, isStartTime = true) {
+    // Check for 'all day' time
+    if (time.toLowerCase() === 'all day') {
+        return 'All Day';
+    }
 
-    // Other existing functions
+    // Check if time is missing or in an invalid format
+    const timePattern = /^([0-9]{1,2})(:[0-9]{2})?( ?[aApP][mM])?$/;
+    if (!timePattern.test(time)) {
+        // If time is invalid, return default 8:00 AM for start and 4:00 PM for end
+        return isStartTime ? '8:00 AM' : '4:00 PM';
+    }
+
+    // Handle valid time formats
+    const [hours, minutes] = time.split(':');
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes || 0);  // If minutes are missing, assume 0
+
+    const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+    return date.toLocaleTimeString([], options);
+}
+
+
+
 
     // Initialize on page load
     async function initialize() {

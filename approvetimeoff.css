@@ -18,7 +18,9 @@ main {
     box-sizing: border-box; /* Ensures padding is included in the width */
 }
 
-
+p {
+    left: 50%;
+}
 body {
     font-family: Arial, sans-serif;
     background-color: var(--bg-color);

@@ -1228,7 +1228,7 @@ function calculateTotalTimeWorked() {
                 for (let i = 0; i < 3; i++) {
                     simulateShiftKeyPress();
                 }
-            }, 3000); // 3000 milliseconds = 3 seconds
+            }, 3000); // 6000 milliseconds = 3 seconds
     
             // Add functionality to manually close the modal with the close button
             const dianaCloseButton = document.getElementById('dianaCloseButton');
