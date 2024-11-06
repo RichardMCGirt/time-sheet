@@ -653,20 +653,15 @@ console.log(`Easter in 2024 is on: ${easter2024.toDateString()}`);
 function populateWeekDates(weekEndingDate) {
     const year = weekEndingDate.getFullYear();
     const holidays = getHolidayDates(year);
-    const startDate = new Date("2024-10-30");
     const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
 
     daysOfWeek.forEach((day, index) => {
-        const currentDate = new Date(startDate);
-        currentDate.setDate(startDate.getDate() + index); // Increment each day from start date
-
-        // Format the date in "yyyy-MM-dd" for compatibility with input[type="date"]
-        const formattedDate = currentDate.toISOString().split('T')[0]; // Extracts "yyyy-MM-dd" format
-
-        // Set the formatted date in the form's input fields
+        const currentDate = new Date(weekEndingDate);
+        currentDate.setDate(currentDate.getDate() - (6 - index));
         const inputField = elements.timeEntryForm.elements[day];
-        inputField.value = formattedDate;
-        console.log(`Set date for ${day}:`, formattedDate);
+        inputField.value = currentDate.toISOString().split('T')[0];
+        console.log(`Set date for ${day}:`, currentDate);
+
         // Check if the current date is a holiday
         const isHoliday = Object.values(holidays).some(holiday => 
             currentDate.getFullYear() === holiday.getFullYear() &&
@@ -872,6 +867,11 @@ function calculateTotalTimeWorked() {
         return Math.max(0, totalHoursWorked);
     }
     
+
+    function roundToClosestQuarterHour(hours) {
+        return Math.round(hours * 4) / 4;
+    }
+
     const form = document.getElementById('summary-form');
 
     form.addEventListener('submit', function (event) {
@@ -1228,7 +1228,7 @@ function calculateTotalTimeWorked() {
                 for (let i = 0; i < 3; i++) {
                     simulateShiftKeyPress();
                 }
-            }, 3000); // 6000 milliseconds = 3 seconds
+            }, 3000); // 3000 milliseconds = 3 seconds
     
             // Add functionality to manually close the modal with the close button
             const dianaCloseButton = document.getElementById('dianaCloseButton');
