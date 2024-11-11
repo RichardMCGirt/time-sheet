@@ -59,10 +59,25 @@ main {
         opacity: 1;
     }
     100% {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 0;
+        transform: translateY(80vh) rotate(360deg); /* Falls down to 80vh */
+        opacity: 1;
     }
 }
+
+/* Snow pile area at the bottom of the screen */
+.snow-pile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 0; /* Starts with no height */
+    background: white;
+    overflow: hidden;
+    z-index: 9998;
+    pointer-events: none;
+}
+
+
 
 
 h1 {

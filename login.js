@@ -265,25 +265,56 @@ function handleKeyPPress() {
     setTimeout(() => { pPressCount = 0; }, 300); // Reset counter if 'p' is not pressed again within 300ms
 }
 
+const maxSnowPileHeight = window.innerHeight * 0.25; // 25% of the screen height for snow pile
+let currentSnowPileHeight = 0;
+
+// Function to create a falling snowflake
 function createSnowflake() {
-    // Create a new snowflake element
     const snowflake = document.createElement('div');
     snowflake.classList.add('snowflake');
-    snowflake.textContent = '❄️'; // Snowflake symbol
+    snowflake.textContent = '❄️';
 
-    // Randomize the snowflake's initial position and animation duration
+    // Randomize initial horizontal position and animation properties
     snowflake.style.left = `${Math.random() * 100}vw`;
-    snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`; // Between 2s and 5s
-    snowflake.style.fontSize = `${Math.random() * 1.5 + 1}em`; // Between 1em and 2.5em
+    snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`; // 2s to 5s
+    snowflake.style.fontSize = `${Math.random() * 1.5 + 1}em`; // 1em to 2.5em
 
     // Append the snowflake to the body
     document.body.appendChild(snowflake);
 
-    // Remove the snowflake after it finishes falling
+    // After the animation ends, add the snowflake to the snow pile
     snowflake.addEventListener('animationend', () => {
         snowflake.remove();
+        addSnowflakeToPile();
     });
 }
 
-// Create multiple snowflakes at regular intervals
-setInterval(createSnowflake, 300); // Adjust interval for more or fewer snowflakes
+// Function to add snowflakes to the snow pile and increase its height
+function addSnowflakeToPile() {
+    const snowPile = document.querySelector('.snow-pile');
+    
+    if (currentSnowPileHeight < maxSnowPileHeight) {
+        currentSnowPileHeight += 2; // Increase the pile height gradually
+        snowPile.style.height = `${currentSnowPileHeight}px`;
+        
+        // Create a static snowflake in the snow pile
+        const piledSnowflake = document.createElement('div');
+        piledSnowflake.classList.add('snowflake');
+        piledSnowflake.textContent = '❄️';
+        piledSnowflake.style.position = 'absolute';
+        piledSnowflake.style.bottom = `${Math.random() * currentSnowPileHeight}px`; // Randomized pile height position
+        piledSnowflake.style.left = `${Math.random() * 100}vw`; // Randomized horizontal position
+        piledSnowflake.style.animation = 'none'; // No animation for snow pile snowflakes
+        snowPile.appendChild(piledSnowflake);
+    }
+}
+
+// Initialize snow pile and start snow effect
+document.addEventListener('DOMContentLoaded', () => {
+    const snowPile = document.createElement('div');
+    snowPile.classList.add('snow-pile');
+    document.body.appendChild(snowPile);
+
+    // Start snowflakes falling at intervals
+    setInterval(createSnowflake, 150); // Adjust interval for desired snow density
+});
