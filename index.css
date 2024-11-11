@@ -40,6 +40,31 @@ main {
     justify-content: center;
 }
 
+/* Snowflake styling */
+.snowflake {
+    position: fixed;
+    top: -10px;
+    pointer-events: none;
+    z-index: 9999;
+    color: white;
+    font-size: 1.5em;
+    opacity: 0.8;
+    animation: fall linear infinite;
+}
+
+/* Snowfall animation */
+@keyframes fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+
 h1 {
     margin-bottom: 20px;
     font-size: 2rem;

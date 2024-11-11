@@ -264,3 +264,26 @@ function handleKeyPPress() {
     }
     setTimeout(() => { pPressCount = 0; }, 300); // Reset counter if 'p' is not pressed again within 300ms
 }
+
+function createSnowflake() {
+    // Create a new snowflake element
+    const snowflake = document.createElement('div');
+    snowflake.classList.add('snowflake');
+    snowflake.textContent = '❄️'; // Snowflake symbol
+
+    // Randomize the snowflake's initial position and animation duration
+    snowflake.style.left = `${Math.random() * 100}vw`;
+    snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`; // Between 2s and 5s
+    snowflake.style.fontSize = `${Math.random() * 1.5 + 1}em`; // Between 1em and 2.5em
+
+    // Append the snowflake to the body
+    document.body.appendChild(snowflake);
+
+    // Remove the snowflake after it finishes falling
+    snowflake.addEventListener('animationend', () => {
+        snowflake.remove();
+    });
+}
+
+// Create multiple snowflakes at regular intervals
+setInterval(createSnowflake, 300); // Adjust interval for more or fewer snowflakes
