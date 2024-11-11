@@ -40,42 +40,29 @@ main {
     justify-content: center;
 }
 
-/* Snowflake styling */
 .snowflake {
-    position: fixed;
-    top: -10px;
-    pointer-events: none;
-    z-index: 9999;
-    color: white;
-    font-size: 1.5em;
-    opacity: 0.8;
-    animation: fall linear infinite;
+    position: absolute;
+    top: 0;
+    pointer-events: none; /* So they don't interfere with clicks */
+    animation-name: fall;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards; /* Keeps the snowflake at the bottom */
 }
 
-/* Snowfall animation */
 @keyframes fall {
     0% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(0);
+        opacity: 1;
+    }
+    90% {
         opacity: 1;
     }
     100% {
-        transform: translateY(80vh) rotate(360deg); /* Falls down to 80vh */
-        opacity: 1;
+        transform: translateY(100vh); /* Move to the bottom */
+        opacity: 0.8; /* Slightly fade out if you want, optional */
     }
 }
 
-/* Snow pile area at the bottom of the screen */
-.snow-pile {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100vw;
-    height: 0; /* Starts with no height */
-    background: white;
-    overflow: hidden;
-    z-index: 9998;
-    pointer-events: none;
-}
 
 
 
