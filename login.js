@@ -265,17 +265,28 @@ function handleKeyPPress() {
     setTimeout(() => { pPressCount = 0; }, 300); // Reset counter if 'p' is not pressed again within 300ms
 }
 
+let snowflakeOffset = 0; // Initialize offset
+
 function createSnowflake() {
     const snowflake = document.createElement('div');
     snowflake.classList.add('snowflake');
     snowflake.textContent = '❄️';
 
+    // Set snowflake properties
     snowflake.style.left = `${Math.random() * 100}vw`;
     snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
     snowflake.style.fontSize = `${Math.random() * 1.5 + 1}em`;
+
+    // Apply the current offset
+    snowflake.style.top = `${snowflakeOffset}px`;
 
     document.body.appendChild(snowflake);
 }
 
 // Create multiple snowflakes at regular intervals
 setInterval(createSnowflake, 100);
+
+// Increase the snowflake offset every 30 seconds
+setInterval(() => {
+    snowflakeOffset -= 4; // Increase the height by moving it 5px higher
+}, 60000);

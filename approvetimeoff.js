@@ -224,6 +224,12 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
+    function isOverlapping(startDate1, endDate1, startDate2, endDate2) {
+        // Check if the two date ranges overlap
+        return startDate1 <= endDate2 && startDate2 <= endDate1;
+    }
+    
+
     // Handle checkbox change event to update Airtable and hide/show denial reason dropdown
     async function handleApprovalChange(event) {
         const checkbox = event.target;
