@@ -143,79 +143,49 @@ document.addEventListener("DOMContentLoaded", function() {
                 const requestElements = [];
                 employeeRequests.forEach(record => {
                     for (let i = 1; i <= 10; i++) {
-                        if (record.fields[`Time off Start Date ${i}`]) {
-                            const startDate = new Date(record.fields[`Time off Start Date ${i}`]);
-                            const endDate = new Date(record.fields[`Time off End Date ${i}`]);
+                        const startDateStr = record.fields[`Time off Start Date ${i}`];
+                        const endDateStr = record.fields[`Time off End Date ${i}`];
+                        const startTimeStr = record.fields[`Time off Start Time ${i}`] || '7:00 AM';
+                        const endTimeStr = record.fields[`Time off End Time ${i}`] || '4:00 PM';
+    
+                        if (startDateStr) {
+                            const startDate = Date.parse(startDateStr) ? new Date(startDateStr) : new Date("2024-01-01");
+                            const endDate = Date.parse(endDateStr) ? new Date(endDateStr) : new Date("2024-01-01");
+    
+                            // Check for valid dates and log them
+                            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                                console.warn(`Invalid date detected for request ${i}: Start Date - ${startDateStr}, End Date - ${endDateStr}`);
+                                continue; // Skip this entry if dates are invalid
+                            }
     
                             const requestDiv = document.createElement('div');
                             requestDiv.className = 'request';
     
                             const startDateElement = document.createElement('p');
-                            startDateElement.textContent = `Start Date: ${record.fields[`Time off Start Date ${i}`]}`;
+                            startDateElement.textContent = `Start Date: ${startDate.toLocaleDateString()}`;
                             requestDiv.appendChild(startDateElement);
     
                             const startTime = document.createElement('p');
-                            startTime.textContent = `Start Time: ${formatTime(record.fields[`Time off Start Time ${i}`])}`;
+                            startTime.textContent = `Start Time: ${formatTime(startTimeStr)}`;
                             requestDiv.appendChild(startTime);
     
                             const endDateElement = document.createElement('p');
-                            endDateElement.textContent = `End Date: ${record.fields[`Time off End Date ${i}`]}`;
+                            endDateElement.textContent = `End Date: ${endDate.toLocaleDateString()}`;
                             requestDiv.appendChild(endDateElement);
     
                             const endTime = document.createElement('p');
-                            endTime.textContent = `End Time: ${formatTime(record.fields[`Time off End Time ${i}`])}`;
+                            endTime.textContent = `End Time: ${formatTime(endTimeStr)}`;
                             requestDiv.appendChild(endTime);
     
-                            const hoursMissed = calculateHoursMissed(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`], record.fields[`Time off Start Time ${i}`], record.fields[`Time off End Time ${i}`]);
+                            const hoursMissed = calculateHoursMissed(startDateStr, endDateStr, startTimeStr, endTimeStr);
                             const missedHours = document.createElement('p');
                             missedHours.textContent = `Hours Missed: ${hoursMissed}`;
                             requestDiv.appendChild(missedHours);
     
-                            const approvalParagraph = document.createElement('p');
-                            approvalParagraph.textContent = 'Check to approve ';
-    
-                            const approvedCheckbox = document.createElement('input');
-                            approvedCheckbox.type = 'checkbox';
-                            approvedCheckbox.checked = record.fields[`Time off Approved ${i}`] || false;
-                            approvedCheckbox.dataset.recordId = record.id;
-                            approvedCheckbox.dataset.approvalIndex = i;
-                            approvedCheckbox.addEventListener('change', handleApprovalChange);
-                            approvalParagraph.appendChild(approvedCheckbox);
-    
-                            requestDiv.appendChild(approvalParagraph);
-    
-                            const denialReasonSelect = document.createElement('select');
-                            denialReasonSelect.dataset.recordId = record.id;
-                            denialReasonSelect.dataset.approvalIndex = i;
-                            denialReasonSelect.innerHTML = `
-                            <option value="Other">Other</option>
-
-                                <option value="">Select Denial Reason</option>
-                                <option value="Insufficient PTO">Insufficient PTO</option>
-                                <option value="Project Deadline">Project Deadline</option>
-                                <option value="Team Shortage">Team Shortage</option>
-                            `;
-                            denialReasonSelect.addEventListener('change', handleReasonChange);
-                            requestDiv.appendChild(denialReasonSelect);
-    
-                            requestElements.push({ requestDiv, startDate, endDate, denialReasonSelect });
+                            requestElements.push({ requestDiv, startDate, endDate });
                             requestsRow.appendChild(requestDiv);
-    
-                            if (approvedCheckbox.checked) {
-                                denialReasonSelect.style.display = 'none';
-                            }
                         }
                     }
-                });
-    
-                // Check for overlapping requests and style them in red
-                requestElements.forEach((request1, index1) => {
-                    requestElements.forEach((request2, index2) => {
-                        if (index1 !== index2 && isOverlapping(request1.startDate, request1.endDate, request2.startDate, request2.endDate)) {
-                            request1.requestDiv.style.color = 'red';
-                            request2.requestDiv.style.color = 'red';
-                        }
-                    });
                 });
     
                 employeeDiv.appendChild(requestsRow);
@@ -223,6 +193,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     }
+    
+    
     
     function isOverlapping(startDate1, endDate1, startDate2, endDate2) {
         // Check if the two date ranges overlap
@@ -273,29 +245,31 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error('Error updating approval status:', error);
         }
     }
-// Function to format time
+// Function to format time in hh:mm format with default substitutions for invalid times
 function formatTime(time, isStartTime = true) {
-    // Check for 'all day' time
-    if (time.toLowerCase() === 'all day') {
+    if (time && time.toLowerCase() === 'all day') {
         return 'All Day';
     }
 
-    // Check if time is missing or in an invalid format
-    const timePattern = /^([0-9]{1,2})(:[0-9]{2})?( ?[aApP][mM])?$/;
+    const timePattern = /^([0-9]{1,2})(:[0-9]{2})? ?([aApP][mM])?$/;
     if (!timePattern.test(time)) {
-        // If time is invalid, return default 8:00 AM for start and 4:00 PM for end
-        return isStartTime ? '8:00 AM' : '4:00 PM';
+        // If time is invalid, use 7:00 AM for start and 4:00 PM for end as defaults
+        return isStartTime ? '07:00 AM' : '04:00 PM';
     }
 
-    // Handle valid time formats
-    const [hours, minutes] = time.split(':');
-    const date = new Date();
-    date.setHours(hours);
-    date.setMinutes(minutes || 0);  // If minutes are missing, assume 0
+    let [hours, minutes] = time.split(':');
+    if (!minutes) {
+        minutes = '00'; // Default to :00 if minutes are missing
+    }
 
-    const options = { hour: 'numeric', minute: 'numeric', hour12: true };
-    return date.toLocaleTimeString([], options);
+    const period = time.includes('AM') || time.includes('PM') ? time.slice(-2) : (isStartTime ? 'AM' : 'PM');
+
+    // Ensure hours are in two digits for hh:mm format
+    hours = hours.padStart(2, '0');
+
+    return `${hours}:${minutes} ${period}`;
 }
+
 
 
 
@@ -399,30 +373,49 @@ function showNotification(message) {
 }
 
 
-    // Function to format time
-function formatTime(time) {
-    if (time.toLowerCase() === 'all day') {
+// Function to format time in hh:mm format with default substitutions for invalid times
+function formatTime(time, isStartTime = true) {
+    if (!time || time.toLowerCase() === 'all day') {
         return 'All Day';
     }
 
-    const [hours, minutes] = time.split(':');
-    const date = new Date();
-    date.setHours(hours);
-    date.setMinutes(minutes);
+    const timePattern = /^([01]?[0-9]|2[0-3]):?([0-5][0-9])? ?([aApP][mM])?$/;
+    const match = time.match(timePattern);
 
-    const options = { hour: 'numeric', minute: 'numeric', hour12: true };
-    return date.toLocaleTimeString([], options);
+    if (!match) {
+        // Return default values if the time format is invalid
+        return isStartTime ? '07:00 AM' : '04:00 PM';
+    }
+
+    let [ , hours, minutes, period ] = match;
+    hours = hours.padStart(2, '0');
+    minutes = minutes ? minutes.padEnd(2, '0') : '00';
+    period = period ? period.toUpperCase() : (isStartTime ? 'AM' : 'PM');
+
+    if (!period && hours >= 12) {
+        // Convert 24-hour time to 12-hour format if no AM/PM
+        period = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12; // Convert 0 and 12 to 12-hour clock format
+    }
+
+    return `${hours}:${minutes} ${period}`;
 }
 
-// Function to calculate the total hours missed based on time off
+
+// Function to calculate the total hours missed based on time off with default time handling
 function calculateHoursMissed(startDate, endDate, startTime, endTime) {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    const dailyWorkHours = 8; // Assuming 8 hours workday
-    const allDayHours = 8;    // Full day absence
-    const workStartHour = 7;  // Work starts at 7 AM
-    const workEndHour = 16;   // Work ends at 4 PM (16:00)
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        console.warn(`Invalid date detected. startDate: ${startDate}, endDate: ${endDate}`);
+        return 0; // Return 0 if dates are invalid
+    }
+
+    const dailyWorkHours = 8;
+    const allDayHours = 8;
+    const workStartHour = 7;
+    const workEndHour = 16;
     const lunchStartHour = 12;
     const lunchEndHour = 13;
 
@@ -431,38 +424,27 @@ function calculateHoursMissed(startDate, endDate, startTime, endTime) {
 
     while (currentDate <= end) {
         const dayOfWeek = currentDate.getDay();
-        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends
-            if (startTime.toLowerCase() === 'all day') {
-                totalHours += allDayHours;
-            } else {
-                const workStart = new Date(currentDate);
-                workStart.setHours(workStartHour, 0, 0);
-                const workEnd = new Date(currentDate);
-                workEnd.setHours(workEndHour, 0, 0);
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            const actualStartTime = startTime || '7:00 AM';
+            const actualEndTime = endTime || '4:00 PM';
 
-                const lunchStart = new Date(currentDate);
-                lunchStart.setHours(lunchStartHour, 0, 0);
-                const lunchEnd = new Date(currentDate);
-                lunchEnd.setHours(lunchEndHour, 0, 0);
+            const workStart = new Date(`${currentDate.toDateString()} ${actualStartTime}`);
+            const workEnd = new Date(`${currentDate.toDateString()} ${actualEndTime}`);
+            const lunchStart = new Date(currentDate.setHours(lunchStartHour, 0, 0));
+            const lunchEnd = new Date(currentDate.setHours(lunchEndHour, 0, 0));
 
-                let actualStart = new Date(`${currentDate.toDateString()} ${startTime}`);
-                let actualEnd = endTime.toLowerCase() === 'all day' ? new Date(`${currentDate.toDateString()} 16:00`) : new Date(`${currentDate.toDateString()} ${endTime}`);
-
-                if (actualStart < workStart) actualStart = workStart;
-                if (actualEnd > workEnd) actualEnd = workEnd;
-
-                let dailyHours = (actualEnd - actualStart) / (1000 * 60 * 60);
-                if (actualStart < lunchEnd && actualEnd > lunchStart) {
-                    dailyHours -= 1; // Subtract lunch hour
-                }
-
-                totalHours += dailyHours;
+            let dailyHours = (workEnd - workStart) / (1000 * 60 * 60);
+            if (workStart < lunchEnd && workEnd > lunchStart) {
+                dailyHours -= 1;
             }
+
+            totalHours += dailyHours;
         }
-        currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
+        currentDate.setDate(currentDate.getDate() + 1);
     }
     return totalHours;
 }
+
 
 
 
