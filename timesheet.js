@@ -1077,71 +1077,71 @@ function calculateTotalTimeWorked() {
     
     
 
-    async function handleSubmit(event) {
-        event.preventDefault(); // Prevent form submission by default
-    
-        // Check if the submit button is disabled (e.g., when timesheet is approved)
-        if (elements.submitButton.disabled) {
-            console.log('Form submission blocked: Timesheet is already approved');
-            return;
-        }
-    
-        if (isApproved) {
-            alert('This timesheet is approved. You cannot make any changes.');
-            return;  // Stop the form submission if the timesheet is approved
-        }
-    
-        console.log('User clicked submit.');
-    
-        if (!validateWholeNumbers()) {
-            console.log("Validation failed: Non-whole number in PTO, Personal, or Holiday hours.");
-            return; // Stop the form submission if the validation fails
-        }
-    
-        const totalPtoHours = parseFloat(elements.ptoTimeSpan.textContent) || 0;
-        const totalPersonalHours = parseFloat(elements.personalTimeSpan.textContent) || 0;
-    
-        // Validate the whole numbers for PTO, Personal, and Holiday Hours
-        if (!validateWholeNumbers()) {
-            console.log("Validation failed: Non-whole number in PTO, Personal, or Holiday hours.");
-            return; // Stop the form submission if the validation fails
-        }
-    
-        // Validate that PTO and Personal hours don't exceed the available amount
-        if (totalPtoHours > availablePTOHours) {
-            alert('PTO time used cannot exceed available PTO hours');
-            return; // Stop the form submission if PTO hours exceed available hours
-        }
-    
-        if (totalPersonalHours > availablePersonalHours) {
-            alert('Personal time used cannot exceed available Personal hours');
-            return; // Stop the form submission if Personal hours exceed available hours
-        }
-    
-        // If all validations pass, proceed with submitting the data
-        try {
-            await updatePtoHours();
-            await updatePersonalHours();
-            await sendDataToAirtable();
-            showModal(); // Show the success modal after successful submission
-            throwConfetti();
-    
-            // Get the user email from localStorage and prevent page refresh if it's Luz
-            const userEmail = localStorage.getItem('userEmail');
-            if (userEmail !== 'luz.arceo@vanirinstalledsales.com') {
-                // Refresh the page after a delay if the user is not Luz
-                setTimeout(() => {
-                    window.location.reload();
-                }, 6000); // Reduced delay for a better user experience
-            } else {
-                console.log('Page refresh prevented for Luz.');
-            }
-        } catch (error) {
-            console.error('Error submitting form:', error);
-            alert(`An error occurred: ${error.message}`);
-        }
+   async function handleSubmit(event) {
+    event.preventDefault(); // Prevent form submission by default
+
+    // Check if the submit button is disabled (e.g., when timesheet is approved)
+    if (elements.submitButton.disabled) {
+        console.log('Form submission blocked: Timesheet is already approved');
+        return;
     }
-    
+
+    if (isApproved) {
+        alert('This timesheet is approved. You cannot make any changes.');
+        return;  // Stop the form submission if the timesheet is approved
+    }
+
+    console.log('User clicked submit.');
+
+    if (!validateWholeNumbers()) {
+        console.log("Validation failed: Non-whole number in PTO, Personal, or Holiday hours.");
+        return; // Stop the form submission if the validation fails
+    }
+
+    const totalPtoHours = parseFloat(elements.ptoTimeSpan.textContent) || 0;
+    const totalPersonalHours = parseFloat(elements.personalTimeSpan.textContent) || 0;
+
+    // Validate the whole numbers for PTO, Personal, and Holiday Hours
+    if (!validateWholeNumbers()) {
+        console.log("Validation failed: Non-whole number in PTO, Personal, or Holiday hours.");
+        return; // Stop the form submission if the validation fails
+    }
+
+    // Validate that PTO and Personal hours don't exceed the available amount
+    if (totalPtoHours > availablePTOHours) {
+        alert('PTO time used cannot exceed available PTO hours');
+        return; // Stop the form submission if PTO hours exceed available hours
+    }
+
+    if (totalPersonalHours > availablePersonalHours) {
+        alert('Personal time used cannot exceed available Personal hours');
+        return; // Stop the form submission if Personal hours exceed available hours
+    }
+
+    // If all validations pass, proceed with submitting the data
+    try {
+        await updatePtoHours();
+        await updatePersonalHours();
+        await sendDataToAirtable();
+        showModal(); // Show the success modal after successful submission
+        throwConfetti();
+
+        // Get the user email from localStorage and prevent page refresh if it's Luz
+        const userEmail = localStorage.getItem('userEmail');
+        if (userEmail !== 'luz.arceo@vanirinstalledsales.com') {
+            // Refresh the page after a delay if the user is not Luz
+            setTimeout(() => {
+                window.location.reload();
+            }, 6000); // Reduced delay for a better user experience
+        } else {
+            console.log('Page refresh prevented for Luz.');
+        }
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        alert(`An error occurred: ${error.message}`);
+    }
+}
+
 
    
        
@@ -1230,7 +1230,7 @@ function calculateTotalTimeWorked() {
     for (let i = 0; i < 3; i++) {
         simulateShiftKeyPress();
     }
-}, 5000);
+}, 8000);
 
 // Add functionality to manually close the modal with the close button
 const heathCloseButton = document.getElementById('heathCloseButton');
