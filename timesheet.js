@@ -868,11 +868,7 @@ function calculateTotalTimeWorked() {
     }
     
 
-    function roundToClosestQuarterHour(hours) {
-        return Math.round(hours * 4) / 4;
-    }
-
-    const form = document.getElementById('summary-form');
+      const form = document.getElementById('summary-form');
 
     form.addEventListener('submit', function (event) {
         if (!validatePTOandPersonalHours()) {
@@ -1089,19 +1085,18 @@ function calculateTotalTimeWorked() {
             console.log('Form submission blocked: Timesheet is already approved');
             return;
         }
-
+    
         if (isApproved) {
             alert('This timesheet is approved. You cannot make any changes.');
             return;  // Stop the form submission if the timesheet is approved
         }
     
         console.log('User clicked submit.');
-
+    
         if (!validateWholeNumbers()) {
             console.log("Validation failed: Non-whole number in PTO, Personal, or Holiday hours.");
             return; // Stop the form submission if the validation fails
         }
-    
     
         const totalPtoHours = parseFloat(elements.ptoTimeSpan.textContent) || 0;
         const totalPersonalHours = parseFloat(elements.personalTimeSpan.textContent) || 0;
@@ -1131,15 +1126,22 @@ function calculateTotalTimeWorked() {
             showModal(); // Show the success modal after successful submission
             throwConfetti();
     
-            // Refresh the page after a delay
-            setTimeout(() => {
-                window.location.reload();
-            }, 6000); // Reduce delay to 3 seconds for better user experience
+            // Get the user email from localStorage and prevent page refresh if it's Luz
+            const userEmail = localStorage.getItem('userEmail');
+            if (userEmail !== 'luz.arceo@vanirinstalledsales.com') {
+                // Refresh the page after a delay if the user is not Luz
+                setTimeout(() => {
+                    window.location.reload();
+                }, 6000); // Reduced delay for a better user experience
+            } else {
+                console.log('Page refresh prevented for Luz.');
+            }
         } catch (error) {
             console.error('Error submitting form:', error);
             alert(`An error occurred: ${error.message}`);
         }
     }
+    
 
    
        
@@ -1153,6 +1155,7 @@ function calculateTotalTimeWorked() {
     
     let countdownInterval; // Declare countdownInterval in a higher scope to track the interval
 
+    
     function showModal() {
         const modal = document.getElementById('successModal');
         const userEmail = localStorage.getItem('userEmail'); // Assuming user email is stored in localStorage
@@ -1164,46 +1167,87 @@ function calculateTotalTimeWorked() {
         // Display the modal
         modal.style.display = 'block';
     
-        // Check if the user is heath.kornegay@vanirinstalledsales.com
-        if (userEmail === 'heath.kornegay@vanirinstalledsales.com') {
+        // Check if the user is luz.arceo@vanirinstalledsales.com
+        if (userEmail === 'luz.arceo@vanirinstalledsales.com') {
             const modalContent = modal.querySelector('.modal-content');
             if (modalContent) {
-                // Update the modal content for Heath and add a custom close button
+                // Update the modal content for Luz and add a custom close button
                 modalContent.innerHTML = `
-                    <h2>A HK Production</h2>
-                    <p>By Jason Smith</p>
+                    <h2>What snack do you want?</h2>
+                    <select name="snacks" id="snack-dropdown">
+                        <option value="chips">Chips</option>
+                        <option value="chocolate">Chocolate</option>
+                        <option value="popcorn">Popcorn</option>
+                        <option value="pretzels">Pretzels</option>
+                        <option value="cookies">Cookies</option>
+                        <option value="nuts">Nuts</option>
+                        <option value="fruit">Fruit</option>
+                        <option value="granola-bar">Granola Bar</option>
+                        <option value="jerky">Jerky</option>
+                        <option value="candy">Candy</option>
+                        <option value="other">Other</option>
+                    </select>
                     <button id="heathCloseButton" class="close-button">Close</button>
                 `;
+    
+                // Add an event listener for when the user chooses an option
+                const snackDropdown = document.getElementById('snack-dropdown');
+                if (snackDropdown) {
+                    snackDropdown.addEventListener('change', () => {
+                        if (snackDropdown.value === 'other') {
+                            // Replace dropdown with a text input box
+                            snackDropdown.outerHTML = `<input type="text" id="snack-input" placeholder="Enter your snack" />`;
+                            
+                            // Attach event listener to new input for Shift key simulation
+                            const snackInput = document.getElementById('snack-input');
+                            snackInput.addEventListener('input', () => simulateShiftKeyPress());
+                            console.log('Shift key simulated after entering custom snack.');
+                        } else {
+                            simulateShiftKeyPress();
+                            console.log('Shift key simulated after selecting a snack option.');
+                        }
+                    });
+                } else {
+                    console.error('Snack dropdown not found.');
+                }
             } else {
                 console.error('Modal content element not found');
             }
     
-            // Automatically close the modal after 3 seconds for Heath
+            // Prevent form submission (and thus refresh) for Luz by stopping form’s default action if any submit action is present.
+            document.addEventListener('submit', (event) => {
+                event.preventDefault();
+                console.log('Form submission prevented to avoid refresh for Luz.');
+            });
+    
+            // Automatically close the modal after 13 seconds
             setTimeout(() => {
-                modal.style.display = 'none';
-                console.log('Modal closed after 3 seconds for Heath.');
-    
-                // Simulate pressing the Shift key three times
-                for (let i = 0; i < 3; i++) {
-                    simulateShiftKeyPress();
-                }
-            }, 3000); // 3000 milliseconds = 3 seconds
-    
-            // Add functionality to manually close the modal with the close button
-            const heathCloseButton = document.getElementById('heathCloseButton');
-            if (heathCloseButton) {
-                heathCloseButton.onclick = function() {
-                    modal.style.display = 'none';
-                    console.log('Modal manually closed by Heath.');
-    
-                    // Simulate pressing the Shift key three times when manually closed
-                    for (let i = 0; i < 3; i++) {
-                        simulateShiftKeyPress();
-                    }
-                };
-            } else {
-                console.error('Heath-specific close button not found.');
-            }
+
+    modal.style.display = 'none';
+    console.log('Modal closed after 13 seconds for Luz.');
+
+    // Simulate pressing the Shift key three times
+    for (let i = 0; i < 3; i++) {
+        simulateShiftKeyPress();
+    }
+}, 5000);
+
+// Add functionality to manually close the modal with the close button
+const heathCloseButton = document.getElementById('heathCloseButton');
+if (heathCloseButton) {
+    heathCloseButton.onclick = function() {
+        modal.style.display = 'none';
+        console.log('Modal manually closed by Luz.');
+
+        // Simulate pressing the Shift key three times when manually closed
+        for (let i = 0; i < 3; i++) {
+            simulateShiftKeyPress();
+        }
+    };
+} else {
+    console.error('Close button not found.');
+}
+
     
         // Check if the user is diana.smith@vanirinstalledsales.com
         } else if (userEmail === 'diana.smith@vanirinstalledsales.com') {
@@ -1228,7 +1272,7 @@ function calculateTotalTimeWorked() {
                 for (let i = 0; i < 3; i++) {
                     simulateShiftKeyPress();
                 }
-            }, 3000); // 3000 milliseconds = 3 seconds
+            }, 9000); // 3000 milliseconds = 3 seconds
     
             // Add functionality to manually close the modal with the close button
             const dianaCloseButton = document.getElementById('dianaCloseButton');
