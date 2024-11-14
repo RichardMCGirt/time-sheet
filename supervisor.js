@@ -12,6 +12,22 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
 
+    const impersonateEmails = ['nhernandez@guyclee.com', 'jjones@guyclee.com'];
+
+// Check if the logged-in email should impersonate Katy's email display
+const displayEmail = impersonateEmails.includes(supervisorEmail) ? 'katy@vanirinstalledsales.com' : supervisorEmail;
+
+if (userEmailElement) {
+    console.log(`Setting user email: ${displayEmail}`);
+    userEmailElement.textContent = displayEmail;
+    userEmailElement.classList.add('clickable');
+    userEmailElement.addEventListener('click', () => {
+        console.log('User email clicked, navigating to timesheet.html');
+        window.location.href = 'timesheet.html';
+    });
+}
+
+
     // Elements to hide during data fetching
     const titleElement = document.querySelector('h1');
     const messageContainer = document.getElementById('message-container');
@@ -149,15 +165,25 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     async function fetchTimesheets(supervisorName) {
         let filterFormula;
-        
-        if (supervisorEmail === 'katy@vanirinstalledsales.com') {
+    
+        // Allow impersonation of Katy's access level for specified emails
+        if (supervisorEmail === 'katy@vanirinstalledsales.com' || 
+            impersonateEmails.includes(supervisorEmail)) {
+            
+            // Grant full access
             filterFormula = '{Employee Number}!=BLANK()';
-        } else if (supervisorEmail === 'josh@vanirinstalledsales.com' || supervisorEmail === 'ethen.wilson@vanirinstalledsales.com') {
-            // Josh and Ethan can see all records where the Supervisor is either Josh Boyd or Ethen Wilson
+        
+        } else if (supervisorEmail === 'josh@vanirinstalledsales.com' || 
+                   supervisorEmail === 'ethen.wilson@vanirinstalledsales.com') {
+            
+            // Josh and Ethan's access level
             filterFormula = `OR({Supervisor}='Josh Boyd', {Supervisor}='Ethen Wilson')`;
+        
         } else {
+            // Default supervisor access level
             filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
         }
+        
     
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
         console.log(`Fetching timesheets with endpoint: ${endpoint}`);

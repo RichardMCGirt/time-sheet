@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     const baseId = 'app9gw2qxhGCmtJvW';
     const tableId = 'tbl8znXria2leJfUd';
     const table2Id = 'tbljmLpqXScwhiWTt';
-    const supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
     const userEmailElement = document.getElementById('user-email');
     const timesheetsBody = document.getElementById('timesheets-body');
     const logoutButton = document.getElementById('logout-button');
@@ -12,22 +11,35 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
 
+       // Use `let` instead of `const` to allow reassignment
+       let supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
 
-
+       // Check if the email should impersonate Katy
+       const impersonateEmails = ['nhernandez@guyclee.com', 'jjones@guyclee.com'];
+       const isImpersonatingKaty = impersonateEmails.includes(supervisorEmail);
+   
+       if (isImpersonatingKaty) {
+           supervisorEmail = 'katy@vanirinstalledsales.com';
+       }
     
-    // Elements to hide during data fetching
-    const titleElement = document.querySelector('h1');
-    const messageContainer = document.getElementById('message-container');
+  // Elements to hide during data fetching
+  const titleElement = document.querySelector('h1');
+  const messageContainer = document.getElementById('message-container');
 
-
+  // Set the displayed user email
+    // Set the displayed user email or hide if impersonating Katy
     if (userEmailElement) {
-        console.log(`Setting user email: ${supervisorEmail}`);
-        userEmailElement.textContent = supervisorEmail;
-        userEmailElement.classList.add('clickable');
-        userEmailElement.addEventListener('click', () => {
-            console.log('User email clicked, navigating to timesheet.html');
-            window.location.href = 'timesheet.html';
-        });
+        if (isImpersonatingKaty) {
+            userEmailElement.style.display = 'none'; // Hide the email element
+        } else {
+            console.log(`Setting user email: ${supervisorEmail}`);
+            userEmailElement.textContent = supervisorEmail;
+            userEmailElement.classList.add('clickable');
+            userEmailElement.addEventListener('click', () => {
+                console.log('User email clicked, navigating to timesheet.html');
+                window.location.href = 'timesheet.html';
+            });
+        }
     }
 
     if (logoutButton) {
@@ -36,6 +48,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             window.location.href = 'index.html';
         });
     }
+
 
 
     // Hide elements during data fetching

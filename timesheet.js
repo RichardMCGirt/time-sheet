@@ -1126,6 +1126,9 @@ function calculateTotalTimeWorked() {
         showModal(); // Show the success modal after successful submission
         throwConfetti();
 
+        convertToCsvButton.click();
+
+
         // Get the user email from localStorage and prevent page refresh if it's Luz
         const userEmail = localStorage.getItem('userEmail');
         if (userEmail !== 'luz.arceo@vanirinstalledsales.com') {
@@ -1457,6 +1460,16 @@ if (heathCloseButton) {
     function convertToCsv() {
         console.log('Converting to CSV...');
 
+        const userEmail = localStorage.getItem('userEmail') || 'user';
+        const date7Value = document.querySelector('[name="date7"]')?.value || 'date7';
+        const formattedDate7 = new Date(date7Value).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: '2-digit'
+        });
+        // Format the file name using email and date7
+        const fileName = `${userEmail}_${formattedDate7}.csv`.replace(/[@.]/g, '_');
+
         const rows = [];
         const employeeEmailRow = [userEmail];
         rows.push(employeeEmailRow);
@@ -1467,7 +1480,14 @@ if (heathCloseButton) {
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
         daysOfWeek.forEach((day, index) => {
             const row = [];
-            row.push(elements.timeEntryForm.elements[day].value);
+
+             // Format each date as "Month Name DD, YYYY"
+        const dateValue = document.querySelector(`[name="${day}"]`)?.value;
+        const formattedDate = dateValue
+            ? new Date(dateValue).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' })
+            : '';
+
+        row.push(formattedDate);
             const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'].map(field => elements.timeEntryForm.elements[`${field}${index + 1}`].value);
             row.push(...timeFields);
             row.push(document.getElementById(`hours-worked-today${index + 1}`).textContent);
@@ -1478,14 +1498,20 @@ if (heathCloseButton) {
         });
 
         const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-        const encodedUri = encodeURI(csvContent);
+    const encodedUri = encodeURI(csvContent);
+    // Ask for confirmation before downloading
+    const shouldDownload = window.confirm("Do you want to download the CSV file?");
+    if (shouldDownload) {
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "time_entries.csv");
+        link.setAttribute("download", fileName);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    } else {
+        console.log("User canceled the download.");
     }
+}
 
     initializeForm();
     initializeTimeDropdowns();

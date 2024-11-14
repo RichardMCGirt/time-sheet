@@ -67,13 +67,11 @@ async function fetchAllRecords() {
     }
 }
 
-// The login function that uses fetchAllRecords
 async function login() {
     const email = emailInput.value;
     const password = passwordInput.value;
 
     console.log("Login attempt with email:", email);
-    console.log("Password entered:", password); // Log the entered password
 
     if (!email || !password) {
         alert('Please fill in both email and password fields.');
@@ -86,33 +84,28 @@ async function login() {
     }
 
     try {
-        const allRecords = await fetchAllRecords(); // Fetch all records from Airtable
-        console.log("Fetched records from Airtable:", allRecords); // Log the fetched records
+        // Check if the user is one of the impersonating emails with the correct password
+        if ((email === 'nhernandez@guyclee.com' || email === 'jjones@guyclee.com') && password === 'GuycLee') {
+            // Store email in localStorage and redirect to supervisor.html
+            localStorage.setItem('userEmail', email);
+            console.log("Impersonation successful, redirecting to supervisor.html");
+            window.location.href = 'supervisor.html';
+            return;
+        }
 
-        const user = allRecords.find(record => {
-            console.log("Checking record:", record.fields); // Log the individual record being checked
-            console.log("Record email:", record.fields.email); // Log email of the record
-            console.log("Record password:", record.fields.password); // Log password of the record
-            return record.fields.email === email && record.fields.password === password;
-        });
+        // Proceed with other login logic if not an impersonating user
+        const allRecords = await fetchAllRecords();
+        console.log("Fetched records from Airtable:", allRecords);
+
+        const user = allRecords.find(record => record.fields.email === email && record.fields.password === password);
 
         if (user) {
             console.log("User authenticated:", user);
             sessionStorage.setItem('user', JSON.stringify(user.fields));
             localStorage.setItem('userEmail', email);
-
-            const backgroundMusic = document.getElementById('backgroundMusic');
-            if (backgroundMusic) {
-                backgroundMusic.play();
-                sessionStorage.setItem('isMusicPlaying', 'true');
-                updateButtonText();
-                playPauseButton.style.display = 'block'; // Show the play/pause button
-            }
-
-            loginSuccessMessage.classList.remove('hidden'); // Show success message
             window.location.href = 'timesheet.html';
         } else {
-            console.log("No matching user found. Invalid email or password."); // Log if no match is found
+            console.log("No matching user found. Invalid email or password.");
             alert('Invalid email or password');
         }
     } catch (error) {
@@ -120,6 +113,8 @@ async function login() {
         alert('Login failed: ' + error.message);
     }
 }
+
+
 
 
 
