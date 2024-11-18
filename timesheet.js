@@ -310,24 +310,20 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Fetch Personal End Date
-    async function fetchPersonalEndDate() {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-        try {
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch Personal END Date: ${response.statusText}`);
-            const data = await response.json();
-            if (data.records.length > 0) {
-                const personalEndDate = data.records[0].fields['Personal END Date'];
-                startCountdown(personalEndDate);
-            } else {
-                console.log('No Personal END Date found for user');
-            }
-
-            updateLoadingBar('Previous entries have been downloaded.');
-        } catch (error) {
-            console.error('Error fetching Personal END Date:', error);
-        }
+// Fetch Personal End Date
+async function fetchPersonalEndDate() {
+    // Hardcoded Personal End Date
+    const personalEndDate = '12/31/2024';
+    
+    try {
+        // Start the countdown with the hardcoded date
+        startCountdown(personalEndDate);
+        updateLoadingBar('Previous entries have been downloaded.');
+    } catch (error) {
+        console.error('Error fetching Personal END Date:', error);
     }
+}
+
 
     async function fetchApprovalStatus() {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
@@ -1459,7 +1455,7 @@ if (heathCloseButton) {
 
     function convertToCsv() {
         console.log('Converting to CSV...');
-
+    
         const userEmail = localStorage.getItem('userEmail') || 'user';
         const date7Value = document.querySelector('[name="date7"]')?.value || 'date7';
         const formattedDate7 = new Date(date7Value).toLocaleDateString('en-US', {
@@ -1469,25 +1465,25 @@ if (heathCloseButton) {
         });
         // Format the file name using email and date7
         const fileName = `${userEmail}_${formattedDate7}.csv`.replace(/[@.]/g, '_');
-
+    
         const rows = [];
         const employeeEmailRow = [userEmail];
         rows.push(employeeEmailRow);
-
+    
         const headerRow = ['Date', 'Start Time', 'Lunch Start', 'Lunch End', 'End Time', 'Additional Time In', 'Additional Time Out', 'Hours Worked', 'PTO Hours', 'Personal Hours', 'Holiday Hours'];
         rows.push(headerRow);
-
+    
         const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
         daysOfWeek.forEach((day, index) => {
             const row = [];
-
-             // Format each date as "Month Name DD, YYYY"
-        const dateValue = document.querySelector(`[name="${day}"]`)?.value;
-        const formattedDate = dateValue
-            ? new Date(dateValue).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' })
-            : '';
-
-        row.push(formattedDate);
+    
+            // Format each date as "Month Name DD, YYYY"
+            const dateValue = document.querySelector(`[name="${day}"]`)?.value;
+            const formattedDate = dateValue
+                ? new Date(dateValue).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' })
+                : '';
+    
+            row.push(formattedDate);
             const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'].map(field => elements.timeEntryForm.elements[`${field}${index + 1}`].value);
             row.push(...timeFields);
             row.push(document.getElementById(`hours-worked-today${index + 1}`).textContent);
@@ -1496,22 +1492,67 @@ if (heathCloseButton) {
             row.push(elements.timeEntryForm.elements[`Holiday_hours${index + 1}`]?.value || '');
             rows.push(row);
         });
-
+    
         const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    // Ask for confirmation before downloading
-    const shouldDownload = window.confirm("Do you want to download the CSV file?");
-    if (shouldDownload) {
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    } else {
-        console.log("User canceled the download.");
+        const encodedUri = encodeURI(csvContent);
+    
+        // Create a custom modal for confirmation
+        const modal = document.createElement("div");
+        modal.style.position = "fixed";
+        modal.style.top = "50%";
+        modal.style.left = "50%";
+        modal.style.transform = "translate(-50%, -50%)";
+        modal.style.padding = "20px";
+        modal.style.backgroundColor = "black";
+        modal.style.border = "1px solid #ccc";
+        modal.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 0.1)";
+        modal.style.zIndex = "1000";
+    
+        const message = document.createElement("p");
+        message.innerText = "Do you want to download the CSV file?";
+        modal.appendChild(message);
+    
+        const buttonContainer = document.createElement("div");
+        buttonContainer.style.display = "flex";
+        buttonContainer.style.justifyContent = "space-between";
+        buttonContainer.style.marginTop = "20px";
+    
+        const yesButton = document.createElement("button");
+        yesButton.innerText = "Yes";
+        yesButton.style.padding = "10px 20px";
+        yesButton.style.border = "none";
+        yesButton.style.backgroundColor = "#4CAF50";
+        yesButton.style.color = "white";
+        yesButton.style.cursor = "pointer";
+        yesButton.onclick = () => {
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri); // Use encodedUri from outer scope
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            document.body.removeChild(modal);
+        };
+    
+        const noButton = document.createElement("button");
+        noButton.innerText = "No";
+        noButton.style.padding = "10px 20px";
+        noButton.style.border = "none";
+        noButton.style.backgroundColor = "#f44336";
+        noButton.style.color = "white";
+        noButton.style.cursor = "pointer";
+        noButton.onclick = () => {
+            console.log("User canceled the download.");
+            document.body.removeChild(modal);
+        };
+    
+        buttonContainer.appendChild(yesButton);
+        buttonContainer.appendChild(noButton);
+    
+        modal.appendChild(buttonContainer);
+        document.body.appendChild(modal);
     }
-}
+    
 
     initializeForm();
     initializeTimeDropdowns();
