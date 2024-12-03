@@ -1127,7 +1127,7 @@ function calculateTotalTimeWorked() {
 
         // Get the user email from localStorage and prevent page refresh if it's Luz
         const userEmail = localStorage.getItem('userEmail');
-        if (userEmail !== 'luz.arceo@vanirinstalledsales.com') {
+        if (userEmail !== '') {
             // Refresh the page after a delay if the user is not Luz
             setTimeout(() => {
                 window.location.reload();
@@ -1167,7 +1167,7 @@ function calculateTotalTimeWorked() {
         modal.style.display = 'block';
     
         // Check if the user is luz.arceo@vanirinstalledsales.com
-        if (userEmail === 'luz.arceo@vanirinstalledsales.com') {
+        if (userEmail === '') {
             const modalContent = modal.querySelector('.modal-content');
             if (modalContent) {
                 // Update the modal content for Luz and add a custom close button
@@ -1509,7 +1509,7 @@ if (heathCloseButton) {
         modal.style.zIndex = "1000";
     
         const message = document.createElement("p");
-        message.innerText = "Do you want to download the CSV file?";
+        message.innerText = "Do you want to download your time sheet?";
         modal.appendChild(message);
     
         const buttonContainer = document.createElement("div");
