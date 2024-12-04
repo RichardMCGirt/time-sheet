@@ -190,15 +190,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         return `${month}/${day}/${year}`;
     }
     
-    
-    
     function generateRows(fields, recordId, employeeNumber) {
-        console.log('Generating rows for timesheet');
-        console.log('Generating rows for record:', recordId); // Debugging to check `recordId`
-    
-        let totalHoursWorked = 0; // Initialize total hours worked across all days.
-        let totalOvertimeHours = 0; // Initialize total overtime hours.
-        let giftedHours = 0; // Initialize gifted hours.
+        console.log(`[INFO] Generating rows for timesheet for record: ${recordId}, Employee Number: ${employeeNumber}`);
+        
+        let totalHoursWorked = 0;
+        let giftedHours = 0;
     
         // Helper function to calculate hours worked and accumulate total and gifted hours
         function calculateAndAccumulateHours(day) {
@@ -209,14 +205,17 @@ document.addEventListener("DOMContentLoaded", async function () {
             const additionalIn = fields[`additionali${day}`] || '';
             const additionalOut = fields[`additionalo${day}`] || '';
     
+            console.log(`[DEBUG] Day ${day} times: Start=${start}, End=${end}, LunchStart=${lunchStart}, LunchEnd=${lunchEnd}, AdditionalIn=${additionalIn}, AdditionalOut=${additionalOut}`);
+            
             // Calculate hours worked for the current day
             const hours = calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut);
-            totalHoursWorked += parseFloat(hours) || 0; // Accumulate total hours worked
+            console.log(`[DEBUG] Day ${day} hours calculated: ${hours}`);
     
+            totalHoursWorked += parseFloat(hours) || 0; // Accumulate total hours worked
             return hours;
         }
     
-        // Iterate over all days (1-7) to generate rows
+        // Generate rows for each day
         const rows = [1, 2, 3, 4, 5, 6, 7].map(day => `
             <tr>
                 <th><input type="time" name="start${day}" value="${fields[`start${day}`] || ''}" disabled></th>
@@ -229,30 +228,38 @@ document.addEventListener("DOMContentLoaded", async function () {
             </tr>
         `).join('');
     
-        // Calculate gifted hours only if the total hours worked are less than 40
-        if (totalHoursWorked > 0 && totalHoursWorked < 40 && (totalHoursWorked + giftedHours) < 40) {
-            giftedHours = Math.min(3, 40 - totalHoursWorked); // Gifted hours between 0-3, ensuring total does not exceed 40
-        }
-        
+        console.log(`[INFO] Total hours worked after all days: ${totalHoursWorked.toFixed(2)}`);
+
+           // Fetch additional hours
+           const totalPersonalHours = parseFloat(fields['Total Personal Hours'] || 0);
+           const totalPtoHours = parseFloat(fields['Total PTO Hours'] || 0);
+           const totalHolidayHours = parseFloat(fields['Total holiday hours'] || 0);
+       
+           console.log(`[DEBUG] Personal Hours: ${totalPersonalHours}, PTO Hours: ${totalPtoHours}, Holiday Hours: ${totalHolidayHours}`);
     
-        // Fetch values of Total Personal Hours, Total PTO Hours, and Total Holiday Hours from Airtable fields
-        const totalPersonalHours = parseFloat(fields['Total Personal Hours'] || 0);
-        const totalPtoHours = parseFloat(fields['Total PTO Hours'] || 0);
-        const totalHolidayHours = parseFloat(fields['Total Holiday Hours'] || 0);
+// Gifted hours logic
+const totalEligibleHours = totalHoursWorked + totalHolidayHours + totalPersonalHours + totalPtoHours;
+
+if (totalEligibleHours < 40) {
+    giftedHours = Math.min(3, 40 - totalEligibleHours);
+    console.log(`[INFO] Gifted hours calculated: ${giftedHours.toFixed(2)} based on total eligible hours: ${totalEligibleHours.toFixed(2)}`);
+} else {
+    console.log(`[INFO] No gifted hours as total eligible hours (${totalEligibleHours.toFixed(2)}) exceed 40`);
+}
+
     
-        // Ensure adding gifted, PTO, and personal hours doesn't push total hours above 40
-        const totalGiftedHours = giftedHours + totalPersonalHours + totalPtoHours + totalHolidayHours;
-        const totalWithExtras = totalHoursWorked + totalGiftedHours;
+     
     
-        // Add a row for total hours worked, gifted hours, and each of the additional hour types if they are greater than 0
-        let totalRow = '';
+        // Calculate the final total including all hours
+        const finalTotal = totalHoursWorked + giftedHours + totalHolidayHours + totalPersonalHours + totalPtoHours;
+        console.log(`[INFO] Final total hours (including gifted): ${finalTotal.toFixed(2)}`);
     
-        // Add a row for total hours worked and highlight if total exceeds 40 hours
-        totalRow += `
+        // Construct rows for totals
+        let totalRow = `
             <tr>
                 <td colspan="5" style="border: none;"></td>
                 <td class="narrow-border" style="text-align:right; border-top: 4px solid white; border-left: 4px solid white; width: 30%;">Total Hours Worked:</td>
-                <td style="border-top: 4px solid white;  border-right: 4px solid white; width: 10%; color: ${totalHoursWorked > 40 ? 'red' : 'white'};">
+                <td style="border-top: 4px solid white; border-right: 4px solid white; width: 10%; color: ${totalHoursWorked > 40 ? 'red' : 'white'};">
                     ${totalHoursWorked.toFixed(2)}
                 </td>
             </tr>
@@ -298,36 +305,16 @@ document.addEventListener("DOMContentLoaded", async function () {
             `;
         }
     
-        // Always show the total hours combined from all sources
-    // Calculate the total hours, ensuring that the final total doesn't exceed 40
-let finalTotalHours = totalHoursWorked + totalHolidayHours + totalPtoHours + totalPersonalHours;
-
-// Only add gifted hours if the total is less than 40 and won't exceed 40 after adding them
-if (finalTotalHours < 40) {
-    finalTotalHours += Math.min(giftedHours, 40 - finalTotalHours);
-}
-
-totalRow += `
-    <tr>
-        <td colspan="5" style="border: none;"></td>
-        <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Total Hours :</td>
-        <td style="border-right: 4px solid white; width: 10%;">${finalTotalHours.toFixed(2)}</td>
-
-    </tr>
-`;
+        // Add row for the final total
+        totalRow += `
+            <tr>
+                <td colspan="5" style="border: none;"></td>
+                <td class="narrow-border" style="text-align:right; border-left: 4px solid white; border-top: 4px solid white; width: 30%; font-weight: bold;">Grand Total (Including Gifted):</td>
+                <td style="border-right: 4px solid white; border-top: 4px solid white; width: 10%; font-weight: bold;">${finalTotal.toFixed(2)}</td>
+            </tr>
+        `;
     
-        // Add a row for overtime hours if any
-        if (totalOvertimeHours > 0) {
-            totalRow += `
-                <tr>
-                    <td colspan="5" style="border: none;"></td>
-                    <td class="narrow-border" style="text-align:right; border-left: 4px solid white; width: 30%;">Overtime Hours (over 40):</td>
-                    <td style="border-right: 4px solid white; width: 10%;">${totalOvertimeHours.toFixed(2)}</td>
-                </tr>
-            `;
-        }
-    
-        // Add the approval checkbox as the last row
+        // Add approval row
         totalRow += `
             <tr>
                 <td colspan="5" style="border: none;"></td>
@@ -340,10 +327,11 @@ totalRow += `
             </tr>
         `;
     
-        console.log(`Employee Number: ${employeeNumber}, Approved: ${fields['Approved']}`);
-    
+        console.log(`[INFO] Total row constructed for Employee Number: ${employeeNumber}`);
         return rows + totalRow;
     }
+    
+    
     
        
 
@@ -509,16 +497,6 @@ async function fetchTimesheets(supervisorName) {
             timesheetsBody.appendChild(noRecordsRow);
         }
     }
-   
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
     function checkTimesheetValues(fields) {
         console.log('Checking timesheet values');
@@ -626,10 +604,6 @@ async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
     }
 }
 
-
-
-
-
     async function fetchSingleRecord(recordId) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}/${recordId}`;
         
@@ -657,10 +631,6 @@ async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
             fetchSingleRecord(recordId);  // Trigger the function
         });
     });
-    
-
-   
-
 
     function displaySuccessMessage(message) {
         // Create or reuse a message element
@@ -690,7 +660,5 @@ async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
             messageElement.style.display = 'none';
         }, 2000);
     }
- 
-    
-  
+
 });

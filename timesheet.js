@@ -737,63 +737,66 @@ function roundToNearestQuarterHour(hours) {
 
 function calculateTotalTimeWorked() {
     console.log('Calculating total time worked...');
-    
+
     let totalHoursWorked = 0;
     const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
-    
+
     daysOfWeek.forEach((day, index) => {
         const dateInput = elements.timeEntryForm.elements[day];
         const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out']
             .map(field => elements.timeEntryForm.elements[`${field}${index + 1}`]);
         const hoursWorkedSpan = document.getElementById(`hours-worked-today${index + 1}`);
-        
+
         let hoursWorked = calculateDailyHoursWorked(dateInput, ...timeFields);
         totalHoursWorked += hoursWorked;
-        
+
         if (hoursWorkedSpan) {
             hoursWorkedSpan.textContent = hoursWorked.toFixed(2);
         } else {
             console.error(`Element 'hours-worked-today${index + 1}' not found`);
         }
     });
-    
+
     // Round total hours and update the respective elements
     const roundedTotalHoursWorked = roundToNearestQuarterHour(totalHoursWorked);
-    
+
     const ptoTime = roundToNearestQuarterHour(parseFloat(elements.ptoTimeSpan?.textContent) || 0);
     const personalTime = roundToNearestQuarterHour(parseFloat(elements.personalTimeSpan?.textContent) || 0);
     const holidayHours = roundToNearestQuarterHour(parseFloat(elements.holidayTimeSpan?.textContent) || 0);
-    
+
     const totalHoursWithPto = roundToNearestQuarterHour(roundedTotalHoursWorked + ptoTime + personalTime + holidayHours);
-    
+
+    // Calculate regular and overtime hours
     const regularHours = Math.min(roundedTotalHoursWorked, 40);
     const overtimeHours = Math.max(0, roundedTotalHoursWorked - 40);
-    
+
     if (elements.totalTimeWorkedSpan) {
         elements.totalTimeWorkedSpan.textContent = roundedTotalHoursWorked.toFixed(2);
     } else {
         console.error('Element totalTimeWorkedSpan not found');
     }
-    
+
     if (elements.totalTimeWithPtoSpan) {
         elements.totalTimeWithPtoSpan.textContent = totalHoursWithPto.toFixed(2);
     } else {
         console.error('Element totalTimeWithPtoSpan not found');
     }
-    
+
     const regularHoursElement = document.getElementById('regular-hours');
     const overtimeHoursElement = document.getElementById('overtime-hours');
-    
+
     if (regularHoursElement) {
         regularHoursElement.textContent = regularHours.toFixed(2);
     }
     if (overtimeHoursElement) {
         overtimeHoursElement.textContent = overtimeHours.toFixed(2);
     }
-    
+
+    // Validate PTO hours and ensure holiday hours are included properly
     validatePtoHours(totalHoursWorked, ptoTime, personalTime);
     updateTotalPtoAndHolidayHours();
 }
+
 
 
 
