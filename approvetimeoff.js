@@ -200,12 +200,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const denialReasonSelect = document.querySelector(`select[data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
 
-        if (approved) {
-            denialReasonSelect.style.display = 'none';
-        } else {
-            denialReasonSelect.style.display = 'block';
-        }
-
+       
         const updateUrl = `${url}/${recordId}`;
         const data = {
             fields: {
