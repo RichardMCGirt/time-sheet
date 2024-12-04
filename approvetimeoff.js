@@ -253,43 +253,46 @@ document.addEventListener("DOMContentLoaded", function() {
     function calculateHoursMissed(startDate, endDate, startTime, endTime) {
         const start = new Date(startDate);
         const end = new Date(endDate);
-
+    
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
             return 0;
         }
-
+    
         const dailyWorkHours = 8;
-        const allDayHours = 8;
         const workStartHour = 7;
         const workEndHour = 16;
         const lunchStartHour = 12;
         const lunchEndHour = 13;
-
-        let totalHours = 0;
-        let currentDate = start;
-
+    
+        let totalHoursMissed = 0;
+        let currentDate = new Date(start);
+    
         while (currentDate <= end) {
             const dayOfWeek = currentDate.getDay();
-            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                const actualStartTime = startTime || '7:00 AM';
-                const actualEndTime = endTime || '4:00 PM';
-
-                const workStart = new Date(`${currentDate.toDateString()} ${actualStartTime}`);
-                const workEnd = new Date(`${currentDate.toDateString()} ${actualEndTime}`);
-                const lunchStart = new Date(currentDate.setHours(lunchStartHour, 0, 0));
-                const lunchEnd = new Date(currentDate.setHours(lunchEndHour, 0, 0));
-
-                let dailyHours = (workEnd - workStart) / (1000 * 60 * 60);
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends
+                const currentDateStr = currentDate.toDateString();
+    
+                const workStart = new Date(`${currentDateStr} ${startTime || '7:00 AM'}`);
+                const workEnd = new Date(`${currentDateStr} ${endTime || '4:00 PM'}`);
+    
+                // Calculate working hours for the day
+                let dailyHoursMissed = (workEnd - workStart) / (1000 * 60 * 60);
+    
+                // Subtract lunch hour if applicable
+                const lunchStart = new Date(currentDateStr).setHours(lunchStartHour, 0, 0);
+                const lunchEnd = new Date(currentDateStr).setHours(lunchEndHour, 0, 0);
+    
                 if (workStart < lunchEnd && workEnd > lunchStart) {
-                    dailyHours -= 1;
+                    dailyHoursMissed -= 1; // Subtract lunch hour
                 }
-
-                totalHours += dailyHours;
+    
+                totalHoursMissed += dailyHoursMissed;
             }
             currentDate.setDate(currentDate.getDate() + 1);
         }
-        return totalHours;
+        return totalHoursMissed > 0 ? totalHoursMissed : 0;
     }
+    
 
     function showNotification(message) {
         if (notificationElement) {
