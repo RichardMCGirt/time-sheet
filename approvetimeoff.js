@@ -135,10 +135,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
                         if (startDateStr) {
                             let startDate = new Date(`${startDateStr}T00:00:00Z`);
-                            startDate.setDate(startDate.getDate() + 1);
+let endDate = new Date(`${endDateStr}T00:00:00Z`);
 
-                            let endDate = new Date(`${endDateStr}T00:00:00Z`);
-                            endDate.setDate(endDate.getDate() + 1);
+// Convert to local date strings before passing to `calculateHoursMissed`.
+const localStartDateStr = startDate.toISOString().split('T')[0];
+const localEndDateStr = endDate.toISOString().split('T')[0];
+
 
                             const formattedStartDate = dateFormatter.format(startDate);
                             const formattedEndDate = dateFormatter.format(endDate);
@@ -162,10 +164,11 @@ document.addEventListener("DOMContentLoaded", function() {
                             endTime.textContent = `End Time: ${formatTime(endTimeStr)}`;
                             requestDiv.appendChild(endTime);
 
-                            const hoursMissed = calculateHoursMissed(startDateStr, endDateStr, startTimeStr, endTimeStr);
+                            const hoursMissed = calculateHoursMissed(localStartDateStr, localEndDateStr, startTimeStr, endTimeStr);
                             const missedHours = document.createElement('p');
+                            console.log("Hours Missed Calculated:", hoursMissed);
                             missedHours.textContent = `Hours Missed: ${hoursMissed}`;
-                            requestDiv.appendChild(missedHours);
+                                                        requestDiv.appendChild(missedHours);
 
                             const approvalCheckbox = document.createElement('input');
                             approvalCheckbox.type = 'checkbox';
@@ -251,10 +254,17 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function calculateHoursMissed(startDate, endDate, startTime, endTime) {
+        console.log("Calculating hours missed...");
+        console.log("Start Date:", startDate);
+        console.log("End Date:", endDate);
+        console.log("Start Time:", startTime);
+        console.log("End Time:", endTime);
+    
         const start = new Date(startDate);
         const end = new Date(endDate);
     
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            console.log("Invalid date(s). Returning 0 hours missed.");
             return 0;
         }
     
@@ -264,34 +274,63 @@ document.addEventListener("DOMContentLoaded", function() {
         const lunchStartHour = 12;
         const lunchEndHour = 13;
     
+        // Special condition for single-day record with 7 AM to 4 PM
+        if (
+            startDate === endDate &&
+            startTime === "7:00 AM" &&
+            endTime === "4:00 PM"
+        ) {
+            console.log("Special condition met: Single-day full work hours. Hours Missed: 8");
+            return 8;
+        }
+    
         let totalHoursMissed = 0;
         let currentDate = new Date(start);
     
         while (currentDate <= end) {
             const dayOfWeek = currentDate.getDay();
             if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends
+                console.log("Processing date:", currentDate.toDateString());
+    
                 const currentDateStr = currentDate.toDateString();
     
+                // Parse the actual start and end times for the day
                 const workStart = new Date(`${currentDateStr} ${startTime || '7:00 AM'}`);
                 const workEnd = new Date(`${currentDateStr} ${endTime || '4:00 PM'}`);
     
+                console.log("Work Start:", workStart);
+                console.log("Work End:", workEnd);
+    
                 // Calculate working hours for the day
                 let dailyHoursMissed = (workEnd - workStart) / (1000 * 60 * 60);
+    
+                console.log("Initial Daily Hours Missed:", dailyHoursMissed);
     
                 // Subtract lunch hour if applicable
                 const lunchStart = new Date(currentDateStr).setHours(lunchStartHour, 0, 0);
                 const lunchEnd = new Date(currentDateStr).setHours(lunchEndHour, 0, 0);
     
+                console.log("Lunch Start:", new Date(lunchStart));
+                console.log("Lunch End:", new Date(lunchEnd));
+    
                 if (workStart < lunchEnd && workEnd > lunchStart) {
                     dailyHoursMissed -= 1; // Subtract lunch hour
+                    console.log("Adjusted Daily Hours Missed (after lunch):", dailyHoursMissed);
                 }
     
                 totalHoursMissed += dailyHoursMissed;
+                console.log("Total Hours Missed So Far:", totalHoursMissed);
+            } else {
+                console.log("Skipping weekend date:", currentDate.toDateString());
             }
             currentDate.setDate(currentDate.getDate() + 1);
         }
-        return totalHoursMissed > 0 ? totalHoursMissed : 0;
+    
+        console.log("Final Total Hours Missed:", totalHoursMissed);
+        return totalHoursMissed;
     }
+    
+    
     
 
     function showNotification(message) {
