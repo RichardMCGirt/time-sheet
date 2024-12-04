@@ -309,7 +309,7 @@ if (totalEligibleHours < 40) {
         totalRow += `
             <tr>
                 <td colspan="5" style="border: none;"></td>
-                <td class="narrow-border" style="text-align:right; border-left: 4px solid white; border-top: 4px solid white; width: 30%; font-weight: bold;">Grand Total (Including Gifted):</td>
+                <td class="narrow-border" style="text-align:right; border-left: 4px solid white; border-top: 4px solid white; width: 30%; font-weight: bold;">Grand Total:</td>
                 <td style="border-right: 4px solid white; border-top: 4px solid white; width: 10%; font-weight: bold;">${finalTotal.toFixed(2)}</td>
             </tr>
         `;
