@@ -267,15 +267,29 @@ function createSnowflake() {
     snowflake.classList.add('snowflake');
     snowflake.textContent = '❄️';
 
+    // Randomize size and fall speed
+    const size = Math.random() * 1.5 + 0.5; // Size range: 0.5em to 2em
+    const fallDuration = Math.max(2, 6 - size * 2); // Bigger ones fall faster
+
     // Set snowflake properties
     snowflake.style.left = `${Math.random() * 100}vw`;
-    snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
-    snowflake.style.fontSize = `${Math.random() * 1.5 + 1}em`;
+    snowflake.style.animationDuration = `${fallDuration}s`;
+    snowflake.style.fontSize = `${size}em`;
 
     // Apply the current offset
     snowflake.style.top = `${snowflakeOffset}px`;
 
+    // Append snowflake to the document
     document.body.appendChild(snowflake);
+
+    // Fade out and remove snowflake after 15 seconds
+    setTimeout(() => {
+        snowflake.style.opacity = '0'; // Trigger fade-out animation
+        snowflake.style.transition = 'opacity 2s'; // Add transition for fading out
+        setTimeout(() => {
+            snowflake.remove(); // Remove after fade-out is complete
+        }, 2000); // Delay removal to match fade-out duration
+    }, 13000); // Start fading out at 13 seconds
 }
 
 // Create multiple snowflakes at regular intervals

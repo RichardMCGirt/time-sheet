@@ -240,12 +240,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 // Gifted hours logic
 const totalEligibleHours = totalHoursWorked + totalHolidayHours + totalPersonalHours + totalPtoHours;
 
-if (totalEligibleHours < 40) {
+if (totalHoursWorked === 0) {
+    giftedHours = 0;
+    console.log(`[INFO] Gifted hours set to 0 because total hours worked is 0.`);
+} else if (totalEligibleHours < 40) {
     giftedHours = Math.min(3, 40 - totalEligibleHours);
     console.log(`[INFO] Gifted hours calculated: ${giftedHours.toFixed(2)} based on total eligible hours: ${totalEligibleHours.toFixed(2)}`);
 } else {
-    console.log(`[INFO] No gifted hours as total eligible hours (${totalEligibleHours.toFixed(2)}) exceed 40`);
+    giftedHours = 0;
+    console.log(`[INFO] No gifted hours as total eligible hours (${totalEligibleHours.toFixed(2)}) exceed 40.`);
 }
+
 
     
      

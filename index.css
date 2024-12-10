@@ -14,6 +14,15 @@
     --success-text-color: #2ecc71;
 }
 
+.snowflake {
+    position: absolute;
+    color: white;
+    opacity: 1; /* Fully visible by default */
+    pointer-events: none; /* Ignore mouse events */
+    will-change: opacity; /* Optimize for opacity changes */
+}
+
+
 body {
     font-family: 'Playfair Display', serif;
     background: linear-gradient(to right, var(--bg-gradient-start), var(--bg-gradient-end));
