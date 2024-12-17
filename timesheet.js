@@ -1699,4 +1699,7 @@ function toggleWorkInputs(dayIndex, isChecked) {
         });
     }
     calculateTotalTimeWorked();
+
+
+    
 }
