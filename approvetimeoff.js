@@ -134,8 +134,9 @@ document.addEventListener("DOMContentLoaded", function() {
                         const approved = record.fields[`Time off Approved ${i}`] || false;
 
                         if (startDateStr) {
-                            let startDate = new Date(`${startDateStr}T00:00:00Z`);
-let endDate = new Date(`${endDateStr}T00:00:00Z`);
+                            let startDate = new Date(`${startDateStr}T00:00:00-05:00`);
+                            let endDate = new Date(`${endDateStr}T00:00:00-05:00`);
+                            
 
 // Convert to local date strings before passing to `calculateHoursMissed`.
 const localStartDateStr = startDate.toISOString().split('T')[0];
