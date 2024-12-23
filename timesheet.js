@@ -553,8 +553,8 @@ function getHolidayDates(year) {
     holidays["Labor Day"] = getLaborDay(year); // First Monday of September
     holidays["Thanksgiving"] = getThanksgiving(year); // Fourth Thursday of November
     holidays["Black Friday"] = getBlackFriday(year); // Day after Thanksgiving
-    holidays["Christmas Day"] = new Date(year, 11, 23); // December 25th
-    holidays["December 26th"] = new Date(year, 11, 24); // December 26th
+    holidays["Christmas Day"] = new Date(year, 11, 23); // December 24th
+    holidays["December 26th"] = new Date(year, 11, 24); // December 25th
     holidays["Good Friday"] = getGoodFriday(year); // Good Friday date calculation
     holidays["Easter"] = getEaster(year); // Easter date calculation
 
@@ -1480,16 +1480,16 @@ if (heathCloseButton) {
         daysOfWeek.forEach((day, index) => {
             const row = [];
     
-            // Format each date as "Month Name DD, YYYY"
+            // Format each date as "Month Name DD, YYYY" and ensure it stays in one cell
             const dateValue = document.querySelector(`[name="${day}"]`)?.value;
             const formattedDate = dateValue
-                ? new Date(dateValue).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' })
+                ? `"${new Date(dateValue).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' })}"`
                 : '';
     
             row.push(formattedDate);
-            const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'].map(field => elements.timeEntryForm.elements[`${field}${index + 1}`].value);
+            const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'].map(field => elements.timeEntryForm.elements[`${field}${index + 1}`]?.value || '');
             row.push(...timeFields);
-            row.push(document.getElementById(`hours-worked-today${index + 1}`).textContent);
+            row.push(document.getElementById(`hours-worked-today${index + 1}`)?.textContent || '');
             row.push(elements.timeEntryForm.elements[`PTO_hours${index + 1}`]?.value || '');
             row.push(elements.timeEntryForm.elements[`Personal_hours${index + 1}`]?.value || '');
             row.push(elements.timeEntryForm.elements[`Holiday_hours${index + 1}`]?.value || '');
