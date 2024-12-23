@@ -553,8 +553,8 @@ function getHolidayDates(year) {
     holidays["Labor Day"] = getLaborDay(year); // First Monday of September
     holidays["Thanksgiving"] = getThanksgiving(year); // Fourth Thursday of November
     holidays["Black Friday"] = getBlackFriday(year); // Day after Thanksgiving
-    holidays["Christmas Day"] = new Date(year, 11, 24); // December 25th
-    holidays["December 26th"] = new Date(year, 11, 25); // December 26th
+    holidays["Christmas Day"] = new Date(year, 11, 23); // December 25th
+    holidays["December 26th"] = new Date(year, 11, 24); // December 26th
     holidays["Good Friday"] = getGoodFriday(year); // Good Friday date calculation
     holidays["Easter"] = getEaster(year); // Easter date calculation
 

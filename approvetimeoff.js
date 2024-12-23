@@ -261,6 +261,16 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
         console.log("Start Time:", startTime);
         console.log("End Time:", endTime);
     
+        const defaultStartTime = "7:00 AM"; // Default work start time
+        const defaultEndTime = "4:00 PM"; // Default work end time
+    
+        // Handle default times if they are 12:00 AM or not provided
+        startTime = (startTime === "12:00 AM" || !startTime) ? defaultStartTime : startTime;
+        endTime = (endTime === "12:00 AM" || !endTime) ? defaultEndTime : endTime;
+    
+        console.log("Adjusted Start Time:", startTime);
+        console.log("Adjusted End Time:", endTime);
+    
         const start = new Date(startDate);
         const end = new Date(endDate);
     
@@ -269,58 +279,34 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
             return 0;
         }
     
-        const dailyWorkHours = 8;
-        const workStartHour = 7;
-        const workEndHour = 16;
-        const lunchStartHour = 12;
-        const lunchEndHour = 13;
-    
-        // Special condition for single-day record with 7 AM to 4 PM
-        if (
-            startDate === endDate &&
-            startTime === "7:00 AM" &&
-            endTime === "4:00 PM"
-        ) {
-            console.log("Special condition met: Single-day full work hours. Hours Missed: 8");
+        // Check if the range spans only one workday
+        if (startDate === endDate || (startTime === defaultStartTime && endTime === defaultEndTime && end.getTime() - start.getTime() <= 86400000)) {
+            console.log("Single workday or one full day across dates. Hours Missed: 8");
             return 8;
         }
     
         let totalHoursMissed = 0;
         let currentDate = new Date(start);
     
+        // Handle multi-day ranges
         while (currentDate <= end) {
-            const dayOfWeek = currentDate.getDay();
+            const dayOfWeek = currentDate.getDay(); // 0 is Sunday, 6 is Saturday
+            console.log("Day of Week for", currentDate.toDateString(), ":", dayOfWeek);
+    
             if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends
-                console.log("Processing date:", currentDate.toDateString());
-    
-                const currentDateStr = currentDate.toDateString();
-    
-                // Parse the actual start and end times for the day
-                const workStart = new Date(`${currentDateStr} ${startTime || '7:00 AM'}`);
-                const workEnd = new Date(`${currentDateStr} ${endTime || '4:00 PM'}`);
-    
-                console.log("Work Start:", workStart);
-                console.log("Work End:", workEnd);
-    
-                // Calculate working hours for the day
-                let dailyHoursMissed = (workEnd - workStart) / (1000 * 60 * 60);
-    
-                console.log("Initial Daily Hours Missed:", dailyHoursMissed);
-    
-                // Subtract lunch hour if applicable
-                const lunchStart = new Date(currentDateStr).setHours(lunchStartHour, 0, 0);
-                const lunchEnd = new Date(currentDateStr).setHours(lunchEndHour, 0, 0);
-    
-                console.log("Lunch Start:", new Date(lunchStart));
-                console.log("Lunch End:", new Date(lunchEnd));
-    
-                if (workStart < lunchEnd && workEnd > lunchStart) {
-                    dailyHoursMissed -= 1; // Subtract lunch hour
-                    console.log("Adjusted Daily Hours Missed (after lunch):", dailyHoursMissed);
+                // Add full workday hours (8 hours minus lunch if applicable)
+                if (
+                    currentDate.toDateString() === start.toDateString() ||
+                    currentDate.toDateString() === end.toDateString()
+                ) {
+                    // Only count one workday if it spans start and end
+                    totalHoursMissed += 8;
+                    console.log("Added 8 hours for:", currentDate.toDateString());
+                    break;
+                } else {
+                    totalHoursMissed += 8;
+                    console.log("Added 8 hours for:", currentDate.toDateString());
                 }
-    
-                totalHoursMissed += dailyHoursMissed;
-                console.log("Total Hours Missed So Far:", totalHoursMissed);
             } else {
                 console.log("Skipping weekend date:", currentDate.toDateString());
             }
@@ -330,6 +316,37 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
         console.log("Final Total Hours Missed:", totalHoursMissed);
         return totalHoursMissed;
     }
+    
+    
+    
+    
+    function calculateDayHours(date, startTime, endTime) {
+        const currentDateStr = new Date(date).toDateString();
+        const workStart = new Date(`${currentDateStr} ${startTime}`);
+        const workEnd = new Date(`${currentDateStr} ${endTime}`);
+    
+        const lunchStart = new Date(currentDateStr).setHours(12, 0, 0); // 12:00 PM
+        const lunchEnd = new Date(currentDateStr).setHours(13, 0, 0); // 1:00 PM
+    
+        console.log("Work Start:", workStart);
+        console.log("Work End:", workEnd);
+        console.log("Lunch Start:", new Date(lunchStart));
+        console.log("Lunch End:", new Date(lunchEnd));
+    
+        let hoursMissed = (workEnd - workStart) / (1000 * 60 * 60); // Total hours worked
+    
+        // Subtract lunch break if it overlaps with working hours
+        if (workStart < lunchEnd && workEnd > lunchStart) {
+            hoursMissed -= 1; // Subtract 1 hour for lunch
+            console.log("Adjusted hours missed (after lunch):", hoursMissed);
+        }
+    
+        return Math.max(0, hoursMissed); // Ensure hours missed is not negative
+    }
+    
+    
+    
+    
     
     
     
