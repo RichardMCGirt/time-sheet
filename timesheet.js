@@ -309,20 +309,70 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Fetch Personal End Date
 // Fetch Personal End Date
 async function fetchPersonalEndDate() {
-    // Hardcoded Personal End Date
+    // Hardcoded Personal End Date for Q1
     const personalEndDate = '12/31/2024';
-    
+
+    // Define quarter periods with their start and end dates
+    const quarters = [
+        { name: 'Q1', start: '01/01/2025', end: '03/25/2025' },
+        { name: 'Q2', start: '03/26/2025', end: '06/24/2025' },
+        { name: 'Q3', start: '06/25/2025', end: '09/30/2025' },
+        { name: 'Q4', start: '10/01/2025', end: '12/30/2025' }
+    ];
+
     try {
-        // Start the countdown with the hardcoded date
+        // Start the initial countdown with the hardcoded date
         startCountdown(personalEndDate);
         updateLoadingBar('Previous entries have been downloaded.');
+
+        // Function to get the next quarter based on the current date
+        const getNextQuarter = () => {
+            const now = new Date();
+
+            for (const quarter of quarters) {
+                const start = new Date(quarter.start);
+                const end = new Date(quarter.end);
+
+                if (now >= start && now <= end) {
+                    return { ...quarter, nextStart: end }; // Return the current quarter and next start date
+                }
+            }
+
+            return null; // If no matching quarter, return null
+        };
+
+        // Set a timer to update the countdown when the current quarter ends
+        const updateTimerForNextQuarter = () => {
+            const currentQuarter = getNextQuarter();
+
+            if (currentQuarter) {
+                console.log(`Current Quarter: ${currentQuarter.name}`);
+                startCountdown(currentQuarter.end);
+
+                // Calculate the time until midnight on the quarter's end date
+                const nextQuarterTime = new Date(currentQuarter.nextStart);
+                nextQuarterTime.setHours(0, 0, 0, 0);
+
+                const timeUntilNextQuarter = nextQuarterTime - new Date();
+
+                // Set a timeout to switch to the next quarter countdown
+                setTimeout(() => {
+                    updateTimerForNextQuarter();
+                }, timeUntilNextQuarter);
+            } else {
+                console.warn('No active quarter found.');
+            }
+        };
+
+        // Start the quarter timer logic
+        updateTimerForNextQuarter();
     } catch (error) {
-        console.error('Error fetching Personal END Date:', error);
+        console.error('Error fetching Personal End Date or handling quarters:', error);
     }
 }
+
 
 
     async function fetchApprovalStatus() {
@@ -547,6 +597,8 @@ function getHolidayDates(year) {
     const holidays = {};
 
     holidays["New Year's Day"] = new Date(year, 0, 0); // January 1st
+    holidays["New Year's Eve"] = new Date(year, 11, 30); // December 31st
+
     holidays["January 2nd"] = new Date(year, 0, 1); // January 2nd
     holidays["July 4th"] = new Date(year, 6, 4); // July 4th
     holidays["July 5th"] = new Date(year, 6, 5); // July 5th
