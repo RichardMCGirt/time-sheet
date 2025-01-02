@@ -596,10 +596,10 @@ function getNextTuesday(referenceDate = new Date()) {
 function getHolidayDates(year) {
     const holidays = {};
 
-    holidays["New Year's Day"] = new Date(year, 0, 0); // January 1st
+    holidays["New Year's Day"] = new Date(year, 12, 31); // January 1st
     holidays["New Year's Eve"] = new Date(year, 11, 30); // December 31st
 
-    holidays["January 2nd"] = new Date(year, 0, 1); // January 2nd
+    holidays["January 2nd"] = new Date(year, 0, 0); // January 2nd
     holidays["July 4th"] = new Date(year, 6, 4); // July 4th
     holidays["July 5th"] = new Date(year, 6, 5); // July 5th
     holidays["Labor Day"] = getLaborDay(year); // First Monday of September
