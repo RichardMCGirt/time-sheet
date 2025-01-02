@@ -747,7 +747,7 @@ function populateWeekDates(weekEndingDate) {
 
 function startCountdown() {
     // Set the target date and time to December 31, 2024, at midnight (00:00:00)
-    const targetDate = new Date('2024-12-31T00:00:00');
+    const targetDate = new Date('2025-03-25T00:00:00');
     const endDateTime = targetDate.getTime(); // Get the timestamp for the target date
     const countdownElement = document.getElementById('countdown');
 
