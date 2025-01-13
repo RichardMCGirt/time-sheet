@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     let isApproved = false;  // Define and initialize the isApproved variable
 
-
     // Function to prevent non-integer input (blocks decimal points)
 function preventDecimalInput(event) {
     const key = event.key;
@@ -65,7 +64,6 @@ function attachNoDecimalValidation() {
 document.addEventListener("DOMContentLoaded", function() {
     attachNoDecimalValidation();
 });
-
 
     function showNotification(message) {
         if (notificationArea) {
@@ -478,8 +476,6 @@ function disableAllInputs() {
 }
 
 
-
-
 // Example function call to disable all inputs based on timesheet approval
 await fetchApprovalStatus();
 
@@ -577,13 +573,6 @@ function getNextTuesday(referenceDate = new Date()) {
 
     return nextTuesday;
 }
-
-    
-
-    
-    
-    
-    
     
     async function initializeForm() {
         console.log('Initializing form...');
@@ -592,73 +581,68 @@ function getNextTuesday(referenceDate = new Date()) {
         handleWeekEndingChange(); // Update other fields based on this date
     }
     
-    // Function to calculate the date for Memorial Day (last Monday in May) and Thanksgiving (4th Thursday in November)
+// Function to calculate the date for Memorial Day (last Monday in May) and Thanksgiving (4th Thursday in November)
 function getHolidayDates(year) {
     const holidays = {};
 
-    holidays["New Year's Day"] = new Date(year, 12, 31); // January 1st
-    holidays["New Year's Eve"] = new Date(year, 11, 30); // December 31st
+    holidays["New Year's Day"] = new Date(year, 0, 0); // January 1st
+    console.log("New Year's Day:", holidays["New Year's Day"]);
 
-    holidays["January 2nd"] = new Date(year, 0, 0); // January 2nd
+    holidays["New Year's Eve"] = new Date(year, 12, 30); // December 31st
+    console.log("New Year's Eve:", holidays["New Year's Eve"]);
+
+
+
     holidays["July 4th"] = new Date(year, 6, 4); // July 4th
-    holidays["July 5th"] = new Date(year, 6, 5); // July 5th
-    holidays["Labor Day"] = getLaborDay(year); // First Monday of September
-    holidays["Thanksgiving"] = getThanksgiving(year); // Fourth Thursday of November
-    holidays["Black Friday"] = getBlackFriday(year); // Day after Thanksgiving
-    holidays["Christmas Day"] = new Date(year, 11, 23); // December 24th
-    holidays["December 26th"] = new Date(year, 11, 24); // December 25th
-    holidays["Good Friday"] = getGoodFriday(year); // Good Friday date calculation
-    holidays["Easter"] = getEaster(year); // Easter date calculation
+    console.log("July 4th:", holidays["July 4th"]);
 
-    
+    holidays["Labor Day"] = getLaborDay(year); // First Monday of September
+    console.log("Labor Day:", holidays["Labor Day"]);
+
+    holidays["Thanksgiving"] = getThanksgiving(year); // Fourth Thursday of November
+    console.log("Thanksgiving:", holidays["Thanksgiving"]);
+
+    holidays["Black Friday"] = getBlackFriday(year); // Day after Thanksgiving
+    console.log("Black Friday:", holidays["Black Friday"]);
+
+    holidays["Christmas Day"] = new Date(year, 11, 24); // December 25th
+    console.log("Christmas Day:", holidays["Christmas Day"]);
+
+    holidays["December 26th"] = new Date(year, 11, 23); // December 26th
+    console.log("December 26th:", holidays["December 26th"]);
+
+    holidays["Good Friday"] = getGoodFriday(year); // Good Friday date calculation
+    console.log("Good Friday:", holidays["Good Friday"]);
+
+    holidays["Easter"] = getEaster(year); // Easter date calculation
+    console.log("Easter:", holidays["Easter"]);
+
     return holidays;
 }
 
-// Helper functions to calculate holidays, moved back one day
-// Helper functions to calculate holidays, moved back one day
+// Helper functions for holiday calculations
 function getLaborDay(year) {
-    const firstDayOfSeptember = new Date(year, 8, 1);
-    const dayOfWeek = firstDayOfSeptember.getDay();
-    const laborDay = new Date(year, 8, 0 + (dayOfWeek === 0 ? 1 : (8 - dayOfWeek))); // First Monday in September
-    return laborDay;
+    const date = new Date(year, 8, 1); // September 1st
+    const day = date.getDay();
+    const offset = (day === 1) ? 0 : (8 - day); // Calculate the offset to the first Monday
+    return new Date(year, 8, 1 + offset);
 }
 
 function getThanksgiving(year) {
-    const firstDayOfNovember = new Date(year, 10, 1);
-    const dayOfWeek = firstDayOfNovember.getDay();
-    const thanksgiving = new Date(year, 10, 1 + (dayOfWeek === 4 ? 21 : 28 + (3 - dayOfWeek))); // Fourth Thursday in November
-    return thanksgiving;
+    const date = new Date(year, 10, 1); // November 1st
+    const day = date.getDay();
+    const offset = (day <= 4) ? (4 - day) : (11 - day); // Calculate the offset to the first Thursday
+    return new Date(year, 10, 1 + offset + 21); // Add 21 days for the 4th Thursday
 }
 
 function getBlackFriday(year) {
     const thanksgiving = getThanksgiving(year);
-    const blackFriday = new Date(thanksgiving);
-    blackFriday.setDate(blackFriday.getDate() + 1); // Black Friday is still the day after Thanksgiving
-    return blackFriday;
+    return new Date(thanksgiving.getFullYear(), thanksgiving.getMonth(), thanksgiving.getDate() + 1);
 }
 
-// Helper functions to calculate holidays, moved back one day
-function getLaborDay(year) {
-    const firstDayOfSeptember = new Date(year, 8, 1);
-    const dayOfWeek = firstDayOfSeptember.getDay();
-    const laborDay = new Date(year, 8, 1 + (dayOfWeek === 0 ? 1 : (8 - dayOfWeek))); // First Monday in September
-    laborDay.setDate(laborDay.getDate() - 1); // Move back one day
-    return laborDay;
-}
-
-function getThanksgiving(year) {
-    const firstDayOfNovember = new Date(year, 10, 1);
-    const dayOfWeek = firstDayOfNovember.getDay();
-    const thanksgiving = new Date(year, 10, 1 + (dayOfWeek === 4 ? 21 : 28 + (4 - dayOfWeek))); // Fourth Thursday in November
-    thanksgiving.setDate(thanksgiving.getDate() - 1); // Move back one day
-    return thanksgiving;
-}
-
-function getBlackFriday(year) {
-    const thanksgiving = getThanksgiving(year);
-    const blackFriday = new Date(thanksgiving);
-    blackFriday.setDate(blackFriday.getDate() + 1); // Black Friday is still the day after Thanksgiving
-    return blackFriday;
+function getGoodFriday(year) {
+    const easter = getEaster(year);
+    return new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 2);
 }
 
 function getEaster(year) {
@@ -674,20 +658,9 @@ function getEaster(year) {
     const k = c % 4;
     const l = (32 + 2 * e + 2 * i - h - k) % 7;
     const m = Math.floor((a + 11 * h + 22 * l) / 451);
-    const month = Math.floor((h + l - 7 * m + 114) / 31);
-    const day = 1 + (h + l - 7 * m + 114) % 31;
-
-    const easter = new Date(year, month - 1, day);
-    easter.setDate(easter.getDate() - 1); // Move back one day
-    return easter;
-}
-
-
-function getGoodFriday(year) {
-    const easter = getEaster(year);
-    const goodFriday = new Date(easter);
-    goodFriday.setDate(easter.getDate() - 2); // Good Friday is still two days before Easter, but Easter is already moved back a day
-    return goodFriday;
+    const month = Math.floor((h + l - 7 * m + 114) / 31) - 1;
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month, day);
 }
 
 
@@ -765,7 +738,7 @@ function startCountdown() {
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        countdownElement.innerHTML = `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Secounds`;
 
         // Calculate the exact remaining milliseconds until the next full second
         const nextUpdateInMs = 1000 - (now % 1000);
@@ -848,12 +821,6 @@ function calculateTotalTimeWorked() {
     validatePtoHours(totalHoursWorked, ptoTime, personalTime);
     updateTotalPtoAndHolidayHours();
 }
-
-
-
-
-
-
 
     function calculateDailyHoursWorked(dateInput, startTimeInput, lunchStartInput, lunchEndInput, endTimeInput, additionalTimeInInput, additionalTimeOutInput) {
         const startDate = new Date(dateInput.value);
@@ -939,7 +906,6 @@ function calculateTotalTimeWorked() {
 
     const ptoTimeInput = document.getElementById('pto-time');
     const ptoHoursDisplay = document.getElementById('pto-hours-display');
-
 
 
     function validatePtoHours(totalHoursWorked, ptoTime, personalTime) {
@@ -1124,10 +1090,6 @@ function calculateTotalTimeWorked() {
         return !hasDecimal; // If any decimal was found, return false to prevent submission
     }
     
-    
-    
-    
-
    async function handleSubmit(event) {
     event.preventDefault(); // Prevent form submission by default
 
@@ -1196,9 +1158,6 @@ function calculateTotalTimeWorked() {
     }
 }
 
-
-   
-       
     function throwConfetti() {
         confetti({
             particleCount: 1400,
@@ -1208,7 +1167,6 @@ function calculateTotalTimeWorked() {
     }
     
     let countdownInterval; // Declare countdownInterval in a higher scope to track the interval
-
     
     function showModal() {
         const modal = document.getElementById('successModal');
@@ -1353,9 +1311,6 @@ if (heathCloseButton) {
         document.dispatchEvent(event);
     }
     
-       
-    
-
     async function sendDataToAirtable() {
         const date7 = elements.timeEntryForm.elements['date7']?.value || '0';
         const totalPtoHours = calculateColumnSum('PTO_hours');
@@ -1502,8 +1457,6 @@ if (heathCloseButton) {
         }, 100);
     }
 
-
-
     const convertToCsvButton = document.getElementById('convert-to-csv-button');
 
     convertToCsvButton.addEventListener('click', convertToCsv);
@@ -1608,7 +1561,6 @@ if (heathCloseButton) {
         document.body.appendChild(modal);
     }
     
-
     initializeForm();
     initializeTimeDropdowns();
 
@@ -1628,11 +1580,8 @@ if (heathCloseButton) {
         } else if (key === 'ArrowUp') {
             index = (index - 6 + inputs.length) % inputs.length;
         }
-
         inputs[index].focus();
     }
-
-   
 
     function showPickerOnFocus() {
         const timeInputs = document.querySelectorAll('select.time-dropdown, input[type="number"]');
@@ -1684,9 +1633,6 @@ if (heathCloseButton) {
         console.log('Form data saved:', data);
     }
     
-
-   
-
     function loadFormData() {
         const data = JSON.parse(localStorage.getItem('formData'));
         if (data) {
@@ -1751,7 +1697,5 @@ function toggleWorkInputs(dayIndex, isChecked) {
         });
     }
     calculateTotalTimeWorked();
-
-
-    
+   
 }

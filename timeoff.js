@@ -151,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-
     async function getRecordIdByName(name) {
         try {
             const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{Full Name}='${name}'`)}`;
@@ -552,6 +551,4 @@ document.addEventListener('DOMContentLoaded', () => {
         submissionStatus.classList.remove('hidden');
         submissionStatus.classList.add('error');
     }
-
-   
 });
