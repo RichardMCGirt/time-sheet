@@ -81,6 +81,17 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    function validateTimeInput(time) {
+        const timePattern = /^([01]?[0-9]|2[0-3]):?([0-5][0-9])? ?([aApP][mM])?$/;
+        const match = time.match(timePattern);
+        if (!match) {
+            console.warn("Invalid time format. Using default:", time);
+            return null;
+        }
+        return time; // Return the original time if valid
+    }
+    
+
     async function displayRequests(records) {
         const container = document.getElementById('requests-container');
         container.innerHTML = '';
@@ -165,7 +176,7 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
                             endTime.textContent = `End Time: ${formatTime(endTimeStr)}`;
                             requestDiv.appendChild(endTime);
 
-                            const hoursMissed = calculateHoursMissed(localStartDateStr, localEndDateStr, startTimeStr, endTimeStr);
+                            const hoursMissed = calculateDayHours(startDateStr, startTimeStr, endTimeStr);
                             const missedHours = document.createElement('p');
                             console.log("Hours Missed Calculated:", hoursMissed);
                             missedHours.textContent = `Hours Missed: ${hoursMissed}`;
@@ -229,28 +240,25 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
         }
     }
 
+    
     function formatTime(time, isStartTime = true) {
         if (!time || time.toLowerCase() === 'all day') {
-            return 'All Day';
+            return null; // Return null if invalid
         }
-
+    
         const timePattern = /^([01]?[0-9]|2[0-3]):?([0-5][0-9])? ?([aApP][mM])?$/;
         const match = time.match(timePattern);
-
+    
         if (!match) {
-            return isStartTime ? '07:00 AM' : '04:00 PM';
+            console.warn("Invalid time format:", time);
+            return null;
         }
-
+    
         let [, hours, minutes, period] = match;
         hours = hours.padStart(2, '0');
-        minutes = minutes ? minutes.padEnd(2, '0') : '00';
-        period = period ? period.toUpperCase() : (isStartTime ? 'AM' : 'PM');
-
-        if (!period && hours >= 12) {
-            period = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12;
-        }
-
+        minutes = minutes || '00';
+        period = period ? period.toUpperCase() : 'AM';
+    
         return `${hours}:${minutes} ${period}`;
     }
 
@@ -261,18 +269,19 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
         console.log("Start Time:", startTime);
         console.log("End Time:", endTime);
     
-        const defaultStartTime = "7:00 AM"; 
-        const defaultEndTime = "4:00 PM"; 
+        const defaultStartTime = "7:00 AM";
+        const defaultEndTime = "4:00 PM";
     
-        startTime = (startTime === "12:00 AM" || !startTime) ? defaultStartTime : startTime;
-        endTime = (endTime === "12:00 AM" || !endTime) ? defaultEndTime : endTime;
+        // Use the provided times; only fall back to defaults if they are not provided
+        startTime = startTime || defaultStartTime;
+        endTime = endTime || defaultEndTime;
     
         console.log("Adjusted Start Time:", startTime);
         console.log("Adjusted End Time:", endTime);
     
         const start = new Date(startDate);
         const end = new Date(endDate);
-        
+    
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
             console.log("Invalid date(s). Returning 0 hours missed.");
             return 0;
@@ -281,17 +290,29 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
         let totalHoursMissed = 0;
         let currentDate = new Date(start);
     
+        console.log("Start Date Object:", start);
+        console.log("End Date Object:", end);
+    
         while (currentDate <= end) {
             const dayOfWeek = currentDate.getDay(); // 0 is Sunday, 6 is Saturday
-            console.log("Day of Week for", currentDate.toDateString(), ":", dayOfWeek);
+            console.log(`Processing date: ${currentDate.toDateString()}, Day of Week: ${dayOfWeek}`);
             
             if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends
                 if (currentDate.toDateString() === start.toDateString()) {
-                    totalHoursMissed += calculateDayHours(startDate, startTime, defaultEndTime);
+                    console.log(`Calculating for start date: ${currentDate.toDateString()}`);
+                    const hoursForStartDay = calculateDayHours(currentDate, startTime, defaultEndTime);
+                    console.log(`Hours Missed for Start Date: ${hoursForStartDay}`);
+                    totalHoursMissed += hoursForStartDay;
                 } else if (currentDate.toDateString() === end.toDateString()) {
-                    totalHoursMissed += calculateDayHours(endDate, defaultStartTime, endTime);
+                    console.log(`Calculating for end date: ${currentDate.toDateString()}`);
+                    const hoursForEndDay = calculateDayHours(currentDate, defaultStartTime, endTime);
+                    console.log(`Hours Missed for End Date: ${hoursForEndDay}`);
+                    totalHoursMissed += hoursForEndDay;
                 } else {
-                    totalHoursMissed += calculateDayHours(currentDate.toDateString(), defaultStartTime, defaultEndTime);
+                    console.log(`Calculating for intermediate date: ${currentDate.toDateString()}`);
+                    const hoursForIntermediateDay = calculateDayHours(currentDate, defaultStartTime, defaultEndTime);
+                    console.log(`Hours Missed for Intermediate Date: ${hoursForIntermediateDay}`);
+                    totalHoursMissed += hoursForIntermediateDay;
                 }
             } else {
                 console.log("Skipping weekend date:", currentDate.toDateString());
@@ -309,6 +330,12 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
         const currentDateStr = new Date(date).toDateString();
         const workStart = new Date(`${currentDateStr} ${startTime}`);
         const workEnd = new Date(`${currentDateStr} ${endTime}`);
+    
+        // Validate parsed dates
+        if (isNaN(workStart) || isNaN(workEnd)) {
+            console.error("Invalid time parsing:", startTime, endTime);
+            return 0; // Return 0 if times are invalid
+        }
     
         const lunchStart = new Date(currentDateStr).setHours(12, 0, 0); // 12:00 PM
         const lunchEnd = new Date(currentDateStr).setHours(13, 0, 0); // 1:00 PM
@@ -328,6 +355,8 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
     
         return Math.max(0, hoursMissed); // Ensure hours missed is not negative
     }
+    
+    
     
 
     function showNotification(message) {
