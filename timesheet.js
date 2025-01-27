@@ -591,9 +591,13 @@ function getHolidayDates(year) {
     holidays["New Year's Eve"] = new Date(year, 12, 30); // December 31st
     console.log("New Year's Eve:", holidays["New Year's Eve"]);
 
+    holidays["Memorial Day"] = getMemorialDay(year); // Last Monday in May
+    console.log("Memorial Day:", holidays["Memorial Day"]);
 
+    holidays["July 3rd"] = new Date(year, 6, 2); // July 4th
+    console.log("July 3rd:", holidays["July 3rd"]);
 
-    holidays["July 4th"] = new Date(year, 6, 4); // July 4th
+    holidays["July 4th"] = new Date(year, 6, 3); // July 4th
     console.log("July 4th:", holidays["July 4th"]);
 
     holidays["Labor Day"] = getLaborDay(year); // First Monday of September
@@ -614,24 +618,31 @@ function getHolidayDates(year) {
     holidays["Good Friday"] = getGoodFriday(year); // Good Friday date calculation
     console.log("Good Friday:", holidays["Good Friday"]);
 
-    holidays["Easter"] = getEaster(year); // Easter date calculation
-    console.log("Easter:", holidays["Easter"]);
+
 
     return holidays;
 }
 
+function getMemorialDay(year) {
+    let date = new Date(year, 4, 31); // May 31st
+    while (date.getDay() !== 0) { // Keep subtracting a day until it's Monday
+        date.setDate(date.getDate() - 2);
+    }
+    return date;
+}
+
 // Helper functions for holiday calculations
 function getLaborDay(year) {
-    const date = new Date(year, 8, 1); // September 1st
+    const date = new Date(year, 7, 31); // September 1st
     const day = date.getDay();
-    const offset = (day === 1) ? 0 : (8 - day); // Calculate the offset to the first Monday
-    return new Date(year, 8, 1 + offset);
+    const offset = (day === 0) ? 0 : (8 - day); // Calculate the offset to the first Monday
+    return new Date(year, 7, 31 + offset);
 }
 
 function getThanksgiving(year) {
     const date = new Date(year, 10, 1); // November 1st
     const day = date.getDay();
-    const offset = (day <= 4) ? (4 - day) : (11 - day); // Calculate the offset to the first Thursday
+    const offset = (day <= 3) ? (3 - day) : (10 - day); // Calculate the offset to the first Thursday
     return new Date(year, 10, 1 + offset + 21); // Add 21 days for the 4th Thursday
 }
 
@@ -642,7 +653,7 @@ function getBlackFriday(year) {
 
 function getGoodFriday(year) {
     const easter = getEaster(year);
-    return new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 2);
+    return new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 3);
 }
 
 function getEaster(year) {
@@ -1262,7 +1273,7 @@ if (heathCloseButton) {
 
     
         // Check if the user is diana.smith@vanirinstalledsales.com
-        } else if (userEmail === 'diana.smith@vanirinstalledsales.com') {
+        } else if (userEmail === '') {
             const modalContent = modal.querySelector('.modal-content');
             if (modalContent) {
                 // Update the modal content for Diana and add a custom close button

@@ -41,6 +41,16 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    function parseDate(dateStr) {
+        const parsedDate = new Date(dateStr);
+        if (isNaN(parsedDate.getTime())) {
+            console.error(`Invalid date format: ${dateStr}`);
+            return null; // Return null for invalid dates
+        }
+        return parsedDate;
+    }
+    
+
     async function fetchRequests(supervisorName) {
         let allRecords = [];
         let offset = '';
@@ -81,6 +91,38 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    function calculateWorkDayHoursMissed(startDateTimeStr, endDateTimeStr, workStartTime = "7:00 AM", workEndTime = "4:00 PM") {
+        // Parse the start and end datetime strings into Date objects
+        const startDateTime = new Date(startDateTimeStr);
+        const endDateTime = new Date(endDateTimeStr);
+    
+        if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+            console.error("Invalid start or end datetime:", { startDateTimeStr, endDateTimeStr });
+            return 0;
+        }
+    
+        // Define the start and end of the workday
+        const workStart = new Date(startDateTime);
+        const workEnd = new Date(startDateTime);
+    
+        const [workStartHour, workStartMinutes, workStartPeriod] = parseTime(workStartTime);
+        const [workEndHour, workEndMinutes, workEndPeriod] = parseTime(workEndTime);
+    
+        workStart.setHours(convertTo24Hour(workStartHour, workStartPeriod));
+        workStart.setMinutes(workStartMinutes);
+        workEnd.setHours(convertTo24Hour(workEndHour, workEndPeriod));
+        workEnd.setMinutes(workEndMinutes);
+    
+        // Calculate the overlap between the workday and the time off
+        const missedStart = Math.max(workStart.getTime(), startDateTime.getTime());
+        const missedEnd = Math.min(workEnd.getTime(), endDateTime.getTime());
+    
+        // Calculate the total hours missed
+        const missedHours = (missedEnd - missedStart) / (1000 * 60 * 60); // Convert milliseconds to hours
+        return Math.max(0, missedHours); // Ensure non-negative hours
+    }
+    
+
     function validateTimeInput(time) {
         const timePattern = /^([01]?[0-9]|2[0-3]):?([0-5][0-9])? ?([aApP][mM])?$/;
         const match = time.match(timePattern);
@@ -95,127 +137,192 @@ document.addEventListener("DOMContentLoaded", function() {
     async function displayRequests(records) {
         const container = document.getElementById('requests-container');
         container.innerHTML = '';
-
+    
+        // Group records by employee name
         const groupedByEmployee = records.reduce((acc, record) => {
             const employeeName = record.fields.Name;
-            if (!acc[employeeName]) {
-                acc[employeeName] = [];
-            }
+            if (!acc[employeeName]) acc[employeeName] = [];
             acc[employeeName].push(record);
             return acc;
         }, {});
-
-        for (const employeeName in groupedByEmployee) {
-            const employeeRequests = groupedByEmployee[employeeName];
-
-            if (employeeRequests.some(record => record.fields[`Time off Start Date 1`] !== undefined)) {
-                const employeeDiv = document.createElement('div');
-                employeeDiv.className = 'employee';
-
-                const name = document.createElement('h3');
-                name.textContent = employeeName;
-                employeeDiv.appendChild(name);
-
-                const availableHours = await fetchAvailableHours(employeeName);
-
-                const availablePto = document.createElement('p');
-                availablePto.textContent = `Available PTO: ${availableHours.availablePTO}`;
-                employeeDiv.appendChild(availablePto);
-
-                const availablePersonalHours = document.createElement('p');
-                availablePersonalHours.textContent = `Available Personal Hours: ${availableHours.availablePersonalHours}`;
-                employeeDiv.appendChild(availablePersonalHours);
-
-                const requestsRow = document.createElement('div');
-                requestsRow.className = 'requests-row';
-
-                const dateFormatter = new Intl.DateTimeFormat('en-US', {
-                    timeZone: 'America/New_York',
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                });
-
-                employeeRequests.forEach(record => {
-                    for (let i = 1; i <= 10; i++) {
-                        const startDateStr = record.fields[`Time off Start Date ${i}`];
-                        const endDateStr = record.fields[`Time off End Date ${i}`];
-                        const startTimeStr = record.fields[`Time off Start Time ${i}`] || '7:00 AM';
-                        const endTimeStr = record.fields[`Time off End Time ${i}`] || '4:00 PM';
-                        const approved = record.fields[`Time off Approved ${i}`] || false;
-
-                        if (startDateStr) {
-                            let startDate = new Date(`${startDateStr}T00:00:00-05:00`);
-                            let endDate = new Date(`${endDateStr}T00:00:00-05:00`);
-                            
-
-// Convert to local date strings before passing to `calculateHoursMissed`.
-const localStartDateStr = startDate.toISOString().split('T')[0];
-const localEndDateStr = endDate.toISOString().split('T')[0];
-
-
-                            const formattedStartDate = dateFormatter.format(startDate);
-                            const formattedEndDate = dateFormatter.format(endDate);
-
-                            const requestDiv = document.createElement('div');
-                            requestDiv.className = 'request';
-
-                            const startDateElement = document.createElement('p');
-                            startDateElement.textContent = `Start Date: ${formattedStartDate}`;
-                            requestDiv.appendChild(startDateElement);
-
-                            const startTime = document.createElement('p');
-                            startTime.textContent = `Start Time: ${formatTime(startTimeStr)}`;
-                            requestDiv.appendChild(startTime);
-
-                            const endDateElement = document.createElement('p');
-                            endDateElement.textContent = `End Date: ${formattedEndDate}`;
-                            requestDiv.appendChild(endDateElement);
-
-                            const endTime = document.createElement('p');
-                            endTime.textContent = `End Time: ${formatTime(endTimeStr)}`;
-                            requestDiv.appendChild(endTime);
-
-                            const hoursMissed = calculateDayHours(startDateStr, startTimeStr, endTimeStr);
-                            const missedHours = document.createElement('p');
-                            console.log("Hours Missed Calculated:", hoursMissed);
-                            missedHours.textContent = `Hours Missed: ${hoursMissed}`;
-                                                        requestDiv.appendChild(missedHours);
-
-                            const approvalCheckbox = document.createElement('input');
-                            approvalCheckbox.type = 'checkbox';
-                            approvalCheckbox.checked = approved;
-                            approvalCheckbox.dataset.recordId = record.id;
-                            approvalCheckbox.dataset.approvalIndex = i;
-                            approvalCheckbox.addEventListener('change', handleApprovalChange);
-                            requestDiv.appendChild(approvalCheckbox);
-
-                            requestsRow.appendChild(requestDiv);
-                        }
+    
+        // Format date utility
+        const dateFormatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    
+        // Iterate over employees
+        for (const [employeeName, employeeRequests] of Object.entries(groupedByEmployee)) {
+            const employeeDiv = document.createElement('div');
+            employeeDiv.className = 'employee';
+    
+            // Filter out records that don't contain time off
+            const validRequests = employeeRequests.filter(record => {
+                for (let i = 1; i <= 10; i++) {
+                    if (record.fields[`Time off Start Date ${i}`] && record.fields[`Time off End Date ${i}`]) {
+                        return true;
                     }
-                });
+                }
+                return false;
+            });
+    
+            if (validRequests.length === 0) continue; // Skip employees without valid time off records
+    
+            // Add employee name
+            const name = document.createElement('h3');
+            name.textContent = employeeName;
+            employeeDiv.appendChild(name);
+    
+            // Fetch and display available hours
+            const availableHours = await fetchAvailableHours(employeeName);
+            const availablePto = document.createElement('p');
+            availablePto.textContent = `Available PTO: ${availableHours.availablePTO}`;
+            employeeDiv.appendChild(availablePto);
+    
+            const availablePersonalHours = document.createElement('p');
+            availablePersonalHours.textContent = `Available Personal Hours: ${availableHours.availablePersonalHours}`;
+            employeeDiv.appendChild(availablePersonalHours);
+    
+            const requestsRow = document.createElement('div');
+            requestsRow.className = 'requests-row';
+    
+            // Process each valid request for the employee
+            validRequests.forEach((record, recordIndex) => {
+                for (let i = 1; i <= 10; i++) {
+                    const startDateStr = record.fields[`Time off Start Date ${i}`];
+                    const endDateStr = record.fields[`Time off End Date ${i}`];
+                    const startTimeStr = record.fields[`Time off Start Time ${i}`] || '7:00 AM';
+                    const endTimeStr = record.fields[`Time off End Time ${i}`] || '4:00 PM';
+    
+                    // Skip if dates are invalid
+                    if (!startDateStr || !endDateStr) continue;
+    
+                    const startDate = new Date(startDateStr);
+                    const endDate = new Date(endDateStr);
+    
+                    let currentDate = new Date(startDate);
+    
+                    while (currentDate <= endDate) {
+                        // Format date and time for the current day
+                        const formattedCurrentDate = dateFormatter.format(currentDate);
+                        const formattedStartTime = currentDate.toDateString() === startDate.toDateString() ? formatTime(startTimeStr) : '7:00 AM';
+                        const formattedEndTime = currentDate.toDateString() === endDate.toDateString() ? formatTime(endTimeStr) : '4:00 PM';
+    
+                        const formattedStartDateTime = `${formattedCurrentDate} ${formattedStartTime}`;
+                        const formattedEndDateTime = `${formattedCurrentDate} ${formattedEndTime}`;
+    
+                        // Calculate workday hours missed and factor in lunch break (12 PM - 1 PM)
+                        let hoursMissed = calculateWorkDayHoursMissed(formattedStartDateTime, formattedEndDateTime);
+    
+                        const startHour = new Date(formattedStartDateTime).getHours();
+                        const endHour = new Date(formattedEndDateTime).getHours();
+    
+                        // Subtract 1 hour for lunch if the time range includes 12 PM - 1 PM
+                        if (startHour < 13 && endHour > 12) {
+                            hoursMissed = Math.max(0, hoursMissed - 1);
+                        }
+    
+                        // Compare consecutive days for the same employee
+                        const isConsecutive = validRequests.some((compareRecord, compareIndex) => {
+                            if (recordIndex === compareIndex) return false;
+                            const compareStartDateStr = compareRecord.fields[`Time off Start Date 1`];
+                            const compareEndDateStr = compareRecord.fields[`Time off End Date 1`];
+    
+                            if (!compareStartDateStr || !compareEndDateStr) return false;
+    
+                            const compareStartDate = new Date(compareStartDateStr);
+                            const compareEndDate = new Date(compareEndDateStr);
+    
+                            return (
+                                (startDate.getTime() === compareEndDate.getTime() + 86400000) ||
+                                (endDate.getTime() + 86400000 === compareStartDate.getTime())
+                            );
+                        });
+    
+                        // Create and populate request div
+                        const requestDiv = document.createElement('div');
+                        requestDiv.className = 'request';
+    
+                        const startDateTimeElement = document.createElement('p');
+                        startDateTimeElement.textContent = `Start: ${formattedStartDateTime}`;
+                        requestDiv.appendChild(startDateTimeElement);
+    
+                        const endDateTimeElement = document.createElement('p');
+                        endDateTimeElement.textContent = `End: ${formattedEndDateTime}`;
+                        requestDiv.appendChild(endDateTimeElement);
+    
+                        const missedHoursElement = document.createElement('p');
+                        missedHoursElement.textContent = `Workday Hours Missed: ${hoursMissed.toFixed(2)}`;
+                        requestDiv.appendChild(missedHoursElement);
 
-                employeeDiv.appendChild(requestsRow);
-                container.appendChild(employeeDiv);
-            }
+                        const approvalCheckbox = document.createElement('input');
+                        approvalCheckbox.type = 'checkbox';
+                        approvalCheckbox.checked = record.fields[`Time off Approved ${i}`] || false; // Use the correct field or default to false
+                        approvalCheckbox.dataset.recordId = record.id;
+                        approvalCheckbox.dataset.approvalIndex = i;
+                        approvalCheckbox.addEventListener('change', handleApprovalChange);
+                        requestDiv.appendChild(approvalCheckbox);
+                        
+    
+                        if (isConsecutive) {
+                            const consecutiveElement = document.createElement('p');
+                            consecutiveElement.textContent = 'Consecutive Day Request';
+                            consecutiveElement.style.color = 'blue';
+                            requestDiv.appendChild(consecutiveElement);
+                        }
+    
+                        // Highlight overlapping requests in red
+                        const hasOverlap = validRequests.some((compareRecord, compareIndex) => {
+                            if (compareRecord === record) return false;
+    
+                            for (let j = 1; j <= 10; j++) {
+                                const compareStartDateStr = compareRecord.fields[`Time off Start Date ${j}`];
+                                const compareEndDateStr = compareRecord.fields[`Time off End Date ${j}`];
+    
+                                if (!compareStartDateStr || !compareEndDateStr) continue;
+    
+                                const compareStartDate = new Date(compareStartDateStr);
+                                const compareEndDate = new Date(compareEndDateStr);
+    
+                                if (isOverlapping(new Date(currentDate), new Date(currentDate), compareStartDate, compareEndDate)) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        });
+    
+                        if (hasOverlap) requestDiv.style.color = 'red';
+    
+                        requestsRow.appendChild(requestDiv);
+    
+                        // Move to the next day
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                }
+            });
+    
+            employeeDiv.appendChild(requestsRow);
+            container.appendChild(employeeDiv);
         }
     }
-
+    
     function isOverlapping(startDate1, endDate1, startDate2, endDate2) {
-        return startDate1 <= endDate2 && startDate2 <= endDate1;
+        return startDate1 <= endDate2 && startDate2 <= startDate1;
     }
-
+    
     async function handleApprovalChange(event) {
         const checkbox = event.target;
         const recordId = checkbox.dataset.recordId;
         const approvalIndex = checkbox.dataset.approvalIndex;
         const approved = checkbox.checked;
-
+    
         console.log(`Updating approval for recordId ${recordId}, index ${approvalIndex}:`, approved);
-
+    
         const denialReasonSelect = document.querySelector(`select[data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
-
-       
+    
         const updateUrl = `${url}/${recordId}`;
         const data = {
             fields: {
@@ -223,7 +330,7 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
                 [`Time off Approved ${approvalIndex}`]: approved
             }
         };
-
+    
         try {
             const response = await fetch(updateUrl, {
                 method: 'PATCH',
@@ -239,7 +346,8 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
             console.error('Error updating approval status:', error);
         }
     }
-
+    
+    
     
     function formatTime(time, isStartTime = true) {
         if (!time || time.toLowerCase() === 'all day') {
@@ -261,104 +369,29 @@ const localEndDateStr = endDate.toISOString().split('T')[0];
     
         return `${hours}:${minutes} ${period}`;
     }
-
-    function calculateHoursMissed(startDate, endDate, startTime, endTime) {
-        console.log("Calculating hours missed...");
-        console.log("Start Date:", startDate);
-        console.log("End Date:", endDate);
-        console.log("Start Time:", startTime);
-        console.log("End Time:", endTime);
     
-        const defaultStartTime = "7:00 AM";
-        const defaultEndTime = "4:00 PM";
+    function parseTime(time) {
+        const timePattern = /^([01]?[0-9]|2[0-3]):?([0-5][0-9])? ?([aApP][mM])?$/;
+        const match = time.match(timePattern);
     
-        // Use the provided times; only fall back to defaults if they are not provided
-        startTime = startTime || defaultStartTime;
-        endTime = endTime || defaultEndTime;
-    
-        console.log("Adjusted Start Time:", startTime);
-        console.log("Adjusted End Time:", endTime);
-    
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-    
-        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-            console.log("Invalid date(s). Returning 0 hours missed.");
-            return 0;
+        if (!match) {
+            console.error("Invalid time format:", time);
+            return [null, null, null];
         }
     
-        let totalHoursMissed = 0;
-        let currentDate = new Date(start);
+        const hours = parseInt(match[1], 10);
+        const minutes = match[2] ? parseInt(match[2], 10) : 0;
+        const period = match[3] ? match[3].toUpperCase() : null;
     
-        console.log("Start Date Object:", start);
-        console.log("End Date Object:", end);
-    
-        while (currentDate <= end) {
-            const dayOfWeek = currentDate.getDay(); // 0 is Sunday, 6 is Saturday
-            console.log(`Processing date: ${currentDate.toDateString()}, Day of Week: ${dayOfWeek}`);
-            
-            if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends
-                if (currentDate.toDateString() === start.toDateString()) {
-                    console.log(`Calculating for start date: ${currentDate.toDateString()}`);
-                    const hoursForStartDay = calculateDayHours(currentDate, startTime, defaultEndTime);
-                    console.log(`Hours Missed for Start Date: ${hoursForStartDay}`);
-                    totalHoursMissed += hoursForStartDay;
-                } else if (currentDate.toDateString() === end.toDateString()) {
-                    console.log(`Calculating for end date: ${currentDate.toDateString()}`);
-                    const hoursForEndDay = calculateDayHours(currentDate, defaultStartTime, endTime);
-                    console.log(`Hours Missed for End Date: ${hoursForEndDay}`);
-                    totalHoursMissed += hoursForEndDay;
-                } else {
-                    console.log(`Calculating for intermediate date: ${currentDate.toDateString()}`);
-                    const hoursForIntermediateDay = calculateDayHours(currentDate, defaultStartTime, defaultEndTime);
-                    console.log(`Hours Missed for Intermediate Date: ${hoursForIntermediateDay}`);
-                    totalHoursMissed += hoursForIntermediateDay;
-                }
-            } else {
-                console.log("Skipping weekend date:", currentDate.toDateString());
-            }
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-    
-        console.log("Final Total Hours Missed:", totalHoursMissed);
-        return totalHoursMissed;
+        return [hours, minutes, period];
     }
     
-    
-    
-    function calculateDayHours(date, startTime, endTime) {
-        const currentDateStr = new Date(date).toDateString();
-        const workStart = new Date(`${currentDateStr} ${startTime}`);
-        const workEnd = new Date(`${currentDateStr} ${endTime}`);
-    
-        // Validate parsed dates
-        if (isNaN(workStart) || isNaN(workEnd)) {
-            console.error("Invalid time parsing:", startTime, endTime);
-            return 0; // Return 0 if times are invalid
-        }
-    
-        const lunchStart = new Date(currentDateStr).setHours(12, 0, 0); // 12:00 PM
-        const lunchEnd = new Date(currentDateStr).setHours(13, 0, 0); // 1:00 PM
-    
-        console.log("Work Start:", workStart);
-        console.log("Work End:", workEnd);
-        console.log("Lunch Start:", new Date(lunchStart));
-        console.log("Lunch End:", new Date(lunchEnd));
-    
-        let hoursMissed = (workEnd - workStart) / (1000 * 60 * 60); // Total hours worked
-    
-        // Subtract lunch break if it overlaps with working hours
-        if (workStart < lunchEnd && workEnd > lunchStart) {
-            hoursMissed -= 1; // Subtract 1 hour for lunch
-            console.log("Adjusted hours missed (after lunch):", hoursMissed);
-        }
-    
-        return Math.max(0, hoursMissed); // Ensure hours missed is not negative
+    function convertTo24Hour(hours, period) {
+        if (period === "AM" && hours === 12) return 0;
+        if (period === "PM" && hours < 12) return hours + 12;
+        return hours;
     }
-    
-    
-    
-
+     
     function showNotification(message) {
         if (notificationElement) {
             notificationElement.textContent = message;

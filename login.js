@@ -13,7 +13,6 @@ const loginSuccessMessage = document.getElementById('login-success');
 // Add input event listener to start/pause music based on input fields
 emailInput.addEventListener('input', handleInput);
 passwordInput.addEventListener('input', handleInput);
-playPauseButton.addEventListener('click', toggleMusic);
 
 loginButton.addEventListener('click', login);
 
@@ -27,7 +26,6 @@ document.addEventListener('keydown', function(event) {
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM fully loaded and parsed");
     debounce(fetchJoke, 300)(); // Fetch joke on page load with debounce
-    playPauseButton.style.display = 'none'; // Initially hide the play/pause button
 });
 
 function validateEmail(email) {
