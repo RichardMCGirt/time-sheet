@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function() {
             timeZone: 'America/New_York',
             year: 'numeric',
             month: '2-digit',
-            day: '2-digit'
+            day: '2-digit',
         });
     
         // Iterate over employees
@@ -190,6 +190,10 @@ document.addEventListener("DOMContentLoaded", function() {
             requestsRow.className = 'requests-row';
     
             // Process each valid request for the employee
+            let combinedHours = 0;
+            let consecutiveRequests = [];
+            let previousEndDate = null;
+    
             validRequests.forEach((record, recordIndex) => {
                 for (let i = 1; i <= 10; i++) {
                     const startDateStr = record.fields[`Time off Start Date ${i}`];
@@ -197,117 +201,111 @@ document.addEventListener("DOMContentLoaded", function() {
                     const startTimeStr = record.fields[`Time off Start Time ${i}`] || '7:00 AM';
                     const endTimeStr = record.fields[`Time off End Time ${i}`] || '4:00 PM';
     
-                    // Skip if dates are invalid
                     if (!startDateStr || !endDateStr) continue;
     
                     const startDate = new Date(startDateStr);
                     const endDate = new Date(endDateStr);
     
-                    let currentDate = new Date(startDate);
-    
-                    while (currentDate <= endDate) {
-                        // Format date and time for the current day
-                        const formattedCurrentDate = dateFormatter.format(currentDate);
-                        const formattedStartTime = currentDate.toDateString() === startDate.toDateString() ? formatTime(startTimeStr) : '7:00 AM';
-                        const formattedEndTime = currentDate.toDateString() === endDate.toDateString() ? formatTime(endTimeStr) : '4:00 PM';
-    
-                        const formattedStartDateTime = `${formattedCurrentDate} ${formattedStartTime}`;
-                        const formattedEndDateTime = `${formattedCurrentDate} ${formattedEndTime}`;
-    
-                        // Calculate workday hours missed and factor in lunch break (12 PM - 1 PM)
-                        let hoursMissed = calculateWorkDayHoursMissed(formattedStartDateTime, formattedEndDateTime);
-    
-                        const startHour = new Date(formattedStartDateTime).getHours();
-                        const endHour = new Date(formattedEndDateTime).getHours();
-    
-                        // Subtract 1 hour for lunch if the time range includes 12 PM - 1 PM
-                        if (startHour < 13 && endHour > 12) {
-                            hoursMissed = Math.max(0, hoursMissed - 1);
-                        }
-    
-                        // Compare consecutive days for the same employee
-                        const isConsecutive = validRequests.some((compareRecord, compareIndex) => {
-                            if (recordIndex === compareIndex) return false;
-                            const compareStartDateStr = compareRecord.fields[`Time off Start Date 1`];
-                            const compareEndDateStr = compareRecord.fields[`Time off End Date 1`];
-    
-                            if (!compareStartDateStr || !compareEndDateStr) return false;
-    
-                            const compareStartDate = new Date(compareStartDateStr);
-                            const compareEndDate = new Date(compareEndDateStr);
-    
-                            return (
-                                (startDate.getTime() === compareEndDate.getTime() + 86400000) ||
-                                (endDate.getTime() + 86400000 === compareStartDate.getTime())
+                    if (
+                        previousEndDate &&
+                        startDate.getTime() === previousEndDate.getTime() + 86400000
+                    ) {
+                        // If consecutive, combine the request
+                        consecutiveRequests.push({
+                            startDate,
+                            endDate,
+                            startTime: startTimeStr,
+                            endTime: endTimeStr,
+                        });
+                        previousEndDate = endDate;
+                    } else {
+                        // If not consecutive, process the combined requests
+                        if (consecutiveRequests.length > 0) {
+                            processCombinedRequests(
+                                consecutiveRequests,
+                                combinedHours,
+                                requestsRow,
+                                dateFormatter
                             );
-                        });
-    
-                        // Create and populate request div
-                        const requestDiv = document.createElement('div');
-                        requestDiv.className = 'request';
-    
-                        const startDateTimeElement = document.createElement('p');
-                        startDateTimeElement.textContent = `Start: ${formattedStartDateTime}`;
-                        requestDiv.appendChild(startDateTimeElement);
-    
-                        const endDateTimeElement = document.createElement('p');
-                        endDateTimeElement.textContent = `End: ${formattedEndDateTime}`;
-                        requestDiv.appendChild(endDateTimeElement);
-    
-                        const missedHoursElement = document.createElement('p');
-                        missedHoursElement.textContent = `Workday Hours Missed: ${hoursMissed.toFixed(2)}`;
-                        requestDiv.appendChild(missedHoursElement);
-
-                        const approvalCheckbox = document.createElement('input');
-                        approvalCheckbox.type = 'checkbox';
-                        approvalCheckbox.checked = record.fields[`Time off Approved ${i}`] || false; // Use the correct field or default to false
-                        approvalCheckbox.dataset.recordId = record.id;
-                        approvalCheckbox.dataset.approvalIndex = i;
-                        approvalCheckbox.addEventListener('change', handleApprovalChange);
-                        requestDiv.appendChild(approvalCheckbox);
-                        
-    
-                        if (isConsecutive) {
-                            const consecutiveElement = document.createElement('p');
-                            consecutiveElement.textContent = 'Consecutive Day Request';
-                            consecutiveElement.style.color = 'blue';
-                            requestDiv.appendChild(consecutiveElement);
+                            combinedHours = 0;
+                            consecutiveRequests = [];
                         }
-    
-                        // Highlight overlapping requests in red
-                        const hasOverlap = validRequests.some((compareRecord, compareIndex) => {
-                            if (compareRecord === record) return false;
-    
-                            for (let j = 1; j <= 10; j++) {
-                                const compareStartDateStr = compareRecord.fields[`Time off Start Date ${j}`];
-                                const compareEndDateStr = compareRecord.fields[`Time off End Date ${j}`];
-    
-                                if (!compareStartDateStr || !compareEndDateStr) continue;
-    
-                                const compareStartDate = new Date(compareStartDateStr);
-                                const compareEndDate = new Date(compareEndDateStr);
-    
-                                if (isOverlapping(new Date(currentDate), new Date(currentDate), compareStartDate, compareEndDate)) {
-                                    return true;
-                                }
-                            }
-                            return false;
+                        // Start a new group of requests
+                        consecutiveRequests.push({
+                            startDate,
+                            endDate,
+                            startTime: startTimeStr,
+                            endTime: endTimeStr,
                         });
-    
-                        if (hasOverlap) requestDiv.style.color = 'red';
-    
-                        requestsRow.appendChild(requestDiv);
-    
-                        // Move to the next day
-                        currentDate.setDate(currentDate.getDate() + 1);
+                        previousEndDate = endDate;
                     }
+    
+                    // Calculate hours missed for the current request
+                    const hoursMissed = calculateWorkDayHoursMissed(
+                        `${startDateStr} ${startTimeStr}`,
+                        `${endDateStr} ${endTimeStr}`
+                    );
+    
+                    combinedHours += hoursMissed;
                 }
             });
+    
+            // Process any remaining combined requests
+            if (consecutiveRequests.length > 0) {
+                processCombinedRequests(
+                    consecutiveRequests,
+                    combinedHours,
+                    requestsRow,
+                    dateFormatter,
+                    true // Include the checkbox
+                );
+            }
     
             employeeDiv.appendChild(requestsRow);
             container.appendChild(employeeDiv);
         }
     }
+    
+    function processCombinedRequests(consecutiveRequests, combinedHours, container, dateFormatter, includeCheckbox = false) {
+        const firstRequest = consecutiveRequests[0];
+        const lastRequest = consecutiveRequests[consecutiveRequests.length - 1];
+    
+        const formattedStartDate = dateFormatter.format(firstRequest.startDate);
+        const formattedStartTime = firstRequest.startTime;
+        const formattedEndDate = dateFormatter.format(lastRequest.endDate);
+        const formattedEndTime = lastRequest.endTime;
+    
+        const requestDiv = document.createElement('div');
+        requestDiv.className = 'request';
+    
+        const combinedDatesElement = document.createElement('p');
+        combinedDatesElement.textContent = `Time Off: ${formattedStartDate} ${formattedStartTime} - ${formattedEndDate} ${formattedEndTime}`;
+        requestDiv.appendChild(combinedDatesElement);
+    
+        // Subtract 1 hour per day for noon to 1 PM
+        const totalDays = (lastRequest.endDate - firstRequest.startDate) / (1000 * 60 * 60 * 24) + 1;
+        const adjustedHours = combinedHours - totalDays;
+    
+        const combinedHoursElement = document.createElement('p');
+        combinedHoursElement.textContent = `Total Workday Hours Missed: ${adjustedHours.toFixed(2)}`;
+        requestDiv.appendChild(combinedHoursElement);
+    
+        // Include approval checkbox
+        if (includeCheckbox) {
+            const approvalCheckbox = document.createElement('input');
+            approvalCheckbox.type = 'checkbox';
+            approvalCheckbox.checked = false; // Default to unchecked
+            approvalCheckbox.addEventListener('change', (event) => {
+                console.log('Checkbox changed:', event.target.checked);
+                // Handle approval update logic here
+            });
+            requestDiv.appendChild(approvalCheckbox);
+        }
+    
+        container.appendChild(requestDiv);
+    }
+    
+    
     
     function isOverlapping(startDate1, endDate1, startDate2, endDate2) {
         return startDate1 <= endDate2 && startDate2 <= startDate1;
