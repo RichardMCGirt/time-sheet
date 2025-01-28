@@ -92,7 +92,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function calculateWorkDayHoursMissed(startDateTimeStr, endDateTimeStr, workStartTime = "7:00 AM", workEndTime = "4:00 PM") {
-        // Parse the start and end datetime strings into Date objects
+        console.log("Inputs:", { startDateTimeStr, endDateTimeStr, workStartTime, workEndTime });
+    
         const startDateTime = new Date(startDateTimeStr);
         const endDateTime = new Date(endDateTimeStr);
     
@@ -101,26 +102,98 @@ document.addEventListener("DOMContentLoaded", function() {
             return 0;
         }
     
-        // Define the start and end of the workday
-        const workStart = new Date(startDateTime);
-        const workEnd = new Date(startDateTime);
+        console.log("Parsed startDateTime:", startDateTime);
+        console.log("Parsed endDateTime:", endDateTime);
     
-        const [workStartHour, workStartMinutes, workStartPeriod] = parseTime(workStartTime);
-        const [workEndHour, workEndMinutes, workEndPeriod] = parseTime(workEndTime);
+        let totalMissedHours = 0;
     
-        workStart.setHours(convertTo24Hour(workStartHour, workStartPeriod));
-        workStart.setMinutes(workStartMinutes);
-        workEnd.setHours(convertTo24Hour(workEndHour, workEndPeriod));
-        workEnd.setMinutes(workEndMinutes);
+        let currentDate = new Date(startDateTime);
+        while (currentDate <= endDateTime) {
+            console.log("Processing date:", currentDate);
     
-        // Calculate the overlap between the workday and the time off
-        const missedStart = Math.max(workStart.getTime(), startDateTime.getTime());
-        const missedEnd = Math.min(workEnd.getTime(), endDateTime.getTime());
+            const workStart = new Date(currentDate);
+            const workEnd = new Date(currentDate);
     
-        // Calculate the total hours missed
-        const missedHours = (missedEnd - missedStart) / (1000 * 60 * 60); // Convert milliseconds to hours
-        return Math.max(0, missedHours); // Ensure non-negative hours
+            const [workStartHour, workStartMinutes, workStartPeriod] = parseTime(workStartTime);
+            const [workEndHour, workEndMinutes, workEndPeriod] = parseTime(workEndTime);
+    
+            workStart.setHours(convertTo24Hour(workStartHour, workStartPeriod));
+            workStart.setMinutes(workStartMinutes);
+            workEnd.setHours(convertTo24Hour(workEndHour, workEndPeriod));
+            workEnd.setMinutes(workEndMinutes);
+    
+            console.log("Workday start time:", workStart);
+            console.log("Workday end time:", workEnd);
+    
+            const currentDayStart = new Date(currentDate);
+            const currentDayEnd = new Date(currentDate);
+    
+            if (currentDate.toDateString() === startDateTime.toDateString()) {
+                currentDayStart.setHours(startDateTime.getHours(), startDateTime.getMinutes());
+            } else {
+                currentDayStart.setTime(workStart.getTime());
+            }
+    
+            if (currentDate.toDateString() === endDateTime.toDateString()) {
+                currentDayEnd.setHours(endDateTime.getHours(), endDateTime.getMinutes());
+            } else {
+                currentDayEnd.setTime(workEnd.getTime());
+            }
+    
+            console.log("Adjusted current day start:", currentDayStart);
+            console.log("Adjusted current day end:", currentDayEnd);
+    
+            const missedStart = Math.max(workStart.getTime(), currentDayStart.getTime());
+            const missedEnd = Math.min(workEnd.getTime(), currentDayEnd.getTime());
+    
+            console.log("Missed start (timestamp):", new Date(missedStart));
+            console.log("Missed end (timestamp):", new Date(missedEnd));
+    
+            let missedHours = (missedEnd - missedStart) / (1000 * 60 * 60); // Convert milliseconds to hours
+    
+            // Subtract one hour if the range overlaps with noon to 1 PM
+            const noon = new Date(currentDate);
+            noon.setHours(12, 0, 0, 0);
+            const onePM = new Date(currentDate);
+            onePM.setHours(13, 0, 0, 0);
+    
+            if (missedStart < onePM.getTime() && missedEnd > noon.getTime()) {
+                missedHours = Math.max(0, missedHours - 1);
+                console.log("Subtracted one hour for noon to 1 PM overlap");
+            }
+    
+            console.log("Missed hours for this day:", Math.max(0, missedHours));
+    
+            totalMissedHours += Math.max(0, missedHours);
+    
+            // Move to the next day
+            currentDate.setDate(currentDate.getDate() + 1);
+            currentDate.setHours(0, 0, 0, 0); // Reset time to midnight
+        }
+    
+        console.log("Total missed hours:", totalMissedHours);
+        return totalMissedHours;
     }
+    
+    
+    // Helper functions
+    function parseTime(timeStr) {
+        const [time, period] = timeStr.split(" ");
+        const [hour, minutes] = time.split(":").map(Number);
+        return [hour, minutes || 0, period];
+    }
+    
+    function convertTo24Hour(hour, period) {
+        if (period === "PM" && hour !== 12) {
+            return hour + 12;
+        }
+        if (period === "AM" && hour === 12) {
+            return 0;
+        }
+        return hour;
+    }
+    
+    
     
 
     function validateTimeInput(time) {
@@ -151,7 +224,7 @@ document.addEventListener("DOMContentLoaded", function() {
             timeZone: 'America/New_York',
             year: 'numeric',
             month: '2-digit',
-            day: '2-digit',
+            day: '2-digit'
         });
     
         // Iterate over employees
@@ -189,122 +262,75 @@ document.addEventListener("DOMContentLoaded", function() {
             const requestsRow = document.createElement('div');
             requestsRow.className = 'requests-row';
     
-            // Process each valid request for the employee
-            let combinedHours = 0;
-            let consecutiveRequests = [];
-            let previousEndDate = null;
-    
-            validRequests.forEach((record, recordIndex) => {
-                for (let i = 1; i <= 10; i++) {
+            // Merge requests per index and create a single div
+            for (let i = 1; i <= 10; i++) {
+                const mergedRequest = validRequests.reduce((acc, record) => {
                     const startDateStr = record.fields[`Time off Start Date ${i}`];
                     const endDateStr = record.fields[`Time off End Date ${i}`];
                     const startTimeStr = record.fields[`Time off Start Time ${i}`] || '7:00 AM';
                     const endTimeStr = record.fields[`Time off End Time ${i}`] || '4:00 PM';
     
-                    if (!startDateStr || !endDateStr) continue;
+                    if (startDateStr && endDateStr) {
+                        const startDate = new Date(startDateStr);
+                        const endDate = new Date(endDateStr);
     
-                    const startDate = new Date(startDateStr);
-                    const endDate = new Date(endDateStr);
-    
-                    if (
-                        previousEndDate &&
-                        startDate.getTime() === previousEndDate.getTime() + 86400000
-                    ) {
-                        // If consecutive, combine the request
-                        consecutiveRequests.push({
-                            startDate,
-                            endDate,
-                            startTime: startTimeStr,
-                            endTime: endTimeStr,
-                        });
-                        previousEndDate = endDate;
-                    } else {
-                        // If not consecutive, process the combined requests
-                        if (consecutiveRequests.length > 0) {
-                            processCombinedRequests(
-                                consecutiveRequests,
-                                combinedHours,
-                                requestsRow,
-                                dateFormatter
-                            );
-                            combinedHours = 0;
-                            consecutiveRequests = [];
+                        if (!acc.startDate || startDate < acc.startDate) {
+                            acc.startDate = startDate;
+                            acc.startTime = startTimeStr;
                         }
-                        // Start a new group of requests
-                        consecutiveRequests.push({
-                            startDate,
-                            endDate,
-                            startTime: startTimeStr,
-                            endTime: endTimeStr,
-                        });
-                        previousEndDate = endDate;
+    
+                        if (!acc.endDate || endDate > acc.endDate) {
+                            acc.endDate = endDate;
+                            acc.endTime = endTimeStr;
+                            acc.lastRecord = record; // Track the last record
+                        }
                     }
     
-                    // Calculate hours missed for the current request
-                    const hoursMissed = calculateWorkDayHoursMissed(
-                        `${startDateStr} ${startTimeStr}`,
-                        `${endDateStr} ${endTimeStr}`
-                    );
+                    return acc;
+                }, { startDate: null, endDate: null, startTime: '', endTime: '', lastRecord: null });
     
-                    combinedHours += hoursMissed;
+                if (mergedRequest.startDate && mergedRequest.endDate) {
+                    const formattedStartDate = dateFormatter.format(mergedRequest.startDate);
+                    const formattedEndDate = dateFormatter.format(mergedRequest.endDate);
+                    const formattedStartTime = formatTime(mergedRequest.startTime);
+                    const formattedEndTime = formatTime(mergedRequest.endTime);
+                
+                    const requestDiv = document.createElement('div');
+                    requestDiv.className = 'request';
+                
+                    const startDateTimeElement = document.createElement('p');
+                    startDateTimeElement.textContent = `Start: ${formattedStartDate} ${formattedStartTime}`;
+                    requestDiv.appendChild(startDateTimeElement);
+                
+                    const endDateTimeElement = document.createElement('p');
+                    endDateTimeElement.textContent = `End: ${formattedEndDate} ${formattedEndTime}`;
+                    requestDiv.appendChild(endDateTimeElement);
+                
+                    // Calculate workday hours missed without factoring in lunch break
+                    const formattedStartDateTime = `${formattedStartDate} ${formattedStartTime}`;
+                    const formattedEndDateTime = `${formattedEndDate} ${formattedEndTime}`;
+                    const hoursMissed = calculateWorkDayHoursMissed(formattedStartDateTime, formattedEndDateTime);
+                
+                    const missedHoursElement = document.createElement('p');
+                    missedHoursElement.textContent = `Workday Hours Missed: ${hoursMissed.toFixed(2)}`;
+                    requestDiv.appendChild(missedHoursElement);
+                
+                    const approvalCheckbox = document.createElement('input');
+                    approvalCheckbox.type = 'checkbox';
+                    approvalCheckbox.checked = mergedRequest.lastRecord.fields[`Time off Approved ${i}`] || false;
+                    approvalCheckbox.dataset.recordId = mergedRequest.lastRecord.id;
+                    approvalCheckbox.dataset.approvalIndex = i;
+                    approvalCheckbox.addEventListener('change', handleApprovalChange);
+                    requestDiv.appendChild(approvalCheckbox);
+                
+                    requestsRow.appendChild(requestDiv);
                 }
-            });
-    
-            // Process any remaining combined requests
-            if (consecutiveRequests.length > 0) {
-                processCombinedRequests(
-                    consecutiveRequests,
-                    combinedHours,
-                    requestsRow,
-                    dateFormatter,
-                    true // Include the checkbox
-                );
             }
     
             employeeDiv.appendChild(requestsRow);
             container.appendChild(employeeDiv);
         }
     }
-    
-    function processCombinedRequests(consecutiveRequests, combinedHours, container, dateFormatter, includeCheckbox = false) {
-        const firstRequest = consecutiveRequests[0];
-        const lastRequest = consecutiveRequests[consecutiveRequests.length - 1];
-    
-        const formattedStartDate = dateFormatter.format(firstRequest.startDate);
-        const formattedStartTime = firstRequest.startTime;
-        const formattedEndDate = dateFormatter.format(lastRequest.endDate);
-        const formattedEndTime = lastRequest.endTime;
-    
-        const requestDiv = document.createElement('div');
-        requestDiv.className = 'request';
-    
-        const combinedDatesElement = document.createElement('p');
-        combinedDatesElement.textContent = `Time Off: ${formattedStartDate} ${formattedStartTime} - ${formattedEndDate} ${formattedEndTime}`;
-        requestDiv.appendChild(combinedDatesElement);
-    
-        // Subtract 1 hour per day for noon to 1 PM
-        const totalDays = (lastRequest.endDate - firstRequest.startDate) / (1000 * 60 * 60 * 24) + 1;
-        const adjustedHours = combinedHours - totalDays;
-    
-        const combinedHoursElement = document.createElement('p');
-        combinedHoursElement.textContent = `Total Workday Hours Missed: ${adjustedHours.toFixed(2)}`;
-        requestDiv.appendChild(combinedHoursElement);
-    
-        // Include approval checkbox
-        if (includeCheckbox) {
-            const approvalCheckbox = document.createElement('input');
-            approvalCheckbox.type = 'checkbox';
-            approvalCheckbox.checked = false; // Default to unchecked
-            approvalCheckbox.addEventListener('change', (event) => {
-                console.log('Checkbox changed:', event.target.checked);
-                // Handle approval update logic here
-            });
-            requestDiv.appendChild(approvalCheckbox);
-        }
-    
-        container.appendChild(requestDiv);
-    }
-    
     
     
     function isOverlapping(startDate1, endDate1, startDate2, endDate2) {
