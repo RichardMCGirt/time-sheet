@@ -92,25 +92,18 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function calculateWorkDayHoursMissed(startDateTimeStr, endDateTimeStr, workStartTime = "7:00 AM", workEndTime = "4:00 PM") {
-        console.log("Inputs:", { startDateTimeStr, endDateTimeStr, workStartTime, workEndTime });
-    
-        const startDateTime = new Date(startDateTimeStr);
-        const endDateTime = new Date(endDateTimeStr);
+        const startDateTime = new Date(startDateTimeStr + 'T00:00:00'); // Append time to avoid timezone issues
+        const endDateTime = new Date(endDateTimeStr + 'T23:59:59'); // End of the day
     
         if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
             console.error("Invalid start or end datetime:", { startDateTimeStr, endDateTimeStr });
             return 0;
         }
     
-        console.log("Parsed startDateTime:", startDateTime);
-        console.log("Parsed endDateTime:", endDateTime);
-    
         let totalMissedHours = 0;
     
         let currentDate = new Date(startDateTime);
         while (currentDate <= endDateTime) {
-            console.log("Processing date:", currentDate);
-    
             const workStart = new Date(currentDate);
             const workEnd = new Date(currentDate);
     
@@ -122,58 +115,23 @@ document.addEventListener("DOMContentLoaded", function() {
             workEnd.setHours(convertTo24Hour(workEndHour, workEndPeriod));
             workEnd.setMinutes(workEndMinutes);
     
-            console.log("Workday start time:", workStart);
-            console.log("Workday end time:", workEnd);
-    
-            const currentDayStart = new Date(currentDate);
-            const currentDayEnd = new Date(currentDate);
-    
-            if (currentDate.toDateString() === startDateTime.toDateString()) {
-                currentDayStart.setHours(startDateTime.getHours(), startDateTime.getMinutes());
-            } else {
-                currentDayStart.setTime(workStart.getTime());
-            }
-    
-            if (currentDate.toDateString() === endDateTime.toDateString()) {
-                currentDayEnd.setHours(endDateTime.getHours(), endDateTime.getMinutes());
-            } else {
-                currentDayEnd.setTime(workEnd.getTime());
-            }
-    
-            console.log("Adjusted current day start:", currentDayStart);
-            console.log("Adjusted current day end:", currentDayEnd);
-    
-            const missedStart = Math.max(workStart.getTime(), currentDayStart.getTime());
-            const missedEnd = Math.min(workEnd.getTime(), currentDayEnd.getTime());
-    
-            console.log("Missed start (timestamp):", new Date(missedStart));
-            console.log("Missed end (timestamp):", new Date(missedEnd));
+            const missedStart = Math.max(workStart.getTime(), currentDate.getTime());
+            const missedEnd = Math.min(workEnd.getTime(), new Date(currentDate.setHours(23, 59, 59)).getTime());
     
             let missedHours = (missedEnd - missedStart) / (1000 * 60 * 60); // Convert milliseconds to hours
     
-            // Subtract one hour if the range overlaps with noon to 1 PM
-            const noon = new Date(currentDate);
-            noon.setHours(12, 0, 0, 0);
-            const onePM = new Date(currentDate);
-            onePM.setHours(13, 0, 0, 0);
-    
             if (missedStart < onePM.getTime() && missedEnd > noon.getTime()) {
                 missedHours = Math.max(0, missedHours - 1);
-                console.log("Subtracted one hour for noon to 1 PM overlap");
             }
     
-            console.log("Missed hours for this day:", Math.max(0, missedHours));
-    
             totalMissedHours += Math.max(0, missedHours);
-    
-            // Move to the next day
             currentDate.setDate(currentDate.getDate() + 1);
             currentDate.setHours(0, 0, 0, 0); // Reset time to midnight
         }
     
-        console.log("Total missed hours:", totalMissedHours);
         return totalMissedHours;
     }
+    
     
     
     // Helper functions
@@ -191,21 +149,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return 0;
         }
         return hour;
-    }
-    
-    
-    
-
-    function validateTimeInput(time) {
-        const timePattern = /^([01]?[0-9]|2[0-3]):?([0-5][0-9])? ?([aApP][mM])?$/;
-        const match = time.match(timePattern);
-        if (!match) {
-            console.warn("Invalid time format. Using default:", time);
-            return null;
-        }
-        return time; // Return the original time if valid
-    }
-    
+    }   
 
     async function displayRequests(records) {
         const container = document.getElementById('requests-container');
@@ -221,11 +165,12 @@ document.addEventListener("DOMContentLoaded", function() {
     
         // Format date utility
         const dateFormatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: 'America/New_York',
+            timeZone: 'UTC', // Use UTC to avoid timezone issues
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
         });
+        
     
         // Iterate over employees
         for (const [employeeName, employeeRequests] of Object.entries(groupedByEmployee)) {
@@ -290,8 +235,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 }, { startDate: null, endDate: null, startTime: '', endTime: '', lastRecord: null });
     
                 if (mergedRequest.startDate && mergedRequest.endDate) {
-                    const formattedStartDate = dateFormatter.format(mergedRequest.startDate);
-                    const formattedEndDate = dateFormatter.format(mergedRequest.endDate);
+                    const formattedStartDate = new Date(mergedRequest.startDate).toISOString().split('T')[0]; // Get date part only
+                    const formattedEndDate = new Date(mergedRequest.endDate).toISOString().split('T')[0]; // Get date part only
+                    
                     const formattedStartTime = formatTime(mergedRequest.startTime);
                     const formattedEndTime = formatTime(mergedRequest.endTime);
                 
