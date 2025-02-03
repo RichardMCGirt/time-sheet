@@ -101,7 +101,27 @@ async function login() {
             console.log("User authenticated:", user);
             sessionStorage.setItem('user', JSON.stringify(user.fields));
             localStorage.setItem('userEmail', email);
-            window.location.href = 'timesheet.html';
+
+            // Check if the email should be redirected to employeetimesheet.html
+            const employeeRedirectEmails = [
+                'brett.moss@vanirinstalledsales.com',
+                'tony.amenta@vanirinstalledsales.com',
+                'josh@vanirinstalledsales.com',
+                'ethen.wilson@vanirinstalledsales.com',
+                'jason.smith@vanirinstalledsales.com',
+                'dallas.hudson@vanirinstalledsales.com',
+                'brooke.slaugenhoup@vanirinstalledsales.com',
+                'carina.gonzalez@vanirinstalledsales.com',
+                'brian@vanirinstalledsales.com'
+            ];
+
+            if (employeeRedirectEmails.includes(email.toLowerCase())) {
+                console.log("Redirecting to employeetimesheet.html");
+                window.location.href = 'employeetimesheet.html';
+            } else {
+                console.log("Redirecting to timesheet.html");
+                window.location.href = 'timesheet.html';
+            }
         } else {
             console.log("No matching user found. Invalid email or password.");
             alert('Invalid email or password');
@@ -111,6 +131,7 @@ async function login() {
         alert('Login failed: ' + error.message);
     }
 }
+
 
 
 

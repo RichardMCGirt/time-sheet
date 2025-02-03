@@ -1,3 +1,5 @@
+
+
 document.addEventListener("DOMContentLoaded", async function () {
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'app9gw2qxhGCmtJvW';
@@ -11,32 +13,28 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
 
-       // Use `let` instead of `const` to allow reassignment
-       let supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
+    let supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
 
-       // Check if the email should impersonate Katy
-       const impersonateEmails = ['nhernandez@guyclee.com', 'jjones@guyclee.com'];
-       const isImpersonatingKaty = impersonateEmails.includes(supervisorEmail);
-   
-       if (isImpersonatingKaty) {
-           supervisorEmail = 'katy@vanirinstalledsales.com';
-       }
-    
-  // Elements to hide during data fetching
-  const titleElement = document.querySelector('h1');
-  const messageContainer = document.getElementById('message-container');
+    // Define impersonation rules
+    const impersonateKatyEmails = ['nhernandez@guyclee.com', 'jjones@guyclee.com'];
+    const impersonateBrianEmails = ['brian@vanirinstalledsales.com'];
 
-  // Set the displayed user email
-    // Set the displayed user email or hide if impersonating Katy
+    const isImpersonatingKaty = impersonateKatyEmails.includes(supervisorEmail);
+    const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
+
+    if (isImpersonatingKaty) {
+        supervisorEmail = 'katy@vanirinstalledsales.com';
+    }
+
+    console.log(`[INFO] Logged in as: ${supervisorEmail} (Impersonating Katy: ${isImpersonatingKaty}, Impersonating Brian: ${isImpersonatingBrian})`);
+
     if (userEmailElement) {
         if (isImpersonatingKaty) {
-            userEmailElement.style.display = 'none'; // Hide the email element
+            userEmailElement.style.display = 'none';
         } else {
-            console.log(`Setting user email: ${supervisorEmail}`);
             userEmailElement.textContent = supervisorEmail;
             userEmailElement.classList.add('clickable');
             userEmailElement.addEventListener('click', () => {
-                console.log('User email clicked, navigating to timesheet.html');
                 window.location.href = 'timesheet.html';
             });
         }
@@ -44,29 +42,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (logoutButton) {
         logoutButton.addEventListener('click', () => {
-            console.log('Logout button clicked, navigating to index.html');
             window.location.href = 'index.html';
         });
     }
 
-
-
-    // Hide elements during data fetching
-    console.log('Hiding elements before data fetching');
-    titleElement.style.display = 'none';
-    messageContainer.style.display = 'none';
-
-    // Handle the loading screen
     console.log('Starting loading screen sequence');
     setTimeout(() => {
-        console.log('Applying full-color transition to loading logo');
         loadingLogo.classList.add('full-color');
 
         setTimeout(() => {
-            console.log('Fading out loading screen');
             loadingScreen.classList.add('fade-out');
             setTimeout(() => {
-                console.log('Hiding loading screen and displaying main content');
                 loadingScreen.classList.add('hidden');
                 mainContent.classList.add('visible');
                 loadDataAndInitializePage();
@@ -76,44 +62,93 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     async function loadDataAndInitializePage() {
         try {
-            console.log(`[INFO] Initializing page and fetching supervisor name for email: ${supervisorEmail}`);
-    
-            // Fetch supervisor name
-            const supervisorName = await fetchSupervisorName(supervisorEmail);
-            console.log(`[DEBUG] fetchSupervisorName(${supervisorEmail}) called`);
-    
-            // Check if supervisor name was returned
+            console.log(`[INFO] Initializing page for: ${supervisorEmail}`);
+
+            let supervisorName = supervisorEmail;
+            if (!isImpersonatingBrian) {
+                supervisorName = await fetchSupervisorName(supervisorEmail);
+            }
+
             if (supervisorName) {
-                console.log(`[INFO] Supervisor found: ${supervisorName}`);
-                
-                // Fetch timesheets based on supervisor name
                 await fetchTimesheets(supervisorName);
-                console.log(`[INFO] Timesheets successfully fetched for supervisor: ${supervisorName}`);
             } else {
-                // Log error if supervisor name is not found
-                console.error(`[ERROR] Supervisor not found for email: ${supervisorEmail}`);
                 alert("Supervisor not found. Please ensure the email is correct.");
             }
-    
         } catch (error) {
-            // Catch and log any unexpected errors
-            console.error(`[ERROR] An error occurred while loading data and initializing the page: ${error.message}`, error);
+            console.error(`[ERROR] An error occurred: ${error.message}`);
             alert("An unexpected error occurred. Please try again later.");
-        } finally {
-            // Add logs indicating end of function execution
-            console.log(`[INFO] loadDataAndInitializePage execution completed.`);
         }
-    
-    
-    
-        // Make header, title, and other elements visible after data is loaded
-        document.querySelector('header').classList.add('visible');
-        document.querySelector('h1').classList.add('visible');
-        document.querySelector('#message-container').classList.add('visible');
     }
+
+    // Define handleInputChange globally so it can be accessed in the DOM
+async function handleInputChange(event, recordId, employeeNumber, fieldName) {
+    const newValue = event.target.value;
+
+    console.log(`[INFO] Field "${fieldName}" changed for Record: ${recordId}, Employee Number: ${employeeNumber}, New Value: ${newValue}`);
+
+  
+    try {
+        const updateEndpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+        
+        const body = JSON.stringify({
+            fields: {
+                [fieldName]: newValue
+            }
+        });
+
+        const response = await fetch(updateEndpoint, {
+            method: 'PATCH',
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: body
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(`Failed to update Airtable: ${errorMessage}`);
+        }
+
+        console.log(`[SUCCESS] Successfully updated field "${fieldName}" for Employee: ${employeeNumber}`);
+        displaySuccessMessage("Timesheet updated successfully!");
+
+    } catch (error) {
+        console.error(`[ERROR] Error updating timesheet: ${error.message}`);
+        alert("Error updating timesheet. Please try again.");
+    }
+}
+
+    function toggleVisibility(recordId) {
+        const nameContainer = timesheetsBody.querySelector(`.name-container[data-record-id="${recordId}"]`);
+        const table = timesheetsBody.querySelector(`.time-entry-table[data-record-id="${recordId}"]`);
+
+        if (nameContainer && table) {
+            console.log(`Toggling table visibility for record ID: ${recordId}`);
+            table.style.display = table.style.display === 'none' ? '' : 'none';
+            nameContainer.classList.toggle('hidden', table.style.display === 'none');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.approve-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', handleCheckboxChange);
+        });
+          // Select the scrollable div that contains the table
+          const scrollableDiv = document.querySelector('.time-tracking-table.scrollable');
     
-    
-    
+          // Disable body scrolling and let only the table scroll
+          document.body.style.overflow = 'hidden';
+      
+          // Add a 'wheel' event listener to the entire document body
+          document.body.addEventListener('wheel', function (event) {
+              // Prevent default page scroll
+              event.preventDefault();
+      
+              // Scroll the table based on user's scroll input (event.deltaY)
+              scrollableDiv.scrollTop += event.deltaY;
+          });
+    });
 
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
@@ -131,6 +166,80 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    async function fetchApprovedStatus() {
+        let allRecords = [];
+        let offset = null;
+    
+        do {
+            const endpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}${offset ? `?offset=${offset}` : ''}`;
+            console.log(`Fetching approved status with endpoint: ${endpoint}`);
+    
+            try {
+                const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+                if (!response.ok) throw new Error(`Failed to fetch approved status: ${response.statusText}`);
+                const data = await response.json();
+                allRecords = allRecords.concat(data.records);
+    
+                offset = data.offset;
+            } catch (error) {
+                console.error('Error fetching approved status:', error);
+                return {};
+            }
+        } while (offset);
+    
+        return allRecords.reduce((acc, record) => {
+            const employeeNumber = record.fields['Employee Number'];
+            const approved = record.fields['Approved'] ?? false;
+            const date7 = record.fields['date7'] || '';
+            acc[employeeNumber] = { approved, date7 };
+            console.log(`Employee Number: ${employeeNumber}, Approved: ${approved}, date7: ${date7}`);
+            return acc;
+        }, {});
+    }
+    
+
+    async function fetchTimesheets(supervisorName) {
+        let filterFormula;
+
+        if (isImpersonatingKaty) {
+            filterFormula = '{Employee Number}!=BLANK()';
+        } else if (supervisorEmail === 'josh@vanirinstalledsales.com' || supervisorEmail === 'ethen.wilson@vanirinstalledsales.com') {
+            filterFormula = `OR({Supervisor}='Josh Boyd', {Supervisor}='Ethen Wilson')`;
+        } else if (isImpersonatingBrian) {
+            filterFormula = `OR(
+                {Employee Number}='12078',
+                {Employee Number}='12081',
+                {Employee Number}='12098'
+            )`;
+        } else {
+            filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
+        }
+
+        let allRecords = [];
+        let offset = null;
+
+        do {
+            const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Full Name&sort[0][direction]=asc`;
+            try {
+                loadingIndicator.style.display = 'block';
+                const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
+                if (!response.ok) throw new Error(`Failed to fetch timesheets: ${response.statusText}`);
+                const data = await response.json();
+                allRecords = allRecords.concat(data.records);
+                offset = data.offset;
+            } catch (error) {
+                console.error(error);
+                alert("Error fetching timesheet data.");
+                return;
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        } while (offset);
+
+        const approvedData = await fetchApprovedStatus();
+        await populateTimesheets(allRecords, approvedData);
+    }
+
     async function fetchEmployeeName(employeeNumber) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Employee Number}='${employeeNumber}')&sort[0][field]=Full Name&sort[0][direction]=asc`;
         console.log(`Fetching employee name from Airtable with endpoint: ${endpoint}`);
@@ -146,7 +255,18 @@ document.addEventListener("DOMContentLoaded", async function () {
             return 'Unknown';
         }
     }
+    function formatDateToMMDDYYYY(dateString) {
+        if (!dateString) return ''; // Return empty string if date is not available
     
+        // Append 'T00:00:00Z' to treat the date as UTC
+        const date = new Date(`${dateString}T00:00:00Z`);
+    
+        const month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Get month (UTC)
+        const day = date.getUTCDate().toString().padStart(2, '0'); // Get day (UTC)
+        const year = date.getUTCFullYear(); // Get year (UTC)
+    
+        return `${month}/${day}/${year}`;
+    }
 
     function calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut) {
         if (!start || !end) return 0; // If start or end time is missing, return 0
@@ -175,28 +295,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     
         return workedHours > 0 ? workedHours.toFixed(2) : 0; // Return total worked hours, rounded to 2 decimal places
     }
-    
-    
-    function formatDateToMMDDYYYY(dateString) {
-        if (!dateString) return ''; // Return empty string if date is not available
-    
-        // Append 'T00:00:00Z' to treat the date as UTC
-        const date = new Date(`${dateString}T00:00:00Z`);
-    
-        const month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Get month (UTC)
-        const day = date.getUTCDate().toString().padStart(2, '0'); // Get day (UTC)
-        const year = date.getUTCFullYear(); // Get year (UTC)
-    
-        return `${month}/${day}/${year}`;
-    }
-    
+
     function generateRows(fields, recordId, employeeNumber) {
         console.log(`[INFO] Generating rows for timesheet for record: ${recordId}, Employee Number: ${employeeNumber}`);
         
         let totalHoursWorked = 0;
         let giftedHours = 0;
+        const isEditable = isImpersonatingBrian; // Only Brian can edit
     
-        // Helper function to calculate hours worked and accumulate total and gifted hours
         function calculateAndAccumulateHours(day) {
             const start = fields[`start${day}`] || '';
             const end = fields[`end${day}`] || '';
@@ -205,28 +311,29 @@ document.addEventListener("DOMContentLoaded", async function () {
             const additionalIn = fields[`additionali${day}`] || '';
             const additionalOut = fields[`additionalo${day}`] || '';
     
-            console.log(`[DEBUG] Day ${day} times: Start=${start}, End=${end}, LunchStart=${lunchStart}, LunchEnd=${lunchEnd}, AdditionalIn=${additionalIn}, AdditionalOut=${additionalOut}`);
-            
-            // Calculate hours worked for the current day
             const hours = calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut);
-            console.log(`[DEBUG] Day ${day} hours calculated: ${hours}`);
-    
-            totalHoursWorked += parseFloat(hours) || 0; // Accumulate total hours worked
+            totalHoursWorked += parseFloat(hours) || 0;
             return hours;
         }
     
-        // Generate rows for each day
         const rows = [1, 2, 3, 4, 5, 6, 7].map(day => `
             <tr>
-                <th><input type="time" name="start${day}" value="${fields[`start${day}`] || ''}" disabled></th>
-                <th><input type="time" name="lunchs${day}" value="${fields[`lunchs${day}`] || ''}" disabled></th>
-                <th><input type="time" name="lunche${day}" value="${fields[`lunche${day}`] || ''}" disabled></th>
-                <th><input type="time" name="end${day}" value="${fields[`end${day}`] || ''}" disabled></th>
-                <th><input type="time" name="additionali${day}" value="${fields[`additionali${day}`] || ''}" disabled></th>
-                <th><input type="time" name="additionalo${day}" value="${fields[`additionalo${day}`] || ''}" disabled></th>
+                <th><input type="time" name="start${day}" value="${fields[`start${day}`] || ''}" ${isEditable ? '' : 'disabled'}
+                    onblur="handleInputChange(event, '${recordId}', '${employeeNumber}', 'start${day}')"></th>
+                <th><input type="time" name="lunchs${day}" value="${fields[`lunchs${day}`] || ''}" ${isEditable ? '' : 'disabled'}
+                    onblur="handleInputChange(event, '${recordId}', '${employeeNumber}', 'lunchs${day}')"></th>
+                <th><input type="time" name="lunche${day}" value="${fields[`lunche${day}`] || ''}" ${isEditable ? '' : 'disabled'}
+                    onblur="handleInputChange(event, '${recordId}', '${employeeNumber}', 'lunche${day}')"></th>
+                <th><input type="time" name="end${day}" value="${fields[`end${day}`] || ''}" ${isEditable ? '' : 'disabled'}
+                    onblur="handleInputChange(event, '${recordId}', '${employeeNumber}', 'end${day}')"></th>
+                <th><input type="time" name="additionali${day}" value="${fields[`additionali${day}`] || ''}" ${isEditable ? '' : 'disabled'}
+                    onblur="handleInputChange(event, '${recordId}', '${employeeNumber}', 'additionali${day}')"></th>
+                <th><input type="time" name="additionalo${day}" value="${fields[`additionalo${day}`] || ''}" ${isEditable ? '' : 'disabled'}
+                    onblur="handleInputChange(event, '${recordId}', '${employeeNumber}', 'additionalo${day}')"></th>
                 <th>${calculateAndAccumulateHours(day)}</th>
             </tr>
         `).join('');
+       
     
         console.log(`[INFO] Total hours worked after all days: ${totalHoursWorked.toFixed(2)}`);
 
@@ -250,11 +357,7 @@ if (totalHoursWorked === 0) {
     giftedHours = 0;
     console.log(`[INFO] No gifted hours as total eligible hours (${totalEligibleHours.toFixed(2)}) exceed 40.`);
 }
-
-
-    
-     
-    
+   
         // Calculate the final total including all hours
         const finalTotal = totalHoursWorked + giftedHours + totalHolidayHours + totalPersonalHours + totalPtoHours;
         console.log(`[INFO] Final total hours (including gifted): ${finalTotal.toFixed(2)}`);
@@ -337,209 +440,7 @@ if (totalHoursWorked === 0) {
     }
     
     
-    
-       
-
-async function fetchTimesheets(supervisorName) {
-    let filterFormula;
-
-    if (supervisorEmail === 'katy@vanirinstalledsales.com') {
-        filterFormula = '{Employee Number}!=BLANK()';
-    } else if (supervisorEmail === 'josh@vanirinstalledsales.com' || supervisorEmail === 'ethen.wilson@vanirinstalledsales.com') {
-        filterFormula = `OR({Supervisor}='Josh Boyd', {Supervisor}='Ethen Wilson')`;
-    } else {
-        filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
-    }
-
-    let allRecords = [];
-    let offset = null; // Used for pagination
-
-    do {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Full Name&sort[0][direction]=asc`;
-        console.log(`Fetching timesheets with endpoint: ${endpoint}`);
-
-        try {
-            loadingIndicator.style.display = 'block'; // Show loading indicator
-            const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-            if (!response.ok) throw new Error(`Failed to fetch timesheets: ${response.statusText}`);
-            const data = await response.json();
-            allRecords = allRecords.concat(data.records); // Append new records to the list
-
-            offset = data.offset; // Get the next page's offset if available
-        } catch (error) {
-            console.error(error);
-            alert("Error fetching timesheet data. Please try again later.");
-            return;
-        } finally {
-            loadingIndicator.style.display = 'none'; // Hide loading indicator
-        }
-    } while (offset); // Continue fetching as long as there's an offset (i.e., more pages)
-
-    // Fetch approval status from table2Id
-    const approvedData = await fetchApprovedStatus();
-    await populateTimesheets(allRecords, approvedData); // Pass all records and approval data to populateTimesheets
-}
-
-
-
-   
-
-    async function fetchApprovedStatus() {
-        let allRecords = [];
-        let offset = null;
-    
-        do {
-            const endpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}${offset ? `?offset=${offset}` : ''}`;
-            console.log(`Fetching approved status with endpoint: ${endpoint}`);
-        
-            try {
-                const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
-                if (!response.ok) throw new Error(`Failed to fetch approved status: ${response.statusText}`);
-                const data = await response.json();
-                allRecords = allRecords.concat(data.records);
-        
-                offset = data.offset;
-            } catch (error) {
-                console.error('Error fetching approved status:', error);
-                return {};
-            }
-        } while (offset);
-        
-        return allRecords.reduce((acc, record) => {
-            const employeeNumber = record.fields['Employee Number'];
-            const approved = record.fields['Approved'] ?? false;
-            const date7 = record.fields['date7'] || '';
-            acc[employeeNumber] = { approved, date7 };
-            console.log(`Employee Number: ${employeeNumber}, Approved: ${approved}, date7: ${date7}`);
-            return acc;
-        }, {});
-    }
-
-    async function populateTimesheets(records, approvedData) {
-        console.log('Populating timesheets');
-        timesheetsBody.innerHTML = '';
-    
-        if (records.length > 0) {
-            for (const record of records) {
-                const fields = record.fields;
-                const employeeNumber = fields['Employee Number'];
-    
-                if (!employeeNumber) continue;
-    
-                const employeeName = await fetchEmployeeName(employeeNumber);
-                const hasValues = checkTimesheetValues(fields);
-    
-                // Get the approval status and date7 value from approvedData
-                const { approved: approvalStatus, date7 } = approvedData[employeeNumber] || { approved: false, date7: '' };
-    
-                // Format date7 to mm/dd/yyyy
-                const formattedDate7 = formatDateToMMDDYYYY(date7);
-    
-                let totalHoursWorked = 0;
-                for (let day = 1; day <= 7; day++) {
-                    totalHoursWorked += parseFloat(calculateHours(fields[`start${day}`], fields[`end${day}`], fields[`lunchs${day}`], fields[`lunche${day}`], fields[`additionali${day}`], fields[`additionalo${day}`])) || 0;
-                }
-    
-                const nameContainer = document.createElement('div');
-                nameContainer.classList.add('name-container');
-                nameContainer.textContent = `${employeeName}  ${formattedDate7}`;
-                nameContainer.setAttribute('data-record-id', record.id);
-                nameContainer.setAttribute('data-employee-number', employeeNumber);
-                nameContainer.addEventListener('click', () => {
-                    console.log(`Toggling visibility for record ID: ${record.id}`);
-                    toggleVisibility(record.id);
-                });
-                nameContainer.classList.add('clickable');
-    
-                if (totalHoursWorked === 0) {
-                    nameContainer.style.color = 'red';
-                }
-                timesheetsBody.appendChild(nameContainer);
-    
-                const table = document.createElement('table');
-                table.classList.add('time-entry-table');
-                table.setAttribute('data-record-id', record.id);
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th class="narrow-column">Start Time</th>
-                            <th class="narrow-column">Lunch Start</th>
-                            <th class="narrow-column">Lunch End</th>
-                            <th class="narrow-column">End Time</th>
-                            <th class="narrow-column">Additional Time in</th>
-                            <th class="narrow-column">Additional Time out</th>
-                            <th>Hours Worked</th> 
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${generateRows(fields, record.id, employeeNumber)}
-                    </tbody>
-                `;
-                console.log(`Employee Number: ${employeeNumber}, Approved: ${approvalStatus}`);
-    
-                // Fetch the approved status from approvedData and log it
-                console.log(`Setting checkbox for Employee Number: ${employeeNumber}, Approved Status: ${approvalStatus}`);
-    
-                // Update the checkbox with the approval status
-                const approveCheckbox = table.querySelector('.approve-checkbox');
-                if (approveCheckbox) {
-                    approveCheckbox.checked = approvalStatus; // Set checked based on the approval status
-                    approveCheckbox.setAttribute('data-employee-number', employeeNumber);
-                    approveCheckbox.addEventListener('change', handleCheckboxChange);
-                }
-    
-                if (supervisorEmail !== 'katy@vanirinstalledsales.com' && approvalStatus) {
-                    table.style.display = 'none'; // Hide approved rows for non-Katy users
-                }
-    
-                timesheetsBody.appendChild(table);
-            }
-        } else {
-            console.log('No records found for the supervisor');
-            const noRecordsRow = document.createElement('div');
-            noRecordsRow.classList.add('name-container');
-            noRecordsRow.textContent = `No records found for the supervisor: ${supervisorEmail}`;
-            timesheetsBody.appendChild(noRecordsRow);
-        }
-    }
-
-    function checkTimesheetValues(fields) {
-        console.log('Checking timesheet values');
-        return fields['Total Hours Worked'] || fields['PTO Time Used'] || fields['Personal Time Used'] || fields['Holiday Hours Used'];
-    }
-    
-    function toggleVisibility(recordId) {
-        const nameContainer = timesheetsBody.querySelector(`.name-container[data-record-id="${recordId}"]`);
-        const table = timesheetsBody.querySelector(`.time-entry-table[data-record-id="${recordId}"]`);
-
-        if (nameContainer && table) {
-            console.log(`Toggling table visibility for record ID: ${recordId}`);
-            table.style.display = table.style.display === 'none' ? '' : 'none';
-            nameContainer.classList.toggle('hidden', table.style.display === 'none');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.approve-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', handleCheckboxChange);
-        });
-          // Select the scrollable div that contains the table
-          const scrollableDiv = document.querySelector('.time-tracking-table.scrollable');
-    
-          // Disable body scrolling and let only the table scroll
-          document.body.style.overflow = 'hidden';
-      
-          // Add a 'wheel' event listener to the entire document body
-          document.body.addEventListener('wheel', function (event) {
-              // Prevent default page scroll
-              event.preventDefault();
-      
-              // Scroll the table based on user's scroll input (event.deltaY)
-              scrollableDiv.scrollTop += event.deltaY;
-          });
-    });
-
-   // Handling the checkbox change and passing `recordId`
+    // Handling the checkbox change and passing `recordId`
    function handleCheckboxChange(event) {
     const checkbox = event.target;
     const recordId = checkbox.getAttribute('data-record-id'); // This is likely the record ID
@@ -555,90 +456,144 @@ async function fetchTimesheets(supervisorName) {
     }
 }
 
-    
-async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
-    const approvedEndpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}?filterByFormula=AND({Employee Number}='${employeeNumber}')`;
-    
-    try {
-        const response = await fetch(approvedEndpoint, {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-            },
-        });
+async function populateTimesheets(records, approvedData) {
+    console.log('Populating timesheets');
+    timesheetsBody.innerHTML = '';
 
-        const data = await response.json();
-        if (data.records.length === 0) {
-            throw new Error(`No record found for Employee Number: ${employeeNumber}`);
+    if (records.length > 0) {
+        for (const record of records) {
+            const fields = record.fields;
+            const employeeNumber = fields['Employee Number'];
+
+            if (!employeeNumber) continue;
+
+            const employeeName = await fetchEmployeeName(employeeNumber);
+            const { approved: approvalStatus, date7 } = approvedData[employeeNumber] || { approved: false, date7: '' };
+            const formattedDate7 = formatDateToMMDDYYYY(date7);
+
+            let totalHoursWorked = 0;
+            for (let day = 1; day <= 7; day++) {
+                totalHoursWorked += parseFloat(calculateHours(fields[`start${day}`], fields[`end${day}`], fields[`lunchs${day}`], fields[`lunche${day}`], fields[`additionali${day}`], fields[`additionalo${day}`])) || 0;
+            }
+
+            const nameContainer = document.createElement('div');
+            nameContainer.classList.add('name-container');
+            nameContainer.textContent = `${employeeName}  ${formattedDate7}`;
+            nameContainer.setAttribute('data-record-id', record.id);
+            nameContainer.setAttribute('data-employee-number', employeeNumber);
+            nameContainer.addEventListener('click', () => {
+                toggleVisibility(record.id);
+            });
+            nameContainer.classList.add('clickable');
+
+            if (totalHoursWorked === 0) {
+                nameContainer.style.color = 'red';
+            }
+            timesheetsBody.appendChild(nameContainer);
+
+            const table = document.createElement('table');
+            table.classList.add('time-entry-table');
+            table.setAttribute('data-record-id', record.id);
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th class="narrow-column">Start Time</th>
+                        <th class="narrow-column">Lunch Start</th>
+                        <th class="narrow-column">Lunch End</th>
+                        <th class="narrow-column">End Time</th>
+                        <th class="narrow-column">Additional Time in</th>
+                        <th class="narrow-column">Additional Time out</th>
+                        <th>Hours Worked</th> 
+                    </tr>
+                </thead>
+                <tbody>
+                    ${generateRows(fields, record.id, employeeNumber)}
+                </tbody>
+            `;
+
+            // Attach `onblur` event to inputs to call `handleInputChange`
+            if (isImpersonatingBrian) {
+                table.querySelectorAll('input[type="time"]').forEach(input => {
+                    input.addEventListener('blur', (event) => {
+                        const fieldName = input.getAttribute('name');
+                        handleInputChange(event, record.id, employeeNumber, fieldName);
+                    });
+                });
+            }
+
+            // Set the approved status for the checkbox
+            const approveCheckbox = table.querySelector('.approve-checkbox');
+            if (approveCheckbox) {
+                approveCheckbox.checked = approvalStatus;
+                approveCheckbox.setAttribute('data-employee-number', employeeNumber);
+                approveCheckbox.addEventListener('change', handleCheckboxChange);
+            }
+
+            if (supervisorEmail !== 'katy@vanirinstalledsales.com' && approvalStatus) {
+                table.style.display = 'none'; // Hide approved rows for non-Katy users
+            }
+
+            timesheetsBody.appendChild(table);
         }
-
-        const recordId = data.records[0].id;
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}/${recordId}`;
-        const bodyFields = {};
-
-        console.log(`Updating approval status for Employee Number: ${employeeNumber}, Record ID: ${recordId}, Approved: ${isApproved}`);
-        
-        if (isApproved !== null) bodyFields.Approved = isApproved;
-        if (isNotApproved !== null) bodyFields['Timesheet Not Approved Reason'] = isNotApproved === '' ? '' : isNotApproved;
-
-        if (Object.keys(bodyFields).length === 0) return;
-
-        const body = JSON.stringify({ fields: bodyFields });
-
-        const updateResponse = await fetch(endpoint, {
-            method: 'PATCH',
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-            },
-            body,
-        });
-        
-        if (!updateResponse.ok) {
-            const errorMessage = await updateResponse.text();
-            throw new Error(`Failed to update approval status: ${updateResponse.statusText}. Error message: ${errorMessage}`);
-        }
-
-        const updatedData = await updateResponse.json();
-        console.log('Approval status updated:', updatedData);
-        displaySuccessMessage("Record successfully updated");
-
-    } catch (error) {
-        console.error('Error updating approval status:', error);
+    } else {
+        console.log('No records found for the supervisor');
+        const noRecordsRow = document.createElement('div');
+        noRecordsRow.classList.add('name-container');
+        noRecordsRow.textContent = `No records found for the supervisor: ${supervisorEmail}`;
+        timesheetsBody.appendChild(noRecordsRow);
     }
 }
 
-    async function fetchSingleRecord(recordId) {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}/${recordId}`;
-        
+
+  
+    
+
+    async function updateApprovalStatus(employeeNumber, isApproved) {
+        const approvedEndpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}?filterByFormula=AND({Employee Number}='${employeeNumber}')`;
+
         try {
-            const response = await fetch(endpoint, {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-            
+            const response = await fetch(approvedEndpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
             const data = await response.json();
-            console.log('Fetched record:', data);
-            // Log the fields of the record to see available fields
-            console.log('Fields:', data.fields);
+            if (data.records.length === 0) throw new Error(`No record found for Employee Number: ${employeeNumber}`);
+
+            const recordId = data.records[0].id;
+            const endpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}/${recordId}`;
+
+            const body = JSON.stringify({ fields: { Approved: isApproved } });
+
+            const updateResponse = await fetch(endpoint, {
+                method: 'PATCH',
+                headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+                body,
+            });
+
+            if (!updateResponse.ok) {
+                const errorMessage = await updateResponse.text();
+                throw new Error(`Failed to update approval: ${errorMessage}`);
+            }
+
+            console.log(`Approval status updated for ${employeeNumber}: ${isApproved}`);
+            displaySuccessMessage("Record successfully updated");
         } catch (error) {
-            console.error('Error fetching record:', error);
+            console.error('Error updating approval status:', error);
         }
     }
-    
-    document.querySelectorAll('.approve-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function(event) {
-            const recordId = event.target.getAttribute('data-record-id');  // Get the recordId
-            fetchSingleRecord(recordId);  // Trigger the function
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.approve-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', handleCheckboxChange);
+        });
+
+        const scrollableDiv = document.querySelector('.time-tracking-table.scrollable');
+        document.body.style.overflow = 'hidden';
+
+        document.body.addEventListener('wheel', function (event) {
+            event.preventDefault();
+            scrollableDiv.scrollTop += event.deltaY;
         });
     });
 
     function displaySuccessMessage(message) {
-        // Create or reuse a message element
         let messageElement = document.getElementById('success-message');
         if (!messageElement) {
             messageElement = document.createElement('div');
@@ -656,14 +611,8 @@ async function updateApprovalStatus(employeeNumber, isApproved, isNotApproved) {
             document.body.appendChild(messageElement);
         }
 
-        // Set the message and show it
         messageElement.textContent = message;
         messageElement.style.display = 'block';
-
-        // Hide the message after 2 seconds
-        setTimeout(() => {
-            messageElement.style.display = 'none';
-        }, 2000);
+        setTimeout(() => { messageElement.style.display = 'none'; }, 2000);
     }
-
 });

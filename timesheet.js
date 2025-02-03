@@ -1710,3 +1710,59 @@ function toggleWorkInputs(dayIndex, isChecked) {
     calculateTotalTimeWorked();
    
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("DOM fully loaded and parsed. Initializing time dropdowns...");
+    initializeTimeDropdowns();
+
+    // Get the logged-in user email
+    const userEmail = document.getElementById('user-email').textContent.trim();
+    console.log("User Email:", userEmail);
+
+    // Function to decrease PTO Hours Display until zero, then reset once
+    function decreasePtoHoursGradually(originalPtoHours) {
+        const ptoHoursDisplay = document.getElementById('pto-hours-display');
+        let currentPtoHours = parseInt(ptoHoursDisplay.innerText, 10) || 0; // Get current PTO hours
+
+        if (isNaN(currentPtoHours) || currentPtoHours <= 0) {
+            console.log("PTO hours are already zero or not valid, stopping countdown.");
+            return; // Stop if invalid or already zero
+        }
+
+        // Function to decrement PTO hours every second
+        function decrement() {
+            if (currentPtoHours > 0) {
+                currentPtoHours -= 1;
+                ptoHoursDisplay.innerText = currentPtoHours;
+                console.log(`PTO hours reduced to: ${currentPtoHours}`);
+
+                setTimeout(decrement, 1000); // Repeat every second
+            } else {
+                console.log("PTO hours reached zero, resetting to original value:", originalPtoHours);
+                ptoHoursDisplay.innerText = originalPtoHours; // Reset to original PTO value **only once**
+            }
+        }
+
+        decrement(); // Start decrementing
+    }
+
+    // Apply special behavior for John Peacock and Heath Kornegay
+    if (userEmail === 'john.peacock@vanirinstalledsales.com' || userEmail === 'heath.kornegay@vanirinstalledsales.com') {
+        console.log(`${userEmail} detected. Waiting for PTO hours...`);
+
+        function checkAndStartCountdown() {
+            const ptoHoursDisplay = document.getElementById('pto-hours-display');
+            const ptoValue = parseInt(ptoHoursDisplay.innerText.trim(), 10);
+
+            if (!isNaN(ptoValue) && ptoValue > 0) {
+                console.log(`Fetched PTO Hours: ${ptoValue}`);
+                decreasePtoHoursGradually(ptoValue); // Start decreasing PTO hours
+            } else {
+                console.log("PTO Hours still loading or invalid, retrying in 500ms...");
+                setTimeout(checkAndStartCountdown, 500);
+            }
+        }
+
+        checkAndStartCountdown(); // Start checking PTO hours
+    }
+});
