@@ -310,8 +310,9 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
             const lunchEnd = fields[`lunche${day}`] || '';
             const additionalIn = fields[`additionali${day}`] || '';
             const additionalOut = fields[`additionalo${day}`] || '';
+            const HolidayHours = fields[`Holiday Hours${day}`] || '';
     
-            const hours = calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut);
+            const hours = calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut, HolidayHours);
             totalHoursWorked += parseFloat(hours) || 0;
             return hours;
         }
@@ -330,6 +331,7 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
                     onblur="handleInputChange(event, '${recordId}', '${employeeNumber}', 'additionali${day}')"></th>
                 <th><input type="time" name="additionalo${day}" value="${fields[`additionalo${day}`] || ''}" ${isEditable ? '' : 'disabled'}
                     onblur="handleInputChange(event, '${recordId}', '${employeeNumber}', 'additionalo${day}')"></th>
+                    
                 <th>${calculateAndAccumulateHours(day)}</th>
             </tr>
         `).join('');
@@ -503,6 +505,7 @@ async function populateTimesheets(records, approvedData) {
                         <th class="narrow-column">End Time</th>
                         <th class="narrow-column">Additional Time in</th>
                         <th class="narrow-column">Additional Time out</th>
+
                         <th>Hours Worked</th> 
                     </tr>
                 </thead>

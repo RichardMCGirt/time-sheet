@@ -10,9 +10,6 @@ const passwordInput = document.getElementById('password');
 const playPauseButton = document.getElementById('playPauseButton');
 const loginSuccessMessage = document.getElementById('login-success');
 
-// Add input event listener to start/pause music based on input fields
-emailInput.addEventListener('input', handleInput);
-passwordInput.addEventListener('input', handleInput);
 
 loginButton.addEventListener('click', login);
 
@@ -132,14 +129,7 @@ async function login() {
     }
 }
 
-
-
-
-
-
-
 async function fetchJoke() {
-    console.log('Fetching a random joke...');
 
     try {
         const response = await fetch('https://official-joke-api.appspot.com/jokes/random');
@@ -148,7 +138,6 @@ async function fetchJoke() {
         }
 
         const data = await response.json();
-        console.log('Fetched joke data:', data);
 
         jokeText.textContent = `${data.setup} - ${data.punchline}`;
     } catch (error) {
@@ -165,7 +154,6 @@ function debounce(func, wait) {
     };
 }
 
-emailInput.addEventListener('input', handleInput);
 emailInput.addEventListener('keydown', handleKeyDown);
 
 function handleKeyDown(event) {
@@ -181,42 +169,6 @@ function handleKeyDown(event) {
         handleKeyPPress();
     }
 }
-
-function handleInput() {
-    const backgroundMusic = document.getElementById('backgroundMusic');
-    const email = emailInput.value;
-    const password = passwordInput.value;
-
-    // Get the first letter of the email or password, if available
-    const firstLetter = (email.charAt(0) || password.charAt(0)).toLowerCase();
-
-    // Check if music should play
-    const shouldPlayMusic = (email || password) &&
-        firstLetter !== 'j' &&
-        firstLetter !== 'r' &&
-        firstLetter !== 'd' &&
-        firstLetter !== 'b' &&
-        firstLetter !== 'k' &&
-        firstLetter !== 'm';
-
-    if (shouldPlayMusic) {
-        if (backgroundMusic && backgroundMusic.paused) {
-            backgroundMusic.muted = false;
-            backgroundMusic.volume = 1.0;
-            backgroundMusic.play();
-            sessionStorage.setItem('isMusicPlaying', 'true');
-            updateButtonText();
-            playPauseButton.style.display = 'block'; // Show the play/pause button
-        }
-    } else {
-        if (backgroundMusic && !backgroundMusic.paused) {
-            backgroundMusic.pause();
-            sessionStorage.setItem('isMusicPlaying', 'false');
-            playPauseButton.style.display = 'none'; // Hide the play/pause button
-        }
-    }
-}
-
 
 document.addEventListener('DOMContentLoaded', function () {
     const emailInput = document.querySelector('.email-input');
@@ -246,37 +198,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-function toggleMusic() {
-    const backgroundMusic = document.getElementById('backgroundMusic');
-    if (backgroundMusic.paused) {
-        backgroundMusic.play();
-        sessionStorage.setItem('isMusicPlaying', 'true');
-    } else {
-        backgroundMusic.pause();
-        sessionStorage.setItem('isMusicPlaying', 'false');
-    }
-    updateButtonText();
-}
 
-function updateButtonText() {
-    const backgroundMusic = document.getElementById('backgroundMusic');
-    playPauseButton.textContent = backgroundMusic.paused ? 'Play' : 'Pause';
-}
-
-let pPressCount = 0;
-
-function handleKeyPPress() {
-    pPressCount++;
-    if (pPressCount === 2) {
-        const backgroundMusic = document.getElementById('backgroundMusic');
-        if (!backgroundMusic.paused) {
-            backgroundMusic.pause();
-            sessionStorage.setItem('isMusicPlaying', 'false');
-            updateButtonText();
-        }
-        pPressCount = 0; // Reset counter after pausing
-    }
-    setTimeout(() => { pPressCount = 0; }, 300); // Reset counter if 'p' is not pressed again within 300ms
-}
 
 
