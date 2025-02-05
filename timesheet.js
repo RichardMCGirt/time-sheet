@@ -265,7 +265,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const record = data.records[0].fields;
                 availablePTOHours = parseFloat(record['PTO Total']) || 0;
                 recordId = data.records[0].id;
-                elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(2);
+                elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(0);
                 elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2);
                 console.log('Available PTO hours:', availablePTOHours);
             } else {
