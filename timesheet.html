@@ -41,12 +41,14 @@
                     <button id="convert-to-csv-button">Convert to CSV</button>
                 </div>
         </header>
-      <nav id="navbar" class="navbar">
-    <ul>
-        <li><a href="timeoff.html">Request Time Off</a></li>
-
-    </ul>
-</nav>
+        <nav id="navbar" class="navbar">
+            <ul>
+                <li><a href="timeoff.html">Request Time Off</a></li>
+                <li id="carlos-link"><a href="#" onclick="autoLogin('carlos.ayala@vanirinstalledsales.com')">Carlos</a></li>
+                <li id="travis-link"><a href="#" onclick="autoLogin('travis.vick@vanirinstalledsales.com')">Travis</a></li>
+            </ul>
+        </nav>
+        
         <div id="message-container" class="right-70"></div>
 
         <div id="loading-bar-container">
@@ -258,7 +260,86 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the stored user email from localStorage
+        const userEmail = localStorage.getItem("userEmail");
 
+        console.log("Logged in as:", userEmail); // Debugging
+
+        // Show the login links ONLY if Brian is logged in
+        if (userEmail !== "brian@vanirinstalledsales.com") {
+            document.getElementById("carlos-link").style.display = "none";
+            document.getElementById("travis-link").style.display = "none";
+        }
+    });
+
+
+
+    async function autoLogin(email) {
+        const password = "Vanir2024!!"; // Hardcoded password
+        console.log(`Attempting auto-login as ${email}`);
+
+        try {
+            const user = await fetchUserFromAirtable(email, password);
+
+            if (user) {
+                console.log("User authenticated:", user);
+
+                // Store user info in localStorage
+                localStorage.setItem("userEmail", email);
+                sessionStorage.setItem("user", JSON.stringify(user));
+
+                // Redirect to the appropriate page
+                const employeeRedirectEmails = [
+                    "brett.moss@vanirinstalledsales.com",
+                    "tony.amenta@vanirinstalledsales.com",
+                    "josh@vanirinstalledsales.com",
+                    "ethen.wilson@vanirinstalledsales.com",
+                    "jason.smith@vanirinstalledsales.com",
+                    "dallas.hudson@vanirinstalledsales.com",
+                    "brooke.slaugenhoup@vanirinstalledsales.com",
+                    "carina.gonzalez@vanirinstalledsales.com",
+                ];
+
+                if (employeeRedirectEmails.includes(email.toLowerCase())) {
+                    window.location.href = "employeetimesheet.html";
+                } else {
+                    window.location.href = "timesheet.html";
+                }
+            } else {
+                alert("Invalid login credentials.");
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            alert("Failed to log in.");
+        }
+    }
+
+    async function fetchUserFromAirtable(email, password) {
+        const apiKey = "pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c";
+        const baseId = "app9gw2qxhGCmtJvW";
+        const tableId = "tbljmLpqXScwhiWTt";
+
+        const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({email}='${email}', {password}='${password}')`;
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return data.records.length > 0 ? data.records[0].fields : null;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            return null;
+        }
+    }
 
 
 

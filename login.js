@@ -109,7 +109,6 @@ async function login() {
                 'dallas.hudson@vanirinstalledsales.com',
                 'brooke.slaugenhoup@vanirinstalledsales.com',
                 'carina.gonzalez@vanirinstalledsales.com',
-                'brian@vanirinstalledsales.com'
             ];
 
             if (employeeRedirectEmails.includes(email.toLowerCase())) {

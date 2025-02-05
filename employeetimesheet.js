@@ -209,6 +209,8 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
             filterFormula = `OR(
                 {Employee Number}='12078',
                 {Employee Number}='12098'
+                                {Employee Number}='12002'
+
             )`;
         } else {
             filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
