@@ -44,8 +44,10 @@
         <nav id="navbar" class="navbar">
             <ul>
                 <li><a href="timeoff.html">Request Time Off</a></li>
-                <li id="carlos-link"><a href="#" onclick="autoLogin('carlos.ayala@vanirinstalledsales.com')">Carlos</a></li>
-                <li id="travis-link"><a href="#" onclick="autoLogin('travis.vick@vanirinstalledsales.com')">Travis</a></li>
+                <li id="carlos-link"><a href="#" onclick="autoLogin('carlos.ayala@vanirinstalledsales.com')">Carlos Ayala</a></li>
+                <li id="travis-link"><a href="#" onclick="autoLogin('travis.vick@vanirinstalledsales.com')">Travis  Vick </a></li>
+                <li id="brian-link"><a href="#" onclick="autoLogin('brian@vanirinstalledsales.com')">Brian Miller </a></li>
+
             </ul>
         </nav>
         
@@ -260,18 +262,38 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Get the stored user email from localStorage
-        const userEmail = localStorage.getItem("userEmail");
+document.addEventListener("DOMContentLoaded", function () {
+    // Get the stored user email from the span element
+    const userEmailElement = document.getElementById("user-email");
+    const userEmail = userEmailElement ? userEmailElement.textContent.trim().toLowerCase() : "";
 
-        console.log("Logged in as:", userEmail); // Debugging
+    console.log("Logged in as:", userEmail); // Debugging
 
-        // Show the login links ONLY if Brian is logged in
-        if (userEmail !== "brian@vanirinstalledsales.com") {
-            document.getElementById("carlos-link").style.display = "none";
-            document.getElementById("travis-link").style.display = "none";
-        }
-    });
+    // Select all links
+    const carlosLink = document.getElementById("carlos-link");
+    const travisLink = document.getElementById("travis-link");
+    const brianLink = document.getElementById("brian-link");
+
+    // Hide all links by default
+    if (carlosLink) carlosLink.style.display = "none";
+    if (travisLink) travisLink.style.display = "none";
+    if (brianLink) brianLink.style.display = "none";
+
+    // Show links based on the logged-in user
+    if (userEmail === "brian@vanirinstalledsales.com") {
+        if (carlosLink) carlosLink.style.display = "block";
+        if (travisLink) travisLink.style.display = "block";
+    } else if (userEmail === "carlos.ayala@vanirinstalledsales.com") {
+        if (brianLink) brianLink.style.display = "block";
+        if (travisLink) travisLink.style.display = "block";
+    } else if (userEmail === "travis.vick@vanirinstalledsales.com") {
+        if (carlosLink) carlosLink.style.display = "block";
+        if (brianLink) brianLink.style.display = "block";
+    }
+});
+
+
+
 
 
 
