@@ -208,7 +208,6 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
         } else if (isImpersonatingBrian) {
             filterFormula = `OR(
                 {Employee Number}='12078',
-                {Employee Number}='12081',
                 {Employee Number}='12098'
             )`;
         } else {
