@@ -454,6 +454,57 @@ body.dark-mode .toggle-button:hover {
     color: grey;
 }
 
+.remaining-personal-hours {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 2ch; /* Adjust based on your number width */
+}
+
+#center-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 1000;
+    width: 300px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.message-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.message-box p {
+    margin-bottom: 15px;
+}
+
+.message-box button {
+    margin: 5px;
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#apply-shortcut {
+    background-color: #28a745;
+    color: white;
+}
+
+#dismiss-message {
+    background-color: #dc3545;
+    color: white;
+}
+
+
 
 .time-entry-wrapper {
     overflow-x: hidden; /* Prevent horizontal scrolling */
@@ -482,7 +533,6 @@ input[type="text"] {
     text-align: center;
     font-size: 14px;
     font-weight: bold;
-    width: fit-content;
 }
 
 .time-entry-table input[type="date"]::placeholder,

@@ -253,59 +253,62 @@ document.addEventListener("DOMContentLoaded", function() {
     async function fetchPtoHours() {
         console.log('Fetching PTO hours...');
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-
+    
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
             if (!response.ok) throw new Error(`Failed to fetch PTO hours: ${response.statusText}`);
-
+    
             const data = await response.json();
             console.log('Fetched PTO hours:', data);
-
+    
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
-                availablePTOHours = parseFloat(record['PTO Total']) || 0;
+                availablePTOHours = Math.floor(parseFloat(record['PTO Total']) || 0);
                 recordId = data.records[0].id;
-                elements.ptoHoursDisplay.textContent = availablePTOHours.toFixed(0);
-                elements.remainingPtoHoursElement.textContent = availablePTOHours.toFixed(2);
+                elements.ptoHoursDisplay.textContent = availablePTOHours;
+                elements.remainingPtoHoursElement.textContent = availablePTOHours;
                 console.log('Available PTO hours:', availablePTOHours);
             } else {
                 console.log('No PTO hours data found for user');
             }
-
+    
             updateLoadingBar('PTO hours have been downloaded.');
         } catch (error) {
             console.error('Error fetching PTO hours:', error);
             alert('Failed to fetch PTO hours. Error: ' + error.message);
         }
     }
-
+    
     // Fetch Personal Hours
     async function fetchPersonalTime() {
         console.log('Fetching Personal hours...');
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
-
+    
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
             if (!response.ok) throw new Error(`Failed to fetch Personal hours: ${response.statusText}`);
-
+    
             const data = await response.json();
             console.log('Fetched Personal hours:', data);
-
+    
             if (data.records.length > 0) {
                 const record = data.records[0].fields;
-                availablePersonalHours = parseFloat(record['Personaltime']) || 0;
+                availablePersonalHours = Math.floor(parseFloat(record['Personaltime']) || 0);
                 recordId = data.records[0].id;
-                elements.personalTimeDisplay.textContent = availablePersonalHours.toFixed(2);
-                elements.remainingPersonalHoursElement.textContent = availablePersonalHours.toFixed(2);
+                elements.personalTimeDisplay.textContent = availablePersonalHours;
+                elements.remainingPersonalHoursElement.textContent = availablePersonalHours;
                 console.log('Available Personal hours:', availablePersonalHours);
             } else {
                 console.log('No Personal hours data found for user');
             }
-
+    
             updateLoadingBar('Personal hours have been downloaded.');
         } catch (error) {
+            console.error('Error fetching Personal hours:', error);
+            alert('Failed to fetch Personal hours. Error: ' + error.message);
         }
     }
+    
 
 // Fetch Personal End Date
 async function fetchPersonalEndDate() {
@@ -966,12 +969,12 @@ function calculateTotalTimeWorked() {
         console.log('Total Personal hours:', totalPersonalHours);
     
         // Ensure the textContent is correctly updated
-        elements.ptoTimeSpan.textContent = totalPtoHours.toFixed(2);
-        elements.holidayTimeSpan.textContent = totalHolidayHours.toFixed(2);
-        elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(2);
+        elements.ptoTimeSpan.textContent = totalPtoHours.toFixed(0);
+        elements.holidayTimeSpan.textContent = totalHolidayHours.toFixed(0);
+        elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(0);
     
-        elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(2);
-        elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(2);
+        elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(0);
+        elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(0);
         const totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
         elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
     }
@@ -1419,8 +1422,8 @@ if (heathCloseButton) {
         elements.holidayTimeSpan.textContent = '0';
         elements.totalTimeWorkedSpan.textContent = '0.00';
         elements.totalTimeWithPtoSpan.textContent = '0.00';
-        elements.remainingPtoHoursElement.textContent = '0.00';
-        elements.remainingPersonalHoursElement.textContent = '0.00';
+        elements.remainingPtoHoursElement.textContent = '0';
+        elements.remainingPersonalHoursElement.textContent = '0';
         window.location.reload();
     }
 
