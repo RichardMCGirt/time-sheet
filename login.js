@@ -37,7 +37,9 @@ async function fetchAllRecords() {
 
     try {
         do {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={email}='${emailInput.value}'${offset ? `&offset=${offset}` : ''}`;
+            const emailValue = emailInput.value.trim().toLowerCase(); // Normalize input
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=LOWER({Email})='${emailValue}'${offset ? `&offset=${offset}` : ''}`;
+
             const response = await fetch(url, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
@@ -50,21 +52,21 @@ async function fetchAllRecords() {
 
             const data = await response.json();
             allRecords = allRecords.concat(data.records);
-            offset = data.offset; // Update the offset for the next request, if present
+            offset = data.offset; // Update offset if present
 
-        } while (offset); // Continue fetching as long as there's an offset
+        } while (offset);
 
         return allRecords;
-
     } catch (error) {
         console.error('Error fetching records:', error);
         return [];
     }
 }
 
+
 async function login() {
-    const email = emailInput.value;
-    const password = passwordInput.value;
+    const email = emailInput.value.trim().toLowerCase(); // Convert input email to lowercase
+    const password = passwordInput.value.trim().toLowerCase(); // Convert input password to lowercase
 
     console.log("Login attempt with email:", email);
 
@@ -80,7 +82,7 @@ async function login() {
 
     try {
         // Check if the user is one of the impersonating emails with the correct password
-        if ((email === 'nhernandez@guyclee.com' || email === 'jjones@guyclee.com') && password === 'GuycLee') {
+        if ((email === 'nhernandez@guyclee.com' || email === 'jjones@guyclee.com') && password === 'guyclee') {
             // Store email in localStorage and redirect to supervisor.html
             localStorage.setItem('userEmail', email);
             console.log("Impersonation successful, redirecting to supervisor.html");
@@ -92,7 +94,11 @@ async function login() {
         const allRecords = await fetchAllRecords();
         console.log("Fetched records from Airtable:", allRecords);
 
-        const user = allRecords.find(record => record.fields.email === email && record.fields.password === password);
+        // Convert stored email and password to lowercase for case-insensitive comparison
+        const user = allRecords.find(record =>
+            record.fields.email.toLowerCase() === email &&
+            record.fields.password.toLowerCase() === password
+        );
 
         if (user) {
             console.log("User authenticated:", user);
@@ -109,9 +115,9 @@ async function login() {
                 'dallas.hudson@vanirinstalledsales.com',
                 'brooke.slaugenhoup@vanirinstalledsales.com',
                 'carina.gonzalez@vanirinstalledsales.com',
-            ];
+            ].map(email => email.toLowerCase()); // Ensure all comparison emails are lowercase
 
-            if (employeeRedirectEmails.includes(email.toLowerCase())) {
+            if (employeeRedirectEmails.includes(email)) {
                 console.log("Redirecting to employeetimesheet.html");
                 window.location.href = 'employeetimesheet.html';
             } else {
@@ -127,6 +133,7 @@ async function login() {
         alert('Login failed: ' + error.message);
     }
 }
+
 
 async function fetchJoke() {
 
@@ -161,13 +168,19 @@ function handleKeyDown(event) {
         if (!emailValue.includes('@vanirinstalledsales.com')) {
             event.preventDefault();
             emailInput.value = `${emailValue}@vanirinstalledsales.com`;
+
+            // Temporarily switch to text type for selection range
+            emailInput.type = 'text';
             emailInput.setSelectionRange(emailInput.value.length, emailInput.value.length);
+            emailInput.type = 'email'; // Revert to email type
         }
     }
+
     if (event.key === 'p') {
         handleKeyPPress();
     }
 }
+
 
 document.addEventListener('DOMContentLoaded', function () {
     const emailInput = document.querySelector('.email-input');
