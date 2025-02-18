@@ -72,6 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             let url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}`;
             let allRecords = [];
+    
+            console.log(`Fetching data for email: ${email}`);
+    
             while (url) {
                 const response = await fetch(url, {
                     headers: {
@@ -79,16 +82,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 const data = await response.json();
-                allRecords = allRecords.concat(data.records);
+    
+                console.log("Fetched data batch:", data); // Log each batch of data
+    
+                if (data.records && data.records.length > 0) {
+                    allRecords = allRecords.concat(data.records);
+                }
+    
                 url = data.offset ? `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{email}='${email}'`)}&offset=${data.offset}` : null;
             }
+    
             records = allRecords || [];
+    
+            console.log("Final fetched records:", records); // Log the final array of records
+    
             await deleteExpiredRecords(records);
-            displayPreviousRequests(records);
+            await displayPreviousRequests(records); // Ensure display happens after fetch
+    
         } catch (error) {
             console.error('Error fetching previous requests:', error);
         }
     }
+    
+    
 
     async function sendToAirtable(formData) {
         try {
@@ -254,51 +270,82 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${hour}:${minute} ${period}`;
     }
 
-    function displayPreviousRequests(records) {
+    async function displayPreviousRequests(records) {
         requestsList.innerHTML = '';
-
+    
         if (records.length > 0) {
             previousRequestsContainer.classList.remove('hidden');
         } else {
             previousRequestsContainer.classList.add('hidden');
         }
-
-        records.forEach(record => {
+    
+        for (const record of records) {
             for (let i = 1; i <= 10; i++) {
-                if (record.fields[`Time off Start Date ${i}`]) {
+                if (record.fields[`Time off Start Date ${i}`] && record.fields[`Time off End Date ${i}`]) {
                     const recordItem = document.createElement('li');
                     recordItem.className = 'record';
-
+    
                     const approved = record.fields[`Time off Approved ${i}`];
                     const approvedCheckbox = approved ? '<input type="checkbox" class="approved-checkbox" checked disabled>' : '';
                     const approvedText = approved ? '<p><strong>Approved:</strong>' : '';
-                    const daysOff = calculateBusinessDays(record.fields[`Time off Start Date ${i}`], record.fields[`Time off End Date ${i}`]);
-                    const reason = record.fields[`Reason ${i}`] || 'N/A';
-                    const reasonClass = reason !== 'N/A' ? 'reason-red' : '';
-
+    
+                    // Ensure that the calculation is performed only when data is available
+                    const { totalHoursMissed, percentageMissed } = calculateHoursMissed(
+                        record.fields[`Time off Start Date ${i}`], 
+                        record.fields[`Time off Start Time ${i}`] || '07:00', // Default to 7 AM if missing
+                        record.fields[`Time off End Date ${i}`], 
+                        record.fields[`Time off End Time ${i}`] || '16:00' // Default to 4 PM if missing
+                    );
+    
                     recordItem.innerHTML = `
-                        <p><strong>Start Date:</strong> ${record.fields[`Time off Start Date ${i}`]}</p>
-                        <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`]}</p>
-                        <p><strong>End Date:</strong> ${record.fields[`Time off End Date ${i}`]}</p>
-                        <p><strong>End Time:</strong> ${record.fields[`Time off End Time ${i}`]}</p>
-                        <p><strong>Days Off:</strong> ${daysOff} days</p>
-                        <p class="reason ${reasonClass}" style="display: ${approved ? 'none' : 'block'};"><strong>Reason:</strong> ${reason}</p>
+<p><strong>Start Date:</strong> ${formatDate(record.fields[`Time off Start Date ${i}`])}</p>
+                        <p><strong>Start Time:</strong> ${record.fields[`Time off Start Time ${i}`] || '07:00 AM'}</p>
+<p><strong>End Date:</strong> ${formatDate(record.fields[`Time off End Date ${i}`])}</p>
+                        <p><strong>End Time:</strong> ${record.fields[`Time off End Time ${i}`] || '04:00 PM'}</p>
+                        <p><strong>Hours Missed:</strong> ${totalHoursMissed} hours</p>
                         ${approvedText}${approvedCheckbox}</p>
                         <button class="edit-button" data-index="${i}" data-id="${record.id}">Edit</button>
                         <button class="delete-button" data-index="${i}" data-id="${record.id}">Delete</button>`;
-
+    
                     requestsList.appendChild(recordItem);
                 }
             }
-        });
-
+        }
+    
         // Attach event listeners to the edit buttons
         attachEditListeners();
-
         document.querySelectorAll('.delete-button').forEach(button => {
             button.addEventListener('click', handleDeleteClick);
         });
     }
+    function formatDate(dateString) {
+        if (!dateString) {
+            console.warn("formatDate: Received an empty date string.");
+            return ''; // Handle empty dates
+        }
+    
+        console.log("formatDate: Original date string from Airtable:", dateString);
+    
+        // Create a date object and ensure it's treated as UTC
+        const date = new Date(dateString + "T00:00:00Z");
+    
+        // Extract UTC values (prevents timezone shifts)
+        const formattedDate = new Intl.DateTimeFormat('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            timeZone: 'UTC' // 🔥 Ensures no timezone conversion!
+        }).format(date);
+    
+        console.log("formatDate: Parsed Date object (UTC assumed):", date.toISOString());
+        console.log("formatDate: Formatted output:", formattedDate);
+    
+        return formattedDate;
+    }
+    
+    
+    
+    
     
     // Function to handle clicking the edit button
     function handleEditClick(event) {
@@ -425,21 +472,81 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     }
 
-    function calculateBusinessDays(startDate, endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        let count = 0;
-        let currentDate = start;
-
-        while (currentDate <= end) {
-            const dayOfWeek = currentDate.getDay();
-            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                count++;
+    function calculateHoursMissed(startDate, startTime, endDate, endTime) {
+        const workDayStart = 7; // 7:00 AM
+            const workDayEnd = 16; // 4:00 PM
+            const workHoursPerDay = workDayEnd - workDayStart; // 9 hours per full workday
+        
+            // Convert to DateTime Objects
+            const startDateTime = new Date(`${startDate}T${convertTo24HourFormat(startTime)}:00`);
+            const endDateTime = new Date(`${endDate}T${convertTo24HourFormat(endTime)}:00`);
+        
+            let totalHoursMissed = 0;
+            let currentDate = new Date(startDateTime);
+            
+            while (currentDate <= endDateTime) {
+                const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
+        
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Exclude weekends
+                    let dayStart = new Date(currentDate);
+                    dayStart.setHours(workDayStart, 0, 0); // Set to 7:00 AM
+        
+                    let dayEnd = new Date(currentDate);
+                    dayEnd.setHours(workDayEnd, 0, 0); // Set to 4:00 PM
+        
+                    if (currentDate.toDateString() === startDateTime.toDateString() && currentDate.toDateString() === endDateTime.toDateString()) {
+                        // Single-day partial leave
+                        let missedHours = Math.max(0, (endDateTime - startDateTime) / (1000 * 60 * 60));
+                        totalHoursMissed += Math.min(missedHours, workHoursPerDay);
+                    } else if (currentDate.toDateString() === startDateTime.toDateString()) {
+                        // First day - partial leave
+                        let missedHours = Math.max(0, (dayEnd - startDateTime) / (1000 * 60 * 60));
+                        totalHoursMissed += Math.min(missedHours, workHoursPerDay);
+                    } else if (currentDate.toDateString() === endDateTime.toDateString()) {
+                        // Last day - partial leave
+                        let missedHours = Math.max(0, (endDateTime - dayStart) / (1000 * 60 * 60));
+                        totalHoursMissed += Math.min(missedHours, workHoursPerDay);
+                    } else {
+                        // Full workday off
+                        totalHoursMissed += workHoursPerDay;
+                    }
+                }
+        
+                currentDate.setDate(currentDate.getDate() + 1);
             }
-            currentDate.setDate(currentDate.getDate() + 1);
+        
+            // Calculate total work hours in period
+            let totalWorkingDays = 0;
+            let tempDate = new Date(startDateTime);
+            while (tempDate <= endDateTime) {
+                if (tempDate.getDay() !== 0 && tempDate.getDay() !== 6) {
+                    totalWorkingDays++;
+                }
+                tempDate.setDate(tempDate.getDate() + 1);
+            }
+        
+            let totalWorkingHours = totalWorkingDays * workHoursPerDay;
+            let percentageMissed = totalWorkingHours > 0 ? ((totalHoursMissed / totalWorkingHours) * 100).toFixed(2) : 0;
+        
+            return {
+                totalHoursMissed,
+                percentageMissed
+            };
         }
-        return count;
-    }
+        
+        // ✅ Convert "7:00 AM" → "07:00" (24-hour format)
+        function convertTo24HourFormat(time) {
+            const [hourString, minute] = time.split(':');
+            let [hours, minutes] = minute.split(' ');
+            hours = parseInt(hourString, 10);
+            if (minutes.includes('PM') && hours < 12) {
+                hours += 12;
+            } else if (minutes.includes('AM') && hours === 12) {
+                hours = 0;
+            }
+            return `${hours.toString().padStart(2, '0')}:${minute.split(' ')[0]}`;
+        }
+        
 
     async function deleteExpiredRecords(records) {
         const now = new Date();
