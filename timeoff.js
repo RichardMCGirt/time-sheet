@@ -463,6 +463,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (submittedData) submittedData.classList.remove('hidden');
     }
 
+    function calculateBusinessDays(startDate, endDate) {
+        let start = new Date(startDate);
+        let end = new Date(endDate);
+        let count = 0;
+    
+        while (start <= end) {
+            let dayOfWeek = start.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Exclude weekends
+                count++;
+            }
+            start.setDate(start.getDate() + 1);
+        }
+    
+        return count;
+    }
+    
+
     function handleLogout(event) {
         event.preventDefault();
         localStorage.removeItem('userEmail');

@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded", function() {
     async function clearDataInAirtable() {
         console.log('Clearing data in Airtable...');
         const endpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}`;
-        const searchEndpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}?filterByFormula=AND({Email}="${userEmail}")`;
+        const searchEndpoint = `https://api.airtable.com/v0/${baseId}/${newTableId}?filterByFormula={Email}="${userEmail}"`;
     
         try {
             const searchResponse = await fetch(searchEndpoint, {
@@ -209,12 +209,12 @@ document.addEventListener("DOMContentLoaded", function() {
             const recordId = searchData.records[0].id;
             console.log('Existing record found with ID:', recordId);
     
+            // **Exclude the 'email' field from the update payload**
             const record = {
                 fields: {
                     ...Object.fromEntries(
-                        Object.keys(gatherFormData()).map(key => [key, null])
-                    ),
-                    "email": userEmail
+                        Object.keys(gatherFormData()).map(key => [key, null]) // Clear all fields except email
+                    )
                 }
             };
     
@@ -242,6 +242,7 @@ document.addEventListener("DOMContentLoaded", function() {
             throw error;
         }
     }
+    
     
     function resetFormFields() {
         for (let i = 1; i <= 7; i++) {
