@@ -1753,7 +1753,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Apply special behavior for John Peacock and Heath Kornegay
-    if (userEmail === 'john.peacock@vanirinstalledsales.com' || userEmail === 'diana.smith@vanirinstalledsales.com') {
+    if (userEmail === 'john.peacock@vanirinstalledsales.com' || userEmail === 'luz.arceo@vanirinstalledsales.com') {
         console.log(`${userEmail} detected. Waiting for PTO hours...`);
 
         function checkAndStartCountdown() {
