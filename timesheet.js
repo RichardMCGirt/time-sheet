@@ -1502,12 +1502,15 @@ if (heathCloseButton) {
             // Format each date as "Month Name DD, YYYY" and ensure it stays in one cell
             const dateValue = document.querySelector(`[name="${day}"]`)?.value;
             const formattedDate = dateValue
-                ? `"${new Date(dateValue).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' })}"`
+                ? `"${new Date(`${dateValue}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' })}"`
                 : '';
+            
+
     
             row.push(formattedDate);
-            const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'].map(field => elements.timeEntryForm.elements[`${field}${index + 1}`]?.value || '');
-            row.push(...timeFields);
+            const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out']
+            .map(field => document.querySelector(`[name="${field}${index + 1}"]`)?.value || '');
+                    row.push(...timeFields);
             row.push(document.getElementById(`hours-worked-today${index + 1}`)?.textContent || '');
             row.push(elements.timeEntryForm.elements[`PTO_hours${index + 1}`]?.value || '');
             row.push(elements.timeEntryForm.elements[`Personal_hours${index + 1}`]?.value || '');
