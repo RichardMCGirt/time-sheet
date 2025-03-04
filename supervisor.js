@@ -92,6 +92,8 @@ if (userEmailElement) {
         }
     }
 
+    
+
     async function fetchSupervisorName(email) {
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${email}')`;
         console.log(`Fetching supervisor name from Airtable with endpoint: ${endpoint}`);

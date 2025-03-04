@@ -491,65 +491,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function calculateHoursMissed(startDate, startTime, endDate, endTime) {
         const workDayStart = 7; // 7:00 AM
-            const workDayEnd = 16; // 4:00 PM
-            const workHoursPerDay = workDayEnd - workDayStart; // 9 hours per full workday
+        const workDayEnd = 16; // 4:00 PM
+        const lunchBreak = 1; // 1-hour lunch
+        const workHoursPerDay = (workDayEnd - workDayStart) - lunchBreak; // 7 working hours per full workday
+    
+        // Convert to DateTime Objects
+        const startDateTime = new Date(`${startDate}T${convertTo24HourFormat(startTime)}:00`);
+        const endDateTime = new Date(`${endDate}T${convertTo24HourFormat(endTime)}:00`);
+    
+        let totalHoursMissed = 0;
+        let currentDate = new Date(startDateTime);
         
-            // Convert to DateTime Objects
-            const startDateTime = new Date(`${startDate}T${convertTo24HourFormat(startTime)}:00`);
-            const endDateTime = new Date(`${endDate}T${convertTo24HourFormat(endTime)}:00`);
-        
-            let totalHoursMissed = 0;
-            let currentDate = new Date(startDateTime);
-            
-            while (currentDate <= endDateTime) {
-                const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
-        
-                if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Exclude weekends
-                    let dayStart = new Date(currentDate);
-                    dayStart.setHours(workDayStart, 0, 0); // Set to 7:00 AM
-        
-                    let dayEnd = new Date(currentDate);
-                    dayEnd.setHours(workDayEnd, 0, 0); // Set to 4:00 PM
-        
-                    if (currentDate.toDateString() === startDateTime.toDateString() && currentDate.toDateString() === endDateTime.toDateString()) {
-                        // Single-day partial leave
-                        let missedHours = Math.max(0, (endDateTime - startDateTime) / (1000 * 60 * 60));
-                        totalHoursMissed += Math.min(missedHours, workHoursPerDay);
-                    } else if (currentDate.toDateString() === startDateTime.toDateString()) {
-                        // First day - partial leave
-                        let missedHours = Math.max(0, (dayEnd - startDateTime) / (1000 * 60 * 60));
-                        totalHoursMissed += Math.min(missedHours, workHoursPerDay);
-                    } else if (currentDate.toDateString() === endDateTime.toDateString()) {
-                        // Last day - partial leave
-                        let missedHours = Math.max(0, (endDateTime - dayStart) / (1000 * 60 * 60));
-                        totalHoursMissed += Math.min(missedHours, workHoursPerDay);
-                    } else {
-                        // Full workday off
-                        totalHoursMissed += workHoursPerDay;
-                    }
+        while (currentDate <= endDateTime) {
+            const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
+    
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Exclude weekends
+                let dayStart = new Date(currentDate);
+                dayStart.setHours(workDayStart, 0, 0); // Set to 7:00 AM
+    
+                let dayEnd = new Date(currentDate);
+                dayEnd.setHours(workDayEnd, 0, 0); // Set to 4:00 PM
+    
+                if (currentDate.toDateString() === startDateTime.toDateString() && currentDate.toDateString() === endDateTime.toDateString()) {
+                    // Single-day partial leave
+                    let missedHours = Math.max(0, (endDateTime - startDateTime) / (1000 * 60 * 60));
+                    totalHoursMissed += Math.min(missedHours, workHoursPerDay);
+                } else if (currentDate.toDateString() === startDateTime.toDateString()) {
+                    // First day - partial leave
+                    let missedHours = Math.max(0, (dayEnd - startDateTime) / (1000 * 60 * 60));
+                    totalHoursMissed += Math.min(missedHours, workHoursPerDay);
+                } else if (currentDate.toDateString() === endDateTime.toDateString()) {
+                    // Last day - partial leave
+                    let missedHours = Math.max(0, (endDateTime - dayStart) / (1000 * 60 * 60));
+                    totalHoursMissed += Math.min(missedHours, workHoursPerDay);
+                } else {
+                    // Full workday off
+                    totalHoursMissed += workHoursPerDay;
                 }
-        
-                currentDate.setDate(currentDate.getDate() + 1);
             }
-        
-            // Calculate total work hours in period
-            let totalWorkingDays = 0;
-            let tempDate = new Date(startDateTime);
-            while (tempDate <= endDateTime) {
-                if (tempDate.getDay() !== 0 && tempDate.getDay() !== 6) {
-                    totalWorkingDays++;
-                }
-                tempDate.setDate(tempDate.getDate() + 1);
-            }
-        
-            let totalWorkingHours = totalWorkingDays * workHoursPerDay;
-            let percentageMissed = totalWorkingHours > 0 ? ((totalHoursMissed / totalWorkingHours) * 100).toFixed(2) : 0;
-        
-            return {
-                totalHoursMissed,
-                percentageMissed
-            };
+    
+            currentDate.setDate(currentDate.getDate() + 1);
         }
+    
+        // Calculate total work hours in period
+        let totalWorkingDays = 0;
+        let tempDate = new Date(startDateTime);
+        while (tempDate <= endDateTime) {
+            if (tempDate.getDay() !== 0 && tempDate.getDay() !== 6) {
+                totalWorkingDays++;
+            }
+            tempDate.setDate(tempDate.getDate() + 1);
+        }
+    
+        let totalWorkingHours = totalWorkingDays * workHoursPerDay;
+        let percentageMissed = totalWorkingHours > 0 ? ((totalHoursMissed / totalWorkingHours) * 100).toFixed(2) : 0;
+    
+        return {
+            totalHoursMissed,
+            percentageMissed
+        };
+    }
+    
         
         // ✅ Convert "7:00 AM" → "07:00" (24-hour format)
         function convertTo24HourFormat(time) {
