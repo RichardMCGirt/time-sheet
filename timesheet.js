@@ -313,11 +313,11 @@ document.addEventListener("DOMContentLoaded", function() {
 // Fetch Personal End Date
 async function fetchPersonalEndDate() {
     // Hardcoded Personal End Date for Q1
-    const personalEndDate = '12/31/2024';
+    const personalEndDate = '03/26/2025';
 
     // Define quarter periods with their start and end dates
     const quarters = [
-        { name: 'Q1', start: '01/01/2025', end: '03/25/2025' },
+        { name: 'Q1', start: '01/01/2025', end: '03/26/2025' },
         { name: 'Q2', start: '03/26/2025', end: '06/24/2025' },
         { name: 'Q3', start: '06/25/2025', end: '09/30/2025' },
         { name: 'Q4', start: '10/01/2025', end: '12/30/2025' }
@@ -734,7 +734,7 @@ function populateWeekDates(weekEndingDate) {
 
 function startCountdown() {
     // Set the target date and time to December 31, 2024, at midnight (00:00:00)
-    const targetDate = new Date('2025-03-25T00:00:00');
+    const targetDate = new Date('2025-03-26T00:00:00');
     const endDateTime = targetDate.getTime(); // Get the timestamp for the target date
     const countdownElement = document.getElementById('countdown');
 
