@@ -736,12 +736,21 @@ function startCountdown() {
     const countdownElement = document.getElementById('countdown');
 
     function getNextTargetDate(current) {
-        if (current < new Date('2025-03-26T00:00:00').getTime()) {
-            return new Date('2025-03-26T00:00:00').getTime();
-        } else {
-            return new Date('2025-09-30T00:00:00').getTime();
+        const dates = [
+            new Date('2025-06-25T00:00:00').getTime(),
+            new Date('2025-10-01T00:00:00').getTime(),
+            new Date('2025-12-31T00:00:00').getTime()
+        ];
+    
+        for (let i = 0; i < dates.length; i++) {
+            if (current < dates[i]) {
+                return dates[i];
+            }
         }
+    
+        return null; // No future dates
     }
+    
 
     function updateCountdown() {
         const now = new Date().getTime();
