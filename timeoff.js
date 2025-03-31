@@ -60,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const employeeName = data.records[0].fields['Full Name'];
                 document.getElementById('employeeName').value = employeeName;
                 fetchPreviousRequests(email);
+                await uncheckSubmitCheckbox(data.records[0].id);
+
             } else {
                 console.error('No employee found with the given email.');
             }
@@ -104,6 +106,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    async function uncheckSubmitCheckbox(recordId) {
+        try {
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fields: {
+                        'Submit': false
+                    }
+                })
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Failed to uncheck Submit checkbox:', errorData);
+            } else {
+                console.log('Submit checkbox unchecked on page load');
+            }
+        } catch (error) {
+            console.error('Error unchecking Submit checkbox:', error);
+        }
+    }
     
 
     async function sendToAirtable(formData) {
@@ -247,6 +275,8 @@ document.addEventListener('DOMContentLoaded', () => {
             [`Time off Start Time ${nextIndex}`]: startTime,
             [`Time off End Date ${nextIndex}`]: endDate,
             [`Time off End Time ${nextIndex}`]: endTime,
+            'Submit': true,
+
         };
     
         sendToAirtable(formData);

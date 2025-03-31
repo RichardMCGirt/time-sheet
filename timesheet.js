@@ -318,7 +318,7 @@ async function fetchPersonalEndDate() {
     // Define quarter periods with their start and end dates
     const quarters = [
         { name: 'Q1', start: '01/01/2025', end: '03/26/2025' },
-        { name: 'Q2', start: '03/26/2025', end: '06/24/2025' },
+        { name: 'Q2', start: '03/26/2025', end: '06/25/2025' },
         { name: 'Q3', start: '06/25/2025', end: '09/30/2025' },
         { name: 'Q4', start: '10/01/2025', end: '12/30/2025' }
     ];
@@ -733,18 +733,24 @@ function populateWeekDates(weekEndingDate) {
 }
 
 function startCountdown() {
-    // Set the target date and time to December 31, 2024, at midnight (00:00:00)
-    const targetDate = new Date('2025-03-26T00:00:00');
-    const endDateTime = targetDate.getTime(); // Get the timestamp for the target date
     const countdownElement = document.getElementById('countdown');
+
+    function getNextTargetDate(current) {
+        if (current < new Date('2025-03-26T00:00:00').getTime()) {
+            return new Date('2025-03-26T00:00:00').getTime();
+        } else {
+            return new Date('2025-09-30T00:00:00').getTime();
+        }
+    }
 
     function updateCountdown() {
         const now = new Date().getTime();
+        const endDateTime = getNextTargetDate(now);
         const distance = endDateTime - now;
 
         if (distance < 0) {
             countdownElement.innerHTML = "EXPIRED";
-            return; // Stop if the countdown is over
+            return;
         }
 
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -752,21 +758,18 @@ function startCountdown() {
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        countdownElement.innerHTML = `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Secounds`;
+        countdownElement.innerHTML = `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Seconds`;
 
-        // Calculate the exact remaining milliseconds until the next full second
         const nextUpdateInMs = 1000 - (now % 1000);
-
-        // Schedule the next update accurately for the next full second
         setTimeout(updateCountdown, nextUpdateInMs);
     }
 
-    // Start the countdown immediately
     updateCountdown();
 }
 
-// Call the function to start the countdown
+// Start the countdown
 startCountdown();
+
 
     
 

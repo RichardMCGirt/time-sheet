@@ -11,6 +11,14 @@
     --highlight-hover-color: #16a085;
 }
 
+#countdown {
+    font-family: monospace;
+    min-width: 160px; /* or whatever fits your max text */
+    text-align: center;
+    display: inline-block;
+  }
+  
+
 #snack-dropdown {
     width: 200px; /* Set the width of the dropdown */
     padding: 10px; /* Add some padding for better spacing */
