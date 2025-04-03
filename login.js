@@ -115,6 +115,7 @@ async function login() {
                 'dallas.hudson@vanirinstalledsales.com',
                 'brooke.slaugenhoup@vanirinstalledsales.com',
                 'carina.gonzalez@vanirinstalledsales.com',
+                'faith.hudson@vanirinstalledsales.com',
             ].map(email => email.toLowerCase()); // Ensure all comparison emails are lowercase
 
             if (employeeRedirectEmails.includes(email)) {
