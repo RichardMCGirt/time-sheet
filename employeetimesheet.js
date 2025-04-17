@@ -348,18 +348,18 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
            console.log(`[DEBUG] Personal Hours: ${totalPersonalHours}, PTO Hours: ${totalPtoHours}, Holiday Hours: ${totalHolidayHours}`);
     
 // Gifted hours logic
-const totalEligibleHours = totalHoursWorked + totalHolidayHours + totalPersonalHours + totalPtoHours;
+// const totalEligibleHours = totalHoursWorked + totalHolidayHours + totalPersonalHours + totalPtoHours;
 
-if (totalHoursWorked === 0) {
-    giftedHours = 0;
-    console.log(`[INFO] Gifted hours set to 0 because total hours worked is 0.`);
-} else if (totalEligibleHours < 40) {
-    giftedHours = Math.min(3, 40 - totalEligibleHours);
-    console.log(`[INFO] Gifted hours calculated: ${giftedHours.toFixed(2)} based on total eligible hours: ${totalEligibleHours.toFixed(2)}`);
-} else {
-    giftedHours = 0;
-    console.log(`[INFO] No gifted hours as total eligible hours (${totalEligibleHours.toFixed(2)}) exceed 40.`);
-}
+// if (totalHoursWorked === 0) {
+   // giftedHours = 0;
+  //  console.log(`[INFO] Gifted hours set to 0 because total hours worked is 0.`);
+//} else if (totalEligibleHours < 40) {
+  //  giftedHours = Math.min(3, 40 - totalEligibleHours);
+   // console.log(`[INFO] Gifted hours calculated: ${giftedHours.toFixed(2)} based on total eligible hours: ${totalEligibleHours.toFixed(2)}`);
+//} else {
+ //   giftedHours = 0;
+   // console.log(`[INFO] No gifted hours as total eligible hours (${totalEligibleHours.toFixed(2)}) exceed 40.`);
+// }
    
         // Calculate the final total including all hours
         const finalTotal = totalHoursWorked + giftedHours + totalHolidayHours + totalPersonalHours + totalPtoHours;
