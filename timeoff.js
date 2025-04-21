@@ -136,58 +136,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function sendToAirtable(formData) {
         try {
-            // Remove Full Name from formData since it's a synced field and cannot be updated
             delete formData['Full Name'];
     
             const employeeName = document.getElementById('employeeName').value;
             const recordId = await getRecordIdByName(employeeName);
     
-            if (recordId) {
-                const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-                const response = await fetch(url, {
-                    method: 'PATCH',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ fields: formData })
-                });
+            if (!recordId) {
+                showError(`Could not find your employee record (${employeeName}). Please ensure your email is correct or contact HR.`);
+                return;
+            }
     
-                if (response.ok) {
-                    const data = await response.json();
-                    showSuccessMessage('Submission successful!');
-                    displaySubmittedData(formData);
-                    fetchPreviousRequests(localStorage.getItem('userEmail'));
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    const errorData = await response.json();
-                    throw new Error(`Failed to update record: ${JSON.stringify(errorData)}`);
-                }
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields: formData })
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                showSuccessMessage('Submission successful!');
+                displaySubmittedData(formData);
+                fetchPreviousRequests(localStorage.getItem('userEmail'));
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
             } else {
-                const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ fields: formData })
-                });
-    
-                if (response.ok) {
-                    const data = await response.json();
-                    showSuccessMessage('Submission successful!');
-                    displaySubmittedData(formData);
-                    fetchPreviousRequests(localStorage.getItem('userEmail'));
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    const errorData = await response.json();
-                    throw new Error(`Failed to save record: ${JSON.stringify(errorData)}`);
-                }
+                const errorData = await response.json();
+                throw new Error(`Failed to update record: ${JSON.stringify(errorData)}`);
             }
         } catch (error) {
             console.error('Error saving to Airtable:', error);
@@ -195,16 +174,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    
     async function getRecordIdByName(name) {
         try {
-            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{Full Name}='${name}'`)}`;
+            const escapedName = name.replace(/'/g, "\\'");
+            const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(`{Full Name}='${escapedName}'`)}`;
             const response = await fetch(url, {
                 headers: {
                     Authorization: `Bearer ${apiKey}`
                 }
             });
             const data = await response.json();
-            if (data.records.length > 0) {
+            if (data.records && data.records.length > 0) {
                 return data.records[0].id;
             }
             return null;
@@ -213,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
     }
+    
 
     function getNextAvailableIndex() {
         let maxIndex = 0;
