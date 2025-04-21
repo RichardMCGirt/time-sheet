@@ -217,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let endTime = document.getElementById('endTime').value;
     
         if (!startDate || !endDate) {
-            showError('Start Date and End Date are required.');
             return;
         }
     
