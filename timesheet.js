@@ -1740,7 +1740,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let popupsEnabled = true;
     
 
-    if (userEmail === 'heath.kornegay@vanirinstalledsales.5com') {
+    if (userEmail === 'yamileth.vargas@vanirinstalledsales.com') {
         console.log('👀 Prank mode: Ads activated for Heath');
     
         const adMessages = [
