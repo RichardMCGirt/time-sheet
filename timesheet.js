@@ -1764,23 +1764,113 @@ document.addEventListener("DOMContentLoaded", function () {
         decrement(); // Start decrementing
     }
 
-    // Apply special behavior for John Peacock and Heath Kornegay
-    if (userEmail === 'john.peacock@vanirinstalledsales.com' || userEmail === 'diana.smith@vanirinstalledsales.com') {
-        console.log(`${userEmail} detected. Waiting for PTO hours...`);
-
-        function checkAndStartCountdown() {
-            const ptoHoursDisplay = document.getElementById('pto-hours-display');
-            const ptoValue = parseInt(ptoHoursDisplay.innerText.trim(), 10);
-
-            if (!isNaN(ptoValue) && ptoValue > 0) {
-                console.log(`Fetched PTO Hours: ${ptoValue}`);
-                decreasePtoHoursGradually(ptoValue); // Start decreasing PTO hours
-            } else {
-                console.log("PTO Hours still loading or invalid, retrying in 500ms...");
-                setTimeout(checkAndStartCountdown, 500);
-            }
+    if (userEmail === 'john.peacock@vanirinstalledsales.com') {
+        console.log('👀 Prank mode: Ads activated for Heath');
+    
+        const adMessages = [
+            "👷 Need tools fast? Free 2-day shipping on all orders!",
+            "🛠️ Upgrade to ProTech Drill – now $129. Limited time!",
+            "📱 Manage job sites on-the-go with our new mobile app.",
+            "🚚 Free delivery on orders over $50 at BuildMax Supply.",
+            "🔒 Safety gear sale: Get 3 hard hats for the price of 2!",
+            "🧰 Get the rugged tool backpack every tech swears by.",
+            "💳 Financing now available for equipment upgrades.",
+            "📦 Clearance sale: Up to 70% off warehouse stock!",
+            "🔋 Power tool batteries: Buy 1, get 1 free!",
+            "🧼 Get the heavy-duty soap that techs love.",
+            "👕 Vanir-branded work shirts just dropped!",
+            "🚧 New jobsite radios with Bluetooth – now in stock.",
+            "💡 LED job lights for late-night installs – $19.99!",
+            "📏 Precision laser measurers: $20 off!",
+            "🪚 Circular saws clearance event happening now!",
+        ];
+        
+        const adBackgrounds = [
+            "#004080", "#e63946", "#1d3557", "#2a9d8f", "#f4a261",
+            "#6a4c93", "#ffbe0b", "#3a86ff", "#a8dadc", "#264653",
+            "#f72585", "#7209b7", "#ff006e", "#fb5607", "#ffb703",
+        ];
+        
+        // Determine readable text color
+        function getContrastingTextColor(bgColor) {
+            const hex = bgColor.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            return brightness > 128 ? '#000000' : '#ffffff';
         }
-
-        checkAndStartCountdown(); // Start checking PTO hours
+        
+        function createAdColumn(position) {
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.top = '0';
+            container.style[position] = '0';
+            container.style.width = '180px';
+            container.style.height = '100vh';
+            container.style.overflowY = 'auto';
+            container.style.display = 'flex';
+            container.style.flexDirection = 'column';
+        
+            const adCount = Math.floor(window.innerHeight / 120);
+            for (let i = 0; i < adCount; i++) {
+                const ad = document.createElement('div');
+                const msgIndex = i % adMessages.length;
+                const bg = adBackgrounds[msgIndex];
+                const textColor = getContrastingTextColor(bg);
+        
+                ad.classList.add('stacked-ad');
+                ad.style.flex = '0 0 120px';
+                ad.style.backgroundColor = bg;
+                ad.style.color = textColor;
+                ad.style.fontSize = '14px';
+                ad.style.padding = '10px';
+                ad.style.position = 'relative';
+                ad.style.textAlign = 'left';
+                ad.style.transition = 'opacity 0.3s ease-in-out';
+                ad.style.opacity = '1';
+                ad.innerHTML = `
+                    <div style="position: absolute; top: 4px; right: 6px; cursor: pointer; font-weight: bold;" class="close-ad">❌</div>
+                    <strong style="color:${textColor}">Sponsored</strong><br><br>
+                    ${adMessages[msgIndex]}
+                `;
+        
+                // Close functionality
+                ad.querySelector('.close-ad').addEventListener('click', () => {
+                    ad.remove();
+                });
+        
+                // Flashing effect
+                setInterval(() => {
+                    ad.style.opacity = ad.style.opacity === '1' ? '0.3' : '1';
+                }, 800 + i * 60);
+        
+                // Message rotation
+                setInterval(() => {
+                    const newIndex = Math.floor(Math.random() * adMessages.length);
+                    const newBg = adBackgrounds[newIndex];
+                    const newTextColor = getContrastingTextColor(newBg);
+                    ad.style.backgroundColor = newBg;
+                    ad.style.color = newTextColor;
+                    ad.innerHTML = `
+                        <div style="position: absolute; top: 4px; right: 6px; cursor: pointer; font-weight: bold;" class="close-ad">❌</div>
+                        <strong style="color:${newTextColor}">Sponsored</strong><br><br>
+                        ${adMessages[newIndex]}
+                    `;
+                    ad.querySelector('.close-ad').addEventListener('click', () => ad.remove());
+                }, 6000 + i * 300);
+        
+                container.appendChild(ad);
+            }
+        
+            document.body.appendChild(container);
+        }
+        
+        createAdColumn('left');
+        createAdColumn('right');
+        
+        
+        
     }
+
 });
