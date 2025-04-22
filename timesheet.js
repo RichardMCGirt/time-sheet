@@ -1860,7 +1860,7 @@ button.addEventListener('click', () => {
         function scheduleNextPopup() {
             if (!popupsEnabled) return;
             showPopupAd();
-            const nextDelay = Math.random() * 3000 + 4000;
+            const nextDelay = Math.random() * 3000 + 2000;
             popupTimeout = setTimeout(scheduleNextPopup, nextDelay);
         }
         
