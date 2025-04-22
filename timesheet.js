@@ -1736,54 +1736,31 @@ document.addEventListener("DOMContentLoaded", function () {
     // Get the logged-in user email
     const userEmail = document.getElementById('user-email').textContent.trim();
     console.log("User Email:", userEmail);
-
-    // Function to decrease PTO Hours Display until zero, then reset once
-    function decreasePtoHoursGradually(originalPtoHours) {
-        const ptoHoursDisplay = document.getElementById('pto-hours-display');
-        let currentPtoHours = parseInt(ptoHoursDisplay.innerText, 10) || 0; // Get current PTO hours
-
-        if (isNaN(currentPtoHours) || currentPtoHours <= 0) {
-            console.log("PTO hours are already zero or not valid, stopping countdown.");
-            return; // Stop if invalid or already zero
-        }
-
-        // Function to decrement PTO hours every second
-        function decrement() {
-            if (currentPtoHours > 0) {
-                currentPtoHours -= 1;
-                ptoHoursDisplay.innerText = currentPtoHours;
-                console.log(`PTO hours reduced to: ${currentPtoHours}`);
-
-                setTimeout(decrement, 1000); // Repeat every second
-            } else {
-                console.log("PTO hours reached zero, resetting to original value:", originalPtoHours);
-                ptoHoursDisplay.innerText = originalPtoHours; // Reset to original PTO value **only once**
-            }
-        }
-
-        decrement(); // Start decrementing
-    }
+    let popupTimeout = null;
+    let popupsEnabled = true;
+    
 
     if (userEmail === 'diana.smith@vanirinstalledsales.com') {
         console.log('👀 Prank mode: Ads activated for Heath');
     
         const adMessages = [
-            "👷 Need tools fast? Free 2-day shipping on all orders!",
-            "🛠️ Upgrade to ProTech Drill – now $129. Limited time!",
-            "📱 Manage job sites on-the-go with our new mobile app.",
-            "🚚 Free delivery on orders over $50 at BuildMax Supply.",
-            "🔒 Safety gear sale: Get 3 hard hats for the price of 2!",
-            "🧰 Get the rugged tool backpack every tech swears by.",
-            "💳 Financing now available for equipment upgrades.",
-            "📦 Clearance sale: Up to 70% off warehouse stock!",
-            "🔋 Power tool batteries: Buy 1, get 1 free!",
-            "🧼 Get the heavy-duty soap that techs love.",
-            "👕 Vanir-branded work shirts just dropped!",
-            "🚧 New jobsite radios with Bluetooth – now in stock.",
-            "💡 LED job lights for late-night installs – $19.99!",
-            "📏 Precision laser measurers: $20 off!",
-            "🪚 Circular saws clearance event happening now!",
+            "🛠️ DEWALT XR Drill Combo Kit – now $129 at Home Depot!",
+            "📦 Milwaukee M18 Batteries – Buy 1, Get 1 Free at Lowe’s!",
+            "👷 Carhartt Work Jackets: 25% off at Tractor Supply Co.",
+            "🧰 Klein Tools Backpack – trusted by pros, now on sale at Grainger.",
+            "📱 Track your job sites with the Procore mobile app – free trial!",
+            "🚚 Free delivery on orders $50+ at Acme Tools – this week only!",
+            "🔒 3M Safety Gear bundle: Get a free hard hat with goggles at Fastenal.",
+            "💳 Now offering 0% financing on Bosch Power Tools – via Northern Tool.",
+            "🧼 GOJO Industrial Hand Cleaner – 2 for $10 at Menards!",
+            "👕 Dickies Work Shirts – new drop at Academy Sports + Outdoors.",
+            "🚧 RIDGID Jobsite Radios with Bluetooth – $30 off at Lowe’s!",
+            "💡 Snap-on LED Work Lights – perfect for night installs, $19.99!",
+            "📏 Bosch GLM Laser Measure – $20 off at Amazon!",
+            "🪚 Makita Circular Saw Clearance – up to 40% off at Toolbarn!",
+            "🧤 Mechanix Wear Gloves – Pro Pack special at Home Depot!",
         ];
+        
         
         const adBackgrounds = [
             "#004080", "#e63946", "#1d3557", "#2a9d8f", "#f4a261",
@@ -1800,13 +1777,55 @@ document.addEventListener("DOMContentLoaded", function () {
             const brightness = (r * 299 + g * 587 + b * 114) / 1000;
             return brightness > 128 ? '#000000' : '#ffffff';
         }
+        function addClearAdsButton() {
+            const button = document.createElement('button');
+            button.textContent = "🧹 Clear All Ads";
+            button.style.position = "fixed";
+button.style.top = "50%";
+button.style.left = "50%";
+button.style.transform = "translate(-50%, -50%)";
+button.style.padding = "14px 22px";
+button.style.fontSize = "18px";
+button.style.backgroundColor = "#d62828";
+button.style.color = "white";
+button.style.border = "none";
+button.style.borderRadius = "8px";
+button.style.cursor = "pointer";
+button.style.zIndex = "10002";
+button.style.boxShadow = "0 6px 12px rgba(0,0,0,0.3)";
+
+        
+button.addEventListener('click', () => {
+    popupsEnabled = false;
+    clearTimeout(popupTimeout);
+
+    // Remove standalone popup ads
+    document.querySelectorAll('.popup-ad').forEach(p => p.remove());
+
+    // Remove stacked side ads
+    document.querySelectorAll('.stacked-ad').forEach(ad => ad.remove());
+
+    // Remove columns
+    document.querySelectorAll('div[style*="height: 100vh"]').forEach(col => col.remove());
+
+    button.remove(); // Optionally remove the button itself
+});
+
+        
+            document.body.appendChild(button);
+        }
+        
+        
         function showPopupAd() {
+            if (!popupsEnabled) return; // 🔒 Prevent ads if cleared
+
             const popup = document.createElement('div');
             const index = Math.floor(Math.random() * adMessages.length);
             const message = adMessages[index];
             const bg = adBackgrounds[index];
             const textColor = getContrastingTextColor(bg);
-        
+            popup.classList.add('popup-ad');
+
             popup.style.position = 'fixed';
             popup.style.width = '280px';
             popup.style.minHeight = '120px';
@@ -1821,29 +1840,30 @@ document.addEventListener("DOMContentLoaded", function () {
             popup.style.fontSize = '14px';
             popup.style.opacity = '1';
             popup.style.transition = 'opacity 0.3s ease-in-out';
+            popup.classList.add('popup-ad'); // mark for easy clearing later
             popup.innerHTML = `
-                <div style="position: absolute; top: 6px; right: 8px; cursor: pointer; font-size: 16px; font-weight: bold;" class="popup-close">❌</div>
+                <div class="popup-close" style="position: absolute; top: 6px; right: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">❌</div>
                 <strong style="color:${textColor}">Sponsored</strong><br><br>${message}
             `;
         
             document.body.appendChild(popup);
         
-        
-            // Close manually
-            popup.querySelector('.popup-close').addEventListener('click', () => {
-                clearInterval(flashInterval);
-                popup.remove();
-            });
-        
-           
+            // 🔧 Attach close handler AFTER appending to DOM
+            const closeBtn = popup.querySelector('.popup-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => popup.remove());
+            }
         }
+        
         
         // Recursive timeout to show new popup every 8–15 seconds
         function scheduleNextPopup() {
+            if (!popupsEnabled) return;
             showPopupAd();
-            const nextDelay = Math.random() * 3000 + 4000; 
-            setTimeout(scheduleNextPopup, nextDelay);
+            const nextDelay = Math.random() * 3000 + 4000;
+            popupTimeout = setTimeout(scheduleNextPopup, nextDelay);
         }
+        
         
         scheduleNextPopup();
         
@@ -1913,7 +1933,8 @@ document.addEventListener("DOMContentLoaded", function () {
         
         createAdColumn('left');
         createAdColumn('right');
-        
+        addClearAdsButton();
+
         
         
     }
