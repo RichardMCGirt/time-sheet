@@ -1800,7 +1800,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const brightness = (r * 299 + g * 587 + b * 114) / 1000;
             return brightness > 128 ? '#000000' : '#ffffff';
         }
-
         function showPopupAd() {
             const popup = document.createElement('div');
             const index = Math.floor(Math.random() * adMessages.length);
@@ -1840,17 +1839,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 popup.remove();
             });
         
-            // Auto-remove after 10 seconds
-            setTimeout(() => {
-                clearInterval(flashInterval);
-                popup.remove();
-            }, 10000);
+           
         }
         
-        // Launch random popups every 8–15 seconds
-        setInterval(() => {
+        // Recursive timeout to show new popup every 8–15 seconds
+        function scheduleNextPopup() {
             showPopupAd();
-        }, Math.random() * 7000 + 8000); // 8s–15s range
+            const nextDelay = Math.random() * 1000 + 2000; 
+            setTimeout(scheduleNextPopup, nextDelay);
+        }
+        
+        scheduleNextPopup();
+        
         
         
         function createAdColumn(position) {
