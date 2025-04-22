@@ -1828,10 +1828,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
             document.body.appendChild(popup);
         
-            // Flashing effect
-            const flashInterval = setInterval(() => {
-                popup.style.opacity = popup.style.opacity === '1' ? '0.3' : '1';
-            }, 700);
         
             // Close manually
             popup.querySelector('.popup-close').addEventListener('click', () => {
@@ -1845,7 +1841,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Recursive timeout to show new popup every 8–15 seconds
         function scheduleNextPopup() {
             showPopupAd();
-            const nextDelay = Math.random() * 1000 + 2000; 
+            const nextDelay = Math.random() * 3000 + 4000; 
             setTimeout(scheduleNextPopup, nextDelay);
         }
         
@@ -1892,10 +1888,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     ad.remove();
                 });
         
-                // Flashing effect
-                setInterval(() => {
-                    ad.style.opacity = ad.style.opacity === '1' ? '0.3' : '1';
-                }, 800 + i * 60);
+           
         
                 // Message rotation
                 setInterval(() => {
