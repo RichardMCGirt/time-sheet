@@ -1764,7 +1764,7 @@ document.addEventListener("DOMContentLoaded", function () {
         decrement(); // Start decrementing
     }
 
-    if (userEmail === 'john.peacock@vanirinstalledsales.com') {
+    if (userEmail === 'diana.smith@vanirinstalledsales.com') {
         console.log('👀 Prank mode: Ads activated for Heath');
     
         const adMessages = [
@@ -1800,6 +1800,58 @@ document.addEventListener("DOMContentLoaded", function () {
             const brightness = (r * 299 + g * 587 + b * 114) / 1000;
             return brightness > 128 ? '#000000' : '#ffffff';
         }
+
+        function showPopupAd() {
+            const popup = document.createElement('div');
+            const index = Math.floor(Math.random() * adMessages.length);
+            const message = adMessages[index];
+            const bg = adBackgrounds[index];
+            const textColor = getContrastingTextColor(bg);
+        
+            popup.style.position = 'fixed';
+            popup.style.width = '280px';
+            popup.style.minHeight = '120px';
+            popup.style.backgroundColor = bg;
+            popup.style.color = textColor;
+            popup.style.top = `${Math.random() * (window.innerHeight - 150)}px`;
+            popup.style.left = `${Math.random() * (window.innerWidth - 300)}px`;
+            popup.style.zIndex = '10001';
+            popup.style.padding = '15px 20px';
+            popup.style.borderRadius = '8px';
+            popup.style.boxShadow = '0 0 15px rgba(0,0,0,0.3)';
+            popup.style.fontSize = '14px';
+            popup.style.opacity = '1';
+            popup.style.transition = 'opacity 0.3s ease-in-out';
+            popup.innerHTML = `
+                <div style="position: absolute; top: 6px; right: 8px; cursor: pointer; font-size: 16px; font-weight: bold;" class="popup-close">❌</div>
+                <strong style="color:${textColor}">Sponsored</strong><br><br>${message}
+            `;
+        
+            document.body.appendChild(popup);
+        
+            // Flashing effect
+            const flashInterval = setInterval(() => {
+                popup.style.opacity = popup.style.opacity === '1' ? '0.3' : '1';
+            }, 700);
+        
+            // Close manually
+            popup.querySelector('.popup-close').addEventListener('click', () => {
+                clearInterval(flashInterval);
+                popup.remove();
+            });
+        
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                clearInterval(flashInterval);
+                popup.remove();
+            }, 10000);
+        }
+        
+        // Launch random popups every 8–15 seconds
+        setInterval(() => {
+            showPopupAd();
+        }, Math.random() * 7000 + 8000); // 8s–15s range
+        
         
         function createAdColumn(position) {
             const container = document.createElement('div');
