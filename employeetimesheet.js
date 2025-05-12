@@ -12,19 +12,25 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingScreen = document.getElementById('loading-screen');
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
-
+  
+    
     let supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
 
-    // Define impersonation rules
-    const impersonateKatyEmails = ['nhernandez@guyclee.com', 'jjones@guyclee.com'];
-    const impersonateBrianEmails = ['brian@vanirinstalledsales.com'];
+// Define impersonation rules
+const impersonateKatyEmails = ['nhernandez@guyclee.com', 'jjones@guyclee.com'];
+const impersonateBrianEmails = ['brian@vanirinstalledsales.com'];
 
-    const isImpersonatingKaty = impersonateKatyEmails.includes(supervisorEmail);
-    const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
+const isKaty = supervisorEmail === 'katy@vanirinstalledsales.com';
+const isImpersonatingKaty = impersonateKatyEmails.includes(supervisorEmail);
+const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
 
-    if (isImpersonatingKaty) {
-        supervisorEmail = 'katy@vanirinstalledsales.com';
+
+   
+    if (isKaty || isImpersonatingKaty) {
+        filterFormula = '{Employee Number}!=BLANK()';
     }
+    
+    
 
     console.log(`[INFO] Logged in as: ${supervisorEmail} (Impersonating Katy: ${isImpersonatingKaty}, Impersonating Brian: ${isImpersonatingBrian})`);
 

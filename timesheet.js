@@ -1455,6 +1455,9 @@ if (heathCloseButton) {
         return total;
     }
 
+
+    
+
     function debounce(func, wait) {
         let timeout;
         return function (...args) {
@@ -1492,11 +1495,15 @@ if (heathCloseButton) {
     
         const userEmail = localStorage.getItem('userEmail') || 'user';
         const date7Value = document.querySelector('[name="date7"]')?.value || 'date7';
-        const formattedDate7 = new Date(date7Value).toLocaleDateString('en-US', {
+        const rawDate = new Date(date7Value);
+        rawDate.setDate(rawDate.getDate() + 1); // Add one day
+        
+        const formattedDate7 = rawDate.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: '2-digit'
         });
+        
         // Format the file name using email and date7
         const fileName = `${userEmail}_${formattedDate7}.csv`.replace(/[@.]/g, '_');
     
@@ -1520,9 +1527,25 @@ if (heathCloseButton) {
 
     
             row.push(formattedDate);
-            const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out']
-            .map(field => document.querySelector(`[name="${field}${index + 1}"]`)?.value || '');
-                    row.push(...timeFields);
+            const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'];
+
+            timeFields.forEach(field => {
+                const input = elements.timeEntryForm.elements[`${field}${index + 1}`];
+                if (input && input.value) {
+                    const [hour, minute] = input.value.split(':');
+                    const formatted = new Date();
+                    formatted.setHours(parseInt(hour), parseInt(minute));
+                    row.push(formatted.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    }));
+                } else {
+                    row.push('');
+                }
+            });
+            
+            
             row.push(document.getElementById(`hours-worked-today${index + 1}`)?.textContent || '');
             row.push(elements.timeEntryForm.elements[`PTO_hours${index + 1}`]?.value || '');
             row.push(elements.timeEntryForm.elements[`Personal_hours${index + 1}`]?.value || '');
@@ -1729,214 +1752,3 @@ function toggleWorkInputs(dayIndex, isChecked) {
    
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("DOM fully loaded and parsed. Initializing time dropdowns...");
-    initializeTimeDropdowns();
-
-    // Get the logged-in user email
-    const userEmail = document.getElementById('user-email').textContent.trim();
-    console.log("User Email:", userEmail);
-    let popupTimeout = null;
-    let popupsEnabled = true;
-    
-
-    if (userEmail === 'katie.pipp5in@vanirinstalledsales.com') {
-        console.log('👀 Prank mode: Ads activated for Heath');
-    
-        const adMessages = [
-            "🛠️ DEWALT XR Drill Combo Kit – now $129 at Home Depot!",
-            "📦 Milwaukee M18 Batteries – Buy 1, Get 1 Free at Lowe’s!",
-            "👷 Carhartt Work Jackets: 25% off at Tractor Supply Co.",
-            "🧰 Klein Tools Backpack – trusted by pros, now on sale at Grainger.",
-            "📱 Track your job sites with the Procore mobile app – free trial!",
-            "🚚 Free delivery on orders $50+ at Acme Tools – this week only!",
-            "🔒 3M Safety Gear bundle: Get a free hard hat with goggles at Fastenal.",
-            "💳 Now offering 0% financing on Bosch Power Tools – via Northern Tool.",
-            "🧼 GOJO Industrial Hand Cleaner – 2 for $10 at Menards!",
-            "👕 Dickies Work Shirts – new drop at Academy Sports + Outdoors.",
-            "🚧 RIDGID Jobsite Radios with Bluetooth – $30 off at Lowe’s!",
-            "💡 Snap-on LED Work Lights – perfect for night installs, $19.99!",
-            "📏 Bosch GLM Laser Measure – $20 off at Amazon!",
-            "🪚 Makita Circular Saw Clearance – up to 40% off at Toolbarn!",
-            "🧤 Mechanix Wear Gloves – Pro Pack special at Home Depot!",
-        ];
-        
-        
-        const adBackgrounds = [
-            "#004080", "#e63946", "#1d3557", "#2a9d8f", "#f4a261",
-            "#6a4c93", "#ffbe0b", "#3a86ff", "#a8dadc", "#264653",
-            "#f72585", "#7209b7", "#ff006e", "#fb5607", "#ffb703",
-        ];
-        
-        // Determine readable text color
-        function getContrastingTextColor(bgColor) {
-            const hex = bgColor.replace('#', '');
-            const r = parseInt(hex.substr(0, 2), 16);
-            const g = parseInt(hex.substr(2, 2), 16);
-            const b = parseInt(hex.substr(4, 2), 16);
-            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            return brightness > 128 ? '#000000' : '#ffffff';
-        }
-        function addClearAdsButton() {
-            const button = document.createElement('button');
-            button.textContent = "🧹 Clear All Ads";
-            button.style.position = "fixed";
-button.style.top = "50%";
-button.style.left = "50%";
-button.style.transform = "translate(-50%, -50%)";
-button.style.padding = "14px 22px";
-button.style.fontSize = "18px";
-button.style.backgroundColor = "#d62828";
-button.style.color = "white";
-button.style.border = "none";
-button.style.borderRadius = "8px";
-button.style.cursor = "pointer";
-button.style.zIndex = "10002";
-button.style.boxShadow = "0 6px 12px rgba(0,0,0,0.3)";
-
-        
-button.addEventListener('click', () => {
-    popupsEnabled = false;
-    clearTimeout(popupTimeout);
-
-    // Remove standalone popup ads
-    document.querySelectorAll('.popup-ad').forEach(p => p.remove());
-
-    // Remove stacked side ads
-    document.querySelectorAll('.stacked-ad').forEach(ad => ad.remove());
-
-    // Remove columns
-    document.querySelectorAll('div[style*="height: 100vh"]').forEach(col => col.remove());
-
-    button.remove(); // Optionally remove the button itself
-});
-
-        
-            document.body.appendChild(button);
-        }
-        
-        
-        function showPopupAd() {
-            if (!popupsEnabled) return; // 🔒 Prevent ads if cleared
-
-            const popup = document.createElement('div');
-            const index = Math.floor(Math.random() * adMessages.length);
-            const message = adMessages[index];
-            const bg = adBackgrounds[index];
-            const textColor = getContrastingTextColor(bg);
-            popup.classList.add('popup-ad');
-
-            popup.style.position = 'fixed';
-            popup.style.width = '280px';
-            popup.style.minHeight = '120px';
-            popup.style.backgroundColor = bg;
-            popup.style.color = textColor;
-            popup.style.top = `${Math.random() * (window.innerHeight - 150)}px`;
-            popup.style.left = `${Math.random() * (window.innerWidth - 300)}px`;
-            popup.style.zIndex = '10001';
-            popup.style.padding = '15px 20px';
-            popup.style.borderRadius = '8px';
-            popup.style.boxShadow = '0 0 15px rgba(0,0,0,0.3)';
-            popup.style.fontSize = '14px';
-            popup.style.opacity = '1';
-            popup.style.transition = 'opacity 0.3s ease-in-out';
-            popup.classList.add('popup-ad'); // mark for easy clearing later
-            popup.innerHTML = `
-                <div class="popup-close" style="position: absolute; top: 6px; right: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">❌</div>
-                <strong style="color:${textColor}">Sponsored</strong><br><br>${message}
-            `;
-        
-            document.body.appendChild(popup);
-        
-            // 🔧 Attach close handler AFTER appending to DOM
-            const closeBtn = popup.querySelector('.popup-close');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => popup.remove());
-            }
-        }
-        
-        
-        // Recursive timeout to show new popup every 8–15 seconds
-        function scheduleNextPopup() {
-            if (!popupsEnabled) return;
-            showPopupAd();
-            const nextDelay = Math.random() * 3000 + 2000;
-            popupTimeout = setTimeout(scheduleNextPopup, nextDelay);
-        }
-        
-        
-        scheduleNextPopup();
-        
-        
-        
-        function createAdColumn(position) {
-            const container = document.createElement('div');
-            container.style.position = 'fixed';
-            container.style.top = '0';
-            container.style[position] = '0';
-            container.style.width = '180px';
-            container.style.height = '100vh';
-            container.style.overflowY = 'auto';
-            container.style.display = 'flex';
-            container.style.flexDirection = 'column';
-        
-            const adCount = Math.floor(window.innerHeight / 120);
-            for (let i = 0; i < adCount; i++) {
-                const ad = document.createElement('div');
-                const msgIndex = i % adMessages.length;
-                const bg = adBackgrounds[msgIndex];
-                const textColor = getContrastingTextColor(bg);
-        
-                ad.classList.add('stacked-ad');
-                ad.style.flex = '0 0 120px';
-                ad.style.backgroundColor = bg;
-                ad.style.color = textColor;
-                ad.style.fontSize = '14px';
-                ad.style.padding = '10px';
-                ad.style.position = 'relative';
-                ad.style.textAlign = 'left';
-                ad.style.transition = 'opacity 0.3s ease-in-out';
-                ad.style.opacity = '1';
-                ad.innerHTML = `
-                    <div style="position: absolute; top: 4px; right: 6px; cursor: pointer; font-weight: bold;" class="close-ad">❌</div>
-                    <strong style="color:${textColor}">Sponsored</strong><br><br>
-                    ${adMessages[msgIndex]}
-                `;
-        
-                // Close functionality
-                ad.querySelector('.close-ad').addEventListener('click', () => {
-                    ad.remove();
-                });
-        
-           
-        
-                // Message rotation
-                setInterval(() => {
-                    const newIndex = Math.floor(Math.random() * adMessages.length);
-                    const newBg = adBackgrounds[newIndex];
-                    const newTextColor = getContrastingTextColor(newBg);
-                    ad.style.backgroundColor = newBg;
-                    ad.style.color = newTextColor;
-                    ad.innerHTML = `
-                        <div style="position: absolute; top: 4px; right: 6px; cursor: pointer; font-weight: bold;" class="close-ad">❌</div>
-                        <strong style="color:${newTextColor}">Sponsored</strong><br><br>
-                        ${adMessages[newIndex]}
-                    `;
-                    ad.querySelector('.close-ad').addEventListener('click', () => ad.remove());
-                }, 6000 + i * 300);
-        
-                container.appendChild(ad);
-            }
-        
-            document.body.appendChild(container);
-        }
-        
-        createAdColumn('left');
-        createAdColumn('right');
-        addClearAdsButton();
-
-        
-        
-    }
-
-});

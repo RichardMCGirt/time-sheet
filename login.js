@@ -1,3 +1,5 @@
+
+
 const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
 const baseId = 'app9gw2qxhGCmtJvW';
 const tableId = 'tbljmLpqXScwhiWTt/';
@@ -65,8 +67,8 @@ async function fetchAllRecords() {
 
 
 async function login() {
-    const email = emailInput.value.trim().toLowerCase(); // Convert input email to lowercase
-    const password = passwordInput.value.trim().toLowerCase(); // Convert input password to lowercase
+    const email = emailInput.value.trim().toLowerCase();
+    const password = passwordInput.value.trim().toLowerCase();
 
     console.log("Login attempt with email:", email);
 
@@ -81,20 +83,19 @@ async function login() {
     }
 
     try {
-        // Check if the user is one of the impersonating emails with the correct password
+        // Bypass login for impersonation accounts
         if ((email === 'nhernandez@guyclee.com' || email === 'jjones@guyclee.com') && password === 'guyclee') {
-            // Store email in localStorage and redirect to supervisor.html
             localStorage.setItem('userEmail', email);
+            localStorage.setItem('userPassword', password); // Save for auto-login
             console.log("Impersonation successful, redirecting to supervisor.html");
             window.location.href = 'supervisor.html';
             return;
         }
 
-        // Proceed with other login logic if not an impersonating user
+        // Fetch records from Airtable
         const allRecords = await fetchAllRecords();
         console.log("Fetched records from Airtable:", allRecords);
 
-        // Convert stored email and password to lowercase for case-insensitive comparison
         const user = allRecords.find(record =>
             record.fields.email.toLowerCase() === email &&
             record.fields.password.toLowerCase() === password
@@ -104,8 +105,8 @@ async function login() {
             console.log("User authenticated:", user);
             sessionStorage.setItem('user', JSON.stringify(user.fields));
             localStorage.setItem('userEmail', email);
+            localStorage.setItem('userPassword', password); // ✅ Save for auto-login
 
-            // Check if the email should be redirected to employeetimesheet.html
             const employeeRedirectEmails = [
                 'brett.moss@vanirinstalledsales.com',
                 'tony.amenta@vanirinstalledsales.com',
@@ -116,7 +117,7 @@ async function login() {
                 'brooke.slaugenhoup@vanirinstalledsales.com',
                 'carina.gonzalez@vanirinstalledsales.com',
                 'faith.hudson@vanirinstalledsales.com',
-            ].map(email => email.toLowerCase()); // Ensure all comparison emails are lowercase
+            ].map(e => e.toLowerCase());
 
             if (employeeRedirectEmails.includes(email)) {
                 console.log("Redirecting to employeetimesheet.html");
@@ -134,6 +135,7 @@ async function login() {
         alert('Login failed: ' + error.message);
     }
 }
+
 
 
 async function fetchJoke() {
@@ -181,7 +183,25 @@ function handleKeyDown(event) {
         handleKeyPPress();
     }
 }
+const savedEmail = localStorage.getItem('userEmail');
+const savedPassword = localStorage.getItem('userPassword');
 
+// If credentials exist, auto-login immediately without showing the login form
+if (savedEmail && savedPassword) {
+    window.addEventListener('DOMContentLoaded', () => {
+        emailInput.value = savedEmail;
+        passwordInput.value = savedPassword;
+        login();
+    });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('login-form');
+
+    if (!savedEmail || !savedPassword) {
+        loginForm.style.display = 'block'; // Show login form if no saved credentials
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     const emailInput = document.querySelector('.email-input');
@@ -213,4 +233,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+
+window.addEventListener('DOMContentLoaded', () => {
+    const savedEmail = localStorage.getItem('userEmail');
+    const savedPassword = localStorage.getItem('userPassword');
+    const loginForm = document.getElementById('login-form');
+
+    if (savedEmail && savedPassword) {
+        emailInput.value = savedEmail;
+        passwordInput.value = savedPassword;
+        login(); // Auto-login
+    } else {
+        loginForm.style.display = 'block'; // Only show form if no credentials saved
+    }
+});
 
