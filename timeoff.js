@@ -493,12 +493,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleLogout(event) {
         event.preventDefault();
+        console.log('🔓 Logging out...');
+    
+        // Clear all relevant storage
         localStorage.removeItem('userEmail');
+        localStorage.removeItem('userPassword'); // ✅ Also remove the password!
         sessionStorage.removeItem('user');
+    
+        // Optional: Clear all local/session storage if you want a full reset
+        // localStorage.clear();
+        // sessionStorage.clear();
+    
+        // Redirect to login screen
         setTimeout(() => {
             window.location.href = 'index.html';
         }, 100);
     }
+    
 
     function calculateHoursMissed(startDate, startTime, endDate, endTime) {
         const workDayStart = 7; // 7:00 AM

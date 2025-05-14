@@ -46,8 +46,16 @@ if (userEmailElement) {
     }
 
     if (logoutButton) {
-        logoutButton.addEventListener('click', () => {
-            console.log('Logout button clicked, navigating to index.html');
+        logoutButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            console.log('🔓 Logout button clicked. Clearing session and navigating to index.html');
+    
+            // Clear saved credentials
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userPassword'); // Make sure password is cleared too
+            sessionStorage.removeItem('user');
+    
+            // Redirect to login page
             window.location.href = 'index.html';
         });
     }
