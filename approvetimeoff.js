@@ -1,11 +1,9 @@
 document.addEventListener("DOMContentLoaded", function() {
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
-    const baseId = 'app9gw2qxhGCmtJvW';
+    const baseId = 'appD3QeLneqfNdX12';
     const tableId = 'tblDUlMq88nxT7M4I';
-    const ptoBaseId = 'app9gw2qxhGCmtJvW';
     const ptoTableId = 'tbljmLpqXScwhiWTt';
     const url = `https://api.airtable.com/v0/${baseId}/${tableId}`;
-    const ptoUrl = `https://api.airtable.com/v0/${ptoBaseId}/${ptoTableId}`;
     const headers = {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
@@ -73,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     async function fetchAvailableHours(employeeName) {
         try {
-            const employeeUrl = `https://api.airtable.com/v0/${ptoBaseId}/${ptoTableId}?filterByFormula=${encodeURIComponent(`{Full Name}='${employeeName}'`)}`;
+            const employeeUrl = `https://api.airtable.com/v0/${baseId}/${ptoTableId}?filterByFormula=${encodeURIComponent(`{Full Name}='${employeeName}'`)}`;
             const response = await fetch(employeeUrl, { headers });
             const data = await response.json();
 
