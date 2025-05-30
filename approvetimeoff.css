@@ -17,6 +17,10 @@ main {
     padding: 20px;  /* Adds some padding for spacing */
     box-sizing: border-box; /* Ensures padding is included in the width */
 }
+input[type="text"][placeholder="Reason for denial"] {
+    margin-left: 8px;
+    width: 200px;
+}
 
 p {
     left: 50%;

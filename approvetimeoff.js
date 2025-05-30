@@ -303,13 +303,61 @@ document.addEventListener("DOMContentLoaded", function() {
                     missedHoursElement.textContent = `Workday Hours Missed: ${hoursMissed.toFixed(2)}`;
                     requestDiv.appendChild(missedHoursElement);
                 
-                    const approvalCheckbox = document.createElement('input');
-                    approvalCheckbox.type = 'checkbox';
-                    approvalCheckbox.checked = mergedRequest.lastRecord.fields[`Time off Approved ${i}`] || false;
-                    approvalCheckbox.dataset.recordId = mergedRequest.lastRecord.id;
-                    approvalCheckbox.dataset.approvalIndex = i;
-                    approvalCheckbox.addEventListener('change', handleApprovalChange);
-                    requestDiv.appendChild(approvalCheckbox);
+                   const approvalCheckbox = document.createElement('input');
+approvalCheckbox.type = 'checkbox';
+approvalCheckbox.checked = mergedRequest.lastRecord.fields[`Time off Approved ${i}`] || false;
+approvalCheckbox.dataset.recordId = mergedRequest.lastRecord.id;
+approvalCheckbox.dataset.approvalIndex = i;
+approvalCheckbox.classList.add('approval-checkbox');
+
+const denialReasonInput = document.createElement('input');
+denialReasonInput.type = 'text';
+denialReasonInput.placeholder = 'Reason for denial';
+denialReasonInput.style.display = approvalCheckbox.checked ? 'none' : 'inline-block';
+denialReasonInput.value = mergedRequest.lastRecord.fields[`Reason ${i}`] || '';
+denialReasonInput.dataset.recordId = mergedRequest.lastRecord.id;
+denialReasonInput.dataset.approvalIndex = i;
+
+approvalCheckbox.addEventListener('change', () => {
+    denialReasonInput.style.display = approvalCheckbox.checked ? 'none' : 'inline-block';
+    handleApprovalChange({ target: approvalCheckbox });
+});
+
+requestDiv.appendChild(approvalCheckbox);
+requestDiv.appendChild(denialReasonInput);
+
+// ✅ Trigger update on blur if non-empty
+denialReasonInput.addEventListener('blur', async () => {
+    const recordId = denialReasonInput.dataset.recordId;
+    const approvalIndex = denialReasonInput.dataset.approvalIndex;
+    const reasonText = denialReasonInput.value.trim();
+
+    if (reasonText.length === 0) return; // Don't update if empty
+
+    const updateUrl = `${url}/${recordId}`;
+    const data = {
+        fields: {
+            [`Reason ${approvalIndex}`]: reasonText,
+            [`Time off Approved ${approvalIndex}`]: false  // Denied
+        }
+    };
+
+    try {
+        const response = await fetch(updateUrl, {
+            method: 'PATCH',
+            headers: headers,
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to update denial reason');
+        }
+        showNotification('Denial reason saved');
+    } catch (err) {
+        console.error("❌ Error saving denial reason:", err);
+    }
+});
+
                 
                     requestsRow.appendChild(requestDiv);
                 }
@@ -336,12 +384,16 @@ document.addEventListener("DOMContentLoaded", function() {
         const denialReasonSelect = document.querySelector(`select[data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
     
         const updateUrl = `${url}/${recordId}`;
-        const data = {
-            fields: {
-                [`Reason ${approvalIndex}`]: '',
-                [`Time off Approved ${approvalIndex}`]: approved
-            }
-        };
+       const denialReasonInput = document.querySelector(`input[type="text"][data-record-id="${recordId}"][data-approval-index="${approvalIndex}"]`);
+const denialReason = denialReasonInput ? denialReasonInput.value.trim() : '';
+
+const data = {
+    fields: {
+        [`Time off Approved ${approvalIndex}`]: approved,
+        [`Reason ${approvalIndex}`]: approved ? '' : denialReason
+    }
+};
+
     
         try {
             const response = await fetch(updateUrl, {
@@ -358,8 +410,6 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error('Error updating approval status:', error);
         }
     }
-    
-    
     
     function formatTime(time, isStartTime = true) {
         if (!time || time.toLowerCase() === 'all day') {
