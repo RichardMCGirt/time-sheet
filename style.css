@@ -17,7 +17,63 @@
     text-align: center;
     display: inline-block;
   }
-  
+  /* Custom Wednesday Modal */
+.wednesday-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    padding: 24px 32px;
+    border: 2px solid var(--highlight-color);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    max-width: 90%;
+    width: 400px;
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+}
+
+.wednesday-button-group {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.wednesday-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.wednesday-button.yes {
+    background-color: var(--highlight-color);
+    color: var(--text-color);
+}
+
+.wednesday-button.yes:hover {
+    background-color: var(--highlight-hover-color);
+    transform: scale(1.05);
+}
+
+.wednesday-button.no {
+    background-color: var(--button-bg);
+    color: var(--text-color);
+}
+
+.wednesday-button.no:hover {
+    background-color: var(--button-hover-bg);
+    transform: scale(1.05);
+}
+
 
 #snack-dropdown {
     width: 200px; /* Set the width of the dropdown */

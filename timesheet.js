@@ -1077,6 +1077,29 @@ function calculateTotalTimeWorked() {
             throw new Error('Failed to update Personal hours. Error: ' + error.message);
         }
     }
+
+
+    async function submitFinal() {
+    try {
+        await updatePtoHours();
+        await updatePersonalHours();
+        await sendDataToAirtable();
+        showModal();
+        throwConfetti();
+        convertToCsvButton.click();
+
+        const userEmail = localStorage.getItem('userEmail');
+        if (userEmail !== '') {
+            setTimeout(() => {
+                window.location.reload();
+            }, 6000);
+        }
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        alert(`An error occurred: ${error.message}`);
+    }
+}
+
     function validateWholeNumbers() {
         let hasDecimal = false; // Flag to track if any field has a decimal
     
@@ -1131,6 +1154,53 @@ function calculateTotalTimeWorked() {
     }
 
     console.log('User clicked submit.');
+
+    // Check if today is Wednesday and prompt the user to confirm date7
+const today = new Date();
+if (today.getDay() === 3) { // Wednesday
+    event.preventDefault(); // Pause submission
+
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    const formattedYesterday = `${String(yesterday.getMonth() + 1).padStart(2, '0')}/${String(yesterday.getDate()).padStart(2, '0')}/${yesterday.getFullYear()}`;
+
+    const date7Field = elements.timeEntryForm.elements['date7'];
+    const currentDate7Value = date7Field?.value || '';
+    const currentDate7 = currentDate7Value ? new Date(currentDate7Value) : new Date();
+currentDate7.setDate(currentDate7.getDate() + 1); // Add 1 day
+
+const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2, '0')}/${String(currentDate7.getDate()).padStart(2, '0')}/${currentDate7.getFullYear()}`;
+
+    // Setup modal
+    const modal = document.getElementById('wednesdayModal');
+    const message = document.getElementById('wednesdayMessage');
+    const yesBtn = document.getElementById('wednesdayYes');
+    const noBtn = document.getElementById('wednesdayNo');
+
+    message.textContent = `It's Wednesday. Would you like to submit for the week of ${formattedYesterday} instead of the currently selected ${formattedCurrentDate7}?`;
+    modal.style.display = 'block';
+
+    // Prevent multiple bindings
+    yesBtn.onclick = async () => {
+        modal.style.display = 'none';
+        if (date7Field) {
+            date7Field.value = yesterday.toISOString().split('T')[0];
+        }
+        await submitFinal(); // ⬅️ custom wrapper to handle submit
+    };
+
+    noBtn.onclick = async () => {
+        modal.style.display = 'none';
+        await submitFinal(); // ⬅️ submit with current date7
+    };
+
+    return; // wait for user choice before continuing
+}
+
+
+
+
+
 
     if (!validateWholeNumbers()) {
         console.log("Validation failed: Non-whole number in PTO, Personal, or Holiday hours.");
