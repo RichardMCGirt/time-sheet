@@ -1177,7 +1177,7 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
     const yesBtn = document.getElementById('wednesdayYes');
     const noBtn = document.getElementById('wednesdayNo');
 
-    message.textContent = `It's Wednesday. Would you like to submit for the week of ${formattedYesterday} instead of the currently selected ${formattedCurrentDate7}?`;
+    message.textContent = `Would you like to submit for the week of ${formattedYesterday} instead of the currently selected ${formattedCurrentDate7}?`;
     modal.style.display = 'block';
 
     // Prevent multiple bindings
