@@ -168,7 +168,7 @@ header {
 #timesheets-body.scrollable {
     height: 100%;
     overflow-y: auto; /* Makes the timesheet body scrollable */
-    max-height: 900px; /* Set the max height based on your layout needs */
+    max-height: 1200px; /* Set the max height based on your layout needs */
     padding: 10px;
 /* Hide scrollbar for Chrome, Safari, and Opera */
 scrollbar-width: none; /* For Firefox */
