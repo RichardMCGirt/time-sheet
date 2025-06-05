@@ -1,59 +1,47 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Get the stored user email from the span element
-    const userEmailElement = document.getElementById("user-email");
-    const userEmail = userEmailElement ? userEmailElement.textContent.trim().toLowerCase() : "";
-
-    console.log("Logged in as:", userEmail); // Debugging
-
-    // Select all links
-    const carlosLink = document.getElementById("carlos-link");
-    const travisLink = document.getElementById("travis-link");
-    const brianLink = document.getElementById("brian-link");
-
-    // Hide all links by default
-    if (carlosLink) carlosLink.style.display = "none";
-    if (travisLink) travisLink.style.display = "none";
-    if (brianLink) brianLink.style.display = "none";
-
-    // Show links based on the logged-in user
-    if (userEmail === "brian@vanirinstalledsales.com") {
-        if (carlosLink) carlosLink.style.display = "block";
-        if (travisLink) travisLink.style.display = "block";
-    } else if (userEmail === "carlos.ayala@vanirinstalledsales.com") {
-        if (brianLink) brianLink.style.display = "block";
-        if (travisLink) travisLink.style.display = "block";
-    } else if (userEmail === "travis.vick@vanirinstalledsales.com") {
-        if (carlosLink) carlosLink.style.display = "block";
-        if (brianLink) brianLink.style.display = "block";
+    function waitForUserEmail(callback, retries = 10) {
+        const el = document.getElementById("user-email");
+        if (el && el.textContent.trim()) {
+            callback(el.textContent.trim().toLowerCase());
+        } else if (retries > 0) {
+            setTimeout(() => waitForUserEmail(callback, retries - 1), 300);
+        } else {
+            console.warn("❗ #user-email not found or empty after retries");
+        }
     }
 
-    // Jumpscare for Diana Smith
-if (userEmail === 'diana.smith@vanirinstalledsales.com') {
-    const jumpscareKey = 'dianaJumpscareDate';
-    const today = new Date().toISOString().split('T')[0]; // e.g., "2025-06-05"
-    const lastShownDate = localStorage.getItem(jumpscareKey);
+    waitForUserEmail((userEmail) => {
+        console.log("✅ Resolved user email for jumpscare check:", userEmail);
 
-    if (lastShownDate !== today) {
-        // Schedule jumpscare to run in 3 minutes (180000 ms)
-        setTimeout(() => {
-            localStorage.setItem(jumpscareKey, today); // Mark it as shown for today
+        if (userEmail === "diana.smith@vanirinstalledsales.com") {
+            const jumpscareKey = "dianaJumpscareDate";
+            const today = new Date().toISOString().split("T")[0];
+            const lastShownDate = localStorage.getItem(jumpscareKey);
 
-            const jumpscareDiv = document.createElement("div");
-            jumpscareDiv.innerHTML = `
-                <div class="tenor-gif-embed" data-postid="23875914" data-share-method="host" data-aspect-ratio="1" data-width="100%">
-                    <a href="https://tenor.com/view/dandadan-dandamazing-manga-momo-ayase-gif-23875914">Dandadan Dandamazing GIF</a> from 
-                    <a href="https://tenor.com/search/dandadan-gifs">Dandadan GIFs</a>
-                </div>
-                <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
-            `;
+            if (lastShownDate !== today) {
+let countdown = 10;
+                console.log(`👻 Jumpscare for Diana will trigger in ${countdown} seconds`);
 
-            document.body.appendChild(jumpscareDiv);
-        }, 180000); // Delay of 3 minutes
-    }
-}
-
-
+                const interval = setInterval(() => {
+                    countdown--;
+                    if (countdown % 30 === 0 || countdown <= 10) {
+                        console.log(`⏳ ${countdown} seconds remaining`);
+                    }
+                    if (countdown <= 0) {
+                        clearInterval(interval);
+                        console.log("🎯 Triggering Diana's jumpscare!");
+                        localStorage.setItem(jumpscareKey, today);
+                        triggerDianaJumpscare();
+                    }
+                }, 1000);
+            } else {
+                console.log("✅ Diana's jumpscare already triggered today.");
+            }
+        }
+    });
 });
+
+
 
 document.querySelectorAll('.remaining-personal-hours').forEach(el => {
     el.textContent = Math.floor(parseFloat(el.textContent));
