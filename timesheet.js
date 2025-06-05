@@ -597,7 +597,7 @@ function getHolidayDates(year) {
     holidays["Memorial Day"] = getMemorialDay(year); // Last Monday in May
     console.log("Memorial Day:", holidays["Memorial Day"]);
 
-    holidays["July 3rd"] = new Date(year, 6, 2); // July 4th
+    holidays["July 3rd"] = new Date(year, 6, 2); // July 3rd
     console.log("July 3rd:", holidays["July 3rd"]);
 
     holidays["July 4th"] = new Date(year, 6, 3); // July 4th
@@ -620,9 +620,6 @@ function getHolidayDates(year) {
 
     holidays["Good Friday"] = getGoodFriday(year); // Good Friday date calculation
     console.log("Good Friday:", holidays["Good Friday"]);
-
-
-
     return holidays;
 }
 
@@ -677,13 +674,9 @@ function getEaster(year) {
     return new Date(year, month, day);
 }
 
-
-
 // Example usage:
 const easter2024 = getEaster(2024);
 console.log(`Easter in 2024 is on: ${easter2024.toDateString()}`);
-
-
 
 function populateWeekDates(weekEndingDate) {
     const year = weekEndingDate.getFullYear();
@@ -778,9 +771,6 @@ function startCountdown() {
 
 // Start the countdown
 startCountdown();
-
-
-    
 
 function roundToNearestQuarterHour(hours) {
     return Math.round(hours * 4) / 4;
@@ -1084,7 +1074,6 @@ function calculateTotalTimeWorked() {
         await updatePtoHours();
         await updatePersonalHours();
         await sendDataToAirtable();
-        showModal();
         throwConfetti();
         convertToCsvButton.click();
 
@@ -1232,7 +1221,6 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
         await updatePtoHours();
         await updatePersonalHours();
         await sendDataToAirtable();
-        showModal(); // Show the success modal after successful submission
         throwConfetti();
 
         convertToCsvButton.click();
@@ -1264,142 +1252,8 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
     
     let countdownInterval; // Declare countdownInterval in a higher scope to track the interval
     
-    function showModal() {
-        const modal = document.getElementById('successModal');
-        const userEmail = localStorage.getItem('userEmail'); // Assuming user email is stored in localStorage
-        if (!modal) {
-            console.error('Modal element not found');
-            return;
-        }
-    
-        // Display the modal
-        modal.style.display = 'block';
-    
-        // Check if the user is luz.arceo@vanirinstalledsales.com
-        if (userEmail === '') {
-            const modalContent = modal.querySelector('.modal-content');
-            if (modalContent) {
-                // Update the modal content for Luz and add a custom close button
-                modalContent.innerHTML = `
-                    <h2>What snack do you want?</h2>
-                    <select name="snacks" id="snack-dropdown">
-                        <option value="chips">Chips</option>
-                        <option value="chocolate">Chocolate</option>
-                        <option value="popcorn">Popcorn</option>
-                        <option value="pretzels">Pretzels</option>
-                        <option value="cookies">Cookies</option>
-                        <option value="nuts">Nuts</option>
-                        <option value="fruit">Fruit</option>
-                        <option value="granola-bar">Granola Bar</option>
-                        <option value="jerky">Jerky</option>
-                        <option value="candy">Candy</option>
-                        <option value="other">Other</option>
-                    </select>
-                    <button id="heathCloseButton" class="close-button">Close</button>
-                `;
-    
-                // Add an event listener for when the user chooses an option
-                const snackDropdown = document.getElementById('snack-dropdown');
-                if (snackDropdown) {
-                    snackDropdown.addEventListener('change', () => {
-                        if (snackDropdown.value === 'other') {
-                            // Replace dropdown with a text input box
-                            snackDropdown.outerHTML = `<input type="text" id="snack-input" placeholder="Enter your snack" />`;
-                            
-                            // Attach event listener to new input for Shift key simulation
-                            const snackInput = document.getElementById('snack-input');
-                            snackInput.addEventListener('input', () => simulateShiftKeyPress());
-                            console.log('Shift key simulated after entering custom snack.');
-                        } else {
-                            simulateShiftKeyPress();
-                            console.log('Shift key simulated after selecting a snack option.');
-                        }
-                    });
-                } else {
-                    console.error('Snack dropdown not found.');
-                }
-            } else {
-                console.error('Modal content element not found');
-            }
-    
-            // Prevent form submission (and thus refresh) for Luz by stopping form’s default action if any submit action is present.
-            document.addEventListener('submit', (event) => {
-                event.preventDefault();
-                console.log('Form submission prevented to avoid refresh for Luz.');
-            });
-    
-            // Automatically close the modal after 13 seconds
-            setTimeout(() => {
-
-    modal.style.display = 'none';
-    console.log('Modal closed after 13 seconds for Luz.');
-
-    // Simulate pressing the Shift key three times
-    for (let i = 0; i < 3; i++) {
-        simulateShiftKeyPress();
-    }
-}, 8000);
-
-// Add functionality to manually close the modal with the close button
-const heathCloseButton = document.getElementById('heathCloseButton');
-if (heathCloseButton) {
-    heathCloseButton.onclick = function() {
-        modal.style.display = 'none';
-        console.log('Modal manually closed by Luz.');
-
-        // Simulate pressing the Shift key three times when manually closed
-        for (let i = 0; i < 3; i++) {
-            simulateShiftKeyPress();
-        }
-    };
-} else {
-    console.error('Close button not found.');
-}
-
-    
-        // Check if the user is diana.smith@vanirinstalledsales.com
-        } else if (userEmail === '') {
-            const modalContent = modal.querySelector('.modal-content');
-            if (modalContent) {
-                // Update the modal content for Diana and add a custom close button
-                modalContent.innerHTML = `
-                    <h2>Diana's Special Message</h2>
-                    <p>Welcome to the VIP Section!</p>
-                    <button id="dianaCloseButton" class="close-button">Close</button>
-                `;
-            } else {
-                console.error('Modal content element not found');
-            }
-    
-            // Automatically close the modal after 3 seconds for Diana
-            setTimeout(() => {
-                modal.style.display = 'none';
-                console.log('Modal closed after 3 seconds for Diana.');
-    
-                // Simulate pressing the Shift key three times
-                for (let i = 0; i < 3; i++) {
-                    simulateShiftKeyPress();
-                }
-            }, 9000); // 3000 milliseconds = 3 seconds
-    
-            // Add functionality to manually close the modal with the close button
-            const dianaCloseButton = document.getElementById('dianaCloseButton');
-            if (dianaCloseButton) {
-                dianaCloseButton.onclick = function() {
-                    modal.style.display = 'none';
-                    console.log('Modal manually closed by Diana.');
-    
-                    // Simulate pressing the Shift key three times when manually closed
-                    for (let i = 0; i < 3; i++) {
-                        simulateShiftKeyPress();
-                    }
-                };
-            } else {
-                console.error('Diana-specific close button not found.');
-            }
-        }
-    }
-    
+       
+       
     // Function to simulate pressing the Shift key three times
     function simulateShiftKeyPress() {
         console.log('Simulating Shift key press');
@@ -1525,9 +1379,6 @@ if (heathCloseButton) {
         return total;
     }
 
-
-    
-
     function debounce(func, wait) {
         let timeout;
         return function (...args) {
@@ -1545,7 +1396,6 @@ if (heathCloseButton) {
         input.addEventListener('focus', () => scrollToElement(input));
     });
 
-
     function handleLogout(event) {
         event.preventDefault();
         console.log('🔓 Logging out...');
@@ -1554,18 +1404,12 @@ if (heathCloseButton) {
         localStorage.removeItem('userEmail');
         localStorage.removeItem('userPassword'); // ✅ Also remove the password!
         sessionStorage.removeItem('user');
-    
-        // Optional: Clear all local/session storage if you want a full reset
-        // localStorage.clear();
-        // sessionStorage.clear();
-    
-        // Redirect to login screen
+            // Redirect to login screen
         setTimeout(() => {
             window.location.href = 'index.html';
         }, 100);
     }
     
-
     const convertToCsvButton = document.getElementById('convert-to-csv-button');
 
     convertToCsvButton.addEventListener('click', convertToCsv);
@@ -1604,8 +1448,6 @@ if (heathCloseButton) {
                 ? `"${new Date(`${dateValue}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' })}"`
                 : '';
             
-
-    
             row.push(formattedDate);
             const timeFields = ['start_time', 'lunch_start', 'lunch_end', 'end_time', 'Additional_Time_In', 'Additional_Time_Out'];
 
@@ -1624,7 +1466,6 @@ if (heathCloseButton) {
                     row.push('');
                 }
             });
-            
             
             row.push(document.getElementById(`hours-worked-today${index + 1}`)?.textContent || '');
             row.push(elements.timeEntryForm.elements[`PTO_hours${index + 1}`]?.value || '');
@@ -1696,24 +1537,6 @@ if (heathCloseButton) {
     initializeForm();
     initializeTimeDropdowns();
 
-    function handleArrowKeys(event) {
-        const key = event.key;
-        const currentInput = event.target;
-        const inputs = Array.from(document.querySelectorAll('select.time-dropdown'));
-
-        let index = inputs.indexOf(currentInput);
-
-        if (key === 'ArrowRight') {
-            index = (index + 1) % inputs.length;
-        } else if (key === 'ArrowLeft') {
-            index = (index - 1 + inputs.length) % inputs.length;
-        } else if (key === 'ArrowDown') {
-            index = (index + 6) % inputs.length;
-        } else if (key === 'ArrowUp') {
-            index = (index - 6 + inputs.length) % inputs.length;
-        }
-        inputs[index].focus();
-    }
 
     function showPickerOnFocus() {
         const timeInputs = document.querySelectorAll('select.time-dropdown, input[type="number"]');
@@ -1829,6 +1652,5 @@ function toggleWorkInputs(dayIndex, isChecked) {
         });
     }
     calculateTotalTimeWorked();
-   
 }
 

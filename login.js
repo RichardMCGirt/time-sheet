@@ -136,8 +136,6 @@ async function login() {
     }
 }
 
-
-
 async function fetchJoke() {
 
     try {
@@ -230,9 +228,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
-
-
-
 
 window.addEventListener('DOMContentLoaded', () => {
     const savedEmail = localStorage.getItem('userEmail');

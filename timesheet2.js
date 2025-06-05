@@ -26,12 +26,38 @@ document.addEventListener("DOMContentLoaded", function () {
         if (carlosLink) carlosLink.style.display = "block";
         if (brianLink) brianLink.style.display = "block";
     }
+
+    // Jumpscare for Diana Smith
+if (userEmail === 'diana.smith@vanirinstalledsales.com') {
+    const jumpscareKey = 'dianaJumpscareDate';
+    const today = new Date().toISOString().split('T')[0]; // e.g., "2025-06-05"
+    const lastShownDate = localStorage.getItem(jumpscareKey);
+
+    if (lastShownDate !== today) {
+        // Schedule jumpscare to run in 3 minutes (180000 ms)
+        setTimeout(() => {
+            localStorage.setItem(jumpscareKey, today); // Mark it as shown for today
+
+            const jumpscareDiv = document.createElement("div");
+            jumpscareDiv.innerHTML = `
+                <div class="tenor-gif-embed" data-postid="23875914" data-share-method="host" data-aspect-ratio="1" data-width="100%">
+                    <a href="https://tenor.com/view/dandadan-dandamazing-manga-momo-ayase-gif-23875914">Dandadan Dandamazing GIF</a> from 
+                    <a href="https://tenor.com/search/dandadan-gifs">Dandadan GIFs</a>
+                </div>
+                <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+            `;
+
+            document.body.appendChild(jumpscareDiv);
+        }, 180000); // Delay of 3 minutes
+    }
+}
+
+
 });
 
 document.querySelectorAll('.remaining-personal-hours').forEach(el => {
     el.textContent = Math.floor(parseFloat(el.textContent));
 });
-
 
     async function autoLogin(email) {
         const password = "Vanir2024!!"; // Hardcoded password
@@ -72,6 +98,69 @@ document.querySelectorAll('.remaining-personal-hours').forEach(el => {
             alert("Failed to log in.");
         }
     }
+function triggerDianaJumpscare() {
+    // Create full screen overlay
+    const overlay = document.createElement("div");
+    overlay.id = "jumpscare-overlay";
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100vw";
+    overlay.style.height = "100vh";
+    overlay.style.backgroundColor = "black";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.zIndex = "10000";
+
+    // Embed the GIF
+    overlay.innerHTML = `
+        <div class="tenor-gif-embed" data-postid="23875914" data-share-method="host" data-aspect-ratio="1" data-width="80%">
+            <a href="https://tenor.com/view/dandadan-dandamazing-manga-momo-ayase-gif-23875914">Dandadan Dandamazing GIF</a> from 
+            <a href="https://tenor.com/search/dandadan-gifs">Dandadan GIFs</a>
+        </div>
+        <style>
+            #jumpscare-overlay a { color: white; font-size: 12px; }
+        </style>
+    `;
+
+    // Remove after 4 seconds (adjust if needed)
+    setTimeout(() => {
+        overlay.remove();
+    }, 4000);
+
+    document.body.appendChild(overlay);
+
+    // Load the Tenor script once
+    if (!document.getElementById("tenor-embed-script")) {
+        const script = document.createElement("script");
+        script.id = "tenor-embed-script";
+        script.src = "https://tenor.com/embed.js";
+        script.async = true;
+        document.body.appendChild(script);
+    }
+}
+
+
+//document.addEventListener("DOMContentLoaded", function () {
+    // Add test button for jumpscare
+  //  const testBtn = document.createElement("button");
+    //testBtn.textContent = "🎃 Trigger Diana Jumpscare";
+    //testBtn.style.position = "fixed";
+   // testBtn.style.bottom = "20px";
+   // testBtn.style.right = "20px";
+   // testBtn.style.zIndex = "9999";
+   // testBtn.style.padding = "10px";
+   // testBtn.style.backgroundColor = "#ff0044";
+   // testBtn.style.color = "#fff";
+   // testBtn.style.border = "none";
+   // testBtn.style.borderRadius = "8px";
+   // testBtn.style.cursor = "pointer";
+
+   // testBtn.addEventListener("click", triggerDianaJumpscare);
+   // document.body.appendChild(testBtn);
+//});
+
 
     async function fetchUserFromAirtable(email, password) {
         const apiKey = "pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c";
@@ -145,104 +234,6 @@ document.querySelectorAll('.remaining-personal-hours').forEach(el => {
             console.log("Shortcut prompt has already been shown today. Skipping.");
         }
     }
-
-    function applyDianaShortcut() {
-    console.log("Inside applyDianaShortcut function...");
-    const timeEntryTable = document.getElementById('time-entry-table');
-    const rows = timeEntryTable.querySelectorAll('tbody tr');
-    console.log("Number of rows found in the table:", rows.length);
-
-    rows.forEach(row => {
-        const index = parseInt(row.dataset.day, 10);
-        const startTimeInput = row.querySelector('input[name^="start_time"]');
-        const endTimeInput = row.querySelector('input[name^="end_time"]');
-        const lunchStartInput = row.querySelector('input[name^="lunch_start"]');
-        const lunchEndInput = row.querySelector('input[name^="lunch_end"]');
-
-        console.log(`Processing row for day ${index}...`);
-
-        if (index === 3) {
-            console.log(`Setting start and end times for day ${index}...`);
-            startTimeInput.value = '07:30';
-            endTimeInput.value = '12:30';
-        } else if (index === 7) {
-            console.log(`Setting start and end times for day ${index}...`);
-        } else if ([1, 2, 6].includes(index)) {
-            console.log(`Setting start, end, and lunch times for day ${index}...`);
-            startTimeInput.value = '07:30';
-            endTimeInput.value = '16:30';
-            lunchStartInput.value = '11:00'; 
-            lunchEndInput.value = '12:00';   
-        } else if ([4, 5].includes(index)) {
-            console.log(`Leaving day ${index} empty...`);
-        }
-
-        // Log the values set for each day
-        console.log(`Day ${index}: Start Time = ${startTimeInput?.value || 'N/A'}, End Time = ${endTimeInput?.value || 'N/A'}, Lunch Start = ${lunchStartInput?.value || 'N/A'}, Lunch End = ${lunchEndInput?.value || 'N/A'}`);
-    });
-}
-
-    function toggleWorkInputs(dayIndex, isChecked) {
-    const row = document.querySelector(`tr[data-day="${dayIndex + 1}"]`);
-    const timeInputs = row.querySelectorAll('input[type="time"]');
-    const numberInputs = row.querySelectorAll('input[type="number"]');
-    const checkbox = document.getElementById(`did-not-work-${dayIndex + 1}`);
-
-    // Function to check if any input in the row has a value
-    const checkIfAnyInputFilled = () => {
-        let inputFilled = false;
-
-        // Check if any time or number input in the row has a value
-        timeInputs.forEach(input => {
-            if (input.value) inputFilled = true;
-        });
-        numberInputs.forEach(input => {
-            if (input.value) inputFilled = true;
-        });
-
-        return inputFilled;
-    };
-
-    // Disable inputs if checkbox is checked, otherwise enable them
-    if (isChecked) {
-        timeInputs.forEach(input => {
-            input.disabled = true;
-            input.value = ''; // Clear value when disabled
-        });
-        numberInputs.forEach(input => {
-            input.disabled = true;
-            input.value = ''; // Clear value when disabled
-        });
-    } else {
-        timeInputs.forEach(input => {
-            input.disabled = false;
-        });
-        numberInputs.forEach(input => {
-            input.disabled = false;
-        });
-    }
-
-    // Monitor the row for input changes and automatically uncheck the checkbox
-    timeInputs.forEach(input => {
-        input.addEventListener('input', () => {
-            if (checkIfAnyInputFilled()) {
-                checkbox.checked = false;
-                timeInputs.forEach(input => input.disabled = false);
-                numberInputs.forEach(input => input.disabled = false);
-            }
-        });
-    });
-
-    numberInputs.forEach(input => {
-        input.addEventListener('input', () => {
-            if (checkIfAnyInputFilled()) {
-                checkbox.checked = false;
-                timeInputs.forEach(input => input.disabled = false);
-                numberInputs.forEach(input => input.disabled = false);
-            }
-        });
-    });
-}
 
     // Hide the navbar initially if the loading bar is visible
     toggleNavbar();
