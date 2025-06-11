@@ -24,7 +24,7 @@ let countdown = 10;
 
                 const interval = setInterval(() => {
                     countdown--;
-                    if (countdown % 30 === 0 || countdown <= 10) {
+                    if (countdown % 60 === 0 || countdown <= 20) {
                         console.log(`⏳ ${countdown} seconds remaining`);
                     }
                     if (countdown <= 0) {
