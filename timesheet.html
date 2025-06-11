@@ -81,6 +81,7 @@
                     <table id="time-entry-table" class="time-entry-table">
                         <thead>
                             <tr>
+<th class="date-column" style="border: none;"></th>
                             <th class="date-column">Date</th>
                             <th class="time-column">Start Time</th>
                             <th class="time-column">Lunch Start</th>
@@ -97,6 +98,8 @@
                     </thead>
                     <tbody id="time-entry-body">
                                     <tr data-day="1">
+    <td style="text-align: center;">Wednesday</td> <!-- Day of the week column -->
+
                                         <td style="text-align: center;"><input type="date" name="date1" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time1"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_start1" step="900"></td>
@@ -111,6 +114,8 @@
                                         <td style="text-align: center;"><input type="checkbox" id="did-not-work-1" name="did_not_work1" onchange="toggleWorkInputs(0, this.checked)"></td>
                                     </tr>
                                     <tr data-day="2">
+                                            <td style="text-align: center;">Thursday</td> <!-- Day of the week column -->
+
                                         <td style="text-align: center;"><input type="date" name="date2" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time2" step="900"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_start2" step="900"></td>
@@ -125,6 +130,8 @@
                                         <td style="text-align: center;"><input type="checkbox" id="did-not-work-2" name="did_not_work2" onchange="toggleWorkInputs(1, this.checked)"></td>
                                     </tr>
                                     <tr data-day="3">
+                                                                                    <td style="text-align: center;">Friday</td> <!-- Day of the week column -->
+
                                         <td style="text-align: center;"><input type="date" name="date3" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time3" step="900"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_start3" step="900"></td>
@@ -138,7 +145,10 @@
                                         <td class="narrow-column"><input type="number" name="Holiday_hours3" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td style="text-align: center;"><input type="checkbox" id="did-not-work-3" name="did_not_work3" onchange="toggleWorkInputs(2, this.checked)"></td>
                                     </tr>
-                                    <tr data-day="4" class="highlight-row">                                        <td style="text-align: center;"><input type="date" name="date4" readonly></td>
+                                    <tr data-day="4" class="highlight-row">  
+                                                                                    <td style="text-align: center;">Saturday</td> <!-- Day of the week column -->
+
+                                        <td style="text-align: center;"><input type="date" name="date4" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time4" step="900"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_start4" step="900"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_end4" step="900"></td>
@@ -152,6 +162,8 @@
                                         <td style="text-align: center;"><input type="checkbox" id="did-not-work-4" name="did_not_work4" onchange="toggleWorkInputs(3, this.checked)"></td>
                                     </tr>
                                     <tr data-day="5" class="highlight-row">
+                                                                                    <td style="text-align: center;">Sunday</td> <!-- Day of the week column -->
+
                                         <td style="text-align: center;"><input type="date" name="date5" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time5" step="900"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_start5" step="900"></td>
@@ -167,6 +179,8 @@
                                     </tr>
                                     
                                     <tr data-day="6">
+                                                                                    <td style="text-align: center;">Monday</td> <!-- Day of the week column -->
+
                                         <td style="text-align: center;"><input type="date" name="date6" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time6" step="900"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_start6" step="900"></td>
@@ -181,6 +195,8 @@
                                         <td style="text-align: center;"><input type="checkbox" id="did-not-work-6" name="did_not_work6" onchange="toggleWorkInputs(5, this.checked)"></td>
                                     </tr>
                                     <tr data-day="7">
+                                             <td style="text-align: center;">Tuesday</td> <!-- Day of the week column -->
+
                                         <td style="text-align: center;"><input type="date" name="date7" readonly></td>
                                         <td style="text-align: center;"><input type="time" name="start_time7" step="900"></td>
                                         <td style="text-align: center;"><input type="time" name="lunch_start7" step="900"></td>
