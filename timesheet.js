@@ -977,8 +977,37 @@ function calculateTotalTimeWorked() {
     
         elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(0);
         elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(0);
-        const totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
-        elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+       // Initial total (without gifted hours)
+let totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
+elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+
+// Update remaining PTO and personal hours
+elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(0);
+elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(0);
+
+// Handle gifted hours
+const giftedHoursElement = document.getElementById('gifted-hours');
+let giftedHours = 0;
+
+if (giftedHoursElement) {
+    console.log(`💼 Total Time With PTO (before gift): ${totalTimeWithPto}`);
+
+    if (totalTimeWithPto < 40) {
+        giftedHours = Math.min(3, 40 - totalTimeWithPto);
+        console.log(`🎁 Gifted Hours Applied: ${giftedHours}`);
+    } else {
+        console.log("✅ No Gifted Hours Needed");
+    }
+
+    giftedHoursElement.textContent = giftedHours.toFixed(2);
+
+    // Add gifted hours to total and update display again
+    totalTimeWithPto += giftedHours;
+    elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+} else {
+    console.warn("⚠️ gifted-hours element not found in DOM.");
+}
+
     }
     
 
