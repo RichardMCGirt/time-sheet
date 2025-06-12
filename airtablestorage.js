@@ -30,16 +30,12 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log('Clearing data...');
         try {
             await clearDataInAirtable();
-            showMessage('Data cleared successfully!');
-            
-         
-            
+            showMessage('Data cleared successfully!'); 
         } catch (error) {
             showMessage('Failed to clear data. Please try again.');
             console.error('Error clearing data:', error);
         }
     }
-    
 
     function showMessage(message) {
         const messageContainer = document.getElementById('message-container');
@@ -54,8 +50,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    
-
     function gatherFormData() {
         const formData = {};
         for (let i = 1; i <= 7; i++) {
@@ -67,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
             formData[`additionalo${i}`] = getValue(`input[name="Additional_Time_Out${i}"]`);
             formData[`PTO Hours ${i}`] = parseFloat(getValue(`input[name="PTO_hours${i}"]`)) || 0;
             formData[`Personal Hours ${i}`] = parseFloat(getValue(`input[name="Personal_hours${i}"]`)) || 0;
-            formData[`Holiday Hours ${i}`] = parseFloat(getValue(`input[name="Holiday_hours${i}"]`)) || 0;
+formData[`Holiday Hours ${i}`] = parseFloat(getValue(`input[name="Holiday_hours${i}"]`)) || 0;
             formData[`Did not work ${i}`] = getCheckboxValue(`input[name="did_not_work${i}"]`);
 
             console.log(`Data for day ${i}:`, {
@@ -258,9 +252,6 @@ document.addEventListener("DOMContentLoaded", function() {
             setCheckboxValue(`input[name="did_not_work_${i}"]`, false);
         }
     }
-    
-    
-    
     
     async function populateFormData() {
         console.log('Populating form data...');

@@ -882,6 +882,11 @@ h2{
   display: none; /* For Chrome, Safari, and Opera */
 }
 
+  #time-entry-table th:nth-child(12),
+  #time-entry-table td:nth-child(12) {
+    display: none;
+  }
+
 .reset-button:hover {
     background-color: black;
     color: white;

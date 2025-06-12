@@ -9,6 +9,64 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     let progress = 0;
 
+    function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+
+function hideZeroValueSpans() {
+    // Recalculate totals based on inputs
+    let totalPTO = 0;
+    let totalPersonal = 0;
+    let totalHoliday = 0;
+
+    for (let i = 1; i <= 7; i++) {
+        totalPTO += parseFloat(document.querySelector(`input[name="PTO_hours${i}"]`)?.value || 0);
+        totalPersonal += parseFloat(document.querySelector(`input[name="Personal_hours${i}"]`)?.value || 0);
+        totalHoliday += parseFloat(document.querySelector(`input[name="Holiday_hours${i}"]`)?.value || 0);
+    }
+
+    // Update the DOM values
+    const ptoEl = document.getElementById('pto-time');
+    const personalEl = document.getElementById('total-personal-time-display');
+    const holidayEl = document.getElementById('Holiday-hours');
+
+    if (ptoEl) ptoEl.textContent = totalPTO.toFixed(0);
+    if (personalEl) personalEl.textContent = totalPersonal.toFixed(0);
+    if (holidayEl) holidayEl.textContent = totalHoliday.toFixed(0);
+
+    // Now re-evaluate display visibility
+    const valueElementIds = [
+        'pto-time',
+        'Holiday-hours',
+        'total-time-worked',
+        'gifted-hours',
+        'overtimehours',
+        'total-time-with-pto-value',
+        'remaining-pto-hours',
+        'remaining-personal-hours',
+        'total-personal-time-display'
+    ];
+
+    valueElementIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+let raw = el.textContent.trim();
+let value = parseFloat(raw);
+if (isNaN(value)) value = 0;
+        const parentRow = el.closest('.form-row');
+
+        if (!parentRow) return;
+
+        parentRow.style.display = value === 0 ? 'none' : '';
+    });
+}
+
     function updateLoadingBar(message) {
         progress += increment;
         if (loadingBar) {
@@ -59,6 +117,50 @@ function attachNoDecimalValidation() {
         input.addEventListener('keydown', preventDecimalInput);
     });
 }
+
+function initializeTimeDropdowns() {
+    const inputs = document.querySelectorAll('#time-entry-table input[type="time"], #time-entry-table input[type="number"]');
+
+    inputs.forEach(input => {
+        input.addEventListener('change', () => {
+            calculateTotalTimeWorked(); // Ensures total is updated
+            saveFormData();             // Keeps saved copy in sync
+        });
+
+        input.addEventListener('keydown', function (event) {
+            const key = event.key;
+
+            if (key === 'ArrowRight') {
+                focusNextInput(inputs, input);
+            } else if (key === 'ArrowLeft') {
+                focusPreviousInput(inputs, input);
+            }
+        });
+    });
+
+    function focusNextInput(inputs, current) {
+        const currentIndex = [...inputs].indexOf(current);
+        for (let i = currentIndex + 1; i < inputs.length; i++) {
+            if (!inputs[i].disabled) {
+                inputs[i].focus();
+                break;
+            }
+        }
+    }
+
+    function focusPreviousInput(inputs, current) {
+        const currentIndex = [...inputs].indexOf(current);
+        for (let i = currentIndex - 1; i >= 0; i--) {
+            if (!inputs[i].disabled) {
+                inputs[i].focus();
+                break;
+            }
+        }
+    }
+
+    console.log("✅ Time and number dropdowns initialized");
+}
+
 
 // Call this function after DOM content is loaded to attach the validation
 document.addEventListener("DOMContentLoaded", function() {
@@ -169,21 +271,34 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    timeInputs.forEach(input => {
-        input.addEventListener('input', saveFormData);
-    });
+    // Update all these listeners to also call hideZeroValueSpans()
+timeInputs.forEach(input => {
+    input.addEventListener('input', () => {
+        saveFormData();
+        calculateTotalTimeWorked();
+        updateTotalPtoAndHolidayHours();
+debounce(hideZeroValueSpans, 100)();    });
+});
 
-    numberInputs.forEach(input => {
-        input.addEventListener('input', saveFormData);
-    });
+numberInputs.forEach(input => {
+    input.addEventListener('input', () => {
+        saveFormData();
+        calculateTotalTimeWorked();
+        updateTotalPtoAndHolidayHours();
+debounce(hideZeroValueSpans, 100)();    });
+});
 
-    dateInputs.forEach(input => {
-        input.addEventListener('input', saveFormData);
-    });
+dateInputs.forEach(input => {
+    input.addEventListener('input', () => {
+        saveFormData();
+debounce(hideZeroValueSpans, 100)();    });
+});
 
-    checkboxes.forEach(input => {
-        input.addEventListener('change', saveFormData);
-    });
+checkboxes.forEach(input => {
+    input.addEventListener('change', () => {
+        saveFormData();
+debounce(hideZeroValueSpans, 100)();    });
+});
 
     checkInputs();
 
@@ -244,8 +359,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     holidayInput.disabled = false; // Ensure it's not disabled
                 }
             }
-            calculateTotalTimeWorked();
-        });
+     calculateTotalTimeWorked();
+updateTotalPtoAndHolidayHours();
+debounce(hideZeroValueSpans, 100)();        });
     });
     
 
@@ -491,8 +607,9 @@ await fetchApprovalStatus();
 
     function handleHolidayHoursChange() {
         console.log('Handling Holiday hours change...');
-        calculateTotalTimeWorked();
-        saveFormData();
+      calculateTotalTimeWorked();
+updateTotalPtoAndHolidayHours();
+debounce(hideZeroValueSpans, 100)();        saveFormData();
     }
 
     async function handleWeekEndingChange() {
@@ -1579,43 +1696,31 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
     showPickerOnFocus();
     
 
-    function saveFormData() {
-        // Prevent saving form data if the timesheet is approved
-        if (isApproved) {
-            console.log('Form data saving is disabled because the timesheet is approved.');
-            return;  // Exit the function and prevent saving
-        }
-    
-        const formData = new FormData(elements.timeEntryForm);
-        const data = {};
-    
-        // Save the form inputs to the data object
-        formData.forEach((value, key) => {
-            data[key] = value;
-        });
-    
-        // Save number inputs
-        const numberInputs = document.querySelectorAll('input[type="number"]');
-        numberInputs.forEach(input => {
-            data[input.name] = input.value;
-        });
-    
-        // Save date inputs
-        const dateInputs = document.querySelectorAll('input[type="date"]');
-        dateInputs.forEach(input => {
-            data[input.name] = input.value;
-        });
-    
-        // Save time inputs
-        const timeInputs = document.querySelectorAll('input[type="time"]');
-        timeInputs.forEach(input => {
-            data[input.name] = input.value;
-        });
-    
-        // Save the data to localStorage
-        localStorage.setItem('formData', JSON.stringify(data));
-        console.log('Form data saved:', data);
+   function saveFormData() {
+    // Prevent saving if the timesheet is approved
+    if (isApproved) {
+        console.log('🛑 Form data saving is disabled because the timesheet is approved.');
+        return;
     }
+
+    const data = {};
+
+    // Collect all relevant inputs by type
+    const allInputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"], input[type="time"], input[type="checkbox"]');
+
+    allInputs.forEach(input => {
+        if (input.type === "checkbox") {
+            data[input.name] = input.checked;
+        } else {
+            data[input.name] = input.value;
+        }
+    });
+
+    // Store in localStorage
+    localStorage.setItem('formData', JSON.stringify(data));
+    console.log('✅ Form data saved:', data);
+}
+
     
     function loadFormData() {
         const data = JSON.parse(localStorage.getItem('formData'));
@@ -1651,8 +1756,9 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
                 }
             });
 
-            calculateTotalTimeWorked();
-        }
+           calculateTotalTimeWorked();
+updateTotalPtoAndHolidayHours();
+debounce(hideZeroValueSpans, 100)();        }
     }
 
     loadFormData(); // Load form data on page load
@@ -1680,6 +1786,8 @@ function toggleWorkInputs(dayIndex, isChecked) {
             input.disabled = false;
         });
     }
-    calculateTotalTimeWorked();
+ calculateTotalTimeWorked();
+updateTotalPtoAndHolidayHours();
+debounce(hideZeroValueSpans, 100)();
 }
 
