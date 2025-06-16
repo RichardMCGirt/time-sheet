@@ -66,27 +66,28 @@ if (isNaN(value)) value = 0;
         parentRow.style.display = value === 0 ? 'none' : '';
     });
 }
+function updateLoadingBar(message) {
+    progress += increment;
+    progress = Math.min(progress, 100); // Clamp to 100 max
 
-    function updateLoadingBar(message) {
-        progress += increment;
-        if (loadingBar) {
-            loadingBar.style.width = progress + '%';
-            loadingBar.textContent = `Loading... ${Math.round(progress)}%`;
-        }
-
-        if (progress >= 100) {
-            setTimeout(() => {
-                const loadingBarContainer = document.getElementById('loading-bar-container');
-                if (loadingBarContainer) {
-                    loadingBarContainer.style.display = 'none';
-                }
-                if (content) {
-                    content.style.visibility = 'visible';
-                }
-                hideNotification(); // Hide notification when loading is complete
-            }, 500); // Small delay for the bar to reach 100%
-        }
+    if (loadingBar) {
+        loadingBar.style.width = progress + '%';
+        loadingBar.textContent = `Loading... ${Math.round(progress)}%`;
     }
+
+    if (progress >= 100) {
+        setTimeout(() => {
+            const loadingBarContainer = document.getElementById('loading-bar-container');
+            if (loadingBarContainer) {
+                loadingBarContainer.style.display = 'none';
+            }
+            if (content) {
+                content.style.visibility = 'visible';
+            }
+            hideNotification();
+        }, 500);
+    }
+}
 
     let isApproved = false;  // Define and initialize the isApproved variable
 

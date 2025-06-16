@@ -304,3 +304,15 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+// Submit button restriction for Kyle
+const submitBtn = document.getElementById("submit-button");
+submitBtn.addEventListener("click", () => {
+    const userEmailEl = document.getElementById("user-email");
+    const userEmail = userEmailEl?.textContent?.trim()?.toLowerCase();
+    const today = new Date();
+    const isTuesday = today.getDay() === 2; // 0 = Sunday, 2 = Tuesday
+
+    if (userEmail === "kyle.thurston@vanirinstalledsales.com" && !isTuesday) {
+        alert("⚠️ Submit button does not need to be clicked daily.");
+    }
+});
