@@ -27,7 +27,6 @@ if (userEmailElement) {
     });
 }
 
-
     // Elements to hide during data fetching
     const titleElement = document.querySelector('h1');
     const messageContainer = document.getElementById('message-container');
@@ -193,8 +192,7 @@ if (userEmailElement) {
             // Default supervisor access level
             filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
         }
-        
-    
+            
         const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
         console.log(`Fetching timesheets with endpoint: ${endpoint}`);
         try {
@@ -616,7 +614,6 @@ if (userEmailElement) {
         downloadCsv(csvContent, 'Corporate_timesheets.csv');
     }
     
-    
     function generateCsvHeader() {
         console.log('Generating CSV header');
         return "RECTYPE,EMPLOYEE,PEREND,TIMECARD\nRECTYPE,EMPLOYEE,PEREND,TIMECARD,LINENUM,CATEGORY,EARNDED,HOURS\n";
@@ -695,9 +692,6 @@ if (userEmailElement) {
         return csvRows;
     }
     
-    
-
-    
     function generateCsvLine(employeeNumber, date, category, earnDed, hours, lineNumber) {
         console.log(`Generating CSV line: Employee=${employeeNumber}, Date=${date}, LineNum=${lineNumber}, Category=${category}, EarnDed=${earnDed}, Hours=${hours}`);
         return `2,${employeeNumber},${date},R,${lineNumber},${category},${earnDed},${hours}\n`;
@@ -717,6 +711,4 @@ if (userEmailElement) {
             document.body.removeChild(link);
         }
     }
-
-    
 });

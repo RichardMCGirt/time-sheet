@@ -552,7 +552,6 @@ async function fetchPersonalEndDate() {
             updateLoadingBar('Approval status has been downloaded.');
         } catch (error) {
             console.error('Error fetching approval status:', error);
-            alert('Failed to fetch approval status. Error: ' + error.message);
         }
     }
     
