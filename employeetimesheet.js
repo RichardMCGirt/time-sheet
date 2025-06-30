@@ -218,8 +218,7 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
 
         if (isImpersonatingKaty) {
             filterFormula = '{Employee Number}!=BLANK()';
-        } else if (supervisorEmail === 'josh@vanirinstalledsales.com' || supervisorEmail === 'ethen.wilson@vanirinstalledsales.com') {
-            filterFormula = `OR({Supervisor}='Josh Boyd', {Supervisor}='Ethen Wilson')`;
+       
         } else if (isImpersonatingBrian) {
             filterFormula = `OR(
                 {Employee Number}='12078',

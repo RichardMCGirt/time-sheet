@@ -182,12 +182,7 @@ if (userEmailElement) {
             // Grant full access
             filterFormula = '{Employee Number}!=BLANK()';
         
-        } else if (supervisorEmail === 'josh@vanirinstalledsales.com' || 
-                   supervisorEmail === 'ethen.wilson@vanirinstalledsales.com') {
-            
-            // Josh and Ethan's access level
-            filterFormula = `OR({Supervisor}='Josh Boyd', {Supervisor}='Ethen Wilson')`;
-        
+       
         } else {
             // Default supervisor access level
             filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;

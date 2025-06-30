@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", async () => {
     const userEmailElement = document.getElementById("user-email");
     const userEmail = userEmailElement?.textContent?.trim().toLowerCase();
