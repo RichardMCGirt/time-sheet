@@ -228,19 +228,18 @@
         </div>
         <section id="summary" class="summary-section" style="display: flex; justify-content: center; align-items: center; padding: 20px;">
             <form id="summary-form" class="summary-form" style="display: flex; flex-direction: column; align-items: center; background-color: #34495e; padding: 20px; border-radius: 10px; width: 100%; max-width: 600px;">
-                <div class="form-row">
-                    <label for="pto-time" class="form-label">PTO time used (hours):</label>
-                    <span type="number" id="pto-time" name="pto_time">0</span>
-                </div>
-                <div class="form-row">
-                    <label for="personal-time" class="form-label">Personal time used (hours):</label>
-                    <div id="total-personal-time-display">0</div>
-                </div>
-                <div class="form-row">
-                    <label for="Holiday-hours" class="form-label">Holiday (hours):</label>
-                    <span type="number" id="Holiday-hours" name="Holiday_hours">0</span>
-                </div>
-                <div class="form-row">
+               
+<div id="pto-pers0onal-wrapper" style="display: none;">
+  <div class="form-row">
+    <label for="pto-time" class="form-label">PTO time used (hours):</label>
+    <span id="pto-time" name="pto_time" class="form-value">0</span>
+  </div>
+  <div class="form-row">
+    <label for="personal-time" class="form-label">Personal time used (hours):</label>
+    <span id="total-personal-time-display" class="form-value">0</span>
+  </div>
+</div>
+ <div class="form-row">
                     <label for="total-time-worked" class="form-label">Total Hours Worked:</label>
                     <span id="total-time-worked" class="form-value">0.00</span>
                 </div>
@@ -248,6 +247,24 @@
     <label for="gifted-hours" class="form-label">Gifted Hours:</label>
     <span id="gifted-hours" class="form-value">0.00</span>
 </div>
+<div id="totals-summary">
+  <div class="form-row">
+    <label class="form-label">Total PTO Time Used:</label>
+    <span id="total-pto-used" class="form-value">0</span>
+  </div>
+  <div class="form-row">
+    <label class="form-label">Total Personal Time Used:</label>
+    <span id="total-personal-used" class="form-value">0</span>
+  </div>
+  <div class="form-row" id="holiday-row">
+    <label class="form-label">Holiday (hours):</label>
+    <span id="Holiday-hours" class="form-value">0</span>
+  </div>
+</div>
+
+
+
+
 
                 <div class="form-row">
                     <label for="overtime" class="form-label">Overtime hours:</label>

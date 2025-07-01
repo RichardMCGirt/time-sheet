@@ -595,7 +595,6 @@ function disableAllInputs() {
 }
 
 
-// Example function call to disable all inputs based on timesheet approval
 await fetchApprovalStatus();
 
            
@@ -604,6 +603,7 @@ await fetchApprovalStatus();
     await fetchPersonalTime();
     await fetchPersonalEndDate();
     await fetchApprovalStatus();
+    await updateTotalsSummary();
 
     function handleHolidayHoursChange() {
         console.log('Handling Holiday hours change...');
@@ -1791,3 +1791,66 @@ updateTotalPtoAndHolidayHours();
 debounce(hideZeroValueSpans, 100)();
 }
 
+// Master summary visibility control
+function updateTotalsSummary() {
+  let totalPTO = 0;
+  let totalPersonal = 0;
+  let totalHoliday = 0;
+
+  for (let i = 1; i <= 7; i++) {
+    totalPTO += parseFloat(document.querySelector(`input[name="PTO_hours${i}"]`)?.value) || 0;
+    totalPersonal += parseFloat(document.querySelector(`input[name="Personal_hours${i}"]`)?.value) || 0;
+    totalHoliday += parseFloat(document.querySelector(`input[name="Holiday_hours${i}"]`)?.value) || 0;
+  }
+
+  console.log(`📊 PTO: ${totalPTO} | Personal: ${totalPersonal} | Holiday: ${totalHoliday}`);
+
+  document.getElementById('total-pto-used').innerText = totalPTO.toFixed(2);
+  document.getElementById('total-personal-used').innerText = totalPersonal.toFixed(2);
+  document.getElementById('Holiday-hours').innerText = totalHoliday.toFixed(2);
+
+  const totalsDiv = document.getElementById('totals-summary');
+  totalsDiv.style.display = (totalPTO || totalPersonal || totalHoliday) ? 'block' : 'none';
+
+  // ✅ Toggle each row INDIVIDUALLY
+  toggleRowDisplay('total-pto-used', totalPTO);
+  toggleRowDisplay('total-personal-used', totalPersonal);
+  toggleRowDisplay('Holiday-hours', totalHoliday);
+
+  // Also handle holiday-row if you have a special container
+  const holidayRow = document.getElementById('holiday-row');
+  if (holidayRow) {
+    holidayRow.style.display = (totalHoliday) ? 'flex' : 'none';
+  }
+
+  // PTO + Personal wrapper if needed
+  const ptoPersonalWrapper = document.getElementById('pto-personal-wrapper');
+  if (ptoPersonalWrapper) {
+    ptoPersonalWrapper.style.display = (totalPTO || totalPersonal) ? 'block' : 'none';
+  }
+}
+
+function toggleRowDisplay(spanId, value) {
+  const span = document.getElementById(spanId);
+  if (!span) return;
+
+  const parentRow = span.closest('.form-row');
+  if (parentRow) {
+    parentRow.style.display = (value === 0) ? 'none' : 'flex';
+  }
+}
+
+// Attach listeners to all PTO and Personal time inputs
+document.addEventListener('DOMContentLoaded', () => {
+ for (let i = 1; i <= 7; i++) {
+  const ptoInput = document.querySelector(`input[name="PTO_hours${i}"]`);
+  const personalInput = document.querySelector(`input[name="Personal_hours${i}"]`);
+  const holidayInput = document.querySelector(`input[name="Holiday_hours${i}"]`);
+
+  if (ptoInput) ptoInput.addEventListener('input', debounce(updateTotalsSummary, 200));
+
+  if (personalInput) personalInput.addEventListener('input', updateTotalsSummary, 200);
+  if (holidayInput) holidayInput.addEventListener('input', updateTotalsSummary, 200);
+}
+
+});

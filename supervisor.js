@@ -227,7 +227,7 @@ if (userEmailElement) {
 
                 const nameContainer = document.createElement('div');
                 nameContainer.classList.add('name-container');
-                nameContainer.textContent = `${employeeName}`; // Employee name only, number hidden
+nameContainer.textContent = `${employeeName} (${employeeNumber})`; // Show name and number
                 nameContainer.setAttribute('data-record-id', record.id); // Set the record ID
                 nameContainer.setAttribute('data-employee-number', employeeNumber); // Store employee number for CSV generation
                 nameContainer.addEventListener('click', () => {
