@@ -234,7 +234,7 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
         let offset = null;
 
         do {
-            const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Full Name&sort[0][direction]=asc`;
+const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
             try {
                 loadingIndicator.style.display = 'block';
                 const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
