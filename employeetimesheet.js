@@ -283,33 +283,36 @@ const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormu
         return `${month}/${day}/${year}`;
     }
 
-    function calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut) {
-        if (!start || !end) return 0; // If start or end time is missing, return 0
-    
-        const startTime = new Date(`1970-01-01T${start}:00`);
-        const endTime = new Date(`1970-01-01T${end}:00`);
-        const lunchStartTime = lunchStart ? new Date(`1970-01-01T${lunchStart}:00`) : null;
-        const lunchEndTime = lunchEnd ? new Date(`1970-01-01T${lunchEnd}:00`) : null;
-        const additionalInTime = additionalIn ? new Date(`1970-01-01T${additionalIn}:00`) : null;
-        const additionalOutTime = additionalOut ? new Date(`1970-01-01T${additionalOut}:00`) : null;
-    
-        // Calculate worked hours between start and end time
-        let workedHours = (endTime - startTime) / (1000 * 60 * 60); // Convert milliseconds to hours
-    
-        // Subtract lunch break time if both lunch start and end are provided
-        if (lunchStartTime && lunchEndTime) {
-            const lunchHours = (lunchEndTime - lunchStartTime) / (1000 * 60 * 60);
-            workedHours -= lunchHours;
-        }
-    
-        // Add the additional in/out time if both are provided
-        if (additionalInTime && additionalOutTime) {
-            const additionalHours = (additionalOutTime - additionalInTime) / (1000 * 60 * 60);
-            workedHours += additionalHours; // Add additional hours worked
-        }
-    
-        return workedHours > 0 ? workedHours.toFixed(2) : 0; // Return total worked hours, rounded to 2 decimal places
+
+    function roundToQuarterHour(hours) {
+    const quarter = 0.25;
+    return Math.round(hours / quarter) * quarter;
+}
+
+function calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut) {
+    if (!start || !end) return 0;
+
+    const startTime = new Date(`1970-01-01T${start}:00`);
+    const endTime = new Date(`1970-01-01T${end}:00`);
+    const lunchStartTime = lunchStart ? new Date(`1970-01-01T${lunchStart}:00`) : null;
+    const lunchEndTime = lunchEnd ? new Date(`1970-01-01T${lunchEnd}:00`) : null;
+    const additionalInTime = additionalIn ? new Date(`1970-01-01T${additionalIn}:00`) : null;
+    const additionalOutTime = additionalOut ? new Date(`1970-01-01T${additionalOut}:00`) : null;
+
+    let workedHours = (endTime - startTime) / (1000 * 60 * 60);
+
+    if (lunchStartTime && lunchEndTime) {
+        workedHours -= (lunchEndTime - lunchStartTime) / (1000 * 60 * 60);
     }
+
+    if (additionalInTime && additionalOutTime) {
+        workedHours += (additionalOutTime - additionalInTime) / (1000 * 60 * 60);
+    }
+
+    const roundedHours = workedHours > 0 ? roundToQuarterHour(workedHours) : 0;
+    return roundedHours.toFixed(2);
+}
+
 
     function generateRows(fields, recordId, employeeNumber) {
         console.log(`[INFO] Generating rows for timesheet for record: ${recordId}, Employee Number: ${employeeNumber}`);
@@ -352,7 +355,12 @@ const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormu
         `).join('');
        
     
-        console.log(`[INFO] Total hours worked after all days: ${totalHoursWorked.toFixed(2)}`);
+console.log(`[INFO] Total hours worked after all days: ${totalHoursWorked.toFixed(2)}`);
+
+// ⬇️ Add this to round it
+totalHoursWorked = roundToQuarterHour(totalHoursWorked);
+console.log(`[INFO] Total hours worked after rounding: ${totalHoursWorked.toFixed(2)}`);
+
 
            // Fetch additional hours
            const totalPersonalHours = parseFloat(fields['Total Personal Hours'] || 0);
