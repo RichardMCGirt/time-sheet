@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
     waitForUserEmail((userEmail) => {
         console.log("✅ Resolved user email for jumpscare check:", userEmail);
 
-        if (userEmail === "diana.smith@vanirinstalledsales.com") {
+        if (userEmail === "diana.smit5h@vanirinstalledsales.com") {
             const jumpscareKey = "dianaJumpscareWeek";
             const dayKey = "dianaJumpscareDay";
             const today = new Date();

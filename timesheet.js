@@ -9,14 +9,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     let progress = 0;
 
-    function debounce(func, wait) {
-    let timeout;
-    return function (...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-}
-
 
 function hideZeroValueSpans() {
     // Recalculate totals based on inputs
@@ -168,14 +160,7 @@ document.addEventListener("DOMContentLoaded", function() {
     attachNoDecimalValidation();
 });
 
-    function showNotification(message) {
-        if (notificationArea) {
-            notificationArea.textContent = message;
-            notificationArea.style.display = 'block';
-            setTimeout(hideNotification, 1500); // Hide the notification after 1.5 seconds
-        } else {
-        }
-    }
+ 
 
     function hideNotification() {
         if (notificationArea) {
@@ -304,66 +289,72 @@ debounce(hideZeroValueSpans, 100)();    });
     checkInputs();
 
     rowCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function(event) {
-            const row = event.target.closest('tr');
-            const timeInputsInRow = row.querySelectorAll('input[type="time"]');
-            const numberInputsInRow = row.querySelectorAll('input[type="number"]');
-            const ptoInput = row.querySelector('input[name^="PTO_hours"]');
-            const personalInput = row.querySelector('input[name^="Personal_hours"]');
-            const holidayInput = row.querySelector('input[name^="Holiday_hours"]');
-    
-            if (event.target.checked) {
-                // When "Did Not Work" is checked, disable the time and number inputs
-                timeInputsInRow.forEach(input => {
-                    input.setAttribute('data-previous-value', input.value);
-                    input.value = '';
-                    input.disabled = true;
-                });
-                numberInputsInRow.forEach(input => {
-                    input.setAttribute('data-previous-value', input.value);
-                    input.value = '';
-                    input.disabled = true;
-                });
-                // Enable PTO, Personal, and Holiday inputs when the checkbox is checked
-                if (ptoInput) {
-                    ptoInput.removeAttribute('data-previous-value');
-                    ptoInput.disabled = false;
-                }
-                if (personalInput) {
-                    personalInput.removeAttribute('data-previous-value');
-                    personalInput.disabled = false;
-                }
-                if (holidayInput) {
-                    holidayInput.removeAttribute('data-previous-value');
-                    holidayInput.disabled = false;
-                }
-            } else {
-                // When "Did Not Work" is unchecked, restore the previous values and enable all inputs
-                timeInputsInRow.forEach(input => {
-                    input.value = input.getAttribute('data-previous-value') || '';
-                    input.disabled = false;
-                });
-                numberInputsInRow.forEach(input => {
-                    input.value = input.getAttribute('data-previous-value') || '';
-                    input.disabled = false;
-                });
-                if (ptoInput) {
-                    ptoInput.value = ptoInput.getAttribute('data-previous-value') || '';
-                    ptoInput.disabled = false; // Ensure it's not disabled
-                }
-                if (personalInput) {
-                    personalInput.value = personalInput.getAttribute('data-previous-value') || '';
-                    personalInput.disabled = false; // Ensure it's not disabled
-                }
-                if (holidayInput) {
-                    holidayInput.value = holidayInput.getAttribute('data-previous-value') || '';
-                    holidayInput.disabled = false; // Ensure it's not disabled
-                }
-            }
-     calculateTotalTimeWorked();
-updateTotalPtoAndHolidayHours();
-debounce(hideZeroValueSpans, 100)();        });
+    checkbox.addEventListener('change', function(event) {
+        const row = event.target.closest('tr');
+        const timeInputsInRow = row.querySelectorAll('input[type="time"]');
+        // ⬇️ EXCLUDE Holiday input
+        const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
+            .filter(input => !input.name.startsWith('Holiday_hours'));
+
+        const ptoInput = row.querySelector('input[name^="PTO_hours"]');
+        const personalInput = row.querySelector('input[name^="Personal_hours"]');
+        const holidayInput = row.querySelector('input[name^="Holiday_hours"]');
+
+      if (event.target.checked) {
+  // Normal time/number inputs get cleared
+  timeInputsInRow.forEach(input => {
+    input.setAttribute('data-previous-value', input.value);
+    input.value = '';
+    input.disabled = true;
+  });
+
+  numberInputsInRow.forEach(input => {
+    input.setAttribute('data-previous-value', input.value);
+    input.value = '';
+    input.disabled = true;
+  });
+
+  if (ptoInput) {
+    ptoInput.disabled = false;
+  }
+  if (personalInput) {
+    personalInput.disabled = false;
+  }
+  if (holidayInput) {
+    holidayInput.disabled = false; // ⬅️ force it to stay editable
+    // Do NOT clear its value!
+  }
+} else {
+  // Restore everything
+  timeInputsInRow.forEach(input => {
+    input.value = input.getAttribute('data-previous-value') || '';
+    input.disabled = false;
+  });
+
+  numberInputsInRow.forEach(input => {
+    input.value = input.getAttribute('data-previous-value') || '';
+    input.disabled = false;
+  });
+
+  if (ptoInput) {
+    ptoInput.disabled = false;
+  }
+  if (personalInput) {
+    personalInput.disabled = false;
+  }
+  if (holidayInput) {
+    holidayInput.disabled = false; // ⬅️ always editable
+    holidayInput.value = holidayInput.getAttribute('data-previous-value') || holidayInput.value;
+  }
+}
+
+
+        calculateTotalTimeWorked();
+        updateTotalPtoAndHolidayHours();
+        debounce(hideZeroValueSpans, 100)();
     });
+});
+
     
 
     // Fetch PTO Hours
@@ -795,51 +786,114 @@ function getEaster(year) {
 const easter2024 = getEaster(2024);
 console.log(`Easter in 2024 is on: ${easter2024.toDateString()}`);
 
+function showHolidayEditToast() {
+    const toast = document.createElement('div');
+    toast.textContent = "⚠️ Holiday hours automatictly added.";
+    toast.style.position = 'fixed';
+    toast.style.bottom = '50%';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.backgroundColor = '#333';
+    toast.style.color = '#fff';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '5px';
+    toast.style.zIndex = '9999';
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease-in-out';
+
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+    });
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => document.body.removeChild(toast), 300);
+    }, 2000);
+}
+
+
 function populateWeekDates(weekEndingDate) {
     const year = weekEndingDate.getFullYear();
     const holidays = getHolidayDates(year);
     const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
 
     daysOfWeek.forEach((day, index) => {
-        const currentDate = new Date(weekEndingDate);
-        currentDate.setDate(currentDate.getDate() - (6 - index));
-        const inputField = elements.timeEntryForm.elements[day];
-        inputField.value = currentDate.toISOString().split('T')[0];
-        console.log(`Set date for ${day}:`, currentDate);
+    const currentDate = new Date(weekEndingDate);
+    currentDate.setDate(weekEndingDate.getDate() - (6 - index));
+    const inputField = elements.timeEntryForm.elements[day];
+    inputField.value = currentDate.toISOString().split('T')[0];
 
-        // Check if the current date is a holiday
-        const isHoliday = Object.values(holidays).some(holiday => 
-            currentDate.getFullYear() === holiday.getFullYear() &&
-            currentDate.getMonth() === holiday.getMonth() &&
-            currentDate.getDate() === holiday.getDate()
-        );
+    console.log(`Set date for ${day}:`, currentDate);
 
-        // Check if the day is a weekday (Monday = 1, ..., Friday = 5)
-        const isWeekday = currentDate.getDay() >= 0 && currentDate.getDay() <= 4;
+    // Check if the current date is a holiday
+    const isHoliday = Object.values(holidays).some(holiday => 
+        currentDate.getFullYear() === holiday.getFullYear() &&
+        currentDate.getMonth() === holiday.getMonth() &&
+        currentDate.getDate() === holiday.getDate()
+    );
 
-        // If it's a holiday and a weekday, populate 8 hours in the Holiday Hours field
-        const holidayInput = elements.timeEntryForm.elements[`Holiday_hours${index + 1}`];
-        if (isHoliday && isWeekday) {
-            holidayInput.value = '8';
-        } else {
-            holidayInput.value = ''; // Clear any previously set value
-        }
+    // Check if the day is a weekday
+    const isWeekday = currentDate.getDay() >= 0 && currentDate.getDay() <= 4;
 
-        // Add "Did Not Work" checkbox if it doesn't exist
-        const checkboxId = `did-not-work-${index + 1}`;
-        let checkbox = document.getElementById(checkboxId);
-        if (!checkbox) {
-            checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = checkboxId;
-            checkbox.name = `did_not_work${index + 1}`;
-            const cell = document.createElement('td');
-            cell.appendChild(checkbox);
-            inputField.parentElement.parentElement.appendChild(cell);
-            console.log('Added checkbox for', day);
-        }
-    });
-    saveFormData();
+    // Get inputs for the row
+    const row = document.querySelector(`tr[data-day="${index + 1}"]`);
+    const timeInputsInRow = row.querySelectorAll('input[type="time"]');
+    const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
+      .filter(input => !input.name.startsWith('Holiday_hours')); // Exclude holiday field
+
+    const holidayInput = elements.timeEntryForm.elements[`Holiday_hours${index + 1}`];
+
+   if (isHoliday && isWeekday) {
+    holidayInput.value = '8';
+
+    // Disable normal time and number inputs & add click handlers for toast
+   timeInputsInRow.forEach(input => {
+  input.readOnly = true;
+  input.value = '';
+  input.addEventListener('focus', showHolidayEditToast);
+  input.addEventListener('click', showHolidayEditToast);
+});
+
+numberInputsInRow.forEach(input => {
+  input.readOnly = true;
+  input.value = '';
+  input.addEventListener('focus', showHolidayEditToast);
+  input.addEventListener('click', showHolidayEditToast);
+});
+
+
+    holidayInput.disabled = false;
+
+} else {
+    holidayInput.value = '';
+
+    // Enable normal time and number inputs & remove toast handlers if any
+   timeInputsInRow.forEach(input => {
+  input.readOnly = false;
+  input.removeEventListener('focus', showHolidayEditToast);
+  input.removeEventListener('click', showHolidayEditToast);
+});
+
+numberInputsInRow.forEach(input => {
+  input.readOnly = false;
+  input.removeEventListener('focus', showHolidayEditToast);
+  input.removeEventListener('click', showHolidayEditToast);
+});
+
+
+    holidayInput.disabled = false;
+}
+
+});
+
+// After your loop that sets Holiday_hours fields:
+saveFormData();
+calculateTotalTimeWorked();
+updateTotalPtoAndHolidayHours();
+updateTotalsSummary(); // ✅ Ensures PTO, Personal, Holiday rows show correctly
+debounce(hideZeroValueSpans, 100)(); // ✅ Hide zero rows if needed
 }
 
 function startCountdown() {
@@ -1525,14 +1579,6 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
         return total;
     }
 
-    function debounce(func, wait) {
-        let timeout;
-        return function (...args) {
-            const context = this;
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(context, args), wait);
-        };
-    }
 
     function scrollToElement(element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1791,11 +1837,31 @@ updateTotalPtoAndHolidayHours();
 debounce(hideZeroValueSpans, 100)();
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+ for (let i = 1; i <= 7; i++) {
+  const ptoInput = document.querySelector(`input[name="PTO_hours${i}"]`);
+  const personalInput = document.querySelector(`input[name="Personal_hours${i}"]`);
+  const holidayInput = document.querySelector(`input[name="Holiday_hours${i}"]`);
+
+  if (ptoInput) ptoInput.addEventListener('input', debounce(updateTotalsSummary, 200));
+  if (personalInput) personalInput.addEventListener('input', debounce(updateTotalsSummary, 200));
+  if (holidayInput) holidayInput.addEventListener('input', debounce(updateTotalsSummary, 200));
+ }
+});
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+
 // Master summary visibility control
 function updateTotalsSummary() {
   let totalPTO = 0;
   let totalPersonal = 0;
   let totalHoliday = 0;
+  
 
   for (let i = 1; i <= 7; i++) {
     totalPTO += parseFloat(document.querySelector(`input[name="PTO_hours${i}"]`)?.value) || 0;

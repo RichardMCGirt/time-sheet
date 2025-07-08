@@ -89,7 +89,6 @@
                             <th class="narrow-column">PTO Hours</th>
                             <th class="narrow-column">Personal Hours</th>
                             <th class="narrow-column">Holiday Hours</th>
-                            <th class="work-column">Did not work</th>
                         </tr>
                     </thead>
                     <tbody id="time-entry-body">
@@ -107,7 +106,6 @@
                                         <td class="narrow-column"><input type="number" name="PTO_hours1" min="0" max="10" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Personal_hours1" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Holiday_hours1" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td style="text-align: center;"><input type="checkbox" id="did-not-work-1" name="did_not_work1" onchange="toggleWorkInputs(0, this.checked)"></td>
                                     </tr>
                                     <tr data-day="2">
                                             <td style="text-align: center;">Thursday</td> <!-- Day of the week column -->
@@ -123,7 +121,6 @@
                                         <td class="narrow-column"><input type="number" name="PTO_hours2" min="0" max="10" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Personal_hours2" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Holiday_hours2" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td style="text-align: center;"><input type="checkbox" id="did-not-work-2" name="did_not_work2" onchange="toggleWorkInputs(1, this.checked)"></td>
                                     </tr>
                                     <tr data-day="3">
                                                                                     <td style="text-align: center;">Friday</td> <!-- Day of the week column -->
@@ -139,7 +136,6 @@
                                         <td class="narrow-column"><input type="number" name="PTO_hours3" min="0" max="10" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Personal_hours3" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Holiday_hours3" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td style="text-align: center;"><input type="checkbox" id="did-not-work-3" name="did_not_work3" onchange="toggleWorkInputs(2, this.checked)"></td>
                                     </tr>
                                     <tr data-day="4" class="highlight-row">  
                                                                                     <td style="text-align: center;">Saturday</td> <!-- Day of the week column -->
@@ -155,7 +151,6 @@
                                         <td class="narrow-column"><input type="number" name="PTO_hours4" min="0" max="10" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Personal_hours4" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Holiday_hours4" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td style="text-align: center;"><input type="checkbox" id="did-not-work-4" name="did_not_work4" onchange="toggleWorkInputs(3, this.checked)"></td>
                                     </tr>
                                     <tr data-day="5" class="highlight-row">
                                                                                     <td style="text-align: center;">Sunday</td> <!-- Day of the week column -->
@@ -171,7 +166,6 @@
                                         <td class="narrow-column"><input type="number" name="PTO_hours5" min="0" max="10" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Personal_hours5" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Holiday_hours5" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td style="text-align: center;"><input type="checkbox" id="did-not-work-5" name="did_not_work5" onchange="toggleWorkInputs(4, this.checked)"></td>
                                     </tr>
                                     
                                     <tr data-day="6">
@@ -188,7 +182,6 @@
                                         <td class="narrow-column"><input type="number" name="PTO_hours6" min="0" max="10" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Personal_hours6" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Holiday_hours6" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td style="text-align: center;"><input type="checkbox" id="did-not-work-6" name="did_not_work6" onchange="toggleWorkInputs(5, this.checked)"></td>
                                     </tr>
                                     <tr data-day="7">
                                              <td style="text-align: center;">Tuesday</td> <!-- Day of the week column -->
@@ -204,7 +197,6 @@
                                         <td class="narrow-column"><input type="number" name="PTO_hours7" min="0" max="10" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Personal_hours7" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
                                         <td class="narrow-column"><input type="number" name="Holiday_hours7" min="0" max="8" step="1" class="form-control time-input narrow-input"></td>
-                                        <td style="text-align: center;"><input type="checkbox" id="did-not-work-7" name="did_not_work7" onchange="toggleWorkInputs(6, this.checked)"></td>
                                     </tr>
                                 </tbody>
                             </table>
