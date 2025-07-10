@@ -89,89 +89,78 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    function calculateWorkDayHoursMissed(startDateTimeStr, endDateTimeStr, workStartTime = "07:00 AM", workEndTime = "04:00 PM") {
-        console.log("Inputs:", { startDateTimeStr, endDateTimeStr, workStartTime, workEndTime });
-    
-        const startDateTime = new Date(startDateTimeStr);
-        const endDateTime = new Date(endDateTimeStr);
-    
-        if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
-            console.error("Invalid start or end datetime:", { startDateTimeStr, endDateTimeStr });
-            return 0;
-        }
-    
-        console.log("Parsed startDateTime:", startDateTime);
-        console.log("Parsed endDateTime:", endDateTime);
-    
-        let totalMissedHours = 0;
-        let currentDate = new Date(startDateTime);
-    
-        while (currentDate <= endDateTime) {
-            console.log("Processing date:", currentDate);
-    
-            const workStart = new Date(currentDate);
-            const workEnd = new Date(currentDate);
-    
-            const [workStartHour, workStartMinutes, workStartPeriod] = parseTime(workStartTime);
-            const [workEndHour, workEndMinutes, workEndPeriod] = parseTime(workEndTime);
-    
-            workStart.setHours(convertTo24Hour(workStartHour, workStartPeriod));
-            workStart.setMinutes(workStartMinutes);
-            workEnd.setHours(convertTo24Hour(workEndHour, workEndPeriod));
-            workEnd.setMinutes(workEndMinutes);
-    
-            console.log("Workday start time:", workStart);
-            console.log("Workday end time:", workEnd);
-    
-            const currentDayStart = new Date(currentDate);
-            const currentDayEnd = new Date(currentDate);
-    
-            if (currentDate.toDateString() === startDateTime.toDateString()) {
-                currentDayStart.setHours(startDateTime.getHours(), startDateTime.getMinutes());
-            } else {
-                currentDayStart.setTime(workStart.getTime());
-            }
-    
-            if (currentDate.toDateString() === endDateTime.toDateString()) {
-                currentDayEnd.setHours(endDateTime.getHours(), endDateTime.getMinutes());
-            } else {
-                currentDayEnd.setTime(workEnd.getTime());
-            }
-    
-            console.log("Adjusted current day start:", currentDayStart);
-            console.log("Adjusted current day end:", currentDayEnd);
-    
-            const missedStart = Math.max(workStart.getTime(), currentDayStart.getTime());
-            const missedEnd = Math.min(workEnd.getTime(), currentDayEnd.getTime());
-    
-            console.log("Missed start (timestamp):", new Date(missedStart));
-            console.log("Missed end (timestamp):", new Date(missedEnd));
-    
-            let missedHours = (missedEnd - missedStart) / (1000 * 60 * 60); // Convert milliseconds to hours
-    
-            // Subtract one hour if the range overlaps with noon to 1 PM (lunch break)
-            const noon = new Date(currentDate);
-            noon.setHours(12, 0, 0, 0);
-            const onePM = new Date(currentDate);
-            onePM.setHours(13, 0, 0, 0);
-    
-            if (missedStart < onePM.getTime() && missedEnd > noon.getTime()) {
-                missedHours = Math.max(0, missedHours - 1);
-                console.log("Subtracted one hour for noon to 1 PM overlap");
-            }
-    
-            console.log("Missed hours for this day:", Math.max(0, missedHours));
-    
-            totalMissedHours += Math.max(0, missedHours);
-    
-            // Move to the next day
-            currentDate.setDate(currentDate.getDate() + 1);
-            currentDate.setHours(0, 0, 0, 0); // Reset time to midnight
-        }
-    
-        console.log("Total missed hours:", totalMissedHours);
-        return totalMissedHours;
+   function calculateWorkDayHoursMissed(startDateTimeStr, endDateTimeStr, workStartTime = "07:00 AM", workEndTime = "04:00 PM") {
+    console.log("Inputs:", { startDateTimeStr, endDateTimeStr, workStartTime, workEndTime });
+
+    const startDateTime = new Date(startDateTimeStr);
+    const endDateTime = new Date(endDateTimeStr);
+
+    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+        console.error("Invalid start or end datetime:", { startDateTimeStr, endDateTimeStr });
+        return 0;
     }
+
+    let totalMissedHours = 0;
+    let currentDate = new Date(startDateTime);
+
+    while (currentDate <= endDateTime) {
+
+        // === SKIP WEEKENDS HERE ===
+        if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+            currentDate.setDate(currentDate.getDate() + 1);
+            currentDate.setHours(0, 0, 0, 0);
+            continue;
+        }
+
+        // ...rest of your code below unchanged...
+        const workStart = new Date(currentDate);
+        const workEnd = new Date(currentDate);
+
+        const [workStartHour, workStartMinutes, workStartPeriod] = parseTime(workStartTime);
+        const [workEndHour, workEndMinutes, workEndPeriod] = parseTime(workEndTime);
+
+        workStart.setHours(convertTo24Hour(workStartHour, workStartPeriod));
+        workStart.setMinutes(workStartMinutes);
+        workEnd.setHours(convertTo24Hour(workEndHour, workEndPeriod));
+        workEnd.setMinutes(workEndMinutes);
+
+        const currentDayStart = new Date(currentDate);
+        const currentDayEnd = new Date(currentDate);
+
+        if (currentDate.toDateString() === startDateTime.toDateString()) {
+            currentDayStart.setHours(startDateTime.getHours(), startDateTime.getMinutes());
+        } else {
+            currentDayStart.setTime(workStart.getTime());
+        }
+
+        if (currentDate.toDateString() === endDateTime.toDateString()) {
+            currentDayEnd.setHours(endDateTime.getHours(), endDateTime.getMinutes());
+        } else {
+            currentDayEnd.setTime(workEnd.getTime());
+        }
+
+        const missedStart = Math.max(workStart.getTime(), currentDayStart.getTime());
+        const missedEnd = Math.min(workEnd.getTime(), currentDayEnd.getTime());
+
+        let missedHours = (missedEnd - missedStart) / (1000 * 60 * 60);
+
+        // Subtract one hour for lunch if overlaps with noon–1pm
+        const noon = new Date(currentDate); noon.setHours(12, 0, 0, 0);
+        const onePM = new Date(currentDate); onePM.setHours(13, 0, 0, 0);
+
+        if (missedStart < onePM.getTime() && missedEnd > noon.getTime()) {
+            missedHours = Math.max(0, missedHours - 1);
+        }
+
+        totalMissedHours += Math.max(0, missedHours);
+
+        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate.setHours(0, 0, 0, 0);
+    }
+
+    return totalMissedHours;
+}
+
     
     
     
