@@ -161,10 +161,6 @@ document.addEventListener("DOMContentLoaded", function() {
     return totalMissedHours;
 }
 
-    
-    
-    
-    
     // Helper functions
     function parseTime(timeStr) {
         const [time, period] = timeStr.split(" ");
@@ -321,7 +317,8 @@ denialReasonInput.addEventListener('blur', async () => {
     const approvalIndex = denialReasonInput.dataset.approvalIndex;
     const reasonText = denialReasonInput.value.trim();
 
-    if (reasonText.length === 0) return; // Don't update if empty
+    // Always update, even if blank, so empty value is sent to Airtable!
+
 
     const updateUrl = `${url}/${recordId}`;
     const data = {
