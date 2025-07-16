@@ -210,68 +210,95 @@ document.addEventListener('DOMContentLoaded', () => {
         return maxIndex + 1;
     }
 
-    function handleFormSubmit() {
-        const startDate = document.getElementById('startDate').value;
-        let startTime = document.getElementById('startTime').value;
-        const endDate = document.getElementById('endDate').value;
-        let endTime = document.getElementById('endTime').value;
-    
-        if (!startDate || !endDate) {
-            return;
-        }
-    
-        const startDateTime = new Date(`${startDate}T${startTime || '00:00'}`);
-        const endDateTime = new Date(`${endDate}T${endTime || '23:59'}`);
-    
-        if (startDateTime > endDateTime) {
-            showError('Start Date cannot be later than End Date.');
-            return;
-        }
-    
-        const now = new Date();
-        if (now >= startDateTime && now <= endDateTime) {
-            showSuccessMessage('The requested time-off is happening now.');
-        }
-    
-        if (startTime === 'All Day') {
-            startTime = '07:00 AM';
-        } else {
-            startTime = convertToAMPM(startTime);
-        }
-        if (endTime === 'All Day') {
-            endTime = '04:00 PM';
-        } else {
-            endTime = convertToAMPM(endTime);
-        }
-    
-        const nextIndex = currentEditingIndex !== null ? currentEditingIndex : getNextAvailableIndex();
-        if (nextIndex > 10) {
-            showError('No available index to store the new time-off request.');
-            return;
-        }
-    
-        const formData = {
-            'Full Name': document.getElementById('employeeName').value,
-            [`Time off Start Date ${nextIndex}`]: startDate,
-            [`Time off Start Time ${nextIndex}`]: startTime,
-            [`Time off End Date ${nextIndex}`]: endDate,
-            [`Time off End Time ${nextIndex}`]: endTime,
-            'Submit': true,
+ function handleFormSubmit() {
+    const startDate = document.getElementById('startDate').value;
+    let startTime = document.getElementById('startTime').value;
+    const endDate = document.getElementById('endDate').value;
+    let endTime = document.getElementById('endTime').value;
 
-        };
-    
-        sendToAirtable(formData);
-    
-        document.getElementById('startDate').value = '';
-        document.getElementById('startTime').value = '';
-        document.getElementById('endDate').value = '';
-        document.getElementById('endTime').value = '';
-    
-        currentEditingIndex = null;
-        submitButton.textContent = 'Submit';
-    
-        fetchPreviousRequests(userEmail);
+    if (!startDate || !endDate) {
+        console.log('Missing start or end date.');
+        return;
     }
+
+    const startDayOfWeek = new Date(startDate).getDay();
+    console.log(`Start date: ${startDate}, Day of week: ${startDayOfWeek} (${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][startDayOfWeek]})`);
+    console.log(`Initial startTime: ${startTime}, endTime: ${endTime}`);
+
+    // --- FRIDAY ALL DAY LOGIC ---
+    // If start date is Friday and All Day is selected for start or end time, force endTime to 12:00
+    if (startDayOfWeek === 5 && (startTime === "All Day" || endTime === "All Day")) {
+        console.log('Friday and All Day selected. Overriding endTime to 12:00 PM.');
+        endTime = "12:00";
+    }
+
+    const startDateTime = new Date(`${startDate}T${startTime || '00:00'}`);
+    const endDateTime = new Date(`${endDate}T${endTime || '23:59'}`);
+
+    if (startDateTime > endDateTime) {
+        showError('Start Date cannot be later than End Date.');
+        console.log('Error: Start Date > End Date');
+        return;
+    }
+
+    const now = new Date();
+    if (now >= startDateTime && now <= endDateTime) {
+        showSuccessMessage('The requested time-off is happening now.');
+    }
+
+    // --- TIME FORMATTING ---
+    if (startTime === 'All Day') {
+        startTime = '07:00 AM';
+        console.log('Set startTime to 07:00 AM for All Day.');
+    } else {
+        startTime = convertToAMPM(startTime);
+        console.log('Converted startTime:', startTime);
+    }
+    if (endTime === 'All Day') {
+        endTime = '04:00 PM';
+        console.log('Set endTime to 04:00 PM for All Day.');
+    } else if (startDayOfWeek === 5 && endTime === "12:00") {
+        endTime = "12:00 PM";
+        console.log('Confirmed endTime as 12:00 PM for Friday All Day.');
+    } else {
+        endTime = convertToAMPM(endTime);
+        console.log('Converted endTime:', endTime);
+    }
+
+    console.log('Final values:', {startDate, startTime, endDate, endTime});
+
+    const nextIndex = currentEditingIndex !== null ? currentEditingIndex : getNextAvailableIndex();
+    if (nextIndex > 10) {
+        showError('No available index to store the new time-off request.');
+        console.log('Error: No available index.');
+        return;
+    }
+
+    const formData = {
+        'Full Name': document.getElementById('employeeName').value,
+        [`Time off Start Date ${nextIndex}`]: startDate,
+        [`Time off Start Time ${nextIndex}`]: startTime,
+        [`Time off End Date ${nextIndex}`]: endDate,
+        [`Time off End Time ${nextIndex}`]: endTime,
+        'Submit': true,
+    };
+
+    console.log('Sending formData to Airtable:', formData);
+
+    sendToAirtable(formData);
+
+    document.getElementById('startDate').value = '';
+    document.getElementById('startTime').value = '';
+    document.getElementById('endDate').value = '';
+    document.getElementById('endTime').value = '';
+
+    currentEditingIndex = null;
+    submitButton.textContent = 'Submit';
+
+    fetchPreviousRequests(userEmail);
+}
+
+
     
     function convertToAMPM(time) {
         const [hourString, minute] = time.split(':');

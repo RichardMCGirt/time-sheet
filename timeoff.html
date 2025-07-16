@@ -4,8 +4,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Advanced Time-Off Request Form</title>
-        <link rel="stylesheet" href="timeoff.css">
-        <link rel="icon" href="/favicon3.ico" type="image/x-icon">
+        <link rel="stylesheet" href="style/timeoff.css">
+        <link rel="icon" href="images/favicon3.ico" type="image/x-icon">
 
     </head>
     
@@ -13,7 +13,7 @@
     <header>
         <div class="header-left">
             <a href="timesheet.html">
-                <img src="vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
+                <img src="images/vanir logo.png" alt="Vanir Installed Sales Logo" class="logo">
             </a>        </div>
             <h3>Time-Off Request Form</h3>
         <div class="header-right">
@@ -23,15 +23,11 @@
             </div>
         </div>
     </header>
-
-   
     <nav class="navbar">
         <ul>
             <li><a href="timesheet.html">Time sheet entry</a></li>
         </ul>
     </nav>
-   
-
     <div class="container">
         <form id="timeOffForm">
             <div class="row single" style="text-align: center;">
@@ -39,10 +35,6 @@
                 <input type="text" id="employeeName" name="employeeName" disabled style="width: auto; text-align: center; display: inline-block; border: none; font-size: 28px; font-weight: bold;">
             </div>
             
-            
-            
-            
-    
             <div class="row">
                 <div class="half">
                     <label for="startDate">Start Date</label>
@@ -66,8 +58,6 @@
             </div>
     
             <div id="submissionStatus" class="hidden"></div>
-
-
             <button id="submitButton" type="submit">Submit</button>
         </form>
     </div>
@@ -76,8 +66,7 @@
         <ul id="requestsList"></ul>
     </div>
 
-    <script src="timeoff.js"></script>
-    <div id="script-placeholder"></div>
-    <script src="disable-script.js"></script>
+    <script src="js/timeoff.js"></script>
+    <script src="js/disable-script.js"></script>
 </body>
 </html>

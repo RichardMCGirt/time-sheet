@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
   
-    
     let supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
 
 // Define impersonation rules
@@ -25,12 +24,9 @@ const isImpersonatingKaty = impersonateKatyEmails.includes(supervisorEmail);
 const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
 
 
-   
-    if (isKaty || isImpersonatingKaty) {
-        filterFormula = '{Employee Number}!=BLANK()';
-    }
-    
-    
+  if (isKaty || isImpersonatingKaty) {
+    filterFormula = '{Employee Number}!=BLANK()';
+}
 
     console.log(`[INFO] Logged in as: ${supervisorEmail} (Impersonating Katy: ${isImpersonatingKaty}, Impersonating Brian: ${isImpersonatingBrian})`);
 
@@ -83,6 +79,8 @@ const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
             if (!isImpersonatingBrian) {
                 supervisorName = await fetchSupervisorName(supervisorEmail);
             }
+            await fetchTimesheets(supervisorName);
+
 
             if (supervisorName) {
                 await fetchTimesheets(supervisorName);
@@ -213,22 +211,17 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
     }
     
 
-    async function fetchTimesheets(supervisorName) {
-        let filterFormula;
+  async function fetchTimesheets(supervisorName) {
+    let filterFormula;
 
-        if (isImpersonatingKaty) {
-            filterFormula = '{Employee Number}!=BLANK()';
-       
-        } else if (isImpersonatingBrian) {
-            filterFormula = `OR(
-                {Employee Number}='12078',
-                {Employee Number}='12098'
-                                {Employee Number}='12002'
-
-            )`;
-        } else {
-            filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
-        }
+    // The key line
+    if (isKaty || isImpersonatingKaty) {
+        filterFormula = '{Employee Number}!=BLANK()';
+    } else if (isImpersonatingBrian) {
+        filterFormula = "OR({Employee Number}='12078',{Employee Number}='12098',{Employee Number}='12002')";
+    } else {
+        filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
+    }
 
         let allRecords = [];
         let offset = null;
@@ -569,10 +562,6 @@ async function populateTimesheets(records, approvedData) {
         timesheetsBody.appendChild(noRecordsRow);
     }
 }
-
-
-  
-    
 
     async function updateApprovalStatus(employeeNumber, isApproved) {
         const approvedEndpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}?filterByFormula=AND({Employee Number}='${employeeNumber}')`;
