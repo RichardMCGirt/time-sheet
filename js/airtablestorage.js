@@ -9,8 +9,6 @@ document.addEventListener("DOMContentLoaded", function() {
         input.addEventListener('blur', handleSave);
     });
 
-    document.getElementById('clear-button').addEventListener('click', handleClear);
-
     async function handleSave(event) {
         event.preventDefault();
         console.log('Input field lost focus. Gathering form data...');
@@ -24,31 +22,60 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error('Error saving data:', error);
         }
     }
+document.getElementById('clear-button').addEventListener('click', handleClear);
 
-    async function handleClear(event) {
-        event.preventDefault();
-        console.log('Clearing data...');
-        try {
+async function handleClear(event) {
+    event.preventDefault();
+
+    // Get current time in NYC (use fakeNow for testing)
+    const now = window.fakeNow || new Date();
+    const nycDate = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+    const day = nycDate.getDay();   // 2 = Tuesday, 3 = Wednesday
+    const hour = nycDate.getHours();
+
+    // Payroll window: require confirmation modal
+    if ((day === 2 || day === 3) && hour < 9) {
+        const message = "⚠️ Please wait for payroll to be finalized before clearing data.<br><br>Are you sure you want to continue?";
+        const userConfirmed = await showModal(message);
+        if (userConfirmed) {
             await clearDataInAirtable();
-            showMessage('Data cleared successfully!'); 
-        } catch (error) {
-            showMessage('Failed to clear data. Please try again.');
-            console.error('Error clearing data:', error);
-        }
-    }
-
-    function showMessage(message) {
-        const messageContainer = document.getElementById('message-container');
-        console.log('Message container element:', messageContainer);
-        if (messageContainer) {
-            messageContainer.textContent = message;
-            setTimeout(() => {
-                messageContainer.textContent = '';
-            }, 3500);
+            resetFormFields();
+            showMessage('Data cleared and form reset successfully!');
         } else {
-            console.error('Message container element not found.');
+            showMessage('Data clearing canceled.');
         }
+    } else {
+        // Any other day/time: clear immediately, no modal
+        await clearDataInAirtable();
+        resetFormFields();
+        showMessage('Data cleared and form reset successfully!');
     }
+}
+
+
+function showMessage(message) {
+    console.log('[showMessage] Called with message:', message);
+
+    const messageContainer = document.getElementById('message-container');
+    console.log('[showMessage] messageContainer:', messageContainer);
+
+    if (messageContainer) {
+        console.log('[showMessage] Previous content:', messageContainer.textContent);
+        messageContainer.textContent = message;
+        messageContainer.style.display = "block";
+        console.log('[showMessage] Set content & made visible:', messageContainer.textContent);
+
+        setTimeout(() => {
+            console.log('[showMessage] Hiding message after timeout. Previous content:', messageContainer.textContent);
+            messageContainer.textContent = '';
+            messageContainer.style.display = "none";
+        }, 3500);
+    } else {
+        console.error('[showMessage] Message container element not found.');
+    }
+}
+
+
     
     function gatherFormData() {
         const formData = {};
@@ -142,41 +169,43 @@ formData[`Holiday Hours ${i}`] = parseFloat(getValue(`input[name="Holiday_hours$
             throw error;
         }
     }
-    
-
-    document.getElementById('clear-button').addEventListener('click', async () => {
-        const userConfirmed = await showModal();
-        if (userConfirmed) {
-            await clearDataInAirtable();
-            resetFormFields();
-            showMessage('Data cleared and form reset successfully!');
-        } else {
-            showMessage('Data clearing canceled.');
+        
+function showModal(extraMessage = "") {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const messageBox = modal.querySelector('.confirm-message'); // <-- add this!
+        // Set warning or clear message area
+        if (messageBox) {
+            messageBox.innerHTML = extraMessage
+                ? `<div style="color:#ffe083;background:#31270e;border-radius:7px;font-size:1.08em;font-weight:500;margin-bottom:18px;padding:8px 15px;">${extraMessage}</div>`
+                : "";
         }
+
+        modal.style.display = 'block';
+
+        // Remove previous event listeners
+        const yesBtn = document.getElementById('confirm-yes');
+        const noBtn = document.getElementById('confirm-no');
+        yesBtn.onclick = null;
+        noBtn.onclick = null;
+
+        yesBtn.onclick = () => {
+            closeModal();
+            resolve(true);
+            setTimeout(() => { location.reload(); }, 2000);
+        };
+        noBtn.onclick = () => {
+            closeModal();
+            resolve(false);
+        };
     });
-    
-    function showModal() {
-        return new Promise((resolve) => {
-            const modal = document.getElementById('confirm-modal');
-            modal.style.display = 'block';
-    
-            document.getElementById('confirm-yes').addEventListener('click', () => {
-                closeModal();
-                resolve(true);
-            
-                // Set a timeout to refresh the page after 2 seconds
-                setTimeout(() => {
-                    location.reload(); // This will refresh the page
-                }, 2000);
-            });
-            
-    
-            document.getElementById('confirm-no').addEventListener('click', () => {
-                closeModal();
-                resolve(false);
-            });
-        });
-    }
+}
+
+// Make showModal globally accessible for testing/debugging:
+window.showModal = showModal;
+
+
+
     
     function closeModal() {
         document.getElementById('confirm-modal').style.display = 'none';
