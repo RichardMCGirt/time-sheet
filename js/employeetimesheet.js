@@ -220,17 +220,23 @@ return nameRecord ? nameRecord.fields['Full Name'] : (data.records[0]?.fields['F
     }
     
 
-  async function fetchTimesheets(supervisorName) {
+async function fetchTimesheets(supervisorName) {
     let filterFormula;
 
-    // The key line
     if (isKaty || isImpersonatingKaty) {
-       filterFormula = '{Employee Number}!=BLANK()';
+        filterFormula = '{Employee Number}!=BLANK()';
     } else if (isImpersonatingBrian) {
         filterFormula = "OR({Employee Number}='12078',{Employee Number}='12098',{Employee Number}='12002')";
+    } else if (supervisorEmail === 'mike.raszmann@vanirinstalledsales.com') {
+        // ⚠️  DOUBLE CHECK spelling: Ethen or Ethan? (Your comment uses 'ethen', but prior messages use 'ethan')
+        // ⚠️  Also: does your table use {Supervisor Email} or {Supervisor}? Use the correct field name!
+        filterFormula = "OR({Supervisor Email}='mike.raszmann@vanirinstalledsales.com',{Supervisor Email}='ethan.wilson@vanirinstalledsales.com')";
+        // If the field is 'ethen.wilson@...', use that spelling.
     } else {
         filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
     }
+
+
 
         let allRecords = [];
         let offset = null;
