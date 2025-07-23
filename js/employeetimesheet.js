@@ -75,10 +75,14 @@ const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
         try {
             console.log(`[INFO] Initializing page for: ${supervisorEmail}`);
 
-            let supervisorName = supervisorEmail;
-            if (!isImpersonatingBrian) {
-                supervisorName = await fetchSupervisorName(supervisorEmail);
-            }
+           console.log('Current login:', supervisorEmail);
+let supervisorName = supervisorEmail;
+if (!isImpersonatingBrian) {
+    supervisorName = await fetchSupervisorName(supervisorEmail);
+}
+console.log('SupervisorName returned:', supervisorName);
+
+
             await fetchTimesheets(supervisorName);
 
 
@@ -171,7 +175,12 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
             if (!response.ok) throw new Error(`Failed to fetch supervisor name: ${response.statusText}`);
             const data = await response.json();
             console.log('Supervisor data fetched:', data);
-            return data.records.length > 0 ? data.records[0].fields['Full Name'] : null;
+// Pick the one where 'Full Name' matches the supervisor's name pattern
+const nameRecord = data.records.find(r => 
+  r.fields['Full Name'] && r.fields['Full Name'].toLowerCase().includes('mike raszmann')
+);
+// fallback to the first record
+return nameRecord ? nameRecord.fields['Full Name'] : (data.records[0]?.fields['Full Name'] || null);
         } catch (error) {
             console.error(error);
             alert("Error fetching supervisor data. Please try again later.");
@@ -216,7 +225,7 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
 
     // The key line
     if (isKaty || isImpersonatingKaty) {
-        filterFormula = '{Employee Number}!=BLANK()';
+       filterFormula = '{Employee Number}!=BLANK()';
     } else if (isImpersonatingBrian) {
         filterFormula = "OR({Employee Number}='12078',{Employee Number}='12098',{Employee Number}='12002')";
     } else {
