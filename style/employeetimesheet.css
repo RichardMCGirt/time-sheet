@@ -16,9 +16,26 @@ main {
 }
 
 html, body {
-    overflow: hidden;
-    height: 90%;
+    height: auto;
     margin: 0;
+    padding: 0;
+    overflow-y: auto; /* allow scrolling of the page */
+}
+
+
+.time-tracking-table.scrollable {
+  max-height: 80vh;           /* or whatever height you prefer */
+  overflow-y: auto;           /* always show vertical scroll if needed */
+  -webkit-overflow-scrolling: touch; /* smooth scrolling on mobile */
+}
+
+/* Optional: make scrollbars more obvious if users are confused */
+.scrollable::-webkit-scrollbar {
+  width: 10px;
+}
+.scrollable::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
 }
 
 /* Hide scrollbar while still allowing scrolling */
@@ -43,6 +60,7 @@ body {
     font-weight: bolder;
     transition: background-color 0.3s ease, color 0.3s ease;
     height: 100vh;
+      overflow: auto !important; /* allow scrolling in general */
 }
 
 header {
@@ -162,11 +180,11 @@ header {
 
 #main-content {
     display: flex;
-    justify-content: center;
-    align-items: center;
     flex-direction: column;
     width: 100%;
+    height: auto; /* remove or auto */
 }
+
 
 .narrow-border {
     border-top: 1px solid var(--border-color);
@@ -239,8 +257,8 @@ input[type="date"]:disabled {
     display: flex;
     gap: 20px;
     width: 100%;
-    max-height: 150vh;
-    overflow: hidden;
+    max-height: none;
+    overflow: visible;
     padding-bottom: 45px;
 }
 

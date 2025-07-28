@@ -47,12 +47,10 @@ const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
             event.preventDefault();
             console.log('🔓 Logout button clicked. Clearing session and navigating to index.html');
     
-            // Clear saved credentials
             localStorage.removeItem('userEmail');
-            localStorage.removeItem('userPassword'); // Make sure password is cleared too
+            localStorage.removeItem('userPassword'); 
             sessionStorage.removeItem('user');
     
-            // Redirect to login page
             window.location.href = 'index.html';
         });
     }
@@ -151,18 +149,13 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
         document.querySelectorAll('.approve-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', handleCheckboxChange);
         });
-          // Select the scrollable div that contains the table
           const scrollableDiv = document.querySelector('.time-tracking-table.scrollable');
     
-          // Disable body scrolling and let only the table scroll
           document.body.style.overflow = 'hidden';
       
-          // Add a 'wheel' event listener to the entire document body
           document.body.addEventListener('wheel', function (event) {
-              // Prevent default page scroll
               event.preventDefault();
       
-              // Scroll the table based on user's scroll input (event.deltaY)
               scrollableDiv.scrollTop += event.deltaY;
           });
     });
@@ -220,23 +213,19 @@ return nameRecord ? nameRecord.fields['Full Name'] : (data.records[0]?.fields['F
     }
     
 
-async function fetchTimesheets(supervisorName) {
+  async function fetchTimesheets(supervisorName) {
     let filterFormula;
 
-    if (isKaty || isImpersonatingKaty) {
-        filterFormula = '{Employee Number}!=BLANK()';
-    } else if (isImpersonatingBrian) {
-        filterFormula = "OR({Employee Number}='12078',{Employee Number}='12098',{Employee Number}='12002')";
-    } else if (supervisorEmail === 'mike.raszmann@vanirinstalledsales.com') {
-        // ⚠️  DOUBLE CHECK spelling: Ethen or Ethan? (Your comment uses 'ethen', but prior messages use 'ethan')
-        // ⚠️  Also: does your table use {Supervisor Email} or {Supervisor}? Use the correct field name!
-        filterFormula = "OR({Supervisor Email}='mike.raszmann@vanirinstalledsales.com',{Supervisor Email}='ethan.wilson@vanirinstalledsales.com')";
-        // If the field is 'ethen.wilson@...', use that spelling.
-    } else {
-        filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
-    }
-
-
+    // The key line
+if (isKaty || isImpersonatingKaty) {
+    filterFormula = '{Employee Number}!=BLANK()';
+} else if (isImpersonatingBrian) {
+    filterFormula = "OR({Employee Number}='12078',{Employee Number}='12098',{Employee Number}='12002')";
+} else if (supervisorEmail === 'mike.raszmann@vanirinstalledsales.com') {
+    filterFormula = "OR({Supervisor Email}='mike.raszmann@vanirinstalledsales.com',{Supervisor Email}='ethen.wilson@vanirinstalledsales.com')";
+} else {
+    filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
+}
 
         let allRecords = [];
         let offset = null;
@@ -290,7 +279,6 @@ const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormu
     
         return `${month}/${day}/${year}`;
     }
-
 
     function roundToQuarterHour(hours) {
     const quarter = 0.25;
@@ -555,7 +543,6 @@ async function populateTimesheets(records, approvedData) {
                 });
             }
 
-            // Set the approved status for the checkbox
             const approveCheckbox = table.querySelector('.approve-checkbox');
             if (approveCheckbox) {
                 approveCheckbox.checked = approvalStatus;
@@ -564,7 +551,7 @@ async function populateTimesheets(records, approvedData) {
             }
 
             if (supervisorEmail !== 'katy@vanirinstalledsales.com' && approvalStatus) {
-                table.style.display = 'none'; // Hide approved rows for non-Katy users
+                table.style.display = 'none'; 
             }
 
             timesheetsBody.appendChild(table);
@@ -622,6 +609,17 @@ async function populateTimesheets(records, approvedData) {
             scrollableDiv.scrollTop += event.deltaY;
         });
     });
+
+    document.addEventListener('wheel', function(e) {
+  const scrollable = document.querySelector('.scrollable');
+  if (!scrollable) return;
+
+  // Scroll the div if mouse is not directly over it
+  if (!e.target.closest('.scrollable')) {
+    scrollable.scrollTop += e.deltaY;
+  }
+}, { passive: true });
+
 
     function displaySuccessMessage(message) {
         let messageElement = document.getElementById('success-message');
