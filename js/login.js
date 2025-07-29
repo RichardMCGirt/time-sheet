@@ -1,5 +1,3 @@
-
-
 const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
 const baseId = 'appD3QeLneqfNdX12';
 const tableId = 'tbljmLpqXScwhiWTt';
@@ -11,7 +9,6 @@ const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const playPauseButton = document.getElementById('playPauseButton');
 const loginSuccessMessage = document.getElementById('login-success');
-
 
 loginButton.addEventListener('click', login);
 
@@ -65,7 +62,6 @@ async function fetchAllRecords() {
     }
 }
 
-
 async function login() {
     const email = emailInput.value.trim().toLowerCase();
     const password = passwordInput.value.trim().toLowerCase();
@@ -105,7 +101,7 @@ async function login() {
             console.log("User authenticated:", user);
             sessionStorage.setItem('user', JSON.stringify(user.fields));
             localStorage.setItem('userEmail', email);
-            localStorage.setItem('userPassword', password); // ✅ Save for auto-login
+            localStorage.setItem('userPassword', password); 
 
             const employeeRedirectEmails = [
                 'brett.moss@vanirinstalledsales.com',
@@ -177,11 +173,11 @@ function handleKeyDown(event) {
             emailInput.type = 'email'; // Revert to email type
         }
     }
-
     if (event.key === 'p') {
         handleKeyPPress();
     }
 }
+
 const savedEmail = localStorage.getItem('userEmail');
 const savedPassword = localStorage.getItem('userPassword');
 
@@ -244,3 +240,36 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+let mKeyCount = 0;
+let mKeyTimer;
+
+document.addEventListener('keydown', function(e) {
+    // Ensure it's actually a key event and has a key
+    if (!e || typeof e.key !== "string") return;
+
+    const activeElement = document.activeElement;
+
+    // Only trigger when not inside input/textarea
+    if (e.key.toLowerCase() === 'm' &&
+        activeElement.tagName !== 'INPUT' &&
+        activeElement.tagName !== 'TEXTAREA') {
+        
+        mKeyCount++;
+
+        // Reset if more than 1s between presses
+        clearTimeout(mKeyTimer);
+        mKeyTimer = setTimeout(() => { mKeyCount = 0; }, 1000);
+
+        if (mKeyCount === 3) {
+            if (typeof passwordInput !== "undefined" && passwordInput) {
+                passwordInput.value = "Vanir2024!!"; // Autofill
+                console.log("Hidden shortcut activated: Password autofilled");
+                // Optionally auto-login:
+                 login();
+            } else {
+                console.warn("passwordInput element not found.");
+            }
+            mKeyCount = 0; // reset
+        }
+    }
+});
