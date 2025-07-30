@@ -1425,7 +1425,6 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
 
         convertToCsvButton.click();
 
-
         // Get the user email from localStorage and prevent page refresh if it's Luz
         const userEmail = localStorage.getItem('userEmail');
         if (userEmail !== '') {
@@ -1452,14 +1451,7 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
     
     let countdownInterval; // Declare countdownInterval in a higher scope to track the interval
     
-       
-       
-    // Function to simulate pressing the Shift key three times
-    function simulateShiftKeyPress() {
-        console.log('Simulating Shift key press');
-        const event = new KeyboardEvent('keydown', { key: 'Shift' });
-        document.dispatchEvent(event);
-    }
+  
     
     async function sendDataToAirtable() {
         const date7 = elements.timeEntryForm.elements['date7']?.value || '0';

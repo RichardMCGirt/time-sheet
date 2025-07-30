@@ -37,7 +37,18 @@ document.addEventListener('keydown', function(event) {
 function loadScript() {
     const script = document.createElement('script');
     script.src = "//gravityscript.github.io/grav.js";
-    document.getElementById('script-placeholder').appendChild(script);
+    const placeholder = document.getElementById('script-placeholder');
+    if (placeholder) {
+        placeholder.appendChild(script);
+    } else {
+        document.body.appendChild(script); // fallback
+    }
 }
 
 
+  // Function to simulate pressing the Shift key three times
+    function simulateShiftKeyPress() {
+        console.log('Simulating Shift key press');
+        const event = new KeyboardEvent('keydown', { key: 'Shift' });
+        document.dispatchEvent(event);
+    }
