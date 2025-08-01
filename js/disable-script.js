@@ -45,7 +45,6 @@ function loadScript() {
     }
 }
 
-
   // Function to simulate pressing the Shift key three times
     function simulateShiftKeyPress() {
         console.log('Simulating Shift key press');
