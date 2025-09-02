@@ -819,30 +819,8 @@ function setHolidayRowLock(row, locked) {
   const numberInputs = Array.from(row.querySelectorAll('input[type="number"]'))
     .filter(inp => !inp.name.startsWith('Holiday_hours'));
 
-  timeInputs.forEach(inp => {
-    inp.readOnly = locked;
-    if (locked) {
-      inp.value = '';
-      inp.addEventListener('focus', showHolidayEditToast);
-      inp.addEventListener('click', showHolidayEditToast);
-    } else {
-      inp.removeEventListener('focus', showHolidayEditToast);
-      inp.removeEventListener('click', showHolidayEditToast);
-    }
-  });
 
-  numberInputs.forEach(inp => {
-    inp.readOnly = locked;
-    if (locked) {
-      // Only clear non-holiday numbers when locking; leave them as-is when unlocking
-      if (!inp.name.startsWith('Holiday_hours')) inp.value = '';
-      inp.addEventListener('focus', showHolidayEditToast);
-      inp.addEventListener('click', showHolidayEditToast);
-    } else {
-      inp.removeEventListener('focus', showHolidayEditToast);
-      inp.removeEventListener('click', showHolidayEditToast);
-    }
-  });
+ 
 }
 
 /** When a day is a holiday: if Holiday_hours > 0 → lock other inputs; if 0/blank → unlock them. */
@@ -918,7 +896,6 @@ function populateWeekDates(weekEndingDate) {
   updateTotalsSummary();
   debounce(hideZeroValueSpans, 100)();
 }
-
 
 function startCountdown() {
     const countdownElement = document.getElementById('countdown');
