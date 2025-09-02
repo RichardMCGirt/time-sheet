@@ -1,3 +1,4 @@
+const viewId = "viwvjudwAX1IzXeo4";
 document.addEventListener("DOMContentLoaded", async function () {
     // Initialize loading bar, content elements, and notification area
     const loadingBar = document.getElementById('loading-bar');
@@ -360,7 +361,7 @@ debounce(hideZeroValueSpans, 100)();    });
     // Fetch PTO Hours
     async function fetchPtoHours() {
         console.log('Fetching PTO hours...');
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?view=${viewId}&filterByFormula=AND({Email}='${userEmail}')`;
     
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
@@ -390,7 +391,7 @@ debounce(hideZeroValueSpans, 100)();    });
     // Fetch Personal Hours
     async function fetchPersonalTime() {
         console.log('Fetching Personal hours...');
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?view=${viewId}&filterByFormula=AND({Email}='${userEmail}')`;
     
         try {
             const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
@@ -485,7 +486,7 @@ async function fetchPersonalEndDate() {
 
 
     async function fetchApprovalStatus() {
-        const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=AND({Email}='${userEmail}')`;
+const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?view=${viewId}&filterByFormula=AND({Email}='${userEmail}')`;
         try {
             const response = await fetch(endpoint, {
                 headers: {
@@ -812,89 +813,112 @@ function showHolidayEditToast() {
         setTimeout(() => document.body.removeChild(toast), 300);
     }, 2000);
 }
+/** Lock or unlock the row's time/number inputs (excluding Holiday input). */
+function setHolidayRowLock(row, locked) {
+  const timeInputs = row.querySelectorAll('input[type="time"]');
+  const numberInputs = Array.from(row.querySelectorAll('input[type="number"]'))
+    .filter(inp => !inp.name.startsWith('Holiday_hours'));
 
+  timeInputs.forEach(inp => {
+    inp.readOnly = locked;
+    if (locked) {
+      inp.value = '';
+      inp.addEventListener('focus', showHolidayEditToast);
+      inp.addEventListener('click', showHolidayEditToast);
+    } else {
+      inp.removeEventListener('focus', showHolidayEditToast);
+      inp.removeEventListener('click', showHolidayEditToast);
+    }
+  });
+
+  numberInputs.forEach(inp => {
+    inp.readOnly = locked;
+    if (locked) {
+      // Only clear non-holiday numbers when locking; leave them as-is when unlocking
+      if (!inp.name.startsWith('Holiday_hours')) inp.value = '';
+      inp.addEventListener('focus', showHolidayEditToast);
+      inp.addEventListener('click', showHolidayEditToast);
+    } else {
+      inp.removeEventListener('focus', showHolidayEditToast);
+      inp.removeEventListener('click', showHolidayEditToast);
+    }
+  });
+}
+
+/** When a day is a holiday: if Holiday_hours > 0 → lock other inputs; if 0/blank → unlock them. */
+function attachHolidayRowBehavior(row, holidayInput) {
+  const apply = () => {
+    const v = parseFloat(holidayInput.value || '0');
+    setHolidayRowLock(row, v > 0);
+    // keep totals/UI consistent
+    calculateTotalTimeWorked();
+    updateTotalPtoAndHolidayHours();
+    debounce(hideZeroValueSpans, 100)();
+    debounce(updateTotalsSummary, 100)();
+  };
+
+  // Ensure one clean listener
+  holidayInput.removeEventListener('input', holidayInput.__holidayHandler || (() => {}));
+  holidayInput.__holidayHandler = apply;
+  holidayInput.addEventListener('input', apply);
+
+  // Apply immediately for current value
+  apply();
+}
+
+// --- REPLACE your entire populateWeekDates function with this version ---
 
 function populateWeekDates(weekEndingDate) {
-    const year = weekEndingDate.getFullYear();
-    const holidays = getHolidayDates(year);
-    const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
+  const year = weekEndingDate.getFullYear();
+  const holidays = getHolidayDates(year);
+  const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
 
-    daysOfWeek.forEach((day, index) => {
+  daysOfWeek.forEach((day, index) => {
     const currentDate = new Date(weekEndingDate);
     currentDate.setDate(weekEndingDate.getDate() - (6 - index));
     const inputField = elements.timeEntryForm.elements[day];
     inputField.value = currentDate.toISOString().split('T')[0];
 
-    console.log(`Set date for ${day}:`, currentDate);
-
-    // Check if the current date is a holiday
-    const isHoliday = Object.values(holidays).some(holiday => 
-        currentDate.getFullYear() === holiday.getFullYear() &&
-        currentDate.getMonth() === holiday.getMonth() &&
-        currentDate.getDate() === holiday.getDate()
+    // Check if the current date is a holiday (matches month/day/year)
+    const isHoliday = Object.values(holidays).some(holiday =>
+      currentDate.getFullYear() === holiday.getFullYear() &&
+      currentDate.getMonth() === holiday.getMonth() &&
+      currentDate.getDate() === holiday.getDate()
     );
 
-    // Check if the day is a weekday
+    // Weekdays (Mon–Fri) are 1..5, but original code allowed 0..4 — keep your intent:
     const isWeekday = currentDate.getDay() >= 0 && currentDate.getDay() <= 4;
 
-    // Get inputs for the row
+    // Row + inputs
     const row = document.querySelector(`tr[data-day="${index + 1}"]`);
-    const timeInputsInRow = row.querySelectorAll('input[type="time"]');
-    const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
-      .filter(input => !input.name.startsWith('Holiday_hours')); // Exclude holiday field
-
     const holidayInput = elements.timeEntryForm.elements[`Holiday_hours${index + 1}`];
 
-   if (isHoliday && isWeekday) {
-    holidayInput.value = '8';
+    if (isHoliday && isWeekday) {
+      // Pre-fill but DO NOT force it — users can edit/delete.
+      if (!holidayInput.value) holidayInput.value = '8';
+      holidayInput.disabled = false;
 
-    // Disable normal time and number inputs & add click handlers for toast
-   timeInputsInRow.forEach(input => {
-  input.readOnly = true;
-  input.value = '';
-  input.addEventListener('focus', showHolidayEditToast);
-  input.addEventListener('click', showHolidayEditToast);
-});
+      // Lock/unlock other fields based on current holiday value (>0 locks, 0/blank unlocks).
+      attachHolidayRowBehavior(row, holidayInput);
+    } else {
+      // Not a holiday: clear holiday field and ensure everything is editable.
+      holidayInput.value = '';
+      holidayInput.disabled = false;
+      setHolidayRowLock(row, false);
+      // Remove any lingering listener from prior holiday state
+      holidayInput.removeEventListener('input', holidayInput.__holidayHandler || (() => {}));
+      holidayInput.__holidayHandler = null;
+    }
+  });
 
-numberInputsInRow.forEach(input => {
-  input.readOnly = true;
-  input.value = '';
-  input.addEventListener('focus', showHolidayEditToast);
-  input.addEventListener('click', showHolidayEditToast);
-});
-
-
-    holidayInput.disabled = false;
-
-} else {
-    holidayInput.value = '';
-
-    // Enable normal time and number inputs & remove toast handlers if any
-   timeInputsInRow.forEach(input => {
-  input.readOnly = false;
-  input.removeEventListener('focus', showHolidayEditToast);
-  input.removeEventListener('click', showHolidayEditToast);
-});
-
-numberInputsInRow.forEach(input => {
-  input.readOnly = false;
-  input.removeEventListener('focus', showHolidayEditToast);
-  input.removeEventListener('click', showHolidayEditToast);
-});
-
-
-    holidayInput.disabled = false;
+  // Persist + recompute after all days processed
+  saveFormData();
+  calculateTotalTimeWorked();
+  updateTotalPtoAndHolidayHours();
+  updateTotalsSummary();
+  debounce(hideZeroValueSpans, 100)();
 }
 
-});
-
-// After your loop that sets Holiday_hours fields:
-saveFormData();
-calculateTotalTimeWorked();
-updateTotalPtoAndHolidayHours();
-updateTotalsSummary(); // ✅ Ensures PTO, Personal, Holiday rows show correctly
-debounce(hideZeroValueSpans, 100)(); // ✅ Hide zero rows if needed
-}
 
 function startCountdown() {
     const countdownElement = document.getElementById('countdown');
@@ -1268,7 +1292,6 @@ if (giftedHoursElement) {
         }
     }
 
-
     async function submitFinal() {
     try {
         await updatePtoHours();
@@ -1278,11 +1301,11 @@ if (giftedHoursElement) {
         convertToCsvButton.click();
 
         const userEmail = localStorage.getItem('userEmail');
-        if (userEmail !== '') {
-            setTimeout(() => {
-                window.location.reload();
-            }, 6000);
-        }
+      // if (userEmail !== '') {
+        //   setTimeout(() => {
+          //      window.location.reload();
+           // }, 6000);
+       // }
     } catch (error) {
         console.error('Error submitting form:', error);
         alert(`An error occurred: ${error.message}`);
@@ -1386,11 +1409,6 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
     return; // wait for user choice before continuing
 }
 
-
-
-
-
-
     if (!validateWholeNumbers()) {
         console.log("Validation failed: Non-whole number in PTO, Personal, or Holiday hours.");
         return; // Stop the form submission if the validation fails
@@ -1431,7 +1449,7 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
             // Refresh the page after a delay if the user is not Luz
             setTimeout(() => {
                 window.location.reload();
-            }, 6000); // Reduced delay for a better user experience
+           }, 6000); // Reduced delay for a better user experience
         } else {
             console.log('Page refresh prevented for Luz.');
         }
@@ -1454,6 +1472,8 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
   
     
     async function sendDataToAirtable() {
+        console.log("📅 Final date7 about to send:", elements.timeEntryForm.elements['date7']?.value);
+
         const date7 = elements.timeEntryForm.elements['date7']?.value || '0';
         const totalPtoHours = calculateColumnSum('PTO_hours');
         const totalPersonalHours = calculateColumnSum('Personal_hours');
@@ -1502,12 +1522,10 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
                 - Status Text: ${response.statusText}
                 - Endpoint: ${endpoint}
                 - Record ID: ${recordId}
-                - API Key: ${apiKey ? 'Provided' : 'Not Provided'}
-                
+                - API Key: ${apiKey ? 'Provided' : 'Not Provided'}     
                `);
                         }
     }
-    
     
     document.addEventListener("DOMContentLoaded", function() {
         const timeEntryWrapper = document.querySelector('.time-entry-table-wrapper');
@@ -1586,7 +1604,7 @@ const formattedCurrentDate7 = `${String(currentDate7.getMonth() + 1).padStart(2,
     
         // Clear all relevant storage
         localStorage.removeItem('userEmail');
-        localStorage.removeItem('userPassword'); // ✅ Also remove the password!
+        localStorage.removeItem('userPassword'); 
         sessionStorage.removeItem('user');
             // Redirect to login screen
         setTimeout(() => {

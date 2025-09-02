@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const recordId = await getRecordIdByName(employeeName);
     
             if (!recordId) {
-                showError(`Could not find your employee record (${employeeName}). Please ensure your email is correct or contact HR.`);
+                showError(`Could not find your employee record (${employeeName}).`);
                 return;
             }
     

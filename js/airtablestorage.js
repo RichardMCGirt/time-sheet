@@ -52,7 +52,6 @@ async function handleClear(event) {
     }
 }
 
-
 function showMessage(message) {
     console.log('[showMessage] Called with message:', message);
 
@@ -75,8 +74,6 @@ function showMessage(message) {
     }
 }
 
-
-    
     function gatherFormData() {
         const formData = {};
         for (let i = 1; i <= 7; i++) {
