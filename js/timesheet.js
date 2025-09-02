@@ -813,88 +813,88 @@ function showHolidayEditToast() {
         setTimeout(() => document.body.removeChild(toast), 300);
     }, 2000);
 }
-/** Lock or unlock the row's time/number inputs (excluding Holiday input). */
-function setHolidayRowLock(row, locked) {
-  const timeInputs = row.querySelectorAll('input[type="time"]');
-  const numberInputs = Array.from(row.querySelectorAll('input[type="number"]'))
-    .filter(inp => !inp.name.startsWith('Holiday_hours'));
 
-
- 
-}
-
-/** When a day is a holiday: if Holiday_hours > 0 → lock other inputs; if 0/blank → unlock them. */
-function attachHolidayRowBehavior(row, holidayInput) {
-  const apply = () => {
-    const v = parseFloat(holidayInput.value || '0');
-    setHolidayRowLock(row, v > 0);
-    // keep totals/UI consistent
-    calculateTotalTimeWorked();
-    updateTotalPtoAndHolidayHours();
-    debounce(hideZeroValueSpans, 100)();
-    debounce(updateTotalsSummary, 100)();
-  };
-
-  // Ensure one clean listener
-  holidayInput.removeEventListener('input', holidayInput.__holidayHandler || (() => {}));
-  holidayInput.__holidayHandler = apply;
-  holidayInput.addEventListener('input', apply);
-
-  // Apply immediately for current value
-  apply();
-}
-
-// --- REPLACE your entire populateWeekDates function with this version ---
 
 function populateWeekDates(weekEndingDate) {
-  const year = weekEndingDate.getFullYear();
-  const holidays = getHolidayDates(year);
-  const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
+    const year = weekEndingDate.getFullYear();
+    const holidays = getHolidayDates(year);
+    const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
 
-  daysOfWeek.forEach((day, index) => {
+    daysOfWeek.forEach((day, index) => {
     const currentDate = new Date(weekEndingDate);
     currentDate.setDate(weekEndingDate.getDate() - (6 - index));
     const inputField = elements.timeEntryForm.elements[day];
     inputField.value = currentDate.toISOString().split('T')[0];
 
-    // Check if the current date is a holiday (matches month/day/year)
-    const isHoliday = Object.values(holidays).some(holiday =>
-      currentDate.getFullYear() === holiday.getFullYear() &&
-      currentDate.getMonth() === holiday.getMonth() &&
-      currentDate.getDate() === holiday.getDate()
+    console.log(`Set date for ${day}:`, currentDate);
+
+    // Check if the current date is a holiday
+    const isHoliday = Object.values(holidays).some(holiday => 
+        currentDate.getFullYear() === holiday.getFullYear() &&
+        currentDate.getMonth() === holiday.getMonth() &&
+        currentDate.getDate() === holiday.getDate()
     );
 
-    // Weekdays (Mon–Fri) are 1..5, but original code allowed 0..4 — keep your intent:
+    // Check if the day is a weekday
     const isWeekday = currentDate.getDay() >= 0 && currentDate.getDay() <= 4;
 
-    // Row + inputs
+    // Get inputs for the row
     const row = document.querySelector(`tr[data-day="${index + 1}"]`);
+    const timeInputsInRow = row.querySelectorAll('input[type="time"]');
+    const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
+      .filter(input => !input.name.startsWith('Holiday_hours')); // Exclude holiday field
+
     const holidayInput = elements.timeEntryForm.elements[`Holiday_hours${index + 1}`];
 
-    if (isHoliday && isWeekday) {
-      // Pre-fill but DO NOT force it — users can edit/delete.
-      if (!holidayInput.value) holidayInput.value = '8';
-      holidayInput.disabled = false;
+   if (isHoliday && isWeekday) {
+    holidayInput.value = '8';
 
-      // Lock/unlock other fields based on current holiday value (>0 locks, 0/blank unlocks).
-      attachHolidayRowBehavior(row, holidayInput);
-    } else {
-      // Not a holiday: clear holiday field and ensure everything is editable.
-      holidayInput.value = '';
-      holidayInput.disabled = false;
-      setHolidayRowLock(row, false);
-      // Remove any lingering listener from prior holiday state
-      holidayInput.removeEventListener('input', holidayInput.__holidayHandler || (() => {}));
-      holidayInput.__holidayHandler = null;
-    }
-  });
+    // Disable normal time and number inputs & add click handlers for toast
+   timeInputsInRow.forEach(input => {
+  input.readOnly = true;
+  input.value = '';
+  input.addEventListener('focus', showHolidayEditToast);
+  input.addEventListener('click', showHolidayEditToast);
+});
 
-  // Persist + recompute after all days processed
-  saveFormData();
-  calculateTotalTimeWorked();
-  updateTotalPtoAndHolidayHours();
-  updateTotalsSummary();
-  debounce(hideZeroValueSpans, 100)();
+numberInputsInRow.forEach(input => {
+  input.readOnly = true;
+  input.value = '';
+  input.addEventListener('focus', showHolidayEditToast);
+  input.addEventListener('click', showHolidayEditToast);
+});
+
+
+    holidayInput.disabled = false;
+
+} else {
+    holidayInput.value = '';
+
+    // Enable normal time and number inputs & remove toast handlers if any
+   timeInputsInRow.forEach(input => {
+  input.readOnly = false;
+  input.removeEventListener('focus', showHolidayEditToast);
+  input.removeEventListener('click', showHolidayEditToast);
+});
+
+numberInputsInRow.forEach(input => {
+  input.readOnly = false;
+  input.removeEventListener('focus', showHolidayEditToast);
+  input.removeEventListener('click', showHolidayEditToast);
+});
+
+
+    holidayInput.disabled = false;
+}
+
+});
+
+// After your loop that sets Holiday_hours fields:
+saveFormData();
+calculateTotalTimeWorked();
+updateTotalPtoAndHolidayHours();
+updateTotalsSummary(); // ✅ Ensures PTO, Personal, Holiday rows show correctly
+debounce(hideZeroValueSpans, 100)(); // ✅ Hide zero rows if needed
 }
 
 function startCountdown() {
