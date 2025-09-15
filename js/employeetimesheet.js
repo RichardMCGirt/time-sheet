@@ -13,6 +13,96 @@ document.addEventListener("DOMContentLoaded", async function () {
   
     let supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
 
+    // === Lance-only scroll prank (Ashley -> My Wife for 15s) =====================
+// === Lance-only scroll prank (Ashley -> My Wife for 15s) =====================
+const LANCE_EMAIL = 'lance.roberts@vanirinstalledsales.com';
+const isLanceUser = (typeof supervisorEmail === 'string' && supervisorEmail.trim().toLowerCase() === LANCE_EMAIL);
+
+let prankTriggered = false;  // fire at most once
+let ashleyObserver = null;
+let userHasScrolled = false;
+
+function isAshleyName(name) {
+  const n = String(name || '').trim();
+  // Case-insensitive token match (robust to extra spaces/middle names)
+  return /\bashley\b/i.test(n) && /\broberts\b/i.test(n);
+}
+
+function getScrollableRoot() {
+  // Prefer your main scrolling table; fall back to any .scrollable
+  return document.querySelector('.time-tracking-table.scrollable')
+      || document.querySelector('.scrollable')
+      || null; // null => viewport
+}
+
+function markUserScrolled() { userHasScrolled = true; }
+
+// Wire up multiple “scroll” signals so the flag flips even if body never scrolls
+(function wireScrollFlags(){
+  // Window scroll (mostly unused since body is locked)
+  window.addEventListener('scroll', markUserScrolled, { passive: true });
+  // Wheel anywhere on the document
+  document.addEventListener('wheel', markUserScrolled, { passive: true });
+  // Touch scroll (mobile)
+  document.addEventListener('touchmove', markUserScrolled, { passive: true });
+  // The actual scrollable container
+  const root = getScrollableRoot();
+  if (root) root.addEventListener('scroll', markUserScrolled, { passive: true });
+})();
+
+/**
+ * Observe Ashley rows entering view. When first Ashley is 10% visible
+ * *after* the user has scrolled, swap to "My Wife" for 15s, then revert.
+ * Safe to call many times; it disconnects after firing.
+ */
+function initAshleyScrollPrank() {
+  if (!isLanceUser || prankTriggered) return;
+
+  // Find all name containers with original name metadata
+  const targets = Array.from(
+    document.querySelectorAll('.name-container[data-original-name]')
+  ).filter(el => isAshleyName(el.getAttribute('data-original-name')));
+
+  if (!targets.length) return;
+
+  // Clean up an old observer (in case of re-render)
+  if (ashleyObserver) {
+    try { ashleyObserver.disconnect(); } catch (_) {}
+    ashleyObserver = null;
+  }
+
+  const root = getScrollableRoot(); // observe relative to the scroller if present
+  ashleyObserver = new IntersectionObserver((entries, observer) => {
+    if (prankTriggered || !userHasScrolled) return; // require an actual scroll first
+
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+
+      prankTriggered = true;
+      const el = entry.target;
+      const original = el.getAttribute('data-original-name') || '';
+      const formattedDate = el.getAttribute('data-formatted-date') || '';
+
+      // swap to "My Wife"
+      el.textContent = formattedDate ? `My Wife  ${formattedDate}` : 'My Wife';
+
+      setTimeout(() => {
+        el.textContent = formattedDate ? `${original}  ${formattedDate}` : original;
+        try { observer.disconnect(); } catch (_) {}
+        ashleyObserver = null;
+      }, 1000);
+
+      break; // only the first Ashley per load
+    }
+  }, {
+    root,        // viewport if null, otherwise your scrollable container
+    threshold: 0.1 // easier to trigger (10% visible)
+  });
+
+  targets.forEach(t => ashleyObserver.observe(t));
+}
+
+
     // === NEW: Pair that should see the same records ===
     const seeSameRecordsPair = ['ethen.wilson@vanirinstalledsales.com','lance.roberts@vanirinstalledsales.com'];
 
@@ -70,6 +160,32 @@ document.addEventListener("DOMContentLoaded", async function () {
             }, 700);
         }, 1000);
     }, 1000);
+
+    // --- Temporary aliasing for Lance (3-minute window) ---
+const isLance = supervisorEmail === 'lance.roberts@vanirinstalledsales.com';
+const SESSION_START_MS = Date.now();
+
+function withinFirst3Minutes() {
+  return (Date.now() - SESSION_START_MS) < 3 * 60 * 1000;
+}
+
+
+
+function scheduleRevertAfter3Minutes() {
+  if (!isLance) return;
+  const msLeft = Math.max(0, (3 * 60 * 1000) - (Date.now() - SESSION_START_MS));
+
+  setTimeout(() => {
+    // Revert any name containers that had the alias applied
+    document.querySelectorAll('.name-container[data-original-name][data-alias-applied="true"]').forEach(el => {
+      const original = el.getAttribute('data-original-name') || '';
+      const formattedDate = el.getAttribute('data-formatted-date') || '';
+      el.textContent = formattedDate ? `${original}  ${formattedDate}` : original;
+      el.setAttribute('data-alias-applied', 'false');
+    });
+  }, msLeft);
+}
+
 
     async function loadDataAndInitializePage() {
         try {
@@ -497,15 +613,25 @@ document.addEventListener("DOMContentLoaded", async function () {
                     totalHoursWorked += parseFloat(calculateHours(fields[`start${day}`], fields[`end${day}`], fields[`lunchs${day}`], fields[`lunche${day}`], fields[`additionali${day}`], fields[`additionalo${day}`])) || 0;
                 }
 
-                const nameContainer = document.createElement('div');
-                nameContainer.classList.add('name-container');
-                nameContainer.textContent = `${employeeName}  ${formattedDate7}`;
-                nameContainer.setAttribute('data-record-id', record.id);
-                nameContainer.setAttribute('data-employee-number', employeeNumber);
-                nameContainer.addEventListener('click', () => {
-                    toggleVisibility(record.id);
-                });
-                nameContainer.classList.add('clickable');
+// Build the clickable name container (NO alias here)
+const nameContainer = document.createElement('div');
+nameContainer.classList.add('name-container');
+
+// Save original for the prank + revert
+nameContainer.setAttribute('data-original-name', employeeName);
+nameContainer.setAttribute('data-formatted-date', formattedDate7 || '');
+
+// Normal (original) text by default
+nameContainer.textContent = formattedDate7 ? `${employeeName}  ${formattedDate7}` : employeeName;
+
+// Your existing metadata / behavior
+nameContainer.setAttribute('data-record-id', record.id);
+nameContainer.setAttribute('data-employee-number', employeeNumber);
+nameContainer.addEventListener('click', () => {
+  toggleVisibility(record.id);
+});
+nameContainer.classList.add('clickable');
+
 
                 if (totalHoursWorked === 0) {
                     nameContainer.style.color = 'red';
@@ -563,6 +689,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             noRecordsRow.textContent = `No records found for the supervisor: ${supervisorEmail}`;
             timesheetsBody.appendChild(noRecordsRow);
         }
+        // Re-scan and arm the prank (safe to call on rerenders)
+initAshleyScrollPrank();
+
     }
 
     async function updateApprovalStatus(employeeNumber, isApproved) {
@@ -608,17 +737,18 @@ document.addEventListener("DOMContentLoaded", async function () {
             event.preventDefault();
             scrollableDiv.scrollTop += event.deltaY;
         });
+          userHasScrolled = true; // <-- add this
+
     });
 
-    document.addEventListener('wheel', function(e) {
-        const scrollable = document.querySelector('.scrollable');
-        if (!scrollable) return;
-
-        // Scroll the div if mouse is not directly over it
-        if (!e.target.closest('.scrollable')) {
-            scrollable.scrollTop += e.deltaY;
-        }
-    }, { passive: true });
+   document.addEventListener('wheel', function(e) {
+  const scrollable = document.querySelector('.scrollable');
+  if (!scrollable) return;
+  if (!e.target.closest('.scrollable')) {
+    scrollable.scrollTop += e.deltaY;
+  }
+  userHasScrolled = true; // <-- add this
+}, { passive: true });
 
 
     function displaySuccessMessage(message) {
