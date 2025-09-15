@@ -34,7 +34,7 @@ async function handleClear(event) {
     const hour = nycDate.getHours();
 
     // Payroll window: require confirmation modal
-    if ((day === 2 || day === 3) && hour < 9) {
+    if ((day === 2 || day === 3) && hour < 8) {
         const message = "⚠️ Please wait for payroll to be finalized before clearing data.<br><br>Are you sure you want to continue?";
         const userConfirmed = await showModal(message);
         if (userConfirmed) {

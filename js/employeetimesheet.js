@@ -13,18 +13,22 @@ document.addEventListener("DOMContentLoaded", async function () {
   
     let supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
 
-// Define impersonation rules
-const impersonateKatyEmails = ['nhernandez@guyclee.com', 'jjones@guyclee.com'];
-const impersonateBrianEmails = ['brian@vanirinstalledsales.com'];
+    // === NEW: Pair that should see the same records ===
+    const seeSameRecordsPair = ['ethen.wilson@vanirinstalledsales.com','lance.roberts@vanirinstalledsales.com'];
 
-const isKaty = supervisorEmail === 'katy@vanirinstalledsales.com';
-const isImpersonatingKaty = impersonateKatyEmails.includes(supervisorEmail);
-const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
+    // Define impersonation rules
+    const impersonateKatyEmails = ['nhernandez@guyclee.com', 'jjones@guyclee.com'];
+    const impersonateBrianEmails = ['brian@vanirinstalledsales.com'];
+
+    const isKaty = supervisorEmail === 'katy@vanirinstalledsales.com';
+    const isImpersonatingKaty = impersonateKatyEmails.includes(supervisorEmail);
+    const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
+    const isEthenOrLance = seeSameRecordsPair.includes(supervisorEmail); // NEW
 
 
-  if (isKaty || isImpersonatingKaty) {
-    filterFormula = '{Employee Number}!=BLANK()';
-}
+    if (isKaty || isImpersonatingKaty) {
+        filterFormula = '{Employee Number}!=BLANK()';
+    }
 
     console.log(`[INFO] Logged in as: ${supervisorEmail} (Impersonating Katy: ${isImpersonatingKaty}, Impersonating Brian: ${isImpersonatingBrian})`);
 
@@ -72,15 +76,13 @@ const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
             console.log(`[INFO] Initializing page for: ${supervisorEmail}`);
 
            console.log('Current login:', supervisorEmail);
-let supervisorName = supervisorEmail;
-if (!isImpersonatingBrian) {
-    supervisorName = await fetchSupervisorName(supervisorEmail);
-}
-console.log('SupervisorName returned:', supervisorName);
-
+            let supervisorName = supervisorEmail;
+            if (!isImpersonatingBrian) {
+                supervisorName = await fetchSupervisorName(supervisorEmail);
+            }
+            console.log('SupervisorName returned:', supervisorName);
 
             await fetchTimesheets(supervisorName);
-
 
             if (supervisorName) {
                 await fetchTimesheets(supervisorName);
@@ -94,43 +96,42 @@ console.log('SupervisorName returned:', supervisorName);
     }
 
     // Define handleInputChange globally so it can be accessed in the DOM
-async function handleInputChange(event, recordId, employeeNumber, fieldName) {
-    const newValue = event.target.value;
+    async function handleInputChange(event, recordId, employeeNumber, fieldName) {
+        const newValue = event.target.value;
 
-    console.log(`[INFO] Field "${fieldName}" changed for Record: ${recordId}, Employee Number: ${employeeNumber}, New Value: ${newValue}`);
+        console.log(`[INFO] Field "${fieldName}" changed for Record: ${recordId}, Employee Number: ${employeeNumber}, New Value: ${newValue}`);
 
-  
-    try {
-        const updateEndpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-        
-        const body = JSON.stringify({
-            fields: {
-                [fieldName]: newValue
+        try {
+            const updateEndpoint = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
+            
+            const body = JSON.stringify({
+                fields: {
+                    [fieldName]: newValue
+                }
+            });
+
+            const response = await fetch(updateEndpoint, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: body
+            });
+
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                throw new Error(`Failed to update Airtable: ${errorMessage}`);
             }
-        });
 
-        const response = await fetch(updateEndpoint, {
-            method: 'PATCH',
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: body
-        });
+            console.log(`[SUCCESS] Successfully updated field "${fieldName}" for Employee: ${employeeNumber}`);
+            displaySuccessMessage("Timesheet updated successfully!");
 
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error(`Failed to update Airtable: ${errorMessage}`);
+        } catch (error) {
+            console.error(`[ERROR] Error updating timesheet: ${error.message}`);
+            alert("Error updating timesheet. Please try again.");
         }
-
-        console.log(`[SUCCESS] Successfully updated field "${fieldName}" for Employee: ${employeeNumber}`);
-        displaySuccessMessage("Timesheet updated successfully!");
-
-    } catch (error) {
-        console.error(`[ERROR] Error updating timesheet: ${error.message}`);
-        alert("Error updating timesheet. Please try again.");
     }
-}
 
     function toggleVisibility(recordId) {
         const nameContainer = timesheetsBody.querySelector(`.name-container[data-record-id="${recordId}"]`);
@@ -166,12 +167,12 @@ async function handleInputChange(event, recordId, employeeNumber, fieldName) {
             if (!response.ok) throw new Error(`Failed to fetch supervisor name: ${response.statusText}`);
             const data = await response.json();
             console.log('Supervisor data fetched:', data);
-// Pick the one where 'Full Name' matches the supervisor's name pattern
-const nameRecord = data.records.find(r => 
-  r.fields['Full Name'] && r.fields['Full Name'].toLowerCase().includes('mike raszmann')
-);
-// fallback to the first record
-return nameRecord ? nameRecord.fields['Full Name'] : (data.records[0]?.fields['Full Name'] || null);
+            // Pick the one where 'Full Name' matches the supervisor's name pattern
+            const nameRecord = data.records.find(r => 
+              r.fields['Full Name'] && r.fields['Full Name'].toLowerCase().includes('mike raszmann')
+            );
+            // fallback to the first record
+            return nameRecord ? nameRecord.fields['Full Name'] : (data.records[0]?.fields['Full Name'] || null);
         } catch (error) {
             console.error(error);
             alert("Error fetching supervisor data. Please try again later.");
@@ -210,25 +211,27 @@ return nameRecord ? nameRecord.fields['Full Name'] : (data.records[0]?.fields['F
         }, {});
     }
     
-  async function fetchTimesheets(supervisorName) {
-    let filterFormula;
+    async function fetchTimesheets(supervisorName) {
+        let filterFormula;
 
-    // The key line
-if (isKaty || isImpersonatingKaty) {
-    filterFormula = '{Employee Number}!=BLANK()';
-} else if (isImpersonatingBrian) {
-    filterFormula = "OR({Employee Number}='12078',{Employee Number}='12098',{Employee Number}='12002')";
-} else if (supervisorEmail === 'mike.raszmann@vanirinstalledsales.com') {
-    filterFormula = "OR({Supervisor Email}='mike.raszmann@vanirinstalledsales.com',{Supervisor Email}='ethen.wilson@vanirinstalledsales.com')";
-} else {
-    filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
-}
+        // The key line
+        if (isKaty || isImpersonatingKaty) {
+            filterFormula = '{Employee Number}!=BLANK()';
+        } else if (isImpersonatingBrian) {
+            filterFormula = "OR({Employee Number}='12078',{Employee Number}='12098',{Employee Number}='12002')";
+        } else if (isEthenOrLance) { // NEW: Ethen & Lance share the same pool
+            filterFormula = "OR({Supervisor Email}='ethen.wilson@vanirinstalledsales.com',{Supervisor Email}='lance.roberts@vanirinstalledsales.com')";
+        } else if (supervisorEmail === 'mike.raszmann@vanirinstalledsales.com') {
+            filterFormula = "OR({Supervisor Email}='mike.raszmann@vanirinstalledsales.com',{Supervisor Email}='ethen.wilson@vanirinstalledsales.com')";
+        } else {
+            filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
+        }
 
         let allRecords = [];
         let offset = null;
 
         do {
-const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
+            const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}&sort[0][field]=Employee Number&sort[0][direction]=asc`;
             try {
                 loadingIndicator.style.display = 'block';
                 const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${apiKey}` } });
@@ -278,33 +281,33 @@ const endpoint = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormu
     }
 
     function roundToQuarterHour(hours) {
-    const quarter = 0.25;
-    return Math.round(hours / quarter) * quarter;
-}
-
-function calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut) {
-    if (!start || !end) return 0;
-
-    const startTime = new Date(`1970-01-01T${start}:00`);
-    const endTime = new Date(`1970-01-01T${end}:00`);
-    const lunchStartTime = lunchStart ? new Date(`1970-01-01T${lunchStart}:00`) : null;
-    const lunchEndTime = lunchEnd ? new Date(`1970-01-01T${lunchEnd}:00`) : null;
-    const additionalInTime = additionalIn ? new Date(`1970-01-01T${additionalIn}:00`) : null;
-    const additionalOutTime = additionalOut ? new Date(`1970-01-01T${additionalOut}:00`) : null;
-
-    let workedHours = (endTime - startTime) / (1000 * 60 * 60);
-
-    if (lunchStartTime && lunchEndTime) {
-        workedHours -= (lunchEndTime - lunchStartTime) / (1000 * 60 * 60);
+        const quarter = 0.25;
+        return Math.round(hours / quarter) * quarter;
     }
 
-    if (additionalInTime && additionalOutTime) {
-        workedHours += (additionalOutTime - additionalInTime) / (1000 * 60 * 60);
-    }
+    function calculateHours(start, end, lunchStart, lunchEnd, additionalIn, additionalOut) {
+        if (!start || !end) return 0;
 
-    const roundedHours = workedHours > 0 ? roundToQuarterHour(workedHours) : 0;
-    return roundedHours.toFixed(2);
-}
+        const startTime = new Date(`1970-01-01T${start}:00`);
+        const endTime = new Date(`1970-01-01T${end}:00`);
+        const lunchStartTime = lunchStart ? new Date(`1970-01-01T${lunchStart}:00`) : null;
+        const lunchEndTime = lunchEnd ? new Date(`1970-01-01T${lunchEnd}:00`) : null;
+        const additionalInTime = additionalIn ? new Date(`1970-01-01T${additionalIn}:00`) : null;
+        const additionalOutTime = additionalOut ? new Date(`1970-01-01T${additionalOut}:00`) : null;
+
+        let workedHours = (endTime - startTime) / (1000 * 60 * 60);
+
+        if (lunchStartTime && lunchEndTime) {
+            workedHours -= (lunchEndTime - lunchStartTime) / (1000 * 60 * 60);
+        }
+
+        if (additionalInTime && additionalOutTime) {
+            workedHours += (additionalOutTime - additionalInTime) / (1000 * 60 * 60);
+        }
+
+        const roundedHours = workedHours > 0 ? roundToQuarterHour(workedHours) : 0;
+        return roundedHours.toFixed(2);
+    }
 
 
     function generateRows(fields, recordId, employeeNumber) {
@@ -348,33 +351,33 @@ function calculateHours(start, end, lunchStart, lunchEnd, additionalIn, addition
         `).join('');
        
     
-console.log(`[INFO] Total hours worked after all days: ${totalHoursWorked.toFixed(2)}`);
+        console.log(`[INFO] Total hours worked after all days: ${totalHoursWorked.toFixed(2)}`);
 
-// ⬇️ Add this to round it
-totalHoursWorked = roundToQuarterHour(totalHoursWorked);
-console.log(`[INFO] Total hours worked after rounding: ${totalHoursWorked.toFixed(2)}`);
+        // ⬇️ Add this to round it
+        totalHoursWorked = roundToQuarterHour(totalHoursWorked);
+        console.log(`[INFO] Total hours worked after rounding: ${totalHoursWorked.toFixed(2)}`);
 
 
-           // Fetch additional hours
-           const totalPersonalHours = parseFloat(fields['Total Personal Hours'] || 0);
-           const totalPtoHours = parseFloat(fields['Total PTO Hours'] || 0);
-           const totalHolidayHours = parseFloat(fields['Total holiday hours'] || 0);
-       
-           console.log(`[DEBUG] Personal Hours: ${totalPersonalHours}, PTO Hours: ${totalPtoHours}, Holiday Hours: ${totalHolidayHours}`);
+        // Fetch additional hours
+        const totalPersonalHours = parseFloat(fields['Total Personal Hours'] || 0);
+        const totalPtoHours = parseFloat(fields['Total PTO Hours'] || 0);
+        const totalHolidayHours = parseFloat(fields['Total holiday hours'] || 0);
     
-// Gifted hours logic
- const totalEligibleHours = totalHoursWorked + totalHolidayHours + totalPersonalHours + totalPtoHours;
+        console.log(`[DEBUG] Personal Hours: ${totalPersonalHours}, PTO Hours: ${totalPtoHours}, Holiday Hours: ${totalHolidayHours}`);
+    
+        // Gifted hours logic
+        const totalEligibleHours = totalHoursWorked + totalHolidayHours + totalPersonalHours + totalPtoHours;
 
- if (totalHoursWorked === 0) {
-    giftedHours = 0;
-    console.log(`[INFO] Gifted hours set to 0 because total hours worked is 0.`);
-} else if (totalEligibleHours < 40) {
-    giftedHours = Math.min(3, 40 - totalEligibleHours);
-    console.log(`[INFO] Gifted hours calculated: ${giftedHours.toFixed(2)} based on total eligible hours: ${totalEligibleHours.toFixed(2)}`);
-} else {
-    giftedHours = 0;
-    console.log(`[INFO] No gifted hours as total eligible hours (${totalEligibleHours.toFixed(2)}) exceed 40.`);
- }
+        if (totalHoursWorked === 0) {
+            giftedHours = 0;
+            console.log(`[INFO] Gifted hours set to 0 because total hours worked is 0.`);
+        } else if (totalEligibleHours < 40) {
+            giftedHours = Math.min(3, 40 - totalEligibleHours);
+            console.log(`[INFO] Gifted hours calculated: ${giftedHours.toFixed(2)} based on total eligible hours: ${totalEligibleHours.toFixed(2)}`);
+        } else {
+            giftedHours = 0;
+            console.log(`[INFO] No gifted hours as total eligible hours (${totalEligibleHours.toFixed(2)}) exceed 40.`);
+        }
    
         // Calculate the final total including all hours
         const finalTotal = totalHoursWorked + giftedHours + totalHolidayHours + totalPersonalHours + totalPtoHours;
@@ -459,108 +462,108 @@ console.log(`[INFO] Total hours worked after rounding: ${totalHoursWorked.toFixe
     
     
     // Handling the checkbox change and passing `recordId`
-   function handleCheckboxChange(event) {
-    const checkbox = event.target;
-    const recordId = checkbox.getAttribute('data-record-id'); // This is likely the record ID
-    const employeeNumber = checkbox.getAttribute('data-employee-number'); // Use this to get the employee number
-    const isApproved = checkbox.checked;
+    function handleCheckboxChange(event) {
+        const checkbox = event.target;
+        const recordId = checkbox.getAttribute('data-record-id'); // This is likely the record ID
+        const employeeNumber = checkbox.getAttribute('data-employee-number'); // Use this to get the employee number
+        const isApproved = checkbox.checked;
 
-    console.log(`Checkbox clicked. Record ID: ${recordId}, Employee Number: ${employeeNumber}, Approved: ${isApproved}`);
+        console.log(`Checkbox clicked. Record ID: ${recordId}, Employee Number: ${employeeNumber}, Approved: ${isApproved}`);
 
-    if (employeeNumber) {
-        updateApprovalStatus(employeeNumber, isApproved);
-    } else {
-        console.error('Employee Number is not defined');
-    }
-}
-
-async function populateTimesheets(records, approvedData) {
-    console.log('Populating timesheets');
-    timesheetsBody.innerHTML = '';
-
-    if (records.length > 0) {
-        for (const record of records) {
-            const fields = record.fields;
-            const employeeNumber = fields['Employee Number'];
-
-            if (!employeeNumber) continue;
-
-            const employeeName = await fetchEmployeeName(employeeNumber);
-            const { approved: approvalStatus, date7 } = approvedData[employeeNumber] || { approved: false, date7: '' };
-            const formattedDate7 = formatDateToMMDDYYYY(date7);
-
-            let totalHoursWorked = 0;
-            for (let day = 1; day <= 7; day++) {
-                totalHoursWorked += parseFloat(calculateHours(fields[`start${day}`], fields[`end${day}`], fields[`lunchs${day}`], fields[`lunche${day}`], fields[`additionali${day}`], fields[`additionalo${day}`])) || 0;
-            }
-
-            const nameContainer = document.createElement('div');
-            nameContainer.classList.add('name-container');
-            nameContainer.textContent = `${employeeName}  ${formattedDate7}`;
-            nameContainer.setAttribute('data-record-id', record.id);
-            nameContainer.setAttribute('data-employee-number', employeeNumber);
-            nameContainer.addEventListener('click', () => {
-                toggleVisibility(record.id);
-            });
-            nameContainer.classList.add('clickable');
-
-            if (totalHoursWorked === 0) {
-                nameContainer.style.color = 'red';
-            }
-            timesheetsBody.appendChild(nameContainer);
-
-            const table = document.createElement('table');
-            table.classList.add('time-entry-table');
-            table.setAttribute('data-record-id', record.id);
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th class="narrow-column">Start Time</th>
-                        <th class="narrow-column">Lunch Start</th>
-                        <th class="narrow-column">Lunch End</th>
-                        <th class="narrow-column">End Time</th>
-                        <th class="narrow-column">Additional Time in</th>
-                        <th class="narrow-column">Additional Time out</th>
-
-                        <th>Hours Worked</th> 
-                    </tr>
-                </thead>
-                <tbody>
-                    ${generateRows(fields, record.id, employeeNumber)}
-                </tbody>
-            `;
-
-            // Attach `onblur` event to inputs to call `handleInputChange`
-            if (isImpersonatingBrian) {
-                table.querySelectorAll('input[type="time"]').forEach(input => {
-                    input.addEventListener('blur', (event) => {
-                        const fieldName = input.getAttribute('name');
-                        handleInputChange(event, record.id, employeeNumber, fieldName);
-                    });
-                });
-            }
-
-            const approveCheckbox = table.querySelector('.approve-checkbox');
-            if (approveCheckbox) {
-                approveCheckbox.checked = approvalStatus;
-                approveCheckbox.setAttribute('data-employee-number', employeeNumber);
-                approveCheckbox.addEventListener('change', handleCheckboxChange);
-            }
-
-            if (supervisorEmail !== 'katy@vanirinstalledsales.com' && approvalStatus) {
-                table.style.display = 'none'; 
-            }
-
-            timesheetsBody.appendChild(table);
+        if (employeeNumber) {
+            updateApprovalStatus(employeeNumber, isApproved);
+        } else {
+            console.error('Employee Number is not defined');
         }
-    } else {
-        console.log('No records found for the supervisor');
-        const noRecordsRow = document.createElement('div');
-        noRecordsRow.classList.add('name-container');
-        noRecordsRow.textContent = `No records found for the supervisor: ${supervisorEmail}`;
-        timesheetsBody.appendChild(noRecordsRow);
     }
-}
+
+    async function populateTimesheets(records, approvedData) {
+        console.log('Populating timesheets');
+        timesheetsBody.innerHTML = '';
+
+        if (records.length > 0) {
+            for (const record of records) {
+                const fields = record.fields;
+                const employeeNumber = fields['Employee Number'];
+
+                if (!employeeNumber) continue;
+
+                const employeeName = await fetchEmployeeName(employeeNumber);
+                const { approved: approvalStatus, date7 } = approvedData[employeeNumber] || { approved: false, date7: '' };
+                const formattedDate7 = formatDateToMMDDYYYY(date7);
+
+                let totalHoursWorked = 0;
+                for (let day = 1; day <= 7; day++) {
+                    totalHoursWorked += parseFloat(calculateHours(fields[`start${day}`], fields[`end${day}`], fields[`lunchs${day}`], fields[`lunche${day}`], fields[`additionali${day}`], fields[`additionalo${day}`])) || 0;
+                }
+
+                const nameContainer = document.createElement('div');
+                nameContainer.classList.add('name-container');
+                nameContainer.textContent = `${employeeName}  ${formattedDate7}`;
+                nameContainer.setAttribute('data-record-id', record.id);
+                nameContainer.setAttribute('data-employee-number', employeeNumber);
+                nameContainer.addEventListener('click', () => {
+                    toggleVisibility(record.id);
+                });
+                nameContainer.classList.add('clickable');
+
+                if (totalHoursWorked === 0) {
+                    nameContainer.style.color = 'red';
+                }
+                timesheetsBody.appendChild(nameContainer);
+
+                const table = document.createElement('table');
+                table.classList.add('time-entry-table');
+                table.setAttribute('data-record-id', record.id);
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th class="narrow-column">Start Time</th>
+                            <th class="narrow-column">Lunch Start</th>
+                            <th class="narrow-column">Lunch End</th>
+                            <th class="narrow-column">End Time</th>
+                            <th class="narrow-column">Additional Time in</th>
+                            <th class="narrow-column">Additional Time out</th>
+
+                            <th>Hours Worked</th> 
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${generateRows(fields, record.id, employeeNumber)}
+                    </tbody>
+                `;
+
+                // Attach `onblur` event to inputs to call `handleInputChange`
+                if (isImpersonatingBrian) {
+                    table.querySelectorAll('input[type="time"]').forEach(input => {
+                        input.addEventListener('blur', (event) => {
+                            const fieldName = input.getAttribute('name');
+                            handleInputChange(event, record.id, employeeNumber, fieldName);
+                        });
+                    });
+                }
+
+                const approveCheckbox = table.querySelector('.approve-checkbox');
+                if (approveCheckbox) {
+                    approveCheckbox.checked = approvalStatus;
+                    approveCheckbox.setAttribute('data-employee-number', employeeNumber);
+                    approveCheckbox.addEventListener('change', handleCheckboxChange);
+                }
+
+                if (supervisorEmail !== 'katy@vanirinstalledsales.com' && approvalStatus) {
+                    table.style.display = 'none'; 
+                }
+
+                timesheetsBody.appendChild(table);
+            }
+        } else {
+            console.log('No records found for the supervisor');
+            const noRecordsRow = document.createElement('div');
+            noRecordsRow.classList.add('name-container');
+            noRecordsRow.textContent = `No records found for the supervisor: ${supervisorEmail}`;
+            timesheetsBody.appendChild(noRecordsRow);
+        }
+    }
 
     async function updateApprovalStatus(employeeNumber, isApproved) {
         const approvedEndpoint = `https://api.airtable.com/v0/${baseId}/${table2Id}?filterByFormula=AND({Employee Number}='${employeeNumber}')`;
@@ -608,14 +611,14 @@ async function populateTimesheets(records, approvedData) {
     });
 
     document.addEventListener('wheel', function(e) {
-  const scrollable = document.querySelector('.scrollable');
-  if (!scrollable) return;
+        const scrollable = document.querySelector('.scrollable');
+        if (!scrollable) return;
 
-  // Scroll the div if mouse is not directly over it
-  if (!e.target.closest('.scrollable')) {
-    scrollable.scrollTop += e.deltaY;
-  }
-}, { passive: true });
+        // Scroll the div if mouse is not directly over it
+        if (!e.target.closest('.scrollable')) {
+            scrollable.scrollTop += e.deltaY;
+        }
+    }, { passive: true });
 
 
     function displaySuccessMessage(message) {

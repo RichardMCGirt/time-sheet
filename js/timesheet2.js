@@ -122,10 +122,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const lunchStart = row.querySelector('input[name^="lunch_start"]');
             const lunchEnd = row.querySelector('input[name^="lunch_end"]');
 
-            if (index === 7) {
+            if (index === 3) {
                 start.value = '07:00';
                 end.value = '12:00';
-            } else if ([1, 2, 3, 6].includes(index)) {
+            } else if ([1, 2, 6, 7].includes(index)) {
                 start.value = '07:00';
                 end.value = '16:00';
                 lunchStart.value = '12:00';
@@ -206,15 +206,4 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
-// Submit button restriction for Kyle
-const submitBtn = document.getElementById("submit-button");
-submitBtn.addEventListener("click", () => {
-    const userEmailEl = document.getElementById("user-email");
-    const userEmail = userEmailEl?.textContent?.trim()?.toLowerCase();
-    const today = new Date();
-    const isTuesday = today.getDay() === 2; // 0 = Sunday, 2 = Tuesday
 
-    if (userEmail === "kyle.thurston@vanirinstalledsales.com" && !isTuesday) {
-        alert("⚠️ Submit button does not need to be clicked daily.");
-    }
-});

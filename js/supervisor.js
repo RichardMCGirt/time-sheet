@@ -12,10 +12,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     const loadingLogo = document.getElementById('loading-logo');
     const mainContent = document.getElementById('main-content');
 
-    const impersonateEmails = ['nhernandez@guyclee.com', 'jjones@guyclee.com'];
+    const impersonateEmails = ['lance.roberts@vanirinstalledsales.com'];
 
 // Check if the logged-in email should impersonate Katy's email display
-const displayEmail = impersonateEmails.includes(supervisorEmail) ? 'katy@vanirinstalledsales.com' : supervisorEmail;
+const displayEmail = impersonateEmails.includes(supervisorEmail) ? 'ethen.wilson@vanirinstalledsales.com' : supervisorEmail;
 
 if (userEmailElement) {
     console.log(`Setting user email: ${displayEmail}`);
