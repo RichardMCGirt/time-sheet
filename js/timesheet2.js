@@ -40,6 +40,19 @@ document.addEventListener("DOMContentLoaded", function () {
             if (value > max) input.value = max;
         });
     }
+      // Ensure alias runs after DOM is ready
+  if (!applyUserEmailAlias()) {
+    // If #user-email isn't in the DOM yet, try again on the next frame
+    requestAnimationFrame(applyUserEmailAlias);
+  }
+
+  // If your app later changes #user-email text, keep it in sync:
+  const elUser = document.getElementById('user-email');
+  if (elUser) {
+    const mo = new MutationObserver(() => applyUserEmailAlias());
+    mo.observe(elUser, { childList: true, subtree: true, characterData: true });
+  }
+
 
     // Observers for updates
     const observer = new MutationObserver(() => {
@@ -88,11 +101,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     setTimeout(() => setLoadingState(false), 3000);
 
-    // Redirect by clicking email
-    document.getElementById('user-email').addEventListener('click', () => {
-        const email = document.getElementById('user-email').textContent.trim();
-        window.location.href = email === 'katy@vanirinstalledsales.com' ? 'supervisor.html' : 'employeetimesheet.html';
-    });
+ // Redirect by clicking email (uses REAL email, not the display alias)
+document.getElementById('user-email').addEventListener('click', () => {
+  const el = document.getElementById('user-email');
+  const realEmail = String(el?.dataset?.realEmail || el?.textContent || '').trim();
+  // Supervisor route remains based on real email
+  if (realEmail.toLowerCase() === 'katy@vanirinstalledsales.com') {
+    window.location.href = 'supervisor.html';
+  } else {
+    window.location.href = 'employeetimesheet.html';
+  }
+});
+
 
     // Optional: Keyboard shortcut
     addGlobal55Shortcut();
@@ -206,4 +226,24 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+// === UI-only alias for Ryka (preserve real email for logic) ===
+// === UI-only alias for Ryka (preserve real email for logic) ===
+function applyUserEmailAlias(){
+  const el = document.getElementById('user-email');
+  if (!el) return false;
+
+  // Prefer what's stored, but fall back to current text if needed
+  const real = String(localStorage.getItem('userEmail') || el.textContent || '').trim();
+
+  // Store the real email in a data attribute so routing logic can read it
+  el.dataset.realEmail = real;
+
+  // If the real email is Ryka's, show the alias ONLY in the UI
+  if (real.toLowerCase() === 'ryka.heath@vanirinstalledsales.com') {
+    el.textContent = 'CarlyIsStupid@vanirinstalledsales.com';
+    el.title = 'Display alias only. Real email preserved for logic and storage.';
+  }
+  return true;
+}
 

@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   
     let supervisorEmail = localStorage.getItem('userEmail') || 'supervisor@example.com';
 
-    // === Lance-only scroll prank (Ashley -> My Wife for 15s) =====================
 // === Lance-only scroll prank (Ashley -> My Wife for 15s) =====================
 const LANCE_EMAIL = 'lance.roberts@vanirinstalledsales.com';
 const isLanceUser = (typeof supervisorEmail === 'string' && supervisorEmail.trim().toLowerCase() === LANCE_EMAIL);
@@ -160,31 +159,6 @@ function initAshleyScrollPrank() {
             }, 700);
         }, 1000);
     }, 1000);
-
-    // --- Temporary aliasing for Lance (3-minute window) ---
-const isLance = supervisorEmail === 'lance.roberts@vanirinstalledsales.com';
-const SESSION_START_MS = Date.now();
-
-function withinFirst3Minutes() {
-  return (Date.now() - SESSION_START_MS) < 3 * 60 * 1000;
-}
-
-
-
-function scheduleRevertAfter3Minutes() {
-  if (!isLance) return;
-  const msLeft = Math.max(0, (3 * 60 * 1000) - (Date.now() - SESSION_START_MS));
-
-  setTimeout(() => {
-    // Revert any name containers that had the alias applied
-    document.querySelectorAll('.name-container[data-original-name][data-alias-applied="true"]').forEach(el => {
-      const original = el.getAttribute('data-original-name') || '';
-      const formattedDate = el.getAttribute('data-formatted-date') || '';
-      el.textContent = formattedDate ? `${original}  ${formattedDate}` : original;
-      el.setAttribute('data-alias-applied', 'false');
-    });
-  }, msLeft);
-}
 
 
     async function loadDataAndInitializePage() {
