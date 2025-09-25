@@ -241,7 +241,7 @@ function applyUserEmailAlias(){
 
   // If the real email is Ryka's, show the alias ONLY in the UI
   if (real.toLowerCase() === 'ryka.heath@vanirinstalledsales.com') {
-    el.textContent = 'CarlyIsStupid@vanirinstalledsales.com';
+    el.textContent = 'ryka.heath@vanirinstalledsales.com';
     el.title = 'Display alias only. Real email preserved for logic and storage.';
   }
   return true;
