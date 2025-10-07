@@ -175,8 +175,14 @@ document.addEventListener("DOMContentLoaded", function() {
     const apiKey = 'pat6QyOfQCQ9InhK4.4b944a38ad4c503a6edd9361b2a6c1e7f02f216ff05605f7690d3adb12c94a3c';
     const baseId = 'appD3QeLneqfNdX12';
     const tableId = 'tbljmLpqXScwhiWTt';
+  
 
     let userEmail = localStorage.getItem('userEmail') || '';
+      window.viewId = viewId;
+window.apiKey = apiKey;
+window.baseId = baseId;
+window.tableId = tableId;
+window.userEmail = userEmail;
     let recordId = '';
     console.log('User email:', userEmail);
 
@@ -1905,5 +1911,187 @@ document.addEventListener('DOMContentLoaded', () => {
   if (personalInput) personalInput.addEventListener('input', updateTotalsSummary, 200);
   if (holidayInput) holidayInput.addEventListener('input', updateTotalsSummary, 200);
 }
-
 });
+
+// ===== PTO CLEAR BUTTON (anniversary +7 days window) =====
+// Shows only when PTO > 0, and only within 7 days after the Start Date anniversary (ignores year).
+// Depends on: window.apiKey, window.baseId, window.tableId, window.userEmail, window.viewId
+// Safe if showModal is not present (falls back to window.confirm).
+// ============================================================================
+
+(function(){
+  const PTO_FIELD = "PTO";                 // <- rename if your field is called differently
+  const START_DATE_FIELD = "Start Date";   // <- rename if needed
+
+  // Boot after DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+
+  async function boot(){
+    try {
+      // Wait (up to 20s) for globals the main app sets inside its DOMContentLoaded block
+      await waitFor(()=> !!(window.apiKey && window.baseId && window.tableId && window.userEmail), 20000);
+      await waitFor(()=> document.getElementById("pto-clear-button"), 20000);
+
+      const btn = document.getElementById("pto-clear-button");
+      if (!btn) return;
+
+      // Fetch current record by email
+      const rec = await fetchEmployeeRecordByEmail(window.userEmail);
+      if (!rec) return hide(btn);
+
+      const recId = rec.id;
+      const fields = rec.fields || {};
+      const startDate = parseAirtableDate(fields[START_DATE_FIELD]);
+      const ptoValue = numberOrZero(fields[PTO_FIELD]);
+
+      // Hide if PTO is 0 (your requirement)
+      if (ptoValue <= 0) return hide(btn);
+
+      // Only enable during the 7-day window after THIS year's anniversary
+      const enabled = isWithin7DaysAfterAnniversary(startDate);
+      if (!enabled) {
+        // Not in window → hide completely (stricter UX), or show disabled if you prefer
+        return hide(btn);
+        // If you prefer disabled instead of hidden, comment the line above and use:
+        // btn.style.display = ""; btn.disabled = true; btn.title = "Available within 7 days after your Start Date anniversary.";
+      }
+
+      // Show enabled
+      btn.style.display = "";
+      btn.disabled = false;
+      btn.title = "Clear PTO to 0 (within 7 days after your Start Date anniversary).";
+
+      btn.addEventListener("click", async (e)=>{
+        e.preventDefault();
+
+        // Re-check the window just before we PATCH
+        if (!isWithin7DaysAfterAnniversary(startDate)) {
+          toast("Outside the 7-day anniversary window. PTO cannot be cleared now.");
+          return;
+        }
+
+        const ok = await confirmModal(`
+          <div style="line-height:1.35">
+            <strong>Clear PTO?</strong><br>
+            This will set <code>${PTO_FIELD}</code> to <b>0</b> for your record.<br>
+            <em>Allowed only within 7 days after your Start Date anniversary.</em>
+          </div>
+        `);
+        if (!ok) return;
+
+        try {
+          await patchFieldToZero(recId, PTO_FIELD);
+          toast("PTO cleared.");
+          // Hide after clearing since PTO now equals 0
+          hide(btn);
+        } catch(err){
+          console.error("[PTO clear] PATCH failed", err);
+          toast("Failed to clear PTO. Please try again.");
+        }
+      });
+
+    } catch (err){
+      // Most likely a readiness race (globals not exposed) → fail quietly
+      console.error("[PTO clear] init timeout or failure:", err);
+    }
+  }
+
+  // ---------- Helpers ----------
+  function hide(el){ if (el) el.style.display = "none"; }
+
+  function waitFor(predicate, timeoutMs=8000, intervalMs=80){
+    return new Promise((resolve,reject)=>{
+      const t0 = Date.now();
+      (function tick(){
+        let ok = false;
+        try { ok = !!predicate(); } catch(_){}
+        if (ok) return resolve();
+        if (Date.now() - t0 > timeoutMs) return reject(new Error("waitFor timeout"));
+        setTimeout(tick, intervalMs);
+      })();
+    });
+  }
+
+  function nyNow(){
+    return new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
+  }
+
+  function parseAirtableDate(v){
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function numberOrZero(x){ const n = parseFloat(x); return isNaN(n) ? 0 : n; }
+
+  function daysInMonth(year, month){ return new Date(year, month+1, 0).getDate(); }
+
+  function thisYearsAnniversary(startDate){
+    if (!startDate) return null;
+    const now = nyNow();
+    const y = now.getFullYear();
+    const m = startDate.getMonth();
+    const d = startDate.getDate();
+    // Handle Feb 29 hires by clamping to last day of Feb on non-leap years
+    const day = Math.min(d, daysInMonth(y, m));
+    // Use local NY date (ignore time)
+    return new Date(y, m, day);
+  }
+
+  function isWithin7DaysAfterAnniversary(startDate){
+    const ann = thisYearsAnniversary(startDate);
+    if (!ann) return false;
+    const now = nyNow();
+    const start = new Date(ann.getFullYear(), ann.getMonth(), ann.getDate());
+    const end = new Date(start); end.setDate(start.getDate()+7);
+    return now >= start && now <= end;
+  }
+
+  async function fetchEmployeeRecordByEmail(email){
+    const url = new URL(`https://api.airtable.com/v0/${window.baseId}/${window.tableId}`);
+    // Reuse your view that drives the rest of the page
+    if (window.viewId) url.searchParams.set("view", window.viewId);
+    url.searchParams.set("filterByFormula", `AND({Email}='${email}')`);
+    const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${window.apiKey}` } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data.records && data.records[0]) || null;
+  }
+
+  async function patchFieldToZero(recId, fieldName){
+    const url = `https://api.airtable.com/v0/${window.baseId}/${window.tableId}/${encodeURIComponent(recId)}`;
+    const body = { fields: { [fieldName]: 0 } };
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${window.apiKey}`, "Content-Type":"application/json" },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok){
+      const text = await res.text().catch(()=>"(no body)");
+      throw new Error(`PATCH failed ${res.status}: ${text}`);
+    }
+    return res.json();
+  }
+
+  function toast(message){
+    const box = document.getElementById("message-container");
+    if (!box) return alert(message);
+    box.textContent = message;
+    box.style.display = "block";
+    setTimeout(()=>{ box.textContent=""; box.style.display="none"; }, 3000);
+  }
+
+  async function confirmModal(htmlMessage){
+    if (typeof window.showModal === "function") {
+      try { return await window.showModal(htmlMessage); } catch(_) {}
+    }
+    return window.confirm(stripHtml(htmlMessage));
+  }
+
+  function stripHtml(s){ const d=document.createElement("div"); d.innerHTML=String(s||""); return d.textContent || ""; }
+
+})();

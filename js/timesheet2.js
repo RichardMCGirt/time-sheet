@@ -228,7 +228,6 @@ document.getElementById('user-email').addEventListener('click', () => {
 });
 
 // === UI-only alias for Ryka (preserve real email for logic) ===
-// === UI-only alias for Ryka (preserve real email for logic) ===
 function applyUserEmailAlias(){
   const el = document.getElementById('user-email');
   if (!el) return false;
