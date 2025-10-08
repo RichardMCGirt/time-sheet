@@ -1121,7 +1121,7 @@ function calculateTotalTimeWorked() {
         }
     }
 
-  function updateTotalPtoAndHolidayHours() {
+function updateTotalPtoAndHolidayHours() {
     let totalPtoHours = 0;
     let totalHolidayHours = 0;
     let totalPersonalHours = 0;
@@ -1157,22 +1157,30 @@ function calculateTotalTimeWorked() {
     elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(0);
     elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(0);
 
-    // Baseline total (EXCLUDES gifted hours)
+    // Base total (EXCLUDES gifted hours)
     const worked = parseFloat(elements.totalTimeWorkedSpan.textContent) || 0;
     let totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + worked;
     elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
 
-    // Handle gifted hours (global rule):
-    // If baseline total (excluding gifted) is < 30, do NOT add gifted hours for anyone.
+    // Recompute remaining balances (kept from your original)
+    elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(0);
+    elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(0);
+
+    // Handle gifted hours
     const giftedHoursElement = document.getElementById('gifted-hours');
     let giftedHours = 0;
 
     if (giftedHoursElement) {
         console.log(`💼 Total Time With PTO (before gift): ${totalTimeWithPto}`);
 
-        if (totalTimeWithPto < 30) {
+        // Special rule for Gregory Hackett:
+        // If baseline total (excluding gifted) is < 30, do NOT add gifted hours.
+        const email = (window.userEmail || '').toLowerCase();
+        const isGreg = email === 'gregory.hackett@vanirinstalledsales.com';
+
+        if (isGreg && totalTimeWithPto < 30) {
             giftedHours = 0;
-            console.log('🚫 Gifted hours blocked for everyone because baseline total < 30.');
+            console.log('🚫 Gifted hours blocked for Gregory Hackett because baseline total < 30.');
         } else if (totalTimeWithPto < 40) {
             giftedHours = Math.min(3, 40 - totalTimeWithPto);
             console.log(`🎁 Gifted Hours Applied: ${giftedHours}`);
@@ -1189,6 +1197,7 @@ function calculateTotalTimeWorked() {
         console.warn('⚠️ gifted-hours element not found in DOM.');
     }
 }
+
 
 
     
