@@ -1121,72 +1121,83 @@ function calculateTotalTimeWorked() {
         }
     }
 
-    function updateTotalPtoAndHolidayHours() {
-        let totalPtoHours = 0;
-        let totalHolidayHours = 0;
-        let totalPersonalHours = 0;
-    
-        const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
-        ptoInputs.forEach(input => {
-            const value = parseFloat(input.value) || 0;
-            totalPtoHours += value;
-        });
-    
-        const holidayInputs = document.querySelectorAll('input[name^="Holiday_hours"]');
-        holidayInputs.forEach(input => {
-            const value = parseFloat(input.value) || 0;
-            totalHolidayHours += value;
-        });
-    
-        const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
-        personalInputs.forEach(input => {
-            const value = parseFloat(input.value) || 0;
-            totalPersonalHours += value;
-        });
-    
-        console.log('Total PTO hours:', totalPtoHours); // Debugging log
-        console.log('Total Holiday hours:', totalHolidayHours);
-        console.log('Total Personal hours:', totalPersonalHours);
-    
-        // Ensure the textContent is correctly updated
-        elements.ptoTimeSpan.textContent = totalPtoHours.toFixed(0);
-        elements.holidayTimeSpan.textContent = totalHolidayHours.toFixed(0);
-        elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(0);
-    
-        elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(0);
-        elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(0);
-       // Initial total (without gifted hours)
-let totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + parseFloat(elements.totalTimeWorkedSpan.textContent);
-elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+   function updateTotalPtoAndHolidayHours() {
+    let totalPtoHours = 0;
+    let totalHolidayHours = 0;
+    let totalPersonalHours = 0;
 
-// Update remaining PTO and personal hours
-elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(0);
-elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(0);
+    const ptoInputs = document.querySelectorAll('input[name^="PTO_hours"]');
+    ptoInputs.forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        totalPtoHours += value;
+    });
 
-// Handle gifted hours
-const giftedHoursElement = document.getElementById('gifted-hours');
-let giftedHours = 0;
+    const holidayInputs = document.querySelectorAll('input[name^="Holiday_hours"]');
+    holidayInputs.forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        totalHolidayHours += value;
+    });
 
-if (giftedHoursElement) {
-    console.log(`💼 Total Time With PTO (before gift): ${totalTimeWithPto}`);
+    const personalInputs = document.querySelectorAll('input[name^="Personal_hours"]');
+    personalInputs.forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        totalPersonalHours += value;
+    });
 
-    if (totalTimeWithPto < 40) {
-        giftedHours = Math.min(3, 40 - totalTimeWithPto);
-        console.log(`🎁 Gifted Hours Applied: ${giftedHours}`);
-    } else {
-        console.log("✅ No Gifted Hours Needed");
-    }
+    console.log('Total PTO hours:', totalPtoHours);
+    console.log('Total Holiday hours:', totalHolidayHours);
+    console.log('Total Personal hours:', totalPersonalHours);
 
-    giftedHoursElement.textContent = giftedHours.toFixed(2);
+    // Update summary spans
+    elements.ptoTimeSpan.textContent = totalPtoHours.toFixed(0);
+    elements.holidayTimeSpan.textContent = totalHolidayHours.toFixed(0);
+    elements.personalTimeSpan.textContent = totalPersonalHours.toFixed(0);
 
-    // Add gifted hours to total and update display again
-    totalTimeWithPto += giftedHours;
+    // Remaining balances
+    elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(0);
+    elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(0);
+
+    // Base total (EXCLUDES gifted hours)
+    const worked = parseFloat(elements.totalTimeWorkedSpan.textContent) || 0;
+    let totalTimeWithPto = totalPtoHours + totalHolidayHours + totalPersonalHours + worked;
     elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
-} else {
-    console.warn("⚠️ gifted-hours element not found in DOM.");
+
+    // Recompute remaining balances (kept from your original)
+    elements.remainingPtoHoursElement.textContent = Math.max(0, availablePTOHours - totalPtoHours).toFixed(0);
+    elements.remainingPersonalHoursElement.textContent = Math.max(0, availablePersonalHours - totalPersonalHours).toFixed(0);
+
+    // Handle gifted hours
+    const giftedHoursElement = document.getElementById('gifted-hours');
+    let giftedHours = 0;
+
+    if (giftedHoursElement) {
+        console.log(`💼 Total Time With PTO (before gift): ${totalTimeWithPto}`);
+
+        // Special rule for Gregory Hackett:
+        // If baseline total (excluding gifted) is < 30, do NOT add gifted hours.
+        const email = (window.userEmail || '').toLowerCase();
+        const isGreg = email === 'gregory.hackett@vanirinstalledsales.com';
+
+        if (isGreg && totalTimeWithPto < 30) {
+            giftedHours = 0;
+            console.log('🚫 Gifted hours blocked for Gregory Hackett because baseline total < 30.');
+        } else if (totalTimeWithPto < 40) {
+            giftedHours = Math.min(3, 40 - totalTimeWithPto);
+            console.log(`🎁 Gifted Hours Applied: ${giftedHours}`);
+        } else {
+            console.log('✅ No Gifted Hours Needed');
+        }
+
+        giftedHoursElement.textContent = giftedHours.toFixed(2);
+
+        // Add gifted hours to total and update display again
+        totalTimeWithPto += giftedHours;
+        elements.totalTimeWithPtoSpan.textContent = totalTimeWithPto.toFixed(2);
+    } else {
+        console.warn('⚠️ gifted-hours element not found in DOM.');
+    }
 }
 
-    }
     
 
     async function updatePtoHours() {
