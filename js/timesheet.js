@@ -1198,10 +1198,6 @@ function updateTotalPtoAndHolidayHours() {
     }
 }
 
-
-
-    
-
     async function updatePtoHours() {
         console.log('Updating PTO hours...');
         const usedPtoHoursValue = parseFloat(elements.ptoTimeSpan.textContent) || 0;
