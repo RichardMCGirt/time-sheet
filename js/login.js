@@ -108,7 +108,7 @@ async function login() {
                 'tony.amenta@vanirinstalledsales.com',
                 'josh@vanirinstalledsales.com',
                 'ethen.wilson@vanirinstalledsales.com',
-                'jason.smith@vanirinstalledsales.com',
+                'maggie@vanirinstalledsales.com',
                 'dallas.hudson@vanirinstalledsales.com',
                 'brooke.slaugenhoup@vanirinstalledsales.com',
                 'carina.gonzalez@vanirinstalledsales.com',
