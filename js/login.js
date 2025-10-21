@@ -106,7 +106,7 @@ async function login() {
             const employeeRedirectEmails = [
                 'brett.moss@vanirinstalledsales.com',
                 'tony.amenta@vanirinstalledsales.com',
-                'josh@vanirinstalledsales.com',
+                'adam.desilva@vanirinstalledsales.com',
                 'ethen.wilson@vanirinstalledsales.com',
                 'maggie@vanirinstalledsales.com',
                 'dallas.hudson@vanirinstalledsales.com',
