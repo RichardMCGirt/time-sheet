@@ -609,87 +609,64 @@ await fetchApprovalStatus();
 updateTotalPtoAndHolidayHours();
 debounce(hideZeroValueSpans, 100)();        saveFormData();
     }
+async function handleWeekEndingChange(){
+  console.log('Handling week-ending date change...');
+  const picked = new Date(elements.weekEndingInput.value);
+  const nextTuesday = getNextTuesday(picked);
+  elements.weekEndingInput.value = formatYMDLocal(nextTuesday);
 
-    async function handleWeekEndingChange() {
-        console.log('Handling week-ending date change...');
-    
-        // Get the selected date from the weekEndingInput field
-        const selectedDate = new Date(elements.weekEndingInput.value);
-        console.log('Selected Date:', selectedDate);
-    
-        // Get the next Tuesday based on the selected date in New York timezone
-        const nextTuesday = getNextTuesday(selectedDate);
-        console.log('Next Tuesday (adjusted for New York timezone):', nextTuesday);
-    
-        // Set the value of the week-ending input to the next Tuesday
-        elements.weekEndingInput.value = nextTuesday.toISOString().split('T')[0];
-        console.log('Adjusted week-ending date input value:', elements.weekEndingInput.value);
-    
-        // Set date7 (which is 6 days after nextTuesday)
-        const date7 = new Date(nextTuesday);
-        date7.setDate(nextTuesday.getDate() + 6);
-        elements.timeEntryForm.elements['date7'].value = date7.toISOString().split('T')[0];
-        console.log('Set date7 to:', date7.toISOString().split('T')[0]);
-    
-        // Populate other week dates based on next Tuesday
-        populateWeekDates(nextTuesday);
-    
-        // Save form data
-        saveFormData();
-        console.log('Form data saved.');
-    }
+  // date7 = Tuesday + 6 days
+  const date7 = new Date(nextTuesday);
+  date7.setDate(nextTuesday.getDate() + 6);
+  elements.timeEntryForm.elements['date7'].value = formatYMDLocal(date7);
+
+  // Fill the rest of the week
+  populateWeekDates(nextTuesday);
+
+  // Persist
+  saveFormData();
+  console.log('Form data saved.');
+}
     
     
-  // Get next Tuesday based on the New York timezone
-function getNextTuesday(referenceDate = new Date()) {
-    console.log('Calculating next Tuesday for reference date:', referenceDate);
+function pad2(n){ return String(n).padStart(2,'0'); }
+function formatYMDLocal(d){
+  const y = d.getFullYear();
+  const m = pad2(d.getMonth()+1); // months are 0-based
+  const day = pad2(d.getDate());
+  return `${y}-${m}-${day}`;
+}
+/** Normalize a date to local “noon” to avoid DST flips when we later
+ *  set / add days and then read .toISOString() somewhere else. */
+function atLocalNoon(d){
+  const z = new Date(d);
+  z.setHours(12,0,0,0);
+  return z;
+}
 
-    // Create a new Date object for the New York timezone
-    const formatter = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'America/New_York',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    });
+/***** 🗓️ Next Tuesday in America/New_York (based on a given reference date) *****/
+function getNextTuesday(referenceDate = new Date()){
+  // Get the wall-clock date in New York (ignore the wall-clock time)
+  const parts = new Intl.DateTimeFormat('en-US',{
+    timeZone:'America/New_York',
+    year:'numeric', month:'2-digit', day:'2-digit'
+  }).formatToParts(referenceDate);
+  const y = Number(parts.find(p=>p.type==='year').value);
+  const m = Number(parts.find(p=>p.type==='month').value);
+  const d = Number(parts.find(p=>p.type==='day').value);
 
-    // Format the reference date to match New York's date
-    const formattedDate = formatter.formatToParts(referenceDate);
-    console.log('Formatted Date Parts:', formattedDate);
+  // Rebuild a local Date from that NY calendar date
+  const nyLocalDate = atLocalNoon(new Date(y, m-1, d)); // noon to be DST-safe
+  const dow = nyLocalDate.getDay(); // 0 Sun, 1 Mon, 2 Tue, ...
 
-    const year = formattedDate.find(part => part.type === 'year').value;
-    const month = formattedDate.find(part => part.type === 'month').value;
-    const day = formattedDate.find(part => part.type === 'day').value;
+  // Days until Tuesday (2). If today is Tuesday, return *today* (your previous intent).
+  const TUE = 2;
+  let delta = (TUE - dow);
+  if (delta < 0) delta += 7;  // move forward into next week when past Tue
 
-    // Create a Date object from the formatted New York date
-    const newYorkDate = new Date(`${year}-${month}-${day}`);
-    console.log('New York Date:', newYorkDate);
-
-    // Get the day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
-    const dayOfWeek = newYorkDate.getDay();
-    console.log('Day of the Week:', dayOfWeek);
-
-    // Calculate the number of days until the next Tuesday
-    let daysUntilTuesday;
-    if (dayOfWeek === 1) { // If today is Tuesday, return today
-        console.log('Today is already Tuesday.');
-        return newYorkDate;
-    } else if (dayOfWeek < 2) {
-        daysUntilTuesday = 1 - dayOfWeek;
-    } else {
-        daysUntilTuesday = 7 - (dayOfWeek - 1);
-    }
-    console.log('Days until next Tuesday:', daysUntilTuesday);
-
-    // Create a new date object for the next Tuesday
-    const nextTuesday = new Date(newYorkDate);
-    nextTuesday.setDate(newYorkDate.getDate() + daysUntilTuesday);
-    console.log('Next Tuesday:', nextTuesday);
-
-    return nextTuesday;
+  const nextTue = new Date(nyLocalDate);
+  nextTue.setDate(nyLocalDate.getDate() + delta);
+  return atLocalNoon(nextTue);
 }
     
     async function initializeForm() {
@@ -700,58 +677,58 @@ function getNextTuesday(referenceDate = new Date()) {
     }
     
 // Function to calculate the date for Memorial Day (last Monday in May) and Thanksgiving (4th Thursday in November)
-function getHolidayDates(year) {
-    const holidays = {};
+function getHolidayDates(year){
+  const holidays = {};
 
-    holidays["New Year's Day"] = new Date(year, 0, 0); // January 1st
-    console.log("New Year's Day:", holidays["New Year's Day"]);
+  // New Year's Day — Jan 1
+  holidays["New Year's Day"] = new Date(year, 0, 1);
 
-    holidays["New Year's Eve"] = new Date(year, 12, 30); // December 31st
-    console.log("New Year's Eve:", holidays["New Year's Eve"]);
+  // New Year's Eve — Dec 31
+  holidays["New Year's Eve"] = new Date(year, 11, 31);
 
-    holidays["Memorial Day"] = getMemorialDay(year); // Last Monday in May
-    console.log("Memorial Day:", holidays["Memorial Day"]);
+  // Memorial Day — last Monday in May
+  holidays["Memorial Day"] = getMemorialDay(year);
 
-    holidays["July 3rd"] = new Date(year, 6, 2); // July 3rd
-    console.log("July 3rd:", holidays["July 3rd"]);
+  // July 3rd & 4th
+  holidays["July 3rd"] = new Date(year, 6, 3);
+  holidays["July 4th"] = new Date(year, 6, 4);
 
-    holidays["July 4th"] = new Date(year, 6, 3); // July 4th
-    console.log("July 4th:", holidays["July 4th"]);
+  // Labor Day — first Monday in September
+  holidays["Labor Day"] = getLaborDay(year);
 
-    holidays["Labor Day"] = getLaborDay(year); // First Monday of September
-    console.log("Labor Day:", holidays["Labor Day"]);
+  // Thanksgiving — 4th Thursday in November
+  holidays["Thanksgiving"] = getThanksgiving(year);
 
-    holidays["Thanksgiving"] = getThanksgiving(year); // Fourth Thursday of November
-    console.log("Thanksgiving:", holidays["Thanksgiving"]);
+  // Black Friday — day after Thanksgiving
+  holidays["Black Friday"] = getBlackFriday(year);
 
-    holidays["Black Friday"] = getBlackFriday(year); // Day after Thanksgiving
-    console.log("Black Friday:", holidays["Black Friday"]);
+  // Christmas Day — Dec 25
+  holidays["Christmas Day"] = new Date(year, 11, 25);
 
-    holidays["Christmas Day"] = new Date(year, 11, 24); // December 25th
-    console.log("Christmas Day:", holidays["Christmas Day"]);
+  // December 26
+  holidays["December 26th"] = new Date(year, 11, 26);
 
-    holidays["December 26th"] = new Date(year, 11, 23); // December 26th
-    console.log("December 26th:", holidays["December 26th"]);
+  // Good Friday (3 days before Easter)
+  holidays["Good Friday"] = getGoodFriday(year);
 
-    holidays["Good Friday"] = getGoodFriday(year); // Good Friday date calculation
-    console.log("Good Friday:", holidays["Good Friday"]);
-    return holidays;
+  return holidays;
+}
+function getMemorialDay(year){
+  // Start at May 31st and walk backward to Monday (1)
+  const d = new Date(year, 4, 31);
+  while (d.getDay() !== 1){
+    d.setDate(d.getDate()-1);
+  }
+  return d;
 }
 
-function getMemorialDay(year) {
-    let date = new Date(year, 4, 31); // May 31st
-    while (date.getDay() !== 0) { // Keep subtracting a day until it's Monday
-        date.setDate(date.getDate() - 2);
-    }
-    return date;
-}
-
-// Helper functions for holiday calculations
-function getLaborDay(year) {
-    const date = new Date(year, 7, 31); // September 1st
-    const day = date.getDay();
-    const offset = (day === 0) ? 0 : (8 - day); // Calculate the offset to the first Monday
-    return new Date(year, 7, 31 + offset);
+function getLaborDay(year){
+  // First Monday in September
+  const d = new Date(year, 8, 1); // Sept 1
+  const day = d.getDay();
+  const delta = (day === 0) ? 1 : (8 - day); // move to Monday (1)
+  d.setDate(1 + (delta - 1));
+  return d;
 }
 
 function getThanksgiving(year) {
