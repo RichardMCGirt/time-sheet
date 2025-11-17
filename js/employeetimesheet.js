@@ -109,7 +109,12 @@ function initAshleyScrollPrank() {
     const impersonateKatyEmails = ['nhernandez@guyclee.com', 'jjones@guyclee.com'];
     const impersonateBrianEmails = ['brian@vanirinstalledsales.com'];
 
-    const isKaty = supervisorEmail === 'katy@vanirinstalledsales.com';
+const fullAccessEmails = [
+    'katy@vanirinstalledsales.com',
+    'caroline.heath@vanirinstalledsales.com'
+];
+
+const isKaty = fullAccessEmails.includes(supervisorEmail);
     const isImpersonatingKaty = impersonateKatyEmails.includes(supervisorEmail);
     const isImpersonatingBrian = impersonateBrianEmails.includes(supervisorEmail);
     const isEthenOrLance = seeSameRecordsPair.includes(supervisorEmail); // NEW
@@ -650,9 +655,15 @@ nameContainer.classList.add('clickable');
                     approveCheckbox.addEventListener('change', handleCheckboxChange);
                 }
 
-                if (supervisorEmail !== 'katy@vanirinstalledsales.com' && approvalStatus) {
-                    table.style.display = 'none'; 
-                }
+               const fullAccessEmails = [
+    'katy@vanirinstalledsales.com',
+    'caroline.heath@vanirinstalledsales.com'
+];
+
+if (!fullAccessEmails.includes(supervisorEmail) && approvalStatus) {
+    table.style.display = 'none';
+}
+
 
                 timesheetsBody.appendChild(table);
             }

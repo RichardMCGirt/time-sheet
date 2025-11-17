@@ -175,14 +175,18 @@ if (userEmailElement) {
     async function fetchTimesheets(supervisorName) {
         let filterFormula;
     
-        // Allow impersonation of Katy's access level for specified emails
-        if (supervisorEmail === 'katy@vanirinstalledsales.com' || 
-            impersonateEmails.includes(supervisorEmail)) {
-            
-            // Grant full access
-            filterFormula = '{Employee Number}!=BLANK()';
-        
-       
+     // Emails allowed to impersonate Katy-level access
+const impersonateEmails = [
+    'katy@vanirinstalledsales.com',
+    'caroline.heath@vanirinstalledsales.com'
+];
+
+// Allow impersonation of Katy's access level for specified emails
+if (impersonateEmails.includes(supervisorEmail)) {
+
+    // Grant full access
+    filterFormula = '{Employee Number} != BLANK()';
+
         } else {
             // Default supervisor access level
             filterFormula = `AND({Supervisor}='${supervisorName}', {Employee Number}!=BLANK())`;
@@ -274,9 +278,15 @@ nameContainer.textContent = `${employeeName} (${employeeNumber})`; // Show name 
                     notApprovedInput.addEventListener('blur', handleTextInputChange);
                 }
 
-                if (supervisorEmail !== 'katy@vanirinstalledsales.com' && fields['Approved']) {
-                    table.style.display = 'none'; // Hide approved rows for non-Katy users
-                }
+                const fullAccessEmails = [
+    'katy@vanirinstalledsales.com',
+    'caroline.heath@vanirinstalledsales.com'
+];
+
+if (!fullAccessEmails.includes(supervisorEmail) && fields['Approved']) {
+    table.style.display = 'none'; // Hide approved rows for users without full access
+}
+
 
                 timesheetsBody.appendChild(table);
             }
@@ -328,14 +338,22 @@ nameContainer.textContent = `${employeeName} (${employeeNumber})`; // Show name 
         displaySuccessMessage("Record successfully updated");
 
         // Adjust visibility of the table based on the checkbox state
-        const table = timesheetsBody.querySelector(`.time-entry-table[data-record-id="${recordId}"]`);
-        if (table) {
-            if (supervisorEmail !== 'katy@vanirinstalledsales.com') {
-                table.style.display = isApproved ? 'none' : '';  // Hide or show the table based on the approval status
-            } else {
-                table.style.display = '';  // For Katy, do not hide the table
-            }
-        }
+       const fullAccessEmails = [
+    'katy@vanirinstalledsales.com',
+    'caroline.heath@vanirinstalledsales.com'
+];
+
+const table = timesheetsBody.querySelector(`.time-entry-table[data-record-id="${recordId}"]`);
+if (table) {
+    if (!fullAccessEmails.includes(supervisorEmail)) {
+        // Everyone ELSE: hide approved tables
+        table.style.display = isApproved ? 'none' : '';
+    } else {
+        // Katy + Caroline: always show
+        table.style.display = '';
+    }
+}
+
     }
 
     function handleTextInputChange(event) {

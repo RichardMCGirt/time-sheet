@@ -104,14 +104,21 @@ document.addEventListener("DOMContentLoaded", function () {
  // Redirect by clicking email (uses REAL email, not the display alias)
 document.getElementById('user-email').addEventListener('click', () => {
   const el = document.getElementById('user-email');
-  const realEmail = String(el?.dataset?.realEmail || el?.textContent || '').trim();
-  // Supervisor route remains based on real email
-  if (realEmail.toLowerCase() === 'katy@vanirinstalledsales.com') {
+  const realEmail = String(el?.dataset?.realEmail || el?.textContent || '').trim().toLowerCase();
+
+  const fullAccessEmails = [
+    'katy@vanirinstalledsales.com',
+    'caroline.heath@vanirinstalledsales.com'
+  ];
+
+  // Supervisor route based on allowed emails
+  if (fullAccessEmails.includes(realEmail)) {
     window.location.href = 'supervisor.html';
   } else {
     window.location.href = 'employeetimesheet.html';
   }
 });
+
 
 
     // Optional: Keyboard shortcut
