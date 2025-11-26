@@ -731,18 +731,44 @@ function getLaborDay(year){
   return d;
 }
 
-function getThanksgiving(year) {
-    const date = new Date(year, 10, 1); // November 1st
-    const day = date.getDay();
-    const offset = (day <= 3) ? (3 - day) : (10 - day); // Calculate the offset to the first Thursday
-    return new Date(year, 10, 1 + offset + 21); // Add 21 days for the 4th Thursday
+function getThanksgivingUTC(year) {
+    const nov1 = new Date(Date.UTC(year, 10, 1));
+    const day = nov1.getUTCDay();
+
+    // Days until first Thursday (Thursday = 4)
+    const offsetToThursday = (4 - day + 7) % 7;
+
+    const firstThursday = 1 + offsetToThursday;
+    const thanksgivingDay = firstThursday + 21; // + 3 weeks
+
+    return new Date(Date.UTC(year, 10, thanksgivingDay));
 }
 
-function getBlackFriday(year) {
-    const thanksgiving = getThanksgiving(year);
-    return new Date(thanksgiving.getFullYear(), thanksgiving.getMonth(), thanksgiving.getDate() + 1);
+function getBlackFridayUTC(year) {
+    const t = getThanksgivingUTC(year);
+    return new Date(Date.UTC(year, 10, t.getUTCDate() + 1));
+}
+function getHolidaysForYear(year) {
+    return {
+        "New Year's Day": new Date(Date.UTC(year, 0, 1)),
+        "MLK Day": new Date(Date.UTC(year, 0, 20)),
+        "Memorial Day": new Date(Date.UTC(year, 4, 27)),
+        "Independence Day": new Date(Date.UTC(year, 6, 4)),
+        "Labor Day": new Date(Date.UTC(year, 8, 2)),
+        "Veterans Day": new Date(Date.UTC(year, 10, 11)),
+        "Thanksgiving": getThanksgivingUTC(year),
+        "Black Friday": getBlackFridayUTC(year),
+        "Christmas Day": new Date(Date.UTC(year, 11, 25)),
+    };
 }
 
+function isSameUTCDate(localDate, holidayUTC) {
+    return (
+        localDate.getUTCFullYear() === holidayUTC.getUTCFullYear() &&
+        localDate.getUTCMonth() === holidayUTC.getUTCMonth() &&
+        localDate.getUTCDate() === holidayUTC.getUTCDate()
+    );
+}
 function getGoodFriday(year) {
     const easter = getEaster(year);
     return new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 3);
@@ -799,78 +825,66 @@ function showHolidayEditToast() {
 
 
 function populateWeekDates(weekEndingDate) {
-    const year = weekEndingDate.getFullYear();
-    const holidays = getHolidayDates(year);
     const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
+    const holidays = getHolidaysForYear(weekEndingDate.getFullYear());
 
     daysOfWeek.forEach((day, index) => {
-    const currentDate = new Date(weekEndingDate);
-    currentDate.setDate(weekEndingDate.getDate() - (6 - index));
-    const inputField = elements.timeEntryForm.elements[day];
-    inputField.value = currentDate.toISOString().split('T')[0];
+        const currentDate = new Date(weekEndingDate);
+        currentDate.setDate(weekEndingDate.getDate() - (6 - index));
 
-    console.log(`Set date for ${day}:`, currentDate);
+        // Set YYYY-MM-DD format for the input
+        const inputField = elements.timeEntryForm.elements[day];
+        inputField.value = currentDate.toISOString().split('T')[0];
 
-    // Check if the current date is a holiday
-    const isHoliday = Object.values(holidays).some(holiday => 
-        currentDate.getFullYear() === holiday.getFullYear() &&
-        currentDate.getMonth() === holiday.getMonth() &&
-        currentDate.getDate() === holiday.getDate()
-    );
+        console.log(`Set date for ${day}:`, currentDate);
 
-    // Check if the day is a weekday
-    const isWeekday = currentDate.getDay() >= 0 && currentDate.getDay() <= 4;
+        // Check if the current date is a holiday (UTC-safe)
+        const isHoliday = Object.values(holidays).some(holiday =>
+            isSameUTCDate(currentDate, holiday)
+        );
 
-    // Get inputs for the row
-    const row = document.querySelector(`tr[data-day="${index + 1}"]`);
-    const timeInputsInRow = row.querySelectorAll('input[type="time"]');
-    const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
-      .filter(input => !input.name.startsWith('Holiday_hours')); // Exclude holiday field
+        // Check if weekday (Mon–Fri in your app = 0–4)
+        const isWeekday = currentDate.getDay() >= 0 && currentDate.getDay() <= 4;
 
-    const holidayInput = elements.timeEntryForm.elements[`Holiday_hours${index + 1}`];
+        // Get row elements
+        const row = document.querySelector(`tr[data-day="${index + 1}"]`);
+        const timeInputsInRow = row.querySelectorAll('input[type="time"]');
+        const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
+            .filter(input => !input.name.startsWith('Holiday_hours'));
 
-   if (isHoliday && isWeekday) {
-    holidayInput.value = '8';
+        const holidayInput = elements.timeEntryForm.elements[`Holiday_hours${index + 1}`];
 
-    // Disable normal time and number inputs & add click handlers for toast
-   timeInputsInRow.forEach(input => {
-  input.readOnly = true;
-  input.value = '';
-  input.addEventListener('focus', showHolidayEditToast);
-  input.addEventListener('click', showHolidayEditToast);
-});
+        // === HOLIDAY HANDLING ===  
+        if (isHoliday && isWeekday) {
+            holidayInput.value = 8;   // Auto-fill holiday
 
-numberInputsInRow.forEach(input => {
-  input.readOnly = true;
-  input.value = '';
-  input.addEventListener('focus', showHolidayEditToast);
-  input.addEventListener('click', showHolidayEditToast);
-});
+            // Disable all work inputs
+            timeInputsInRow.forEach(input => {
+                input.readOnly = true;
+                input.value = '';
+            });
+            numberInputsInRow.forEach(input => {
+                input.readOnly = true;
+                input.value = '';
+            });
 
+            holidayInput.disabled = false; // Holiday hours should remain editable if you want
 
-    holidayInput.disabled = false;
+        } else {
+            // === NORMAL DAY ===
+            holidayInput.value = '';
+            holidayInput.disabled = false;
 
-} else {
-    holidayInput.value = '';
+            // Enable regular inputs
+            timeInputsInRow.forEach(input => {
+                input.readOnly = false;
+            });
+            numberInputsInRow.forEach(input => {
+                input.readOnly = false;
+            });
+        }
+    });
 
-    // Enable normal time and number inputs & remove toast handlers if any
-   timeInputsInRow.forEach(input => {
-  input.readOnly = false;
-  input.removeEventListener('focus', showHolidayEditToast);
-  input.removeEventListener('click', showHolidayEditToast);
-});
-
-numberInputsInRow.forEach(input => {
-  input.readOnly = false;
-  input.removeEventListener('focus', showHolidayEditToast);
-  input.removeEventListener('click', showHolidayEditToast);
-});
-
-
-    holidayInput.disabled = false;
-}
-
-});
 
 // After your loop that sets Holiday_hours fields:
 saveFormData();
