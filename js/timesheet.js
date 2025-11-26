@@ -300,11 +300,8 @@ debounce(hideZeroValueSpans, 100)();    });
         const row = event.target.closest('tr');
         const timeInputsInRow = row.querySelectorAll('input[type="time"]');
         // ⬇️ EXCLUDE Holiday input
-     const numberInputsInRow =
-    Array.from(row.querySelectorAll('input[type="number"]'))
-    .filter(input => !input.name.includes('Holiday_hours'));
-
-
+        const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
+            .filter(input => !input.name.startsWith('Holiday_hours'));
 
         const ptoInput = row.querySelector('input[name^="PTO_hours"]');
         const personalInput = row.querySelector('input[name^="Personal_hours"]');
@@ -700,8 +697,10 @@ function getHolidayDates(year){
   holidays["Labor Day"] = getLaborDay(year);
 
   // Thanksgiving — 4th Thursday in November
+  holidays["Thanksgiving"] = getThanksgiving(year);
 
   // Black Friday — day after Thanksgiving
+  holidays["Black Friday"] = getBlackFriday(year);
 
   // Christmas Day — Dec 25
   holidays["Christmas Day"] = new Date(year, 11, 25);
@@ -732,56 +731,21 @@ function getLaborDay(year){
   return d;
 }
 
-function getThanksgivingUTC(year) {
-    const nov1 = new Date(Date.UTC(year, 10, 1));
-    const day = nov1.getUTCDay();
-
-    // Days until first Thursday (Thursday = 4)
-    const offsetToThursday = (4 - day + 7) % 7;
-
-    const firstThursday = 1 + offsetToThursday;
-    const thanksgivingDay = firstThursday + 21; // + 3 weeks
-
-    return new Date(Date.UTC(year, 10, thanksgivingDay));
+function getThanksgiving(year) {
+    const date = new Date(year, 10, 1); 
+    const day = date.getDay();
+    const offset = (day <= 3) ? (3 - day) : (10 - day);
+    return new Date(year, 10, 1 + offset + 21);
 }
 
-function getBlackFridayUTC(year) {
-    const t = getThanksgivingUTC(year);
-    return new Date(Date.UTC(year, 10, t.getUTCDate() + 1));
-}
-function getHolidaysForYear(year) {
-    return {
-        "New Year's Day": new Date(Date.UTC(year, 0, 1)),
-        "MLK Day": new Date(Date.UTC(year, 0, 20)),
-        "Memorial Day": new Date(Date.UTC(year, 4, 27)),
-        "Independence Day": new Date(Date.UTC(year, 6, 4)),
-        "Labor Day": new Date(Date.UTC(year, 8, 2)),
-        "Veterans Day": new Date(Date.UTC(year, 10, 11)),
-   
-        "Christmas Day": new Date(Date.UTC(year, 11, 25)),
-    };
-}
-// --- QUICK FIX FOR THANKSGIVING + BLACK FRIDAY 2025 ---
-function isForcedHoliday(date) {
-    const y = date.getFullYear();
-    
-    // Only apply for 2025
-    if (y !== 2025) return false;
 
-    const mmdd =
-        (date.getMonth() + 1).toString().padStart(2, '0') +
-        date.getDate().toString().padStart(2, '0');
 
-    return mmdd === "1127" || mmdd === "1128"; 
+function getBlackFriday(year) {
+    const thanksgiving = getThanksgiving(year);
+    return new Date(thanksgiving.getFullYear(), thanksgiving.getMonth(), thanksgiving.getDate() + 1);
 }
 
-function isSameUTCDate(localDate, holidayUTC) {
-    return (
-        localDate.getUTCFullYear() === holidayUTC.getUTCFullYear() &&
-        localDate.getUTCMonth() === holidayUTC.getUTCMonth() &&
-        localDate.getUTCDate() === holidayUTC.getUTCDate()
-    );
-}
+
 function getGoodFriday(year) {
     const easter = getEaster(year);
     return new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 3);
@@ -838,117 +802,86 @@ function showHolidayEditToast() {
 
 
 function populateWeekDates(weekEndingDate) {
+    const year = weekEndingDate.getFullYear();
+    const holidays = getHolidayDates(year);
     const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
-    const holidays = getHolidaysForYear(weekEndingDate.getFullYear());
-
-    // ❤️ Local date comparison helper
-    function isSameLocalDate(a, b) {
-        return (
-            a.getFullYear() === b.getFullYear() &&
-            a.getMonth() === b.getMonth() &&
-            a.getDate() === b.getDate()
-        );
-    }
 
     daysOfWeek.forEach((day, index) => {
+    const currentDate = new Date(weekEndingDate);
+    currentDate.setDate(weekEndingDate.getDate() - (6 - index));
+    const inputField = elements.timeEntryForm.elements[day];
+    inputField.value = currentDate.toISOString().split('T')[0];
 
-        // Generate each day's date in the pay week
-        const currentDate = new Date(weekEndingDate);
-        currentDate.setDate(weekEndingDate.getDate() - (6 - index));
+    console.log(`Set date for ${day}:`, currentDate);
 
-        // Populate the date input (YYYY-MM-DD)
-        const inputField = elements.timeEntryForm.elements[day];
-        inputField.value = currentDate.toISOString().split('T')[0];
-
-        console.log(`Set date for ${day}:`, currentDate);
-
-        // --- HOLIDAY CHECK (LOCAL DATE SAFE) ---
-  const isHoliday =
-    isForcedHoliday(currentDate) ||
-    Object.values(holidays).some(holiday =>
-        isSameLocalDate(currentDate, new Date(holiday))
+    // Check if the current date is a holiday
+    const isHoliday = Object.values(holidays).some(holiday => 
+        currentDate.getFullYear() === holiday.getFullYear() &&
+        currentDate.getMonth() === holiday.getMonth() &&
+        currentDate.getDate() === holiday.getDate()
     );
 
-// --- QUICK FIX: Hardcode Thanksgiving + Black Friday 2025 ---
-// ---- HARD CODE FIX FOR 2025 THANKSGIVING & BLACK FRIDAY ----
-const yyyy = currentDate.getFullYear();
-const mm = currentDate.getMonth() + 1;
-const dd = currentDate.getDate();
+    // Check if the day is a weekday
+    const isWeekday = currentDate.getDay() >= 0 && currentDate.getDay() <= 4;
 
-const isThanksgiving2025 = (yyyy === 2025 && mm === 11 && dd === 27);
-const isBlackFriday2025 = (yyyy === 2025 && mm === 11 && dd === 28);
+    // Get inputs for the row
+    const row = document.querySelector(`tr[data-day="${index + 1}"]`);
+    const timeInputsInRow = row.querySelectorAll('input[type="time"]');
+    const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
+      .filter(input => !input.name.startsWith('Holiday_hours')); // Exclude holiday field
 
-if (isThanksgiving2025 || isBlackFriday2025) {
-    console.log("🔥 Hardcoded Holiday Trigger:", currentDate);
+    const holidayInput = elements.timeEntryForm.elements[`Holiday_hours${index + 1}`];
 
-    holidayInput.value = 8;
+   if (isHoliday && isWeekday) {
+    holidayInput.value = '8';
 
-    timeInputsInRow.forEach(i => { i.readOnly = true; i.value = ''; });
-    numberInputsInRow.forEach(i => { i.readOnly = true; i.value = ''; });
+    // Disable normal time and number inputs & add click handlers for toast
+   timeInputsInRow.forEach(input => {
+  input.readOnly = true;
+  input.value = '';
+  input.addEventListener('focus', showHolidayEditToast);
+  input.addEventListener('click', showHolidayEditToast);
+});
+
+numberInputsInRow.forEach(input => {
+  input.readOnly = true;
+  input.value = '';
+  input.addEventListener('focus', showHolidayEditToast);
+  input.addEventListener('click', showHolidayEditToast);
+});
+
 
     holidayInput.disabled = false;
-    return; // Skip the rest of the day logic
+
+} else {
+    holidayInput.value = '';
+
+    // Enable normal time and number inputs & remove toast handlers if any
+   timeInputsInRow.forEach(input => {
+  input.readOnly = false;
+  input.removeEventListener('focus', showHolidayEditToast);
+  input.removeEventListener('click', showHolidayEditToast);
+});
+
+numberInputsInRow.forEach(input => {
+  input.readOnly = false;
+  input.removeEventListener('focus', showHolidayEditToast);
+  input.removeEventListener('click', showHolidayEditToast);
+});
+
+
+    holidayInput.disabled = false;
 }
 
+});
 
-function isSameLocalDate(a, b) {
-    return (
-        a.getFullYear() === b.getFullYear() &&
-        a.getMonth() === b.getMonth() &&
-        a.getDate() === b.getDate()
-    );
+// After your loop that sets Holiday_hours fields:
+saveFormData();
+calculateTotalTimeWorked();
+updateTotalPtoAndHolidayHours();
+updateTotalsSummary(); // ✅ Ensures PTO, Personal, Holiday rows show correctly
+debounce(hideZeroValueSpans, 100)(); // ✅ Hide zero rows if needed
 }
-        // Weekday check (Mon–Fri)
-const isWeekday = currentDate.getDay() >= 1 && currentDate.getDay() <= 5;
-
-        // Row + inputs
-        const row = document.querySelector(`tr[data-day="${index + 1}"]`);
-        const timeInputsInRow = row.querySelectorAll('input[type="time"]');
-        const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
-            .filter(input => !input.name.startsWith('Holiday_hours'));
-
-        const holidayInput = elements.timeEntryForm.elements[`Holiday_hours${index + 1}`];
-
-        // === HOLIDAY HANDLING ===
-        if (isHoliday && isWeekday) {
-            holidayInput.value = 8;  // Auto-fill 8 hours
-
-            // Disable time + number inputs
-            timeInputsInRow.forEach(input => {
-                input.readOnly = true;
-                input.value = '';
-            });
-
-            numberInputsInRow.forEach(input => {
-                input.readOnly = true;
-                input.value = '';
-            });
-
-            holidayInput.disabled = false;
-
-        } else {
-            // === NORMAL DAY ===
-            holidayInput.value = '';
-            holidayInput.disabled = false;
-
-            timeInputsInRow.forEach(input => {
-                input.readOnly = false;
-            });
-
-            numberInputsInRow.forEach(input => {
-                input.readOnly = false;
-            });
-        }
-    });
-
-    // === RE-CALCULATE SUMMARY + SAVE ===
-    saveFormData();
-    calculateTotalTimeWorked();
-    updateTotalPtoAndHolidayHours();
-    updateTotalsSummary();
-    debounce(hideZeroValueSpans, 100)();
-}
-
 
 function startCountdown() {
     const countdownElement = document.getElementById('countdown');
