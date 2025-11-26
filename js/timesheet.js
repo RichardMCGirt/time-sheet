@@ -300,8 +300,11 @@ debounce(hideZeroValueSpans, 100)();    });
         const row = event.target.closest('tr');
         const timeInputsInRow = row.querySelectorAll('input[type="time"]');
         // ⬇️ EXCLUDE Holiday input
-        const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
-            .filter(input => !input.name.startsWith('Holiday_hours'));
+     const numberInputsInRow =
+    Array.from(row.querySelectorAll('input[type="number"]'))
+    .filter(input => !input.name.includes('Holiday_hours'));
+
+
 
         const ptoInput = row.querySelector('input[name^="PTO_hours"]');
         const personalInput = row.querySelector('input[name^="Personal_hours"]');
@@ -697,10 +700,8 @@ function getHolidayDates(year){
   holidays["Labor Day"] = getLaborDay(year);
 
   // Thanksgiving — 4th Thursday in November
-  holidays["Thanksgiving"] = getThanksgiving(year);
 
   // Black Friday — day after Thanksgiving
-  holidays["Black Friday"] = getBlackFriday(year);
 
   // Christmas Day — Dec 25
   holidays["Christmas Day"] = new Date(year, 11, 25);
@@ -756,10 +757,22 @@ function getHolidaysForYear(year) {
         "Independence Day": new Date(Date.UTC(year, 6, 4)),
         "Labor Day": new Date(Date.UTC(year, 8, 2)),
         "Veterans Day": new Date(Date.UTC(year, 10, 11)),
-        "Thanksgiving": getThanksgivingUTC(year),
-        "Black Friday": getBlackFridayUTC(year),
+   
         "Christmas Day": new Date(Date.UTC(year, 11, 25)),
     };
+}
+// --- QUICK FIX FOR THANKSGIVING + BLACK FRIDAY 2025 ---
+function isForcedHoliday(date) {
+    const y = date.getFullYear();
+    
+    // Only apply for 2025
+    if (y !== 2025) return false;
+
+    const mmdd =
+        (date.getMonth() + 1).toString().padStart(2, '0') +
+        date.getDate().toString().padStart(2, '0');
+
+    return mmdd === "1127" || mmdd === "1128"; 
 }
 
 function isSameUTCDate(localDate, holidayUTC) {
@@ -850,12 +863,43 @@ function populateWeekDates(weekEndingDate) {
         console.log(`Set date for ${day}:`, currentDate);
 
         // --- HOLIDAY CHECK (LOCAL DATE SAFE) ---
-        const isHoliday = Object.values(holidays).some(holiday =>
-            isSameLocalDate(currentDate, new Date(holiday))
-        );
+  const isHoliday =
+    isForcedHoliday(currentDate) ||
+    Object.values(holidays).some(holiday =>
+        isSameLocalDate(currentDate, new Date(holiday))
+    );
 
+// --- QUICK FIX: Hardcode Thanksgiving + Black Friday 2025 ---
+// ---- HARD CODE FIX FOR 2025 THANKSGIVING & BLACK FRIDAY ----
+const yyyy = currentDate.getFullYear();
+const mm = currentDate.getMonth() + 1;
+const dd = currentDate.getDate();
+
+const isThanksgiving2025 = (yyyy === 2025 && mm === 11 && dd === 27);
+const isBlackFriday2025 = (yyyy === 2025 && mm === 11 && dd === 28);
+
+if (isThanksgiving2025 || isBlackFriday2025) {
+    console.log("🔥 Hardcoded Holiday Trigger:", currentDate);
+
+    holidayInput.value = 8;
+
+    timeInputsInRow.forEach(i => { i.readOnly = true; i.value = ''; });
+    numberInputsInRow.forEach(i => { i.readOnly = true; i.value = ''; });
+
+    holidayInput.disabled = false;
+    return; // Skip the rest of the day logic
+}
+
+
+function isSameLocalDate(a, b) {
+    return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+    );
+}
         // Weekday check (Mon–Fri)
-        const isWeekday = currentDate.getDay() >= 0 && currentDate.getDay() <= 4;
+const isWeekday = currentDate.getDay() >= 1 && currentDate.getDay() <= 5;
 
         // Row + inputs
         const row = document.querySelector(`tr[data-day="${index + 1}"]`);
