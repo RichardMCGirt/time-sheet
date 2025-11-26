@@ -697,10 +697,12 @@ function getHolidayDates(year){
   holidays["Labor Day"] = getLaborDay(year);
 
   // Thanksgiving — 4th Thursday in November
-  holidays["Thanksgiving"] = getThanksgiving(year);
+// Thanksgiving — hard-coded to November 27, 2025
+holidays["Thanksgiving"] = new Date(year, 10, 27);
 
-  // Black Friday — day after Thanksgiving
-  holidays["Black Friday"] = getBlackFriday(year);
+// Black Friday — hard-coded to November 28, 2025
+holidays["Black Friday"] = new Date(year, 10, 28);
+
 
   // Christmas Day — Dec 25
   holidays["Christmas Day"] = new Date(year, 11, 25);
@@ -732,19 +734,16 @@ function getLaborDay(year){
 }
 
 function getThanksgiving(year) {
-    const date = new Date(year, 10, 1); 
+    const date = new Date(year, 10, 1); // November 1st
     const day = date.getDay();
-    const offset = (day <= 3) ? (3 - day) : (10 - day);
-    return new Date(year, 10, 1 + offset + 21);
+    const offset = (day <= 3) ? (3 - day) : (10 - day); // Calculate the offset to the first Thursday
+    return new Date(year, 10, 1 + offset + 21); // Add 21 days for the 4th Thursday
 }
-
-
 
 function getBlackFriday(year) {
     const thanksgiving = getThanksgiving(year);
     return new Date(thanksgiving.getFullYear(), thanksgiving.getMonth(), thanksgiving.getDate() + 1);
 }
-
 
 function getGoodFriday(year) {
     const easter = getEaster(year);
@@ -833,7 +832,7 @@ function populateWeekDates(weekEndingDate) {
     const holidayInput = elements.timeEntryForm.elements[`Holiday_hours${index + 1}`];
 
    if (isHoliday && isWeekday) {
-    holidayInput.value = '8';
+    holidayInput.value = '16';
 
     // Disable normal time and number inputs & add click handlers for toast
    timeInputsInRow.forEach(input => {
