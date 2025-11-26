@@ -828,25 +828,36 @@ function populateWeekDates(weekEndingDate) {
     const daysOfWeek = ['date1', 'date2', 'date3', 'date4', 'date5', 'date6', 'date7'];
     const holidays = getHolidaysForYear(weekEndingDate.getFullYear());
 
+    // ❤️ Local date comparison helper
+    function isSameLocalDate(a, b) {
+        return (
+            a.getFullYear() === b.getFullYear() &&
+            a.getMonth() === b.getMonth() &&
+            a.getDate() === b.getDate()
+        );
+    }
+
     daysOfWeek.forEach((day, index) => {
+
+        // Generate each day's date in the pay week
         const currentDate = new Date(weekEndingDate);
         currentDate.setDate(weekEndingDate.getDate() - (6 - index));
 
-        // Set YYYY-MM-DD format for the input
+        // Populate the date input (YYYY-MM-DD)
         const inputField = elements.timeEntryForm.elements[day];
         inputField.value = currentDate.toISOString().split('T')[0];
 
         console.log(`Set date for ${day}:`, currentDate);
 
-        // Check if the current date is a holiday (UTC-safe)
+        // --- HOLIDAY CHECK (LOCAL DATE SAFE) ---
         const isHoliday = Object.values(holidays).some(holiday =>
-            isSameUTCDate(currentDate, holiday)
+            isSameLocalDate(currentDate, new Date(holiday))
         );
 
-        // Check if weekday (Mon–Fri in your app = 0–4)
+        // Weekday check (Mon–Fri)
         const isWeekday = currentDate.getDay() >= 0 && currentDate.getDay() <= 4;
 
-        // Get row elements
+        // Row + inputs
         const row = document.querySelector(`tr[data-day="${index + 1}"]`);
         const timeInputsInRow = row.querySelectorAll('input[type="time"]');
         const numberInputsInRow = Array.from(row.querySelectorAll('input[type="number"]'))
@@ -854,45 +865,46 @@ function populateWeekDates(weekEndingDate) {
 
         const holidayInput = elements.timeEntryForm.elements[`Holiday_hours${index + 1}`];
 
-        // === HOLIDAY HANDLING ===  
+        // === HOLIDAY HANDLING ===
         if (isHoliday && isWeekday) {
-            holidayInput.value = 8;   // Auto-fill holiday
+            holidayInput.value = 8;  // Auto-fill 8 hours
 
-            // Disable all work inputs
+            // Disable time + number inputs
             timeInputsInRow.forEach(input => {
                 input.readOnly = true;
                 input.value = '';
             });
+
             numberInputsInRow.forEach(input => {
                 input.readOnly = true;
                 input.value = '';
             });
 
-            holidayInput.disabled = false; // Holiday hours should remain editable if you want
+            holidayInput.disabled = false;
 
         } else {
             // === NORMAL DAY ===
             holidayInput.value = '';
             holidayInput.disabled = false;
 
-            // Enable regular inputs
             timeInputsInRow.forEach(input => {
                 input.readOnly = false;
             });
+
             numberInputsInRow.forEach(input => {
                 input.readOnly = false;
             });
         }
     });
 
-
-// After your loop that sets Holiday_hours fields:
-saveFormData();
-calculateTotalTimeWorked();
-updateTotalPtoAndHolidayHours();
-updateTotalsSummary(); // ✅ Ensures PTO, Personal, Holiday rows show correctly
-debounce(hideZeroValueSpans, 100)(); // ✅ Hide zero rows if needed
+    // === RE-CALCULATE SUMMARY + SAVE ===
+    saveFormData();
+    calculateTotalTimeWorked();
+    updateTotalPtoAndHolidayHours();
+    updateTotalsSummary();
+    debounce(hideZeroValueSpans, 100)();
 }
+
 
 function startCountdown() {
     const countdownElement = document.getElementById('countdown');
